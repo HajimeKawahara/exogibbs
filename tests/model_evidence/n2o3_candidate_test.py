@@ -67,6 +67,35 @@ def test_traced_scalar_vector_domain_and_only_target_substitution():
     finally:jax.config.update("jax_enable_x64",previous)
 
 
+def test_low_temperature_cycle_uses_all_three_energies_without_domain_extension():
+    report=candidate.low_temperature_dissociation()
+    records=json.loads((candidate.source.DATA/"nasa_records.json").read_text())
+    stoichiometry={"N2O3":-1,"NO":1,"NO2":1}
+    temperature=300.
+    native_g=0.
+    native_h0=0.
+    for name,sign in stoichiometry.items():
+        record=records[name]
+        interval=next(row for row in record["intervals"] if row["bounds_K"][0]<=temperature<=row["bounds_K"][1])
+        a,b,c,d,e,f,g,h,s=interval["coefficients"]
+        t=temperature
+        enthalpy=candidate.NASA_R*(-a/t+b*math.log(t)+c*t+d*t*t/2+e*t**3/3+f*t**4/4+g*t**5/5+h)
+        entropy=candidate.NASA_R*(-a/(2*t*t)-b/t+c*math.log(t)+d*t+e*t*t/2+f*t**3/3+g*t**4/4+s)
+        native_g+=sign*(enthalpy-t*entropy)
+        native_h0+=sign*(record["hf298_J_mol"]-record["h298_minus_h0_J_mol"])
+    aligned_h0=90687+36926-90850
+    expected=(native_g-native_h0)*candidate.R/candidate.NASA_R+aligned_h0
+    assert report["same_version_ATcT_reaction_H0_J_mol"]==36763
+    assert report["NASA_thermal_ATcT_delta_G_J_mol"]==pytest.approx(expected,abs=1e-8,rel=0)
+    assert report["NASA_thermal_ATcT_delta_G_J_mol"]==pytest.approx(-1825.069972,abs=1e-6,rel=0)
+    assert abs(report["native_NASA_residual_J_mol"])>70
+    assert abs(report["NASA_thermal_ATcT_residual_J_mol"])<70
+    assert report["ATcT_version"]=="1.228"
+    assert report["network_input"]["independent_validation"] is False
+    assert candidate.load_candidate()["temperature_range_K"]==[1500,4000]
+    with pytest.raises(ValueError,match="outside"):candidate.formation_h(temperature)
+
+
 def test_actual_endpoints_constraints_mass_action_and_gibbs_limits():
     summary=json.loads((DATA/"summary.json").read_text())
     assert summary["reused_baseline_cases"]==150

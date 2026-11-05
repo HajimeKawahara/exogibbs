@@ -1,9 +1,9 @@
 {
-  "created_utc": "2026-11-05T06:40:28.574986+00:00",
+  "created_utc": "2026-11-05T12:24:28.996775+00:00",
   "command": [
     "mceg/reviews/n2o3_equilibrium_impact.py",
     "--output-dir",
-    "results/n2o3-candidate-002",
+    "results/n2o3-candidate-merge-003",
     "--fastchem-executable",
     "/tmp/mceg-fastchem-v403-bin"
   ],
@@ -37,7 +37,7 @@
     "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
     "mceg/reviews/h2o_candidate.py": "3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113",
     "mceg/reviews/h2o_source_review.py": "aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007",
-    "mceg/reviews/n2o3_candidate.py": "39074d54c55f6603629344a72713a8a8098ce199c78d921f54d8d78b38ee995a",
+    "mceg/reviews/n2o3_candidate.py": "1d369564e9f484e0fd03ad566ac4e8a4f78cc790d68c1e61f401ee2301436ba2",
     "mceg/reviews/n2o3_equilibrium_impact.py": "fa1bb32e998f4e9b6d24cce5ff5b0ac3ac04a7b99963cd2d0236e7fc835d6bbc",
     "mceg/reviews/n2o3_source_review.py": "807924f7e0867ee4458c40d0e287bf327c649ee6cc625453b881c7af882a4e31",
     "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
@@ -220,9 +220,10 @@
     "tests/data/validation/curated_cos_adoption/20261105/neutral.npz": "c9f73bc7201344a34ae08944f8fb3a17166bda0d3dbd1b79bf204a4633f124d1",
     "tests/data/validation/curated_cos_adoption/20261105/receipt.json": "08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385",
     "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
-    "tests/data/validation/n2o3_candidate/20261105/candidate.json": "1b6dc797b8a19e43faea4c8c7c42f9f0cd917433ea5684ddb3d019450fa6672f",
-    "tests/data/validation/n2o3_candidate/20261105/receipt.json": "5a44de618749522e8b7599c5b6d568b8b558a34aa77e393a9def6c0a05c20ef2",
-    "tests/data/validation/n2o3_candidate/20261105/validation.json": "882d572c2c35c463db0cdc54716ec0a18d31407af33ab0ef72cd6b5d542849c6",
+    "tests/data/validation/n2o3_candidate/20261105/candidate.json": "851bfb62c07fe86051eba0520ed5dbc088f0baec7160ff4fd8c4ae8d14f5897f",
+    "tests/data/validation/n2o3_candidate/20261105/dissociation_inputs.json": "1dc88af6d533f379999007e893b6d6d7c6d6b95698a6525a1766999924c34c26",
+    "tests/data/validation/n2o3_candidate/20261105/receipt.json": "45bab968d22993383ce90f71464b4dfaf936a36026d45e54a9b1da5f54d1fc3a",
+    "tests/data/validation/n2o3_candidate/20261105/validation.json": "7557e8709362df9f39b0bb4af38046437c6f6621576569d75a36ce577bc22e75",
     "tests/data/validation/n2o3_source_review/20261105/N-028.txt": "4f321fdc454493b2ab46073b16de7241e78a22dd567e990b9201b70a27370899",
     "tests/data/validation/n2o3_source_review/20261105/inputs.json": "cd7b865dd53c0e2b7f40f0a87cb091de457172d426473605940a56eb99f1fb9f",
     "tests/data/validation/n2o3_source_review/20261105/nasa_records.json": "80b1954e3bdbd778dbb558f06cc27adb6337e95c5c979d6e2e42ee63bcb4fae7",
@@ -236,7 +237,7 @@
     "ions.npz": "c2070d9bdbcc1aba05168c8efaa26860a1c5e2fd695e753e05f35b03aa7283d1",
     "neutral.npz": "5d4f3afd6a5142dc0c859899ce57cd9c1435c27e3f112e56b0a205c6a7c3fbca",
     "selected_diagnostics.json": "6e201959707695b67d4a411814ca7c63a182b731d19c04cc011a7b19fcc1520a",
-    "summary.json": "902b857c58ddc72fcf54d74a477b632b86a0b3c5c154b1b4a31c9e7bb11ac91d"
+    "summary.json": "c18a68d3286fb7c53433c5f8db1563b9cb6bcf9ac2679e0ab5ac76c0aa5705ff"
   },
   "fastchem_binary_sha256": "64cb8d525346cb3b68116d53de08f74855744db01b161b27fa753973f95680a2"
 }

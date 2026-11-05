@@ -46,7 +46,7 @@ def build() -> dict:
     lines = path.read_text().splitlines()
     index = next(i for i,line in enumerate(lines) if line.startswith(source.SPECIES+" "))
     current = list(map(float,lines[index+1].split()))
-    inputs_paths = [source.DATA / p for p in ("inputs.json","nasa_records.json","comparison.json","sources.json")]+[path]
+    inputs_paths = [source.DATA / p for p in ("inputs.json","nasa_records.json","comparison.json","sources.json")]+[path, DATA/"dissociation_inputs.json"]
     return {"id":"n2o3_atct_1_228_candidates_v1","species":source.SPECIES,"molecule":source.NAME,
             "base_dataset":"curated-cos-v1","composition":source.COMPOSITION,
             "variants":list(VARIANTS),"primary":PRIMARY,"temperature_range_K":[1500,4000],
@@ -62,6 +62,37 @@ def build() -> dict:
             "nasa_convention":"Retain dimensionless NASA molecular-minus-atoms thermal functions; remove source D0 with native NASA R, then insert same-version ATcT D0 with SI R exactly once.",
             "physical_scope":"Neutral ground-state elemental species; no added conformers, isotopic mixture, nuclear-spin factor, physical covariance or high-temperature accuracy certificate.",
             "source_sha256":{str(p.relative_to(ROOT)):file_hash(p) for p in inputs_paths}}
+
+
+def low_temperature_dissociation() -> dict:
+    """Check a source reaction at 300 K without extending the candidate domain."""
+    config = json.loads((DATA / "dissociation_inputs.json").read_text())
+    records = json.loads((source.DATA / "nasa_records.json").read_text())
+    stoichiometry = {"N2O3": -1, "NO": 1, "NO2": 1}
+    t = config["temperature_K"]
+    native_h0 = sum(sign*(records[name]["hf298_J_mol"]-records[name]["h298_minus_h0_J_mol"])
+                    for name, sign in stoichiometry.items())
+    aligned_h0 = sum(sign*config["same_version_Hf0_J_mol"][name]
+                     for name, sign in stoichiometry.items())
+    properties = {name: source.nasa_properties(records[name], t, NASA_R)
+                  for name in stoichiometry}
+    native_g = sum(sign*(properties[name][0]-t*properties[name][1])
+                   for name, sign in stoichiometry.items())
+    # Neutral atoms cancel in this balanced reaction; retain NASA dimensionless
+    # thermal functions, then add all three same-version ATcT energies once.
+    aligned_g = (native_g-native_h0)*R/NASA_R+aligned_h0
+    reference = config["network_input"]
+    return {"reaction": config["reaction"], "temperature_K": t,
+            "standard_pressure_Pa": config["standard_pressure_Pa"],
+            "ATcT_version": config["ATcT_version"],
+            "native_NASA_reaction_H0_J_mol": native_h0,
+            "same_version_ATcT_reaction_H0_J_mol": aligned_h0,
+            "native_NASA_delta_G_J_mol": native_g,
+            "NASA_thermal_ATcT_delta_G_J_mol": aligned_g,
+            "network_input": reference,
+            "native_NASA_residual_J_mol": native_g-reference["delta_G_J_mol"],
+            "NASA_thermal_ATcT_residual_J_mol": aligned_g-reference["delta_G_J_mol"],
+            "scope": config["scope"]}
 
 
 def _gibbs(t, variant, xp):
@@ -144,7 +175,9 @@ def validate() -> dict:
             assert abs(vals-expected_h).max()<2e-12
             results[variant]={"maximum_h_reconstruction_error":float(abs(vals-expected_h).max()),"maximum_property_reconstruction_errors":err,"maximum_autodiff_errors":aderr,
                               "samples":[{"temperature_K":x,"K_over_current":math.exp(formation_h(x,"current")-formation_h(x,variant)),"reaction_properties":reaction_properties(x,variant)} for x in [1500.,2000.,2500.,3000.,4000.]]}
-        return {"base_dataset":"curated-cos-v1","temperature_count":len(t),"range_K":[1500,4000],"step_K":1,"maximum_current_h_replay_error":float(abs(current-replay).max()),"variants":results,"internal_joins":[],"production_change":"none","physical_accuracy":"unknown"}
+        diagnostic = low_temperature_dissociation()
+        assert abs(diagnostic["NASA_thermal_ATcT_residual_J_mol"]) < diagnostic["network_input"]["prior_margin_J_mol"]
+        return {"base_dataset":"curated-cos-v1","temperature_count":len(t),"range_K":[1500,4000],"step_K":1,"maximum_current_h_replay_error":float(abs(current-replay).max()),"variants":results,"internal_joins":[],"production_change":"none","physical_accuracy":"unknown","source_dissociation_diagnostic":diagnostic}
     finally:
         jax.config.update("jax_enable_x64",previous)
 
@@ -158,6 +191,7 @@ if __name__=="__main__":
         (DATA/"validation.json").write_text(json.dumps(result,indent=2)+"\n")
         paths={Path(__file__),Path(source.__file__),ROOT/"mceg/reviews/tio_candidate.py",ROOT/"mceg/reviews/c2h_source_review.py",ROOT/"mceg/reviews/gas_source_comparison.py",ROOT/"mceg/reviews/curated_history.py",ROOT/"examples/comparisons/select_major_molecules.py",ROOT/"examples/comparisons/audit_atomic_ions.py",ROOT/"examples/comparisons/data/major_molecule_reference.json"}
         paths.update(ROOT/p for p in json.loads((source.DATA/"receipt.json").read_text())["selected_input_sha256"])
+        paths.add(DATA/"dissociation_inputs.json")
         paths.update((ROOT/"src/exogibbs").rglob("*.py"));paths.update((ROOT/"src/exogibbs/data/curated").glob("*.json"))
         paths.update(ROOT/p for p in ["src/exogibbs/data/FastChem4/logK/logK.dat","src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat"])
         receipt={"created_utc":datetime.now(timezone.utc).isoformat(),"command":sys.argv,"python":platform.python_version(),"dtype":"float64","result":"passed","selected_file_sha256":{str(p.relative_to(ROOT)):file_hash(p) for p in sorted(paths)},"output_sha256":{n:file_hash(DATA/n) for n in ["candidate.json","validation.json"]}}

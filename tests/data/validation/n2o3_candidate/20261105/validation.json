@@ -145,5 +145,25 @@
   },
   "internal_joins": [],
   "production_change": "none",
-  "physical_accuracy": "unknown"
+  "physical_accuracy": "unknown",
+  "source_dissociation_diagnostic": {
+    "reaction": "N2O3 -> NO + NO2",
+    "temperature_K": 300,
+    "standard_pressure_Pa": 100000,
+    "ATcT_version": "1.228",
+    "native_NASA_reaction_H0_J_mol": 36567.30399999999,
+    "same_version_ATcT_reaction_H0_J_mol": 36763,
+    "native_NASA_delta_G_J_mol": -2020.985875014383,
+    "NASA_thermal_ATcT_delta_G_J_mol": -1825.0699721653,
+    "network_input": {
+      "id": "TN1573.10",
+      "delta_G_J_mol": -1840,
+      "prior_margin_J_mol": 70,
+      "reference": "Beattie 1957, third law apud Gurvich TPIS",
+      "independent_validation": false
+    },
+    "native_NASA_residual_J_mol": -180.98587501438305,
+    "NASA_thermal_ATcT_residual_J_mol": 14.930027834700013,
+    "scope": "Closed-reaction source diagnostic using original NASA intervals. This does not evaluate or extend the candidate below its 1500-4000 K domain, add a conformer ensemble, or establish independent physical validation."
+  }
 }

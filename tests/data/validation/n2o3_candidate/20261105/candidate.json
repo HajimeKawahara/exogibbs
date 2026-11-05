@@ -59,6 +59,7 @@
     "tests/data/validation/n2o3_source_review/20261105/nasa_records.json": "80b1954e3bdbd778dbb558f06cc27adb6337e95c5c979d6e2e42ee63bcb4fae7",
     "tests/data/validation/n2o3_source_review/20261105/comparison.json": "c595b4996e5023fe9d0e5d58899a358ddf37e6cbd291a386b230ef7015fb2390",
     "tests/data/validation/n2o3_source_review/20261105/sources.json": "60db25e246f2ab341e4a82349b614d6e35b1953bc5a40af4482613a0ab4423c0",
-    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/n2o3_candidate/20261105/dissociation_inputs.json": "1dc88af6d533f379999007e893b6d6d7c6d6b95698a6525a1766999924c34c26"
   }
 }

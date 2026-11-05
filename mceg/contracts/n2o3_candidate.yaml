@@ -7,7 +7,7 @@ model:
     control has the opposite response and is not the preferred correction.
   implementation: &id001
     repository: https://github.com/HajimeKawahara/exogibbs
-    revision: sha256:39074d54c55f6603629344a72713a8a8098ce199c78d921f54d8d78b38ee995a
+    revision: sha256:1d369564e9f484e0fd03ad566ac4e8a4f78cc790d68c1e61f401ee2301436ba2
     entry_points:
     - mceg/reviews/n2o3_candidate.py
     - mceg/reviews/n2o3_equilibrium_impact.py
@@ -76,8 +76,10 @@ evidence:
   sources:
   - tests/data/validation/n2o3_source_review/20261105/sources.json
   - documents/mceg/n2o3_source_review.rst
+  - tests/data/validation/n2o3_candidate/20261105/dissociation_inputs.json
   scope: 1500-4000 K, one-bar standard state; 75 fixed conditions per ion-inclusive 537-species and neutral
-    421-species network, baseline curated-cos-v1. No production change or full physical accuracy claim.
+    421-species network, baseline curated-cos-v1. No production change or full physical accuracy claim. A separate
+    300 K source-cycle diagnostic does not extend the candidate domain.
   subject: n2o3_candidate_20261105
   context: fixed_network_substitution
   artifacts:
@@ -85,15 +87,18 @@ evidence:
     sha256: 60db25e246f2ab341e4a82349b614d6e35b1953bc5a40af4482613a0ab4423c0
   - source: documents/mceg/n2o3_source_review.rst
     sha256: afb72d24a6f6a32f71f12d1ee9af0c2df2baa73c562103013618180af94b7822
+  - source: tests/data/validation/n2o3_candidate/20261105/dissociation_inputs.json
+    sha256: 1dc88af6d533f379999007e893b6d6d7c6d6b95698a6525a1766999924c34c26
   provenance:
     role: primary
     location: documents/mceg/n2o3_candidate.rst
     inspection: inspected
     note: Numerical consistency and solver parity are distinct from full physical support; source access limits
-      and unresolved trace-response scale remain explicit.
+      and unresolved trace-response scale remain explicit. The official ATcT species page was rechecked for
+      displayed NO/NO2/N2O3 energies and TN1573.10; original experimental and Gurvich full texts remain unread.
 - id: candidate_replay
   kind: numerical_test
-  summary: candidate replay
+  summary: Dense hot-domain construction and a separate low-temperature source-cycle diagnostic
   sources:
   - tests/data/validation/n2o3_candidate/20261105/candidate.json
   - tests/data/validation/n2o3_candidate/20261105/validation.json
@@ -104,11 +109,11 @@ evidence:
   context: fixed_network_substitution
   artifacts:
   - source: tests/data/validation/n2o3_candidate/20261105/candidate.json
-    sha256: 1b6dc797b8a19e43faea4c8c7c42f9f0cd917433ea5684ddb3d019450fa6672f
+    sha256: 851bfb62c07fe86051eba0520ed5dbc088f0baec7160ff4fd8c4ae8d14f5897f
   - source: tests/data/validation/n2o3_candidate/20261105/validation.json
-    sha256: 882d572c2c35c463db0cdc54716ec0a18d31407af33ab0ef72cd6b5d542849c6
+    sha256: 7557e8709362df9f39b0bb4af38046437c6f6621576569d75a36ce577bc22e75
   - source: tests/data/validation/n2o3_candidate/20261105/receipt.json
-    sha256: 5a44de618749522e8b7599c5b6d568b8b558a34aa77e393a9def6c0a05c20ef2
+    sha256: 45bab968d22993383ce90f71464b4dfaf936a36026d45e54a9b1da5f54d1fc3a
   provenance:
     role: primary
     location: documents/mceg/n2o3_candidate.rst
@@ -132,7 +137,7 @@ evidence:
   context: fixed_network_substitution
   artifacts:
   - source: tests/data/validation/n2o3_equilibrium_impact/20261105/summary.json
-    sha256: 902b857c58ddc72fcf54d74a477b632b86a0b3c5c154b1b4a31c9e7bb11ac91d
+    sha256: c18a68d3286fb7c53433c5f8db1563b9cb6bcf9ac2679e0ab5ac76c0aa5705ff
   - source: tests/data/validation/n2o3_equilibrium_impact/20261105/diagnostics.json
     sha256: c717692135d4cbd2deb6989e11e2628511e6398e489ad100d25babb8c436e068
   - source: tests/data/validation/n2o3_equilibrium_impact/20261105/selected_diagnostics.json
@@ -142,7 +147,7 @@ evidence:
   - source: tests/data/validation/n2o3_equilibrium_impact/20261105/neutral.npz
     sha256: 5d4f3afd6a5142dc0c859899ce57cd9c1435c27e3f112e56b0a205c6a7c3fbca
   - source: tests/data/validation/n2o3_equilibrium_impact/20261105/receipt.json
-    sha256: 217fa5bf297a5187f4705b4075afc6f930521dea99616b26cd25148888ef02b9
+    sha256: 9cdccd45c89f5b953eec03d751e99cc906d83f3f21a12bba0f66faf64c9f3422
   provenance:
     role: primary
     location: documents/mceg/n2o3_candidate.rst
@@ -161,7 +166,7 @@ evidence:
   context: fixed_network_substitution
   artifacts:
   - source: documents/mceg/n2o3_candidate.rst
-    sha256: d6456da8112c131f3ea40f0b75b2ec48cb469009ed7f20d0859c95e3ce340994
+    sha256: f3336115a2a5d09819c1a91ba752e0a3701277b1ab86547c2852443796a0021d
   provenance:
     role: primary
     location: documents/mceg/n2o3_candidate.rst
@@ -178,7 +183,7 @@ subjects:
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
-    mceg/reviews/n2o3_candidate.py: 39074d54c55f6603629344a72713a8a8098ce199c78d921f54d8d78b38ee995a
+    mceg/reviews/n2o3_candidate.py: 1d369564e9f484e0fd03ad566ac4e8a4f78cc790d68c1e61f401ee2301436ba2
     mceg/reviews/n2o3_source_review.py: 807924f7e0867ee4458c40d0e287bf327c649ee6cc625453b881c7af882a4e31
     mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
     src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
@@ -383,21 +388,22 @@ subjects:
     mceg/reviews/n2o3_equilibrium_impact.py: fa1bb32e998f4e9b6d24cce5ff5b0ac3ac04a7b99963cd2d0236e7fc835d6bbc
     mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
     tests/data/validation/curated_cos_adoption/20261105/neutral.npz: c9f73bc7201344a34ae08944f8fb3a17166bda0d3dbd1b79bf204a4633f124d1
-    tests/data/validation/n2o3_candidate/20261105/candidate.json: 1b6dc797b8a19e43faea4c8c7c42f9f0cd917433ea5684ddb3d019450fa6672f
-    tests/data/validation/n2o3_candidate/20261105/receipt.json: 5a44de618749522e8b7599c5b6d568b8b558a34aa77e393a9def6c0a05c20ef2
-    tests/data/validation/n2o3_candidate/20261105/validation.json: 882d572c2c35c463db0cdc54716ec0a18d31407af33ab0ef72cd6b5d542849c6
-    tests/data/validation/n2o3_candidate/20261105/README.rst: 0e68a1ad6d3527d36226584c8a365d36f9379cca9783abe8757d8725231620a9
+    tests/data/validation/n2o3_candidate/20261105/candidate.json: 851bfb62c07fe86051eba0520ed5dbc088f0baec7160ff4fd8c4ae8d14f5897f
+    tests/data/validation/n2o3_candidate/20261105/receipt.json: 45bab968d22993383ce90f71464b4dfaf936a36026d45e54a9b1da5f54d1fc3a
+    tests/data/validation/n2o3_candidate/20261105/validation.json: 7557e8709362df9f39b0bb4af38046437c6f6621576569d75a36ce577bc22e75
+    tests/data/validation/n2o3_candidate/20261105/README.rst: c4dc5f55e4a64637e1065e3e694db11ab34c73fb80e5e1b33f60369def3b396b
     tests/data/validation/n2o3_equilibrium_impact/20261105/diagnostics.json: c717692135d4cbd2deb6989e11e2628511e6398e489ad100d25babb8c436e068
     tests/data/validation/n2o3_equilibrium_impact/20261105/neutral.npz: 5d4f3afd6a5142dc0c859899ce57cd9c1435c27e3f112e56b0a205c6a7c3fbca
     tests/data/validation/n2o3_equilibrium_impact/20261105/selected_diagnostics.json: 6e201959707695b67d4a411814ca7c63a182b731d19c04cc011a7b19fcc1520a
     tests/data/validation/n2o3_equilibrium_impact/20261105/ions.npz: c2070d9bdbcc1aba05168c8efaa26860a1c5e2fd695e753e05f35b03aa7283d1
     tests/data/validation/n2o3_equilibrium_impact/20261105/README.rst: 56efb90d6dbfe269ff181abc290a7f73378d61808c6f9f0fb1fc468bfb3099b8
-    tests/data/validation/n2o3_equilibrium_impact/20261105/receipt.json: 217fa5bf297a5187f4705b4075afc6f930521dea99616b26cd25148888ef02b9
-    tests/data/validation/n2o3_equilibrium_impact/20261105/summary.json: 902b857c58ddc72fcf54d74a477b632b86a0b3c5c154b1b4a31c9e7bb11ac91d
-    documents/mceg/n2o3_candidate.rst: d6456da8112c131f3ea40f0b75b2ec48cb469009ed7f20d0859c95e3ce340994
-    tests/model_evidence/n2o3_candidate_test.py: 855cd336628aff6182bd5ec7530cd319315f027cb02191f46cff06c7e0523cb0
+    tests/data/validation/n2o3_equilibrium_impact/20261105/receipt.json: 9cdccd45c89f5b953eec03d751e99cc906d83f3f21a12bba0f66faf64c9f3422
+    tests/data/validation/n2o3_equilibrium_impact/20261105/summary.json: c18a68d3286fb7c53433c5f8db1563b9cb6bcf9ac2679e0ab5ac76c0aa5705ff
+    documents/mceg/n2o3_candidate.rst: f3336115a2a5d09819c1a91ba752e0a3701277b1ab86547c2852443796a0021d
+    tests/model_evidence/n2o3_candidate_test.py: f16a826953fbb66388e763f68888107f4848166ef8153de281a1b02cc06a8881
     benchmarks/__init__.py: b1c18fc68440927cbfd4f278276efe1484336ceed8fd6012ff362494e695c0ec
     examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    tests/data/validation/n2o3_candidate/20261105/dissociation_inputs.json: 1dc88af6d533f379999007e893b6d6d7c6d6b95698a6525a1766999924c34c26
 contexts:
 - id: fixed_network_substitution
   scope: 1500-4000 K, one-bar standard state; 75 fixed conditions per ion-inclusive 537-species and neutral
@@ -491,6 +497,10 @@ assessments:
   - Prefer the continuous NASA-thermal/ATcT1.228 candidate as a provisional replacement; retain explicit uncertainty
     in historical thermal assumptions and lower-temperature dissociation. The energy-only control has the opposite
     response and is not the preferred correction.
+  - The separate 300 K source cycle uses NASA low-temperature intervals and ATcT 1.228 energies for all three
+    molecules. Its delta G is -1.825070 kJ/mol versus the network input -1.84 +/- 0.07; the native NASA -2.020986
+    discrepancy is mainly an energy-reference difference. This is internal network consistency, not independent
+    hot-thermal validation or a production-domain extension.
   status: supported
   origin: reviewed
 - id: physical_accuracy_review
@@ -565,4 +575,11 @@ limitations:
   - source_evidence
   - candidate_replay
   - finite_solves
+  - decision
+- statement: The 300 K source-cycle agreement uses a contributing ATcT network input and all three same-version
+    molecular energies; it is not independent validation or the production candidate evaluated outside 1500-4000
+    K.
+  evidence:
+  - source_evidence
+  - candidate_replay
   - decision

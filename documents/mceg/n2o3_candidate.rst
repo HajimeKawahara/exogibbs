@@ -6,8 +6,9 @@ adoption decision. Scientifically, it is the preferred provisional replacement
 for the inherited JANAF-based fit: it combines an explicitly identified newer
 thermal evaluation with balanced modern evaluated energy. The factor-of-three
 abundance correction is a model comparison, not an experimentally established
-accuracy improvement. Original Gurvich thermal-input recovery and the known
-low-temperature dissociation discrepancy remain limitations.
+accuracy improvement. Original Gurvich thermal-input recovery remains a
+limitation. An additional 300 K reaction check attributes the earlier native
+NASA discrepancy mainly to its energy reference, as quantified below.
 No production coefficients are changed by this PR.
 
 Construction and scientific boundaries
@@ -31,11 +32,26 @@ is 2.158415/2.828838/2.966144, while the control gives
 
 NASA cites Gurvich (1989), while the current JANAF evaluation is dated 1964.
 The source review identifies a large thermal entropy difference. Its separate
-300 K N2O3 -> NO + NO2 check remains -2.020986 kJ/mol from NASA versus the
-ATcT network input -1.84 +/- 0.07; the difference is outside that quoted input
-margin. Neither extending the production domain below 1500 K nor using that
-ATcT-linked input as independent validation is justified. These qualifications
-remain recorded rather than being removed because numerical checks pass.
+300 K N2O3 -> NO + NO2 check is -2.020986 kJ/mol from native NASA versus the
+ATcT network input -1.84 +/- 0.07, outside that quoted input margin. This
+native-energy comparison does not test the energy-aligned candidate.
+
+The additional closed-reaction diagnostic aligns **all three molecules**:
+ATcT 1.228 Hf(0) values NO=90.687, NO2=36.926 and N2O3=90.850 kJ/mol give
+reaction H(0)=36.763 kJ/mol, versus NASA's 36.567304 kJ/mol. Preserving the
+NASA dimensionless thermal functions and using SI R gives
+delta G(300 K)=-1.825070 kJ/mol, only +0.014930 kJ/mol from the quoted input.
+Thus the energy-aligned cycle lies inside its +/-0.07 kJ/mol margin.
+The original NASA 300--1000 K intervals are used only for this source
+diagnostic; the candidate remains restricted to 1500--4000 K.
+
+This is consistency with a network input that contributes to ATcT, not an
+independent experimental validation, a propagated uncertainty interval, or
+proof of hot thermal accuracy. The original Beattie/Gurvich third-law
+reevaluation remains a follow-up for stronger physical claims. Displayed
+values and provenance were rechecked on the
+`official ATcT 1.228 species page <https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=401>`_;
+the original experimental full text was not obtained.
 See :doc:`n2o3_source_review` for source-access and historical details.
 
 Actual finite substitutions
@@ -46,7 +62,7 @@ ion-inclusive and 421-species neutral networks. Species, atomic references and
 all element inventories are fixed. The 150 saved curated-cos-v1 baseline
 endpoints are reused; 300 candidate/control endpoints, 18 tighter cold controls
 and 10 finite-path points are newly solved. The primary tolerance is 5e-14 and
-the tighter tolerance 2e-14. The complete run took about 26 seconds in this
+the tighter tolerance 2e-14. The latest replay took about 32 seconds in this
 execution environment; this is not a performance benchmark.
 
 The primary candidate/current mole-fraction ratio is 2.1584--2.9661 in both
@@ -88,7 +104,9 @@ Reproducibility
 ---------------
 
 ``mceg/reviews/n2o3_candidate.py --build`` regenerates the exact candidate
-and dense 2501-temperature validation. ``n2o3_equilibrium_impact.py`` runs
+and dense 2501-temperature validation, including the separate source-cycle
+diagnostic with inputs in ``dissociation_inputs.json``.
+``n2o3_equilibrium_impact.py`` runs
 new fixed-network endpoints and controls with ``--output-dir`` and optional
 ``--fastchem-executable``. All archived production data remain unchanged.
 The new candidate/impact packets retain their own receipts; the prior source
