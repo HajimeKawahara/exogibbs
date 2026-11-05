@@ -1,238 +1,200 @@
 schema_version: '0.2'
 model:
-  id: exogibbs.cos_candidate.v1
-  name: COS JANAF thermal / ATcT energy candidate and finite substitution
-  description: Preserve the current continuous thermal representation, change only the balanced energy,
-    and measure the fixed-network finite response with explicit source and physical limits.
+  id: exogibbs.curated_cos.v1
+  name: Curated gas default with balanced COS energy
+  description: Adopt the reviewed COS energy-only change on the cumulative KH/HO2 base. Scoped selection and
+    production verification are supported; complete physical accuracy remains unknown.
   implementation: &id001
     repository: https://github.com/HajimeKawahara/exogibbs
-    revision: sha256:eb22e975335db2020c5bcc30cc0e68a3d9d477fcb6dad4015caf627649e933c8
+    revision: sha256:505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
     entry_points:
-    - mceg/reviews/cos_candidate.py
-    - mceg/reviews/cos_equilibrium_impact.py
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_cos.chemsetup
 assumptions:
-- statement: All C/O/S/OCS Hf(0) values come from ATcT 1.228; D0 changes from 1371241 to 1376853 J/mol.
-    Subtract only 5612/(R T) from the existing reaction h, whose atomic background already contains the
-    original energy anchor.
+- statement: Only COS changes from curated-ho2-v1. KH, HO2, OH, H2O, CO2, TiO, C2H and all other potentials,
+    species, budgets and atomic gauge are retained.
   evidence:
-  - source_scope
-  - candidate_validation
-- statement: The exact existing JANAF piecewise quintic and NASA atomic background are retained; no TIPS
-    join, OYT8 extrapolation, thermal refit or isotope change is introduced.
+  - scientific_sources
+  - production_execution
+- statement: Same-version ATcT 1.228 C+O+S-OCS gives D0=1376.853 kJ/mol versus inherited 1371.241 kJ/mol. Apply
+    only the 5612 J/mol delta once. Reaction G/H decrease, while S/Cp and existing knots remain unchanged.
   evidence:
-  - source_scope
-  - candidate_validation
-- statement: Only COS changes; every other potential, species, elemental inventory, ideal-gas convention
-    and charge treatment is fixed within each comparison. The archived OH-adoption baseline is replayed
-    against actual curated-oh-v1 before reuse.
+  - scientific_sources
+- statement: No thermal refit, extra spin/isotope/ZPE correction or TIPS/OYT8 thermal substitution is introduced.
+    Differences from the older COS-only candidate background include KH/HO2 adoption and are not numerical
+    errors.
   evidence:
-  - finite_execution
+  - scientific_sources
+  - production_execution
 domains:
 - kind: numerical_evaluation
   status: documented
-  description: Bounded continuous candidate and finite equilibrium substitution.
+  description: Continuous packaged COS thermodynamics and public-factory cold solves in both network modes.
   conditions:
-  - 1500-4000 K, one-bar standard pressure.
-  - '75 hot hydrogen-rich conditions per network: five temperatures, five pressures 1e-6-100 bar and C/O=0.5888436553555908/1/1.5.'
+  - 1500-4000 K; invalid temperatures return NaN.
+  - 75 conditions per network at five temperatures, five pressures from 1e-6 to 100 bar and three C/O ratios.
+  - Production matches independently assembled candidate-on-HO2 thermodynamics on 2501 temperatures; non-COS
+    potentials equal the immediate base.
   evidence:
-  - candidate_validation
-  - finite_execution
+  - scientific_sources
+  - production_execution
 - kind: scientific_applicability
   status: unknown
-  description: Full energy covariance, thermal uncertainty, isotopic mixture and atmosphere-specific physical
-    accuracy remain unestablished.
+  description: Correlated ATcT uncertainty, isotope/thermal-state completeness, condensation, transport, photochemistry
+    and observational atmospheric validation remain outside scope.
   conditions: []
   evidence:
-  - source_scope
-  - finite_execution
+  - scientific_sources
+  - production_execution
 claims:
-- id: continuous_thermodynamics
-  revision: '1'
-  kind: numerical_verification
-  statement: The energy-only candidate reconstructs the actual curated COS representation, preserves S/Cp
-    and knot continuity, and supplies consistent scalar/JAX derivatives.
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
-- id: finite_substitution
-  revision: '1'
-  kind: numerical_verification
-  statement: Changing COS alone gives converged, conserved and numerically resolved finite equilibrium
-    responses on both current-default fixed networks.
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
-- id: candidate_direction
+- id: scientific_selection
   revision: '1'
   kind: theoretical
-  statement: Prefer the consistently balanced evaluated ATcT central energy for a separately authorized
-    scoped energy update while retaining the present thermal model and its stated limitations.
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
+  statement: The same-version balanced ATcT 1.228 central energy is preferred for a bounded COS energy update
+    while preserving the existing thermal representation.
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
+- id: production_adoption
+  revision: '1'
+  kind: numerical_verification
+  statement: The public curated factory implements the reviewed COS energy shift on the cumulative HO2 base
+    and passes independently assembled candidate, conserved finite-response and solver checks.
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
 - id: physical_accuracy
   revision: '1'
   kind: physical_validation
-  statement: The complete COS model has quantified physical uncertainty and accurate planetary abundances
-    throughout the declared temperature domain.
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
+  statement: The complete adopted gas model has quantified physical uncertainty and validated planetary atmospheric
+    abundance accuracy.
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
 evidence:
-- id: source_scope
-  kind: literature
-  summary: Inspected same-version ATcT 1.228 molecule and atoms, current JANAF anchor and thermal/PF source
-    distinctions retain their individual access and physical limits.
+- id: scientific_sources
+  kind: theory
+  summary: Prefer the consistently balanced evaluated central energy; keep inherited thermal limitations separate
+    from the exact supported energy update.
   sources:
+  - documents/presets/curated_cos.rst
+  - src/exogibbs/data/curated/cos_v1.json
   - tests/data/validation/cos_source_review/20261105/inputs.json
-  - tests/data/validation/cos_source_review/20261105/sources.json
-  - tests/data/validation/cos_source_review/20261105/literature.json
-  - tests/data/validation/cos_source_review/20261105/comparison.json
-  - documents/mceg/cos_candidate.rst
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
-  artifacts:
-  - source: tests/data/validation/cos_source_review/20261105/inputs.json
-    sha256: 60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa
-  - source: tests/data/validation/cos_source_review/20261105/sources.json
-    sha256: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
-  - source: tests/data/validation/cos_source_review/20261105/literature.json
-    sha256: 6cf3d52109b231e6356b168ea2ef5f43bbe47e3fe1d3079593d24fd4f21c49d3
-  - source: tests/data/validation/cos_source_review/20261105/comparison.json
-    sha256: dbd6e325af049a260c08a63824f4cd8317e4e9d3abf85b4234ff210b9d1db9cc
-  - source: documents/mceg/cos_candidate.rst
-    sha256: 5df941dfe386c9362e1aa393d3b01cd7cd58119fea314d67da38d69a278fc28b
-  provenance:
-    role: primary
-    location: documents/mceg/cos_candidate.rst
-    inspection: inspected
-    note: Dated source evidence and explicit physical limits are retained; numerical completion is not
-      full physical validation.
-- id: candidate_validation
-  kind: numerical_test
-  summary: Dense production replay, exact energy-only shift, unchanged S/Cp, knot continuity, scalar/JAX
-    derivatives and invalid-domain behavior are checked.
-  sources:
   - tests/data/validation/cos_candidate/20261105/candidate.json
   - tests/data/validation/cos_candidate/20261105/validation.json
-  - tests/data/validation/cos_candidate/20261105/receipt.json
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
+  - tests/data/validation/cos_equilibrium_impact/20261105/summary.json
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
+  subject: curated_cos_production_20261105
+  context: production_gas_domain
   artifacts:
+  - source: documents/presets/curated_cos.rst
+    sha256: ba7123e845ca8cfd95ab8f6abbb04071400419ea07a6cd71e782d52314e31f13
+  - source: src/exogibbs/data/curated/cos_v1.json
+    sha256: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+  - source: tests/data/validation/cos_source_review/20261105/inputs.json
+    sha256: 60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa
   - source: tests/data/validation/cos_candidate/20261105/candidate.json
     sha256: ff823f51498eb83614920d60ca11656cebdc5c9c0ab1b14e91ce82d55f1aca94
-  - source: tests/data/validation/cos_candidate/20261105/validation.json
-    sha256: 59de7527854be67b45bc40d10b9c83176ce2df13f62c459f6c65134f7cda9ec8
-  - source: tests/data/validation/cos_candidate/20261105/receipt.json
-    sha256: 5ea27c9914f220c98ad1ca41dbe9553e2ca781e5c3e8d7c450587c3feca2d41b
-  provenance:
-    role: primary
-    location: documents/mceg/cos_candidate.rst
-    inspection: inspected
-    note: Dated source evidence and explicit physical limits are retained; numerical completion is not
-      full physical validation.
-  result: passed
-- id: finite_execution
-  kind: numerical_test
-  summary: 150 fresh endpoints, 12 stricter cold reruns, 10 finite-path solves and four FastChem comparisons
-    retain convergence, conservation, stationarity and same-model Gibbs evidence.
-  sources:
-  - tests/data/validation/cos_equilibrium_impact/20261105/ions.npz
-  - tests/data/validation/cos_equilibrium_impact/20261105/neutral.npz
-  - tests/data/validation/cos_equilibrium_impact/20261105/summary.json
-  - tests/data/validation/cos_equilibrium_impact/20261105/diagnostics.json
-  - tests/data/validation/cos_equilibrium_impact/20261105/selected_diagnostics.json
-  - tests/data/validation/cos_equilibrium_impact/20261105/receipt.json
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
-  artifacts:
-  - source: tests/data/validation/cos_equilibrium_impact/20261105/ions.npz
-    sha256: d6215f7b78f2d2839aa65fb9acc36b4aa3ed14ee8c1395d861a374ce713cb146
-  - source: tests/data/validation/cos_equilibrium_impact/20261105/neutral.npz
-    sha256: a5ee34b5aeb15b4f6c3c767539ff65f1e502805ed541fd66fd3f651cb8baf45f
-  - source: tests/data/validation/cos_equilibrium_impact/20261105/summary.json
-    sha256: 4eb3a3001420725533fe952f84a9f90c276811fffca76ef98ef1162757f6ac60
-  - source: tests/data/validation/cos_equilibrium_impact/20261105/diagnostics.json
-    sha256: 60234a20e512a80d3d3688fd5b832e3c638b2f4fdeefe5e5f1d89c0bd016110c
-  - source: tests/data/validation/cos_equilibrium_impact/20261105/selected_diagnostics.json
-    sha256: 003472687b1dcc5fc7afc33e91793f23d0640322ff27a9913e4dfa15a1a4ad67
-  - source: tests/data/validation/cos_equilibrium_impact/20261105/receipt.json
-    sha256: 8d319fbfbedcc1593de018cb056889409012dba685017882f5be4019738f9f29
-  provenance:
-    role: primary
-    location: documents/mceg/cos_candidate.rst
-    inspection: inspected
-    note: Dated source evidence and explicit physical limits are retained; numerical completion is not
-      full physical validation.
-  result: passed
-- id: scientific_reasoning
-  kind: theory
-  summary: A consistently balanced evaluated central energy is preferred for a bounded energy update;
-    the small absolute hot-grid response and inherited thermal limits do not justify a global planetary
-    accuracy claim.
-  sources:
-  - documents/mceg/cos_candidate.rst
-  - tests/data/validation/cos_candidate/20261105/validation.json
-  - tests/data/validation/cos_equilibrium_impact/20261105/summary.json
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
-  artifacts:
-  - source: documents/mceg/cos_candidate.rst
-    sha256: 5df941dfe386c9362e1aa393d3b01cd7cd58119fea314d67da38d69a278fc28b
   - source: tests/data/validation/cos_candidate/20261105/validation.json
     sha256: 59de7527854be67b45bc40d10b9c83176ce2df13f62c459f6c65134f7cda9ec8
   - source: tests/data/validation/cos_equilibrium_impact/20261105/summary.json
     sha256: 4eb3a3001420725533fe952f84a9f90c276811fffca76ef98ef1162757f6ac60
   provenance:
     role: secondary
-    location: documents/mceg/cos_candidate.rst
+    location: documents/presets/curated_cos.rst
     inspection: inspected
-    note: Dated source evidence and explicit physical limits are retained; numerical completion is not
-      full physical validation.
+    note: Dated source and candidate evidence is retained without rewriting original receipts.
     derived_from:
-    - evidence: source_scope
-      comparison: consistent
-      note: The scoped preference follows the recorded source convention, exact candidate and finite numerical
-        evaluation; it does not assert physical validation.
-    - evidence: candidate_validation
-      comparison: consistent
-      note: The scoped preference follows the recorded source convention, exact candidate and finite numerical
-        evaluation; it does not assert physical validation.
-    - evidence: finite_execution
-      comparison: consistent
-      note: The scoped preference follows the recorded source convention, exact candidate and finite numerical
-        evaluation; it does not assert physical validation.
+    - evidence: source_inventory
+      comparison: not_checked
+      note: Required numerical evaluation and thermal construction are inspected; complete historical ancestry
+        and reaction covariance have not been reconstructed.
+- id: production_execution
+  kind: numerical_test
+  summary: The public factory passes 150 fresh cold solves, six tighter independently assembled controls and
+    two FastChem comparisons. Incremental COS response and cumulative KH/HO2 background changes are separated.
+  sources:
+  - tests/data/validation/curated_cos_adoption/20261105/receipt.json
+  - tests/data/validation/curated_cos_adoption/20261105/summary.json
+  - tests/data/validation/curated_cos_adoption/20261105/ions.npz
+  - tests/data/validation/curated_cos_adoption/20261105/neutral.npz
+  - tests/data/validation/curated_cos_adoption/20261105/diagnostics.json
+  - tests/data/validation/curated_cos_adoption/20261105/README.rst
+  - mceg/reviews/build_cos_adoption.py
+  - mceg/reviews/curated_cos_adoption.py
+  - tests/model_evidence/curated_cos_adoption_test.py
+  - tests/unittests/presets/curated_cos_test.py
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
+  subject: curated_cos_production_20261105
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/curated_cos_adoption/20261105/receipt.json
+    sha256: 08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385
+  - source: tests/data/validation/curated_cos_adoption/20261105/summary.json
+    sha256: e642e3bf23c2ac8dedb1f6c46ac78b1ada143cafbd5e997e239caed8bdfb2994
+  - source: tests/data/validation/curated_cos_adoption/20261105/ions.npz
+    sha256: 5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49
+  - source: tests/data/validation/curated_cos_adoption/20261105/neutral.npz
+    sha256: c9f73bc7201344a34ae08944f8fb3a17166bda0d3dbd1b79bf204a4633f124d1
+  - source: tests/data/validation/curated_cos_adoption/20261105/diagnostics.json
+    sha256: d0a7342be208ef0a8cc6ec72af97d32254b7d9706f82cbcdc74529651a54c26a
+  - source: tests/data/validation/curated_cos_adoption/20261105/README.rst
+    sha256: aa4af9d014d8f5c895e758d57ee42ab17f4f514997d983210d452f96350dbaac
+  - source: mceg/reviews/build_cos_adoption.py
+    sha256: 55da578ac4c97ebb66d16246983605569f626a7e98d9741369d8d6223d5e2d75
+  - source: mceg/reviews/curated_cos_adoption.py
+    sha256: 0568ceeeacfa32dff7c15c3b3f2872af44d4f52a98ef4435085fb23abd0b5229
+  - source: tests/model_evidence/curated_cos_adoption_test.py
+    sha256: 7fa856069c748d78b486669a3a44ed34590db1e0c074a92e967b41e37d43f8b9
+  - source: tests/unittests/presets/curated_cos_test.py
+    sha256: 060266fd44231e3b8af9f1e035c44b523e3356b1531bae4efd52aeb10fa038c9
+  provenance:
+    role: primary
+    location: documents/presets/curated_cos.rst
+    inspection: inspected
+    note: Actual command, source hashes and outputs are pinned. Agreement establishes numerical consistency,
+      not full physical uncertainty.
+  result: passed
+- id: source_inventory
+  kind: literature
+  summary: The dated inventory identifies inspected same-version ATcT values, retained JANAF/NASA thermals
+    and explicit source access limits.
+  sources:
+  - tests/data/validation/cos_source_review/20261105/sources.json
+  - tests/data/validation/cos_source_review/20261105/literature.json
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
+  subject: curated_cos_production_20261105
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/cos_source_review/20261105/sources.json
+    sha256: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
+  - source: tests/data/validation/cos_source_review/20261105/literature.json
+    sha256: 6cf3d52109b231e6356b168ea2ef5f43bbe47e3fe1d3079593d24fd4f21c49d3
+  provenance:
+    role: primary
+    location: tests/data/validation/cos_source_review/20261105/sources.json
+    inspection: partial
+    note: The required numerical inputs were inspected. Historical derivations and correlated reaction uncertainty
+      remain incomplete and do not block this bounded energy update.
 subjects:
-- id: cos_candidate_and_finite_substitution_20261105
+- id: curated_cos_production_20261105
   implementation: *id001
   selected_files:
-    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
-    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
-    documents/mceg/cos_candidate.rst: 5df941dfe386c9362e1aa393d3b01cd7cd58119fea314d67da38d69a278fc28b
-    documents/mceg/cos_source_review.rst: b88b14fdd13918cccfde005eaddaee7a7e4c0e008a6ba0e9338eb9cc9e4870bb
-    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
-    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
     examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
-    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
-    mceg/contracts/cos_source_review.yaml: 0b92fee2cf88bce682874533fb1f98320024dfb8f46ae11946597cbd87a9e654
+    mceg/reviews/build_cos_adoption.py: 55da578ac4c97ebb66d16246983605569f626a7e98d9741369d8d6223d5e2d75
     mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
-    mceg/reviews/cos_candidate.py: eb22e975335db2020c5bcc30cc0e68a3d9d477fcb6dad4015caf627649e933c8
-    mceg/reviews/cos_equilibrium_impact.py: 3581291576aaa1f5726061d8d074d0e884e030cc4641f46f46776b0f06b65434
-    mceg/reviews/cos_source_review.py: 33a5a3f77fd021668e2587c7b59d1b72bb45b8f9c40b57c3e7d0f5920ca6a1f5
+    mceg/reviews/cos_candidate.py: b61c944744076b64f5340dbd89c4d8faaf7b48d7352f56a76c8a06b7993d73f4
+    mceg/reviews/cos_equilibrium_impact.py: 02c3cbca460f648d2d790c787a7bfd53f6b36a37f27dfc18cd89ee9c0290cd46
+    mceg/reviews/cos_source_review.py: ae6bb88a83512f8951c73ccd7b90d457fc668afd87d5f9d76a04c73ed0787163
+    mceg/reviews/curated_cos_adoption.py: 0568ceeeacfa32dff7c15c3b3f2872af44d4f52a98ef4435085fb23abd0b5229
     mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
@@ -265,12 +227,13 @@ subjects:
     src/exogibbs/condensates/initialization_policy.py: 938698fee34a0ae3b82727a29d53ad074e637fa5870b74cdbb58972e55794772
     src/exogibbs/condensates/native_bundle.py: 903ab6ad2aed9654c9a886ecff645a6d5e82f27918f0f079dad7b682c326a965
     src/exogibbs/condensates/support_selection_policy.py: 92d873aedcbbcd1dcac586c321e532624de6e2acadaa39e087ddd82c650153ca
-    src/exogibbs/data/FastChem4/element_abundances/asplund_2009.dat: 31a4785be7190f99ea764938a4bff6cab86772b4640ef10d6f45d2458c71b973
-    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
     src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
     src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
     src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
     src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
     src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
     src/exogibbs/equilibrium/__init__.py: 63a05e6341d70e90ab683936f8fb02604804d0ef6a807e7f6c13df2e62f9d058
@@ -362,10 +325,13 @@ subjects:
     src/exogibbs/optimize/vjpgibbs.py: d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3
     src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     src/exogibbs/presets/_condensate.py: f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf
-    src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
     src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
     src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
     src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
@@ -404,163 +370,114 @@ subjects:
     src/exogibbs/utils/interpolation.py: f8a564dcf8dd1c39acf8df6e313b5a458e7b2078a6e599e5ebe24825495e0f06
     src/exogibbs/utils/nameparser.py: 81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a
     src/exogibbs/utils/units.py: 5cb53d0c444c90de9d8f697641d83f28275a6e661bd0197e44a6ca66a9fd1efd
-    tests/data/validation/cos_candidate/20261105/README.rst: d3557df7ae64ccdd150c4a64370b4d33cd18b831129f6b44d8281b57644452d5
     tests/data/validation/cos_candidate/20261105/candidate.json: ff823f51498eb83614920d60ca11656cebdc5c9c0ab1b14e91ce82d55f1aca94
-    tests/data/validation/cos_candidate/20261105/receipt.json: 5ea27c9914f220c98ad1ca41dbe9553e2ca781e5c3e8d7c450587c3feca2d41b
     tests/data/validation/cos_candidate/20261105/validation.json: 59de7527854be67b45bc40d10b9c83176ce2df13f62c459f6c65134f7cda9ec8
-    tests/data/validation/cos_equilibrium_impact/20261105/README.rst: bbcd1ee1d7177c048f9d52962cc5eefdb056e89bb06065a8016546c95acef3e5
-    tests/data/validation/cos_equilibrium_impact/20261105/diagnostics.json: 60234a20e512a80d3d3688fd5b832e3c638b2f4fdeefe5e5f1d89c0bd016110c
     tests/data/validation/cos_equilibrium_impact/20261105/ions.npz: d6215f7b78f2d2839aa65fb9acc36b4aa3ed14ee8c1395d861a374ce713cb146
     tests/data/validation/cos_equilibrium_impact/20261105/neutral.npz: a5ee34b5aeb15b4f6c3c767539ff65f1e502805ed541fd66fd3f651cb8baf45f
-    tests/data/validation/cos_equilibrium_impact/20261105/receipt.json: 8d319fbfbedcc1593de018cb056889409012dba685017882f5be4019738f9f29
-    tests/data/validation/cos_equilibrium_impact/20261105/selected_diagnostics.json: 003472687b1dcc5fc7afc33e91793f23d0640322ff27a9913e4dfa15a1a4ad67
-    tests/data/validation/cos_equilibrium_impact/20261105/summary.json: 4eb3a3001420725533fe952f84a9f90c276811fffca76ef98ef1162757f6ac60
-    tests/data/validation/cos_source_review/20261105/comparison.json: dbd6e325af049a260c08a63824f4cd8317e4e9d3abf85b4234ff210b9d1db9cc
     tests/data/validation/cos_source_review/20261105/inputs.json: 60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa
-    tests/data/validation/cos_source_review/20261105/literature.json: 6cf3d52109b231e6356b168ea2ef5f43bbe47e3fe1d3079593d24fd4f21c49d3
-    tests/data/validation/cos_source_review/20261105/sources.json: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
+    tests/data/validation/curated_ho2_adoption/20261105/ions.npz: 8a96cbaa567a0b132a1cb4b4ad8272ada5c1187bb593d1449d9e6ae3a6d9c1b2
+    tests/data/validation/curated_ho2_adoption/20261105/neutral.npz: ed83deb3e05170f5b88cb9f3432a13da55f8bd3fa995a85a305d03b6b44f11f6
     tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
     tests/data/validation/curated_oh_adoption/20261105/neutral.npz: f21a9f1ce4c2b737e5af6dc93a82faad01a6547cbb7f3f56369e05d46e121bf1
-    tests/model_evidence/cos_candidate_test.py: b3b378bdc506f1d17b4e24d14af3227737d491bc9a1322c533e89ee8e2c82fcf
-    tests/model_evidence/cos_equilibrium_impact_test.py: 552e71659d5e55e542f7568513183b163c7468c94bccf71c7e267b628c5c372d
+    documents/presets/curated_cos.rst: ba7123e845ca8cfd95ab8f6abbb04071400419ea07a6cd71e782d52314e31f13
+    tests/data/validation/cos_equilibrium_impact/20261105/summary.json: 4eb3a3001420725533fe952f84a9f90c276811fffca76ef98ef1162757f6ac60
+    tests/data/validation/curated_cos_adoption/20261105/receipt.json: 08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385
+    tests/data/validation/curated_cos_adoption/20261105/summary.json: e642e3bf23c2ac8dedb1f6c46ac78b1ada143cafbd5e997e239caed8bdfb2994
+    tests/data/validation/curated_cos_adoption/20261105/ions.npz: 5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49
+    tests/data/validation/curated_cos_adoption/20261105/neutral.npz: c9f73bc7201344a34ae08944f8fb3a17166bda0d3dbd1b79bf204a4633f124d1
+    tests/data/validation/curated_cos_adoption/20261105/diagnostics.json: d0a7342be208ef0a8cc6ec72af97d32254b7d9706f82cbcdc74529651a54c26a
+    tests/data/validation/curated_cos_adoption/20261105/README.rst: aa4af9d014d8f5c895e758d57ee42ab17f4f514997d983210d452f96350dbaac
+    tests/model_evidence/curated_cos_adoption_test.py: 7fa856069c748d78b486669a3a44ed34590db1e0c074a92e967b41e37d43f8b9
+    tests/unittests/presets/curated_cos_test.py: 060266fd44231e3b8af9f1e035c44b523e3356b1531bae4efd52aeb10fa038c9
+    tests/data/validation/cos_source_review/20261105/sources.json: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
+    tests/data/validation/cos_source_review/20261105/literature.json: 6cf3d52109b231e6356b168ea2ef5f43bbe47e3fe1d3079593d24fd4f21c49d3
 contexts:
-- id: candidate_evaluation
-  scope: C(g)+O(g)+S(g)->OCS(g), 1 bar standard pressure, 1500-4000 K; unchanged curated JANAF molecular
-    and NASA atomic thermals with balanced ATcT 1.228 D0=1376.853 kJ/mol; 75 conditions each on fixed
-    curated-oh-v1 537 ion-inclusive and 421 neutral species; no production adoption.
+- id: production_gas_domain
+  scope: curated-cos-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ho2-v1. Only COS receives
+    a 5612 J/mol energy decrease, with inherited JANAF molecular and NASA atomic thermals unchanged. Both 537-species
+    ion-inclusive and 421-species neutral networks; no full atmospheric physical validation.
   settings:
-    reaction: C(g)+O(g)+S(g)->OCS(g)
+    dataset: curated-cos-v1
+    base_dataset: curated-ho2-v1
+    temperature_range_K: 1500-4000
     standard_pressure_bar: 1
-    primary: Unchanged JANAF molecular and NASA atomic thermals with ATcT 1.228 energy-only shift
-    production_change: none
-    prior_contract: mceg/contracts/cos_source_review.yaml
-    prior_follow_up: 'follow_up_1: energy candidate and fixed-network substitution completed; original
-      source review is preserved as dated history.'
+    networks: ions and neutral
+    energy_anchor: ATcT 1.228 balanced 1376.853 kJ/mol
+    thermal_source: Unchanged inherited JANAF molecular fit and NASA atomic background
+    previous_follow_up: Authorized COS production adoption completed; full physical scope remains unknown
 assessments:
-- id: continuous_thermodynamics_review
+- id: scientific_selection_review
   kind: evidence_support
-  claim: continuous_thermodynamics
+  claim: scientific_selection
   claim_revision: '1'
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
+  subject: curated_cos_production_20261105
+  context: production_gas_domain
   method:
-    id: review_cos_candidate_and_finite_response
+    id: review_cos_scoped_production_adoption
     revision: '1'
-    description: Separate source conventions, exact energy construction, numerical finite response and
-      scoped scientific preference from physical accuracy.
+    description: Separate bounded scientific selection and production verification from complete physical accuracy.
   evidence:
-  - source_scope
-  - candidate_validation
+  - scientific_sources
   reasons:
-  - The exact current thermal representation is retained and replayed on 2501 temperatures. The balanced
-    +5612 J/mol D0 shift is inserted once; G/H shift by -5612 J/mol, S/Cp and internal knot continuity
-    are preserved.
+  - Same-version ATcT balancing provides the preferred central energy while preserving known thermal/source
+    limitations. Dense caloric checks and conserved finite substitutions support the scoped change; no synthesized
+    uncertainty band is asserted.
   status: supported
   origin: reviewed
-- id: finite_substitution_review
+- id: production_adoption_review
   kind: evidence_support
-  claim: finite_substitution
+  claim: production_adoption
   claim_revision: '1'
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
+  subject: curated_cos_production_20261105
+  context: production_gas_domain
   method:
-    id: review_cos_candidate_and_finite_response
+    id: review_cos_scoped_production_adoption
     revision: '1'
-    description: Separate source conventions, exact energy construction, numerical finite response and
-      scoped scientific preference from physical accuracy.
+    description: Separate bounded scientific selection and production verification from complete physical accuracy.
   evidence:
-  - candidate_validation
-  - finite_execution
+  - scientific_sources
+  - production_execution
   reasons:
-  - All 150 candidate endpoints converge; COS ratios span 1.183812-1.568279. Maximum COS delta x is 1.61912e-10.
-    H/C/O/S closure is below 2.97e-12, strict-control COS delta ln x below 2.92e-13 and FastChem agreement
-    below 8.73e-9 dex. Selected-control coverage is explicit.
-  status: supported
-  origin: reviewed
-- id: candidate_direction_review
-  kind: evidence_support
-  claim: candidate_direction
-  claim_revision: '1'
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
-  method:
-    id: review_cos_candidate_and_finite_response
-    revision: '1'
-    description: Separate source conventions, exact energy construction, numerical finite response and
-      scoped scientific preference from physical accuracy.
-  evidence:
-  - source_scope
-  - candidate_validation
-  - finite_execution
-  - scientific_reasoning
-  reasons:
-  - The same-version evaluated C/O/S/OCS central energies support a proportionate energy-only preference,
-    without a thermal switch or claims of statistically independent evaluations. The candidate is ready
-    for a separate adoption decision; production is unchanged.
+  - All 150 production cases, six tighter candidate-on-HO2 controls and two FastChem comparisons pass. Dense
+    h error is at most 2.85e-14; COS ln(x) strict-control error is below 1.64e-13 and solver parity below 8.73e-9
+    dex. Non-COS immediate-base thermodynamics are unchanged. KH/HO2 cumulative effects are separately archived.
   status: supported
   origin: reviewed
 - id: physical_accuracy_review
   kind: evidence_support
   claim: physical_accuracy
   claim_revision: '1'
-  subject: cos_candidate_and_finite_substitution_20261105
-  context: candidate_evaluation
+  subject: curated_cos_production_20261105
+  context: production_gas_domain
   method:
-    id: review_cos_candidate_and_finite_response
+    id: review_cos_scoped_production_adoption
     revision: '1'
-    description: Separate source conventions, exact energy construction, numerical finite response and
-      scoped scientific preference from physical accuracy.
+    description: Separate bounded scientific selection and production verification from complete physical accuracy.
   evidence:
-  - source_scope
-  - candidate_validation
-  - finite_execution
+  - scientific_sources
+  - production_execution
   reasons:
-  - Reaction covariance, complete thermal/high-energy/isotope uncertainty and atmospheric validation are
-    absent. Hot trace abundance, source agreement and solver verification cannot establish this claim.
+  - Reaction covariance, inherited thermal/high-state/isotope uncertainty and application-specific atmospheric
+    validation remain unquantified; numerical agreement does not resolve them.
   status: unknown
   origin: reviewed
 follow_ups:
-- id: scoped_production_choice
-  target_kind: claim
-  target: candidate_direction
-  revision: '1'
-  action: Make a separately authorized bounded production decision and package the energy-only change
-    without refitting.
-  requires:
-  - Keep the same-version balanced energy, existing thermals, domain, continuity and inventory checks.
-  - Keep source, candidate/equilibrium and any later adoption evidence distinct.
-  completion: Record the production decision and targeted runtime validation. No additional inaccessible
-    legacy paper is required for this energy-only choice.
-- id: thermal_and_physical_scope
+- id: physical_scope
   target_kind: claim
   target: physical_accuracy
   revision: '1'
-  action: Address thermal/source uncertainty and atmosphere-specific effects only to the scope of a future
-    claimed application, or retain the explicit unknown status.
+  action: Resolve same-version reaction covariance and thermal/isotope completeness when required by a named
+    application.
   requires:
-  - A correlated same-version ATcT reaction covariance is needed for a reaction energy band.
-  - Any full-domain thermal replacement must resolve the TIPS join, caloric consistency, high-energy completeness
-    and isotope conventions; OYT8 is not substituted beyond its nominal scope.
-  - Low-temperature atmospheric abundance claims require a suitable chemical domain and consideration
-    of condensation, transport and photochemistry.
-  completion: Supply application-specific evidence or retain unknown; these are not additional acquisition
-    gates for the completed bounded numerical study.
+  - A molecular marginal uncertainty is not the complete C+O+S-OCS energy uncertainty.
+  - Any thermal replacement must address the TIPS crossover, caloric disagreement and high-state completeness
+    separately.
+  completion: Supply application-specific evidence or retain unknown without blocking the bounded adopted energy
+    improvement.
 limitations:
-- statement: Version differences in ATcT are correlated evaluated-network changes, not independent measurements
-    or physical uncertainty estimates. The molecular uncertainty alone is not a reaction uncertainty.
+- statement: Source selection, caloric consistency, conserved finite response and solver parity do not establish
+    complete atmospheric physical accuracy. The old OH-based COS-only composition is not the new cumulative
+    production composition.
   evidence:
-  - source_scope
-- statement: Retaining the actual historical JANAF molecular fit preserves its source/thermal limitations;
-    numerical derivative consistency does not independently establish physical caloric accuracy.
-  evidence:
-  - source_scope
-  - candidate_validation
-- statement: Trace COS on the hot hydrogen-rich grid does not establish low-temperature or oxidizing-atmosphere
-    unimportance. No condensation, photochemistry, transport or opacity calculation is included.
-  evidence:
-  - finite_execution
-- statement: Tighter controls sample three conditions per network. The all-element maximum residual is
-    1.465e-6 in a trace inventory while H/C/O/S close below 2.97e-12. Four FastChem comparisons verify
-    selected ion-inclusive points using the same thermodynamics; neutral FastChem was not run.
-  evidence:
-  - finite_execution
+  - scientific_sources
+  - production_execution

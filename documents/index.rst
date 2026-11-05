@@ -46,6 +46,7 @@ Contents
    presets/curated_oh.rst
    presets/curated_kh.rst
    presets/curated_ho2.rst
+   presets/curated_cos.rst
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst

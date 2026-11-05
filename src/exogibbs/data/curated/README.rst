@@ -1,10 +1,10 @@
 Curated gas thermochemistry datasets
 ====================================
 
-The current default is ``curated-oh-v1``, adding NASA/ATcT OH thermodynamics
-to the evaluated 2025 H2O, NIST 626 CO2, TiO and C2H updates. ``gas_v1.json``,
-``c2h_v1.json``, ``tio_v1.json``, ``co2_v1.json`` and ``h2o_v1.json`` retain the preceding
-models for explicit historical reproduction. All datasets use 1500--4000 K
+The current default is ``curated-cos-v1``, adding balanced COS energy on the
+KH/HO2/OH, evaluated 2025 H2O, NIST 626 CO2, TiO and C2H updates. Earlier
+JSON records and their named presets retain preceding models for explicit
+historical reproduction. All datasets use 1500--4000 K
 and a standard pressure of 1 bar.
 
 Original curated-gas-v1
@@ -168,7 +168,7 @@ remains unquantified.
 OH adoption
 ------------
 
-``oh_v1.json`` pins the current ``curated-oh-v1`` default, also selected
+``oh_v1.json`` pins the former ``curated-oh-v1`` default, also selected
 explicitly through ``exogibbs.presets.curated_oh.chemsetup()``. Only H1O1
 changes relative to ``curated-h2o-v1``. The exact reviewed NASA9 OH-H-O
 reaction receives balanced ATcT 1.172 D0=425.604 kJ/mol once, replacing
@@ -185,3 +185,22 @@ are unchanged. See ``documents/presets/curated_oh.rst`` and
 ``mceg/contracts/curated_oh.yaml`` for the scientific rationale, finite response,
 isotope/continuum and energy-covariance limitations. Full physical accuracy
 remains unknown.
+
+
+KH, HO2 and COS adoption sequence
+---------------------------------
+
+``kh_v1.json`` preserves the inherited KH thermals and adopts the reviewed
+spectroscopic D0 on ``curated-oh-v1``. ``ho2_v1.json`` adds exact NASA thermal
+functions and balanced ATcT 1.172 energy for HO2 on that KH base. The current
+``cos_v1.json`` then increases COS D0 by 5612 J/mol using the same-version
+ATcT 1.228 atoms and molecule, preserving the inherited thermal functions.
+Each layer changes only its named molecule and pins its immediate base.
+
+The public default is ``curated_cos.chemsetup``; ``curated_kh`` and
+``curated_ho2`` remain explicit historical versions. Each production packet
+under ``tests/data/validation/curated_<molecule>_adoption/20261105`` records
+150 fresh cold solves, six tighter candidate controls and two FastChem
+comparisons. Earlier OH-only candidates are not relabeled as cumulative
+composition results. See the corresponding preset guides and production
+MCEG contracts for source choices, scope and physical uncertainty limits.

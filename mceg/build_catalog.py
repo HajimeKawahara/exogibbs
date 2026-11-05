@@ -344,7 +344,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
     ho2_species = {**kh_species, "H1O2": {"id": "H1O2", "aliases": ["HO2"]}}
     catalog["models"].append({
         "id": "exogibbs.curated_ho2.v1",
-        "label": "Curated default with NASA/ATcT HO2 (ion-inclusive lookup)",
+        "label": "Versioned curated with NASA/ATcT HO2 (ion-inclusive lookup)",
         "dataset": ho2_data["id"],
         "identity": {"data_sha256": ho2_digest, "settings": {"ions": True}},
         "species": [ho2_species[k] for k in sorted(ho2_species)],
@@ -354,7 +354,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "physical_accuracy_review"],
             "artifacts": [ho2_receipt, ho2_summary],
             "summary": (
-                "Default curated-ho2-v1 adopts the exact NASA HO2 thermal reaction and "
+                "Former default, retained as curated_ho2: curated-ho2-v1 adopts the exact NASA HO2 thermal reaction and "
                 "balanced ATcT 1.172 D0=694662 J/mol on curated-kh-v1 at 1500-4000 K. "
                 "Only HO2 changes; KH, OH, H2O, CO2, TiO, C2H and all inventories are retained. "
                 "The obsolete JANAF formation energy is replaced without refitting. "
@@ -365,6 +365,48 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "physical accuracy remain unknown. Earlier versions and immutable evidence "
                 "remain available. Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/342"],
+        }],
+    })
+    cos_path = "src/exogibbs/data/curated/cos_v1.json"
+    cos_bytes = (ROOT / cos_path).read_bytes()
+    cos_data = json.loads(cos_bytes)
+    cos_digest = hashlib.sha256(cos_bytes).hexdigest()
+    cos_adoption = "tests/data/validation/curated_cos_adoption/20261105"
+    cos_execution = json.loads((ROOT / cos_adoption / "receipt.json").read_text())
+    if (cos_digest != cos_execution["selected_file_sha256"][cos_path]
+            or ho2_digest != cos_data["base_data_sha256"]):
+        raise ValueError("COS data changed; review new evidence before rebinding the adoption")
+    cos_contract = copy("mceg/contracts/curated_cos.yaml", "contracts/curated_cos.yaml")
+    cos_receipt = copy(f"{cos_adoption}/receipt.json", "artifacts/cos_adoption_receipt.json")
+    cos_summary = copy(f"{cos_adoption}/summary.json", "artifacts/cos_adoption_summary.json")
+    if cos_summary["sha256"] != cos_execution["output_sha256"]["summary.json"]:
+        raise ValueError("COS summary differs from the archived execution")
+    cos_species = {**ho2_species, "C1O1S1": {"id": "C1O1S1", "aliases": ["COS"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_cos.v1",
+        "label": "Curated default with balanced ATcT COS energy (ion-inclusive lookup)",
+        "dataset": cos_data["id"],
+        "identity": {"data_sha256": cos_digest, "settings": {"ions": True}},
+        "species": [cos_species[k] for k in sorted(cos_species)],
+        "records": [{
+            "id": "cos_adoption", **cos_contract, "species": ["*", "C1O1S1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [cos_receipt, cos_summary],
+            "summary": (
+                "Default curated-cos-v1 adopts the same-version ATcT 1.228 COS energy "
+                "on curated-ho2-v1 at 1500-4000 K. D0 rises from 1371.241 to 1376.853 "
+                "kJ/mol; the inherited JANAF molecular and NASA atomic thermal functions "
+                "are retained exactly. Only COS changes from that immediate base; no "
+                "refit, extra spin/isotope correction or TIPS/OYT8 thermal replacement. "
+                "Both networks pass 75 fresh cold solves, six tighter candidate-on-HO2 "
+                "controls and two FastChem comparisons. Background changes from KH/HO2 "
+                "are separated from reproduction of the earlier COS-only candidate. "
+                "Scoped selection and numerical adoption are supported; full physical "
+                "accuracy remains unknown, including correlated energy and thermal-state "
+                "uncertainty. Earlier versions and immutable evidence remain available. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/345"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
