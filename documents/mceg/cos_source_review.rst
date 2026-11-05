@@ -70,3 +70,13 @@ MCEG supports source attribution, normalized comparisons and energy-candidate
 priority; full physical accuracy and historical source completeness remain
 unknown. No additional inaccessible legacy paper is required to merge this
 scoped review.
+
+Completed energy-candidate follow-up (2026-11-05)
+-------------------------------------------------
+
+The separately recorded :doc:`cos_candidate` now implements the same-version
+ATcT 1.228 energy-only candidate and completes 150 new endpoint solves,
+conservation, strict cold controls, finite paths and independent FastChem
+checks. This dated source-review comparison is preserved; its original
+no-substitution footprint is not relabeled as a replacement calculation.
+Production curated is unchanged, and the thermal/physical limitations remain.

@@ -129,7 +129,7 @@ evidence:
   context: source_review
   artifacts:
   - source: documents/mceg/cos_source_review.rst
-    sha256: bf4258b8297ed3a08839e7128536c46752405eb5804cd65d4baf06024307fb03
+    sha256: b88b14fdd13918cccfde005eaddaee7a7e4c0e008a6ba0e9338eb9cc9e4870bb
   provenance:
     role: primary
     location: documents/mceg/cos_source_review.rst
@@ -165,7 +165,7 @@ subjects:
     tests/data/validation/cos_source_review/20261105/inputs.json: 60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa
     tests/data/validation/cos_source_review/20261105/TIPS2025.pf: 3145c4811c74aa378a39b4474fac778c373be6de17bdd6694a5969b1bb1b5aaa
     tests/data/validation/cos_source_review/20261105/sources.json: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
-    documents/mceg/cos_source_review.rst: bf4258b8297ed3a08839e7128536c46752405eb5804cd65d4baf06024307fb03
+    documents/mceg/cos_source_review.rst: b88b14fdd13918cccfde005eaddaee7a7e4c0e008a6ba0e9338eb9cc9e4870bb
     tests/model_evidence/cos_source_review_test.py: 52adde170b3d66241228bf66beea3b6ada8557a9edba8ad635766baa4ba40d59
     tests/data/validation/cos_source_review/20261105/README.rst: 88642b11519ebedc5d90dc4f93c6eb4ee146c5bead3c37677a2254c085b0078d
     tests/data/validation/cos_source_review/20261105/comparison.json: dbd6e325af049a260c08a63824f4cd8317e4e9d3abf85b4234ff210b9d1db9cc
@@ -289,7 +289,12 @@ follow_ups:
   action: Build an energy-only candidate from the inspected same-version ATcT1.228 molecule and atomic Hf0
     values, retaining current thermal functions; solve fixed-network substitutions and verify conservation
     before adoption.
-  completion: Recorded independent candidate evaluation with explicit limitations.
+  completion: >-
+    Completed 2026-11-05 in mceg/contracts/cos_candidate.yaml and
+    documents/mceg/cos_candidate.rst: balanced ATcT 1.228 energy-only candidate,
+    150 fresh endpoints, conservation/stationarity, stricter cold/path and
+    FastChem checks. Original source-only claims and limitations remain dated
+    history; no production adoption.
   requires:
   - No mandatory missing paper for the energy-only candidate.
   - Treat TIPS crossover and caloric disagreement as a separate thermal-model follow-up.
