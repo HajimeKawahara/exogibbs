@@ -120,7 +120,7 @@ evidence:
   - source: tests/data/validation/koh_candidate/20261105/validation.json
     sha256: b2540f516699006f4b4fe25ba09a34f73ee2927b30241ea9b6f726dd49b6f216
   - source: tests/data/validation/koh_candidate/20261105/receipt.json
-    sha256: 0a3a44eee56fdc94aa4d00c232a8560e86061118e03c37225d0c33889f3f40bf
+    sha256: 50ba804f5e023ea659d5a0f41abcc34c41f1e2a250a0ebf186d898e305b2b8cb
   provenance:
     role: primary
     location: documents/mceg/koh_candidate.rst
@@ -190,7 +190,9 @@ subjects:
   implementation: *id001
   selected_files:
     documents/mceg/koh_candidate.rst: d603ba10a7f8ac3301897ebabc1346b21f5d59dc1abe6d01377755bce12e9ee3
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
     mceg/reviews/build_cos_adoption.py: 55da578ac4c97ebb66d16246983605569f626a7e98d9741369d8d6223d5e2d75
     mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
@@ -235,6 +237,7 @@ subjects:
     src/exogibbs/condensates/initialization_policy.py: 938698fee34a0ae3b82727a29d53ad074e637fa5870b74cdbb58972e55794772
     src/exogibbs/condensates/native_bundle.py: 903ab6ad2aed9654c9a886ecff645a6d5e82f27918f0f079dad7b682c326a965
     src/exogibbs/condensates/support_selection_policy.py: 92d873aedcbbcd1dcac586c321e532624de6e2acadaa39e087ddd82c650153ca
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
     src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
@@ -392,7 +395,7 @@ subjects:
     tests/data/validation/kh_source_review/20261105/inputs.json: 69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587
     tests/data/validation/koh_candidate/20261105/README.rst: 72e7e91a05af4a9ac105048f91634534ac1a06e5ba5f1bc9bb5445c219eb0cfd
     tests/data/validation/koh_candidate/20261105/candidate.json: aac3a125c68c74433881b93292d71aac3dc0063aed83c88fde82f328a7fc3152
-    tests/data/validation/koh_candidate/20261105/receipt.json: 0a3a44eee56fdc94aa4d00c232a8560e86061118e03c37225d0c33889f3f40bf
+    tests/data/validation/koh_candidate/20261105/receipt.json: 50ba804f5e023ea659d5a0f41abcc34c41f1e2a250a0ebf186d898e305b2b8cb
     tests/data/validation/koh_candidate/20261105/validation.json: b2540f516699006f4b4fe25ba09a34f73ee2927b30241ea9b6f726dd49b6f216
     tests/data/validation/koh_equilibrium_impact/20261105/README.rst: d6fc077f053f376b499ba4cf62b0216e6015fd6da781b342ccdab48860035462
     tests/data/validation/koh_equilibrium_impact/20261105/diagnostics.json: b8b2197fb02714f02ea93e94ba3dbed5c6a84f021b45f6bf6db954bff698d928
@@ -411,7 +414,7 @@ subjects:
     tests/data/validation/koh_source_review/20261105/receipt.json: e3e5c59ba5f38320062e32592264b180ac91b02affc9e6328095860a9871a9cd
     tests/data/validation/koh_source_review/20261105/sources.json: 9e7f8def3ce155d474baa542d3af384082f52a2d0a59b5b06ca9070ae7581c00
     tests/data/validation/nao_source_review/20261105/inputs.json: f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d
-    tests/model_evidence/koh_candidate_test.py: a85772f1ea0112f163725035458990f105514e61d26183b99ddca610bca59ad9
+    tests/model_evidence/koh_candidate_test.py: 0340d927cf346e61c07673816684848150b354df14aa414e17b47181a5ef3e0c
     tests/model_evidence/koh_equilibrium_impact_test.py: 889835173c92b258dfdb74ee157dadb76bb63717081c1f41145d3f74d734245e
 contexts:
 - id: candidate_evaluation

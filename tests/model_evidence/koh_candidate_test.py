@@ -30,6 +30,13 @@ def test_balanced_energy_uses_printed_heat_content_and_atomic_references():
     assert "not an independent Gaussian" in model["uncertainty_scope"]
     for path,digest in model["source_sha256"].items():
         assert sha256((ROOT/path).read_bytes()).hexdigest() == digest,path
+    receipt = json.loads((candidate.DATA/"receipt.json").read_text())
+    for path,digest in receipt["input_sha256"].items():
+        assert sha256((ROOT/path).read_bytes()).hexdigest() == digest,path
+    for path,digest in receipt["output_sha256"].items():
+        assert sha256((candidate.DATA/path).read_bytes()).hexdigest() == digest,path
+    assert "src/exogibbs/presets/curated_cos.py" in receipt["input_sha256"]
+    assert "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat" in receipt["input_sha256"]
 
 
 def test_energy_only_preserves_entropy_and_heat_capacity():
