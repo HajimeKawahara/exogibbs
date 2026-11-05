@@ -65,3 +65,6 @@ HCN differences with optional MCEG tooling.
    nao_source_review
    ko_source_review
    build
+
+   kh_source_review
+   kh_candidate

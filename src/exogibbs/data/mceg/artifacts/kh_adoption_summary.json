@@ -1,0 +1,107 @@
+{
+  "dataset": "curated-kh-v1",
+  "base_dataset": "curated-oh-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate": 2.6645352591003757e-15,
+      "tighter_case_indices": [
+        39,
+        50,
+        70
+      ],
+      "archived_candidate": {
+        "max_abs_delta_ln_x": 7.105427357601002e-13,
+        "max_kh_abs_delta_ln_x": 1.7763568394002505e-14,
+        "max_absolute_delta_x": 1.1102230246251565e-16
+      },
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.4696753908083338e-05,
+        "max_kh_abs_delta_ln_x": 2.842170943040401e-14,
+        "max_absolute_delta_x": 3.40647055094973e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.4710319295421401e-06,
+        "mass_action_max_abs_ln": 1.3073986337985843e-12,
+        "potassium_relative_residual": 4.2275510054267855e-10,
+        "major_element_relative_residual": 2.2557740861992463e-13,
+        "charge_relative_residual": 4.597026221191749e-14
+      },
+      "kh_response": {
+        "min_x_ratio": 0.4656584074878901,
+        "max_x_ratio": 0.7533211793659134,
+        "highlighted_case_index": 39,
+        "highlighted_x_before": 1.027572867912172e-08,
+        "highlighted_x_after": 6.623929319141185e-09
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate": 2.6645352591003757e-15,
+      "tighter_case_indices": [
+        21,
+        44,
+        50
+      ],
+      "archived_candidate": {
+        "max_abs_delta_ln_x": 1.1766587704187259e-11,
+        "max_kh_abs_delta_ln_x": 3.197442310920451e-14,
+        "max_absolute_delta_x": 3.219646771412954e-15
+      },
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3802799969653279e-05,
+        "max_kh_abs_delta_ln_x": 2.4868995751603507e-14,
+        "max_absolute_delta_x": 3.1964261235083964e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3814371686514943e-06,
+        "mass_action_max_abs_ln": 1.1937117960769683e-12,
+        "potassium_relative_residual": 2.7531687931176696e-10,
+        "major_element_relative_residual": 8.848576186711806e-13
+      },
+      "kh_response": {
+        "min_x_ratio": 0.4656585491202437,
+        "max_x_ratio": 0.7682708993209784,
+        "highlighted_case_index": 44,
+        "highlighted_x_before": 1.4319292678585604e-08,
+        "highlighted_x_after": 9.998536025360188e-09
+      }
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 50,
+      "comparisons": [
+        {
+          "dataset": "curated-kh-v1",
+          "max_abs_delta_log10_x": 8.719840855257228e-09,
+          "element_relative_residual": 3.222023842219482e-11,
+          "charge_relative_residual": 1.393666688772078e-11,
+          "mass_action_max_abs_ln": 3.9244696381501853e-10
+        }
+      ]
+    },
+    {
+      "case_index": 59,
+      "comparisons": [
+        {
+          "dataset": "curated-kh-v1",
+          "max_abs_delta_log10_x": 6.866752165353716e-09,
+          "element_relative_residual": 3.639195722878338e-11,
+          "charge_relative_residual": 1.6117101179844285e-12,
+          "mass_action_max_abs_ln": 1.793978299247101e-10
+        }
+      ]
+    }
+  ],
+  "scope": "KH-only spectroscopic-energy adoption at 1500-4000 K on two fixed gas networks. Agreement with the reviewed candidate and numerical closure do not establish full physical accuracy."
+}

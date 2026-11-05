@@ -5,7 +5,7 @@ model:
   description: Retain NASA thermal functions provisionally; prioritize a same-version ATcT1.228 energy-only
     candidate. TIPS crossover and high-temperature caloric differences require a separate smooth thermal-model
     assessment before any replacement.
-  implementation: &id001
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:6318396df1c1936405f8c5e0d14266438199dc36c0e793160e37171dd4af89a1
     entry_points:
@@ -19,8 +19,8 @@ assumptions:
 domains:
 - kind: numerical_evaluation
   status: documented
-  description: Neutral CS2, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
-    gas-only endpoints, no substitution.
+  description: Neutral CS2, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K;
+    75 archived gas-only endpoints, no substitution.
   conditions:
   - Saved abundance allocation is not a new replacement result.
   - Partition tables and incomplete state sums retain their declared scope.
@@ -43,16 +43,16 @@ claims:
 - id: normalized_comparison
   revision: '1'
   kind: numerical_verification
-  statement: Energy and thermal comparisons preserve source constants, nuclear-spin conventions, ground zeros,
-    mass and one-bar normalization.
+  statement: Energy and thermal comparisons preserve source constants, nuclear-spin conventions, ground
+    zeros, mass and one-bar normalization.
   scope: Neutral CS2, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
     gas-only endpoints, no substitution.
 - id: scoped_decision
   revision: '1'
   kind: theoretical
-  statement: Retain NASA thermal functions provisionally; prioritize a same-version ATcT1.228 energy-only candidate.
-    TIPS crossover and high-temperature caloric differences require a separate smooth thermal-model assessment
-    before any replacement.
+  statement: Retain NASA thermal functions provisionally; prioritize a same-version ATcT1.228 energy-only
+    candidate. TIPS crossover and high-temperature caloric differences require a separate smooth thermal-model
+    assessment before any replacement.
   scope: Neutral CS2, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
     gas-only endpoints, no substitution.
 - id: physical_accuracy
@@ -134,7 +134,11 @@ evidence:
     note: See individual access limits in literature.json; source agreement is not physical validation.
 subjects:
 - id: cs2_sources_20261105
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:6318396df1c1936405f8c5e0d14266438199dc36c0e793160e37171dd4af89a1
+    entry_points:
+    - mceg/reviews/cs2_source_review.py
   selected_files:
     mceg/reviews/cs2_source_review.py: 6318396df1c1936405f8c5e0d14266438199dc36c0e793160e37171dd4af89a1
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
@@ -156,13 +160,13 @@ subjects:
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
-    src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
     tests/data/validation/cs2_source_review/20261105/literature.json: bf8c0f4303338bca86800e5dd318be7a2b5cb5ef491eac5dedafa62734acd3bd
     tests/data/validation/cs2_source_review/20261105/inputs.json: 673a28041b60f2f505ebd82f15229bd5809bde45f34c151bcb74d3a9418eebaa
     tests/data/validation/cs2_source_review/20261105/TIPS2025.pf: 0339e015894c7475b4cf83b40c4d00dc4096470f29cecc83e8a53e76a626eef7
     tests/data/validation/cs2_source_review/20261105/sources.json: 6d17ec9beeb05397af07750b4f26cfc0dd944e388eee6fb723cbdd7bd79f19f1
     documents/mceg/cs2_source_review.rst: 78301e6866a07c0f89078545b9d8c8737f2eb8dab158f1d3215664bf45774f16
-    tests/model_evidence/cs2_source_review_test.py: e04b1b404d1f55e39de8eaaad725dfb3a3d08474ae8781de68c8d7bf12cb525a
+    tests/data/validation/curated_kh_adoption/20261105/source/tests/model_evidence/cs2_source_review_test.py: e04b1b404d1f55e39de8eaaad725dfb3a3d08474ae8781de68c8d7bf12cb525a
     tests/data/validation/cs2_source_review/20261105/README.rst: 7c09321363d2bda7751374338e0293445447a653c7f05a227a110acfa68e75bb
     tests/data/validation/cs2_source_review/20261105/comparison.json: 42309ba09980c44a7e469fe50dcfd444dd6c6ad67aa01237b80986dadc87dd40
     tests/data/validation/cs2_source_review/20261105/receipt.json: da42bfec7657c3e585308bf22d399be59679a1cbc996c1a1e797173a83f69e59
@@ -235,8 +239,8 @@ assessments:
   - decision_reasoning
   reasons:
   - 'ATcT1.228 energy-only current-K factors at 1500/3000/4000 K: [1.0610449031271207, 1.0300703389221149,
-    1.0224690275732549]. Energy candidate priority is supported; thermal adoption awaits a smooth and complete
-    candidate.'
+    1.0224690275732549]. Energy candidate priority is supported; thermal adoption awaits a smooth and
+    complete candidate.'
   status: supported
   origin: reviewed
 - id: physical_accuracy_review
@@ -282,8 +286,8 @@ follow_ups:
   target: physical_accuracy
   revision: '1'
   id: follow_up_1
-  action: Build an energy-only candidate from the inspected same-version ATcT1.228 molecule and atomic Hf0
-    values, retaining current thermal functions; solve fixed-network substitutions and verify conservation
+  action: Build an energy-only candidate from the inspected same-version ATcT1.228 molecule and atomic
+    Hf0 values, retaining current thermal functions; solve fixed-network substitutions and verify conservation
     before adoption.
   completion: Recorded independent candidate evaluation with explicit limitations.
   requires:

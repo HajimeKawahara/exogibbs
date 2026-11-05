@@ -2,11 +2,11 @@ schema_version: '0.2'
 model:
   id: exogibbs.ns_source_review.v1
   name: NS source review
-  description: Retain production for this source review; prioritize a Peebles/JPL energy candidate with explicitly
-    balanced reference atoms and a substitution solve. Do not replace corrected Lodders by old NASA or uncorrected
-    JANAF simply to reduce their ratio. SNaSH supports the current thermal family and does not require thermal
-    replacement.
-  implementation: &id001
+  description: Retain production for this source review; prioritize a Peebles/JPL energy candidate with
+    explicitly balanced reference atoms and a substitution solve. Do not replace corrected Lodders by
+    old NASA or uncorrected JANAF simply to reduce their ratio. SNaSH supports the current thermal family
+    and does not require thermal replacement.
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:d0c46af9ccdc68cc7e47d5a59affc665966e67c02676e59c5f4fa05d7124baee
     entry_points:
@@ -20,8 +20,8 @@ assumptions:
 domains:
 - kind: numerical_evaluation
   status: documented
-  description: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
-    gas-only endpoints, no substitution.
+  description: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K;
+    75 archived gas-only endpoints, no substitution.
   conditions:
   - Saved abundance allocation is not a new replacement result.
   - Partition tables and incomplete state sums retain their declared scope.
@@ -44,17 +44,17 @@ claims:
 - id: normalized_comparison
   revision: '1'
   kind: numerical_verification
-  statement: Energy and thermal comparisons preserve source constants, nuclear-spin conventions, ground zeros,
-    mass and one-bar normalization.
+  statement: Energy and thermal comparisons preserve source constants, nuclear-spin conventions, ground
+    zeros, mass and one-bar normalization.
   scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
     gas-only endpoints, no substitution.
 - id: scoped_decision
   revision: '1'
   kind: theoretical
-  statement: Retain production for this source review; prioritize a Peebles/JPL energy candidate with explicitly
-    balanced reference atoms and a substitution solve. Do not replace corrected Lodders by old NASA or uncorrected
-    JANAF simply to reduce their ratio. SNaSH supports the current thermal family and does not require thermal
-    replacement.
+  statement: Retain production for this source review; prioritize a Peebles/JPL energy candidate with
+    explicitly balanced reference atoms and a substitution solve. Do not replace corrected Lodders by
+    old NASA or uncorrected JANAF simply to reduce their ratio. SNaSH supports the current thermal family
+    and does not require thermal replacement.
   scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
     gas-only endpoints, no substitution.
 - id: physical_accuracy
@@ -139,7 +139,11 @@ evidence:
     note: See individual access limits in literature.json; source agreement is not physical validation.
 subjects:
 - id: ns_sources_20261105
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d0c46af9ccdc68cc7e47d5a59affc665966e67c02676e59c5f4fa05d7124baee
+    entry_points:
+    - mceg/reviews/ns_source_review.py
   selected_files:
     mceg/reviews/ns_source_review.py: d0c46af9ccdc68cc7e47d5a59affc665966e67c02676e59c5f4fa05d7124baee
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
@@ -161,14 +165,14 @@ subjects:
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
-    src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
     tests/data/validation/ns_source_review/20261105/literature.json: 04e19dca1facf8e4385bc185b715d21f63b2a8c61a72f3751e42ce38c9e34e6a
     tests/data/validation/ns_source_review/20261105/nasa_SN.txt: f9ddeec04579dff26bc113050ffd92c1209e1be60e62ca182a85dcd4ab9cff5a
     tests/data/validation/ns_source_review/20261105/inputs.json: ffd16989571444eb0b5387eb2fdd6d6570170f776dee512bb4eced85cff2e71f
     tests/data/validation/ns_source_review/20261105/sources.json: 533f8db431d0922adcd8711cbf725afb00b3f4e248453eac4abe2e826a48a218
     tests/data/validation/ns_source_review/20261105/states.npz: fef722c9fd2020a1fcfc2a3c8b77746a6ecb80860e66eef0b971ee08ed2359ee
     documents/mceg/ns_source_review.rst: aaae6f4cc28ff266d007d6ac113334f7f293f17a7f3ba42bc5daf35c84f1d3d1
-    tests/model_evidence/ns_source_review_test.py: 479ab11cfae36cf1d9a3d7407dedaefa1b8928be125b7250982720fbf956d54a
+    tests/data/validation/curated_kh_adoption/20261105/source/tests/model_evidence/ns_source_review_test.py: 479ab11cfae36cf1d9a3d7407dedaefa1b8928be125b7250982720fbf956d54a
     tests/data/validation/ns_source_review/20261105/README.rst: a3a0b2cb4f2aee72f7e3eded3da9de95653b75f6bf7595990c82cbe3c9f34d29
     tests/data/validation/ns_source_review/20261105/comparison.json: 4665dd3e2135167b5b6829e7e31b655644a96b5dacdb5071f5097e7153cb20c6
     tests/data/validation/ns_source_review/20261105/receipt.json: a4a5b898e691cb53f4229d9e7ca5f5a74b174479ba5d26f11eadccf969ca5b24
@@ -293,9 +297,9 @@ follow_ups:
     for this scoped review.
   completion: Recorded independent candidate evaluation with explicit limitations.
 limitations:
-- statement: Lodders molecular+NASA atomic reconstruction intentionally differs in atomic convention and inherited
-    fit by approximately1–2%; it is an attribution diagnostic, not exact recovery of the historical fitting
-    process.
+- statement: Lodders molecular+NASA atomic reconstruction intentionally differs in atomic convention and
+    inherited fit by approximately1–2%; it is an attribution diagnostic, not exact recovery of the historical
+    fitting process.
   evidence:
   - literature
   - source_replay
@@ -304,8 +308,8 @@ limitations:
   evidence:
   - literature
   - source_replay
-- statement: Natural elemental translation and one principal isotope Q are an approximation; explicit isotope
-    mixture is uncomputed.
+- statement: Natural elemental translation and one principal isotope Q are an approximation; explicit
+    isotope mixture is uncomputed.
   evidence:
   - literature
   - source_replay

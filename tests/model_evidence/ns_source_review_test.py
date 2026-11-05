@@ -10,6 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_adoption_history import historical_source
 import ns_source_review as study
 
 
@@ -80,4 +81,4 @@ def test_frozen_report_and_receipt(report):
     receipt = json.loads((study.DATA/"receipt.json").read_text())
     for group in ("selected_input_sha256","output_sha256"):
         for name,digest in receipt[group].items():
-            assert sha256((ROOT/name).read_bytes()).hexdigest()==digest,name
+            assert sha256(historical_source(ROOT,name,digest).read_bytes()).hexdigest()==digest,name

@@ -1,0 +1,399 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.curated_kh.v1
+  name: Curated gas with spectroscopic KH energy
+  description: Adopt the reviewed KH energy on the pinned OH base without changing thermal functions.
+    Scoped scientific choice and production verification are supported; full physical accuracy remains
+    unknown.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_kh.chemsetup
+assumptions:
+- statement: Only KH changes from curated-oh-v1; OH, H2O, CO2, TiO, C2H, species, budgets, charge and
+    atomic conventions are retained.
+  evidence:
+  - scientific_sources
+  - production_execution
+- statement: Apply -delta(D0)/(RT) once with delta(D0)=-9532.161360874597 J/mol. Reaction G/H increase;
+    S/Cp remain unchanged. No refit or extra spin/ZPE correction.
+  evidence:
+  - scientific_sources
+  - production_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Continuous packaged thermodynamics and actual public-factory cold solves on both fixed
+    gas networks.
+  conditions:
+  - No extrapolation outside 1500-4000 K; invalid temperatures return NaN.
+  - '75 cases per network: five temperatures, five pressures from 1e-6 to 100 bar, C/O=0.5888436553555908/1/1.5.'
+  evidence:
+  - scientific_sources
+  - production_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Complete D0/thermal uncertainty, isotope/continuum contributions and atmospheric observations
+    remain outside scope.
+  conditions: []
+  evidence:
+  - scientific_sources
+  - production_execution
+claims:
+- id: scientific_selection
+  revision: '1'
+  kind: theoretical
+  statement: The spectroscopic KH dissociation energy with retained thermal functions is scientifically
+    preferred to the larger inherited JANAF energy in the bounded gas model.
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+- id: production_adoption
+  revision: '1'
+  kind: numerical_verification
+  statement: The public curated default implements the reviewed KH energy candidate on curated-oh-v1 and
+    reproduces its finite response in both networks.
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete adopted gas model has quantified physical uncertainty and validated atmospheric
+    abundance accuracy.
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+evidence:
+- id: scientific_sources
+  kind: theory
+  summary: Prefer the inspected spectroscopic central D0 to the larger inherited JANAF energy; preserve
+    the actual thermal fit. Same-energy NASA thermal-reference controls are smaller than the energy response.
+  sources:
+  - documents/presets/curated_kh.rst
+  - src/exogibbs/data/curated/kh_v1.json
+  - tests/data/validation/kh_source_review/20261105/literature.json
+  - tests/data/validation/kh_candidate/20261105/candidate.json
+  - tests/data/validation/kh_candidate/20261105/validation.json
+  - tests/data/validation/kh_equilibrium_impact/20261105/summary.json
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+  subject: curated_kh_production_20261105
+  context: production_gas_domain
+  artifacts:
+  - source: documents/presets/curated_kh.rst
+    sha256: 70876dab414402ca9545e484a850241f1089ae544507194dbe5165df67f5c6e2
+  - source: src/exogibbs/data/curated/kh_v1.json
+    sha256: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+  - source: tests/data/validation/kh_source_review/20261105/literature.json
+    sha256: 3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc
+  - source: tests/data/validation/kh_candidate/20261105/candidate.json
+    sha256: e6af22cebacac123b0b454807ac7834ec958833636bfbfccd5741baedbb9eb55
+  - source: tests/data/validation/kh_candidate/20261105/validation.json
+    sha256: f406609e318649360dc328bb9a25c25efae78b8d9a8433a5a5623204149ce958
+  - source: tests/data/validation/kh_equilibrium_impact/20261105/summary.json
+    sha256: e969f68ae43d59bd0b0356df7d18986431f7d234946605280d1938fd526b5109
+  provenance:
+    role: secondary
+    location: documents/presets/curated_kh.rst
+    inspection: inspected
+    note: The 1988 full text is not inspected. Its abstract supplies D0; the stated +/-0.6 cm-1 belongs
+      to De, not a complete D0 error bar. Related source consistency is not independent uncertainty evidence.
+    derived_from:
+    - evidence: source_inventory
+      comparison: not_checked
+      note: Complete historical-source comparison and a precision D0 uncertainty reconstruction are unperformed;
+        this is not a gate on the scoped energy adoption.
+- id: production_execution
+  kind: numerical_test
+  summary: The actual public factory passes 150 fresh cold solves, six tighter independently assembled
+    controls and two FastChem comparisons; only KH thermochemistry changes.
+  sources:
+  - tests/data/validation/curated_kh_adoption/20261105/receipt.json
+  - tests/data/validation/curated_kh_adoption/20261105/summary.json
+  - tests/data/validation/curated_kh_adoption/20261105/ions.npz
+  - tests/data/validation/curated_kh_adoption/20261105/neutral.npz
+  - tests/data/validation/curated_kh_adoption/20261105/diagnostics.json
+  - tests/data/validation/curated_kh_adoption/20261105/README.rst
+  - mceg/reviews/build_kh_adoption.py
+  - mceg/reviews/curated_kh_adoption.py
+  - tests/model_evidence/curated_kh_adoption_test.py
+  - tests/unittests/presets/curated_kh_test.py
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+  subject: curated_kh_production_20261105
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/curated_kh_adoption/20261105/receipt.json
+    sha256: 2c53e4636de348e7872758905008b0a3cda835e6b35e2e61c6315e2194261e3a
+  - source: tests/data/validation/curated_kh_adoption/20261105/summary.json
+    sha256: 13b0c3b01f85fb3c4b3dbc7afda16165838219cd300efe821bbe082d82a4ece9
+  - source: tests/data/validation/curated_kh_adoption/20261105/ions.npz
+    sha256: 32583b671167286fd19189deb0614ec307e7f739b4c470e4b06e70cda2de58b9
+  - source: tests/data/validation/curated_kh_adoption/20261105/neutral.npz
+    sha256: be8928ef17dd8ce1110577342da4b7cbfac16ce3e5fbd476624f8683893d4869
+  - source: tests/data/validation/curated_kh_adoption/20261105/diagnostics.json
+    sha256: 5d3597f6e8519f4f12229856bfb962dbf5edc5686329acee3663f876a283a5d3
+  - source: tests/data/validation/curated_kh_adoption/20261105/README.rst
+    sha256: 52849c4e5f8bd2bcfb6b324f005ea9f72a774c3932c21ac816501eade0547524
+  - source: mceg/reviews/build_kh_adoption.py
+    sha256: 17037830f52b5a443b512b8ed5f135e60c3ff94b2104e4022d9cfe3828b32284
+  - source: mceg/reviews/curated_kh_adoption.py
+    sha256: a1577a28ee3e686021b0f340fdce88f67afce7d8eb452fdf77d80b52ad448fd2
+  - source: tests/model_evidence/curated_kh_adoption_test.py
+    sha256: e41e23a9170e5c657032a92093ed7d45ae3fb59f1ade693555c21ad7161c7cd6
+  - source: tests/unittests/presets/curated_kh_test.py
+    sha256: 94b586ab002734312c8852830ecc55f9b209d31c2c1c48cb76dc2017c2d4fb1a
+  provenance:
+    role: primary
+    location: tests/data/validation/curated_kh_adoption/20261105/receipt.json
+    inspection: inspected
+    note: The 1988 full text is not inspected. Its abstract supplies D0; the stated +/-0.6 cm-1 belongs
+      to De, not a complete D0 error bar. Related source consistency is not independent uncertainty evidence.
+  result: passed
+- id: source_inventory
+  kind: literature
+  summary: The dated primary-source inventory records the Zemke publisher abstract, supporting BC2016/Khan
+    consistency, thermal conventions and original access limits.
+  sources:
+  - tests/data/validation/kh_source_review/20261105/sources.json
+  - tests/data/validation/kh_source_review/20261105/literature.json
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+  subject: curated_kh_production_20261105
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/kh_source_review/20261105/sources.json
+    sha256: 070fbcef6aae57dcf08c37b347b462df56ad9e7a0a33ce1982b4db6bb0a39a9a
+  - source: tests/data/validation/kh_source_review/20261105/literature.json
+    sha256: 3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc
+  provenance:
+    role: primary
+    location: tests/data/validation/kh_source_review/20261105/sources.json
+    inspection: partial
+    note: The 1988 full text is not inspected. Its abstract supplies D0; the stated +/-0.6 cm-1 belongs
+      to De, not a complete D0 error bar. Related source consistency is not independent uncertainty evidence.
+subjects:
+- id: curated_kh_production_20261105
+  implementation: *id001
+  selected_files:
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    mceg/reviews/build_kh_adoption.py: 17037830f52b5a443b512b8ed5f135e60c3ff94b2104e4022d9cfe3828b32284
+    mceg/reviews/build_oh_adoption.py: 31f5ef6b75a9a0fb617c63798eee583eae174f516f7b08dfeb3df9e69e6ddb79
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
+    mceg/reviews/co2_source_review.py: cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172
+    mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
+    mceg/reviews/curated_kh_adoption.py: a1577a28ee3e686021b0f340fdce88f67afce7d8eb452fdf77d80b52ad448fd2
+    mceg/reviews/curated_oh_adoption.py: 2a9b741d86a4fb0a90a5f7a9b6bef30845c5608f315f4028364ecd02768e0db2
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/kh_candidate.py: de7cf674bde0ba59271baabd655ba09a2065a0d5ac7de029fa50c3660fbce4de
+    mceg/reviews/kh_equilibrium_impact.py: 29539515d1864bda92d843b3036fbb273ffdfc9a38d764194eee5570dc260095
+    mceg/reviews/kh_source_review.py: b7ea9d5cc02088ee090cd71e26039dd02879f9e55e5bc799e0276fd1dc381631
+    mceg/reviews/oh_candidate.py: 094fe414773c7927e273c7cd3cb98acd764236d35c97539d05dba34f1f2d1eb1
+    mceg/reviews/oh_equilibrium_impact.py: 59661ec0e2de217a73dcd74b5746697c325f9d20db7016211c5219a68ecab170
+    mceg/reviews/oh_source_review.py: a9450f7616d87089293851446c5fa4241b4b29f9ef1a0a84543b4a588223c90d
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/presets/curated.py: 339e22ac6eb9513a22e25ef15da3ca0a535df0597a0364ae804ac96a211adc32
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    tests/data/validation/co2_candidate/20261104/candidate.json: 9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/curated_h2o_adoption/20261104/neutral.npz: 0f04e08e51ee29c354ad45ea7ab24f28d2ae77d742222f4abe1087274b06412e
+    tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
+    tests/data/validation/curated_oh_adoption/20261105/neutral.npz: f21a9f1ce4c2b737e5af6dc93a82faad01a6547cbb7f3f56369e05d46e121bf1
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/data/validation/curated_tio_adoption/20261103/neutral.npz: 4fef69416723000ab214ac413d027f10f2bc9a13955f289b195099192f3f1816
+    tests/data/validation/h2o_candidate/20261104/candidate.json: 0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a
+    tests/data/validation/kh_candidate/20261105/candidate.json: e6af22cebacac123b0b454807ac7834ec958833636bfbfccd5741baedbb9eb55
+    tests/data/validation/kh_equilibrium_impact/20261105/ions.npz: 17bf8c130de13833bbbaf9d6a5f324bf5e32548b2b2a29e026a52ab370b5f552
+    tests/data/validation/kh_equilibrium_impact/20261105/neutral.npz: 6085a5b6e639c0c13a11f169d98233d8900e441826f1e194a775de8760969a2f
+    tests/data/validation/kh_source_review/20261105/README.rst: 1ad939cae809fb2ae22d8000013f8106b697b63ca53a355f5de05ab62e18104e
+    tests/data/validation/kh_source_review/20261105/comparison.json: 0992a97b9cdae7730f6d65749196847fac6416b333803382d3940a457fbcd3e1
+    tests/data/validation/kh_source_review/20261105/inputs.json: 69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587
+    tests/data/validation/kh_source_review/20261105/literature.json: 3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc
+    tests/data/validation/kh_source_review/20261105/receipt.json: e5361d7c807ecef2bed2ee9af5bac6206bdb6616e2287036aa7ebf75ae39bed3
+    tests/data/validation/kh_source_review/20261105/sources.json: 070fbcef6aae57dcf08c37b347b462df56ad9e7a0a33ce1982b4db6bb0a39a9a
+    tests/data/validation/kh_source_review/20261105/state_inventory.json: 7d7f8bb1a6b334a6ed77745a959b5bb795b4145f7e5cf3c7d6b4aa84cb54acd1
+    tests/data/validation/kh_source_review/20261105/states.npz: 1ec7157febd67ecf587ac256abfb70d2bb9fc7ca3e124988667ed01b2877db06
+    tests/data/validation/oh_candidate/20261105/candidate.json: 5c2eea21282fc1cee77723c0e5774e0b2b52a401e45d62a17a726f76b9c7780d
+    tests/data/validation/oh_equilibrium_impact/20261105/ions.npz: f4e9329ebeeede3f2e0f696b5bdb5cf172921492e24c5f65e83a682e8e851c5d
+    tests/data/validation/oh_equilibrium_impact/20261105/neutral.npz: c5f773d986bf5b6d8673dff037a84d1a502b2751fd0ded2b1c28a443b03aa62c
+    tests/data/validation/oh_source_review/20261105/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/oh_source_review/20261105/H-038.txt: 5d676fdf41f19da94506bb95139e0e15326905f062cd440cb78a9891593bff36
+    tests/data/validation/oh_source_review/20261105/MYTHOS.def.json: 0fbfd6811a8c2a75e38f51e62b1dca54f476f1404b12924d2a71cc48d477e0f4
+    tests/data/validation/oh_source_review/20261105/MoLLIST-OH.def.json: 856aafeaf91c7b86f61cc895c43bfe4f08d64a75c0f933011edb7b832c4cf198
+    tests/data/validation/oh_source_review/20261105/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/oh_source_review/20261105/README.rst: c148421474f72b877175c9f92cae82af73ebe1b77653d10feb2652cc137a6af9
+    tests/data/validation/oh_source_review/20261105/comparison.json: 6f112b19de2dcd5998cabcea4469e1c85d13908c0fdade16ddb49c6d7b9dac09
+    tests/data/validation/oh_source_review/20261105/literature.json: fe13a72ff050b3830b4c17b9901721501e844962584049971d588986e3b6c677
+    tests/data/validation/oh_source_review/20261105/nasa_H.txt: 376979df2a1bddc5b25e4ada120d2a78d4a19f1b8650f490375285ae1f727dca
+    tests/data/validation/oh_source_review/20261105/nasa_O.txt: bf127e8c2ef2e3ded946562217d978ea0da0f3b73179b9321a30fff0a634e040
+    tests/data/validation/oh_source_review/20261105/nasa_OH.txt: cfae51379a97e9abc9ed348fbe20cf248b4ee46819ac986520434f87162cd382
+    tests/data/validation/oh_source_review/20261105/receipt.json: efd8ef8a1af36a7c14a4c4cf1bbacd605aa0d1dc6b09c591f925868bad3aee38
+    tests/data/validation/oh_source_review/20261105/sources.json: 3312c062118313a7a193242696e0f4cf458c4cb6c9f5c643b87b5e0c700c938e
+    tests/data/validation/oh_source_review/20261105/state_inventory.json: 7d09a1ac26b21de19fbe8aa2530fb25869c8e1e3eb6a3cc2a6b9e6b8fa1bd927
+    tests/data/validation/oh_source_review/20261105/states.npz: c1d1a042b137ee52100e2f63f298ac5c7cd3b22d4410362e5ecfbb684ec2e7bb
+    documents/presets/curated_kh.rst: 70876dab414402ca9545e484a850241f1089ae544507194dbe5165df67f5c6e2
+    tests/data/validation/kh_candidate/20261105/validation.json: f406609e318649360dc328bb9a25c25efae78b8d9a8433a5a5623204149ce958
+    tests/data/validation/kh_equilibrium_impact/20261105/summary.json: e969f68ae43d59bd0b0356df7d18986431f7d234946605280d1938fd526b5109
+    tests/data/validation/curated_kh_adoption/20261105/receipt.json: 2c53e4636de348e7872758905008b0a3cda835e6b35e2e61c6315e2194261e3a
+    tests/data/validation/curated_kh_adoption/20261105/summary.json: 13b0c3b01f85fb3c4b3dbc7afda16165838219cd300efe821bbe082d82a4ece9
+    tests/data/validation/curated_kh_adoption/20261105/ions.npz: 32583b671167286fd19189deb0614ec307e7f739b4c470e4b06e70cda2de58b9
+    tests/data/validation/curated_kh_adoption/20261105/neutral.npz: be8928ef17dd8ce1110577342da4b7cbfac16ce3e5fbd476624f8683893d4869
+    tests/data/validation/curated_kh_adoption/20261105/diagnostics.json: 5d3597f6e8519f4f12229856bfb962dbf5edc5686329acee3663f876a283a5d3
+    tests/data/validation/curated_kh_adoption/20261105/README.rst: 52849c4e5f8bd2bcfb6b324f005ea9f72a774c3932c21ac816501eade0547524
+    tests/model_evidence/curated_kh_adoption_test.py: e41e23a9170e5c657032a92093ed7d45ae3fb59f1ade693555c21ad7161c7cd6
+    tests/unittests/presets/curated_kh_test.py: 94b586ab002734312c8852830ecc55f9b209d31c2c1c48cb76dc2017c2d4fb1a
+contexts:
+- id: production_gas_domain
+  scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
+    energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
+    functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
+    networks; complete physical accuracy remains unknown.'
+  settings:
+    dataset: curated-kh-v1
+    base_dataset: curated-oh-v1
+    temperature_range_K: 1500-4000
+    standard_pressure_bar: 1
+    networks: ions and neutral
+    energy_anchor: Zemke 1988 D0=14282.6 cm-1
+    thermal_source: Exact retained JANAF/FastChem fit and atomic convention
+    previous_follow_up: Authorized KH candidate production choice completed; complete physical scope remains
+      unknown
+assessments:
+- id: scientific_selection_review
+  kind: evidence_support
+  claim: scientific_selection
+  claim_revision: '1'
+  subject: curated_kh_production_20261105
+  context: production_gas_domain
+  method:
+    id: review_kh_scoped_production_adoption
+    revision: '1'
+    description: Separate the bounded source choice and actual production verification from complete physical
+      accuracy.
+  evidence:
+  - scientific_sources
+  reasons:
+  - The inspected abstract supplies D0=14282.6 cm-1; the exact energy correction avoids a new fit and
+    unsupported spin/ZPE changes. Conserved finite substitutions and smaller same-D0 NASA thermal-reference
+    controls support this source choice. The De uncertainty is not reused as a D0 error bar.
+  status: supported
+  origin: reviewed
+- id: production_adoption_review
+  kind: evidence_support
+  claim: production_adoption
+  claim_revision: '1'
+  subject: curated_kh_production_20261105
+  context: production_gas_domain
+  method:
+    id: review_kh_scoped_production_adoption
+    revision: '1'
+    description: Separate the bounded source choice and actual production verification from complete physical
+      accuracy.
+  evidence:
+  - scientific_sources
+  - production_execution
+  reasons:
+  - All 150 production cold cases, six tighter controls and two FastChem checks pass. Dense candidate
+    agreement is within 2.67e-15 in h, KH log fractions within 3.20e-14, and all non-KH potentials and
+    budgets are preserved.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: curated_kh_production_20261105
+  context: production_gas_domain
+  method:
+    id: review_kh_scoped_production_adoption
+    revision: '1'
+    description: Separate the bounded source choice and actual production verification from complete physical
+      accuracy.
+  evidence:
+  - scientific_sources
+  - production_execution
+  reasons:
+  - The precision D0 uncertainty, inherited thermal-fit accuracy, isotope/continuum contributions and
+    application-specific atmospheric validation remain unquantified. Numerical closure cannot resolve
+    shared source errors.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: physical_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Resolve source precision, thermal and physical limits only for the accuracy and application
+    actually claimed.
+  requires:
+  - The 1988 full text is useful for precision D0 uncertainty; its absence does not invalidate the inspected
+    central value.
+  - Khan state selection and PF reconciliation are separate prerequisites for a full thermal replacement.
+  completion: Provide application-specific evidence or retain unknown without blocking the bounded energy
+    adoption.
+limitations:
+- statement: Source agreement, conserved equilibrium and solver parity do not establish complete physical
+    uncertainty. Trace all-element relative residual reaches 1.48e-6 despite much tighter K/H/C/O closure.
+  evidence:
+  - scientific_sources
+  - production_execution

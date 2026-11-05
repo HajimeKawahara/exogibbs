@@ -61,7 +61,7 @@ def test_catalog_and_solar_budget_match_approved_study(setup, neutral):
 
 
 def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
-    assert setup.metadata["dataset"] == "curated-oh-v1"
+    assert setup.metadata["dataset"] == "curated-kh-v1"
     assert set(setup.metadata["species_provenance"]) == set(setup.species)
     counts = Counter(r["status"] for r in setup.metadata["species_provenance"].values())
     assert counts["inherited_unreviewed"] == 425
@@ -69,8 +69,8 @@ def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
     assert len(data["decisions"]) == 82
     base = fastchem4.chemsetup(path="FastChem4/logK/logK.dat", silent=True)
     changed = (set(data["nasa9_reactions"]) | set(data["janaf_reactions"])
-               | set(data["partition_reactions"]) | set(data["logk_energy_shifts_K"]) | {"C2H1", "H1O1"})
-    assert len(changed) == 72
+               | set(data["partition_reactions"]) | set(data["logk_energy_shifts_K"]) | {"C2H1", "H1O1", "H1K1"})
+    assert len(changed) == 73
     retained = [name for name in setup.species if name not in changed]
     t = jnp.array([1601., 2527., 3997.])
     # Separate JIT graphs can round the same inherited constants differently.
@@ -88,7 +88,7 @@ def test_continuous_constants_reproduce_approved_nodes(setup):
     # Rounded Ca partition values require a small positive thermal contribution.
     partitions = [setup.species.index(s) for s in ("Co1+", "C1-", "Ca1-", "Ge1-")]
     np.testing.assert_allclose(actual[:, partitions], expected[:, partitions], atol=5e-6, rtol=0)
-    others = [i for i in range(537) if i not in partitions and setup.species[i] not in {"C2H1", "O1Ti1", "C1O2", "H2O1", "H1O1"}]
+    others = [i for i in range(537) if i not in partitions and setup.species[i] not in {"C2H1", "O1Ti1", "C1O2", "H2O1", "H1O1", "H1K1"}]
     np.testing.assert_allclose(actual[:, others], expected[:, others], atol=2e-12, rtol=0)
 
 
