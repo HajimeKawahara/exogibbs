@@ -60,3 +60,6 @@ HCN differences with optional MCEG tooling.
    phosphorus_cold_validation
    po2_source_review
    build
+
+   kh_source_review
+   kh_candidate

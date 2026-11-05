@@ -1,0 +1,17 @@
+{
+  "command": "/home/kawahara/miniconda3/bin/python mceg/reviews/kh_candidate.py --build",
+  "result": "passed",
+  "source_sha256": {
+    "tests/data/validation/kh_source_review/20261105/inputs.json": "69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587",
+    "tests/data/validation/kh_source_review/20261105/literature.json": "3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "mceg/reviews/kh_candidate.py": "de7cf674bde0ba59271baabd655ba09a2065a0d5ac7de029fa50c3660fbce4de",
+    "mceg/reviews/kh_source_review.py": "b7ea9d5cc02088ee090cd71e26039dd02879f9e55e5bc799e0276fd1dc381631",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22"
+  },
+  "output_sha256": {
+    "candidate.json": "e6af22cebacac123b0b454807ac7834ec958833636bfbfccd5741baedbb9eb55",
+    "validation.json": "f406609e318649360dc328bb9a25c25efae78b8d9a8433a5a5623204149ce958"
+  }
+}

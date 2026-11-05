@@ -1,0 +1,84 @@
+include src/exogibbs/data/test/janaf_raw_sample.txt
+include src/exogibbs/data/test/testdata.dat
+include src/exogibbs/data/test/matrix_v3.dat
+
+#ykb4 presets
+include src/exogibbs/data/ykb4/molecule_names.csv
+include src/exogibbs/data/ykb4/gibbs_matrices.npz
+
+#fastchem presets v3.1.3
+include src/exogibbs/data/fastchem/logK/logK.dat
+include src/exogibbs/data/fastchem/logK/logK_condensates.dat
+include src/exogibbs/data/fastchem/logK/logK_extended.dat
+include src/exogibbs/data/fastchem/logK/logK_wo_ions.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2009.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2009_extended.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2020.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2020_extended.dat
+include src/exogibbs/data/fastchem/element_abundances/lodders_2003.dat
+include src/exogibbs/data/fastchem/element_abundances/lodders_2003_extended.dat
+
+#FastChem4 presets
+include src/exogibbs/data/FastChem4/README.md
+include src/exogibbs/data/FastChem4/logK/logK.dat
+include src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat
+include src/exogibbs/data/FastChem4/logK/logK_extended.dat
+include src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat
+include src/exogibbs/data/FastChem4/logK/logK_condensates.dat
+include src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat
+include src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2009.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2009_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2009_full.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2021_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2021_full.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2003.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2003_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2003_full.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2025.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2025_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2025_full.dat
+
+#FastChem preset attribution
+include src/exogibbs/data/fastchem/README.md
+include src/exogibbs/data/fastchem/logK/README.TXT
+include src/exogibbs/data/fastchem/element_abundances/README.TXT
+
+# Explicit NASA9 excerpt for the optional FastChem4 caloric model
+include src/exogibbs/data/nasa9/fastchem4_hot.json
+include src/exogibbs/data/nasa9/README.md
+include src/exogibbs/data/nasa9/LICENSE.txt
+include src/exogibbs/data/nasa9/NOTICE.txt
+
+# Versioned, reviewed gas thermochemistry
+include src/exogibbs/data/curated/gas_v1.json
+include src/exogibbs/data/curated/c2h_v1.json
+include src/exogibbs/data/curated/tio_v1.json
+include src/exogibbs/data/curated/co2_v1.json
+include src/exogibbs/data/curated/h2o_v1.json
+include src/exogibbs/data/curated/oh_v1.json
+include src/exogibbs/data/curated/README.rst
+
+# Optional scientific records; reading them never requires MCEG at runtime.
+recursive-include src/exogibbs/data/mceg *.json *.yaml
+
+# Pinned absolute standard-state references for multiphase connections
+include src/exogibbs/data/young2023/standard_states.json
+include src/exogibbs/data/janaf/atomic.json
+
+#grids for GridEquilibriumInitializer
+include src/exogibbs/data/grids/fastchem/grid_exogibbs.nc
+include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
+
+# Unvalidated transcription retained in the repository but not distributed
+recursive-exclude src/exogibbs/data/sharp_huebner *
+
+# Documentation submodule is published separately
+prune doc_ExoGibbs
+
+# Generated runs stay local; offline regression fixtures ship with the source.
+prune results
+recursive-include tests/data/validation *
+# Keep source-only GGChem fixtures, but exclude regenerated restricted tables.
+exclude tests/data/validation/phosphorus_cold/thermo.json

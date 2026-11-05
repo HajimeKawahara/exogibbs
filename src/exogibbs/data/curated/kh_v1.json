@@ -1,0 +1,57 @@
+{
+  "id": "curated-kh-v1",
+  "species": "H1K1",
+  "reaction": "H(g)+K(g)->KH(g)",
+  "base_dataset": "curated-oh-v1",
+  "base_data_sha256": "f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "representation": "Exact current five-coefficient formation fit with one 1/T energy shift; no refit",
+  "D0_cm-1": 14282.6,
+  "D0_J_mol": 170857.8386391254,
+  "retained_D0_J_mol": 180390.0,
+  "delta_D0_J_mol": -9532.161360874597,
+  "delta_D0_over_R_K": -1146.4554955196643,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "original_logK_coefficients": [
+    21827.075449376836,
+    -1.2149973046779152,
+    -1.4420742793037675,
+    0.0004139688730737563,
+    -3.157609561709404e-08
+  ],
+  "candidate_logK_coefficients": [
+    20680.61995385717,
+    -1.2149973046779152,
+    -1.4420742793037675,
+    0.0004139688730737563,
+    -3.157609561709404e-08
+  ],
+  "source_limit": "1988 publisher abstract supplies D0; +/-0.6 cm-1 belongs to De, not a complete D0 uncertainty. Current JANAF/FastChem thermal fit and its atomic convention are preserved by the primary model.",
+  "decision": {
+    "name": "KH",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "Retained JANAF/FastChem five-coefficient fit and atomic convention",
+    "energy_source": "Zemke et al. 1988 spectroscopic D0=14282.6 cm-1",
+    "reason": "Replace the larger inherited balanced JANAF energy by the inspected spectroscopic D0, retaining the exact current thermal fit. Conserved finite substitutions and smaller NASA thermal-reference controls support the bounded update.",
+    "condition": "1500-4000 K and 1 bar standard pressure. The abstract's +/-0.6 cm-1 belongs to De, not a complete D0 uncertainty. Thermal/isotope/continuum and full atmospheric accuracy remain unquantified."
+  },
+  "sources": {
+    "spectroscopic_energy": "https://doi.org/10.1016/0009-2614(88)87016-7",
+    "candidate": "tests/data/validation/kh_candidate/20261105/candidate.json",
+    "review": "documents/mceg/kh_candidate.rst",
+    "substitution": "tests/data/validation/kh_equilibrium_impact/20261105/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/kh_candidate/20261105/candidate.json": "e6af22cebacac123b0b454807ac7834ec958833636bfbfccd5741baedbb9eb55",
+    "tests/data/validation/kh_source_review/20261105/inputs.json": "69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587",
+    "tests/data/validation/kh_source_review/20261105/literature.json": "3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38"
+  },
+  "interpretation": "KH-only energy adoption on curated-oh-v1, retaining OH, H2O, CO2, TiO and C2H updates. Add the exact reviewed -delta(D0)/(RT) to the inherited reaction once; no thermal refit, spin factor, ZPE or atomic correction. Full physical accuracy remains unknown."
+}
