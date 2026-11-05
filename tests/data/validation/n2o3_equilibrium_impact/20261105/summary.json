@@ -1,0 +1,287 @@
+{
+  "baseline_dataset": "curated-cos-v1",
+  "production_change": "none",
+  "reused_baseline_cases": 150,
+  "new_endpoint_solves": 300,
+  "new_tighter_cold_solves": 18,
+  "new_finite_path_solves": 10,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "cases": 75,
+      "species_count": 537,
+      "variants": [
+        {
+          "variant": "nasa_atct",
+          "target_ratio_min": 2.1584152450823817,
+          "target_ratio_max": 2.966144171849851,
+          "target_maximum_absolute_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "N2O3",
+            "x_before": 1.0412388910363154e-26,
+            "x_after": 3.088464668149343e-26,
+            "delta_x": 2.0472257771130278e-26,
+            "ratio": 2.966144171848481,
+            "element_share_before": 1.9259247199768023e-22,
+            "element_share_after": 5.712570383578111e-22
+          },
+          "target_maximum_element_share_before": 1.9259247199768023e-22,
+          "target_maximum_element_share_after": 5.712570383578111e-22,
+          "largest_any_species_response": {
+            "case_index": 55,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.5,
+            "species": "H1",
+            "x_before": 0.7156343895146178,
+            "x_after": 0.7156343895146294,
+            "delta_x": 1.1657341758564144e-14,
+            "ratio": 1.0000000000000162,
+            "element_share_before": 0.0,
+            "element_share_after": 0.0
+          },
+          "finite_mass_action_closure_ln": 5.684341886080801e-13,
+          "gibbs_corrected_current_min": -3.0020885295885338e-18,
+          "gibbs_corrected_candidate_max": 2.235796213729472e-18,
+          "gibbs_scope": "First-order feasibility-corrected ordering within 5e-14 numerical tolerance; a trace-species response below that scale is not a resolved Gibbs improvement."
+        },
+        {
+          "variant": "energy_only",
+          "target_ratio_min": 0.8935303974380367,
+          "target_ratio_max": 0.9586630737726157,
+          "target_maximum_absolute_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "N2O3",
+            "x_before": 1.0412388910363154e-26,
+            "x_after": 9.98197275812088e-27,
+            "delta_x": -4.304161522422752e-28,
+            "ratio": 0.9586630737722547,
+            "element_share_before": 1.9259247199768023e-22,
+            "element_share_after": 1.84631291190693e-22
+          },
+          "target_maximum_element_share_before": 1.9259247199768023e-22,
+          "target_maximum_element_share_after": 1.84631291190693e-22,
+          "largest_any_species_response": {
+            "case_index": 30,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.0,
+            "species": "H1",
+            "x_before": 0.7157118149355391,
+            "x_after": 0.7157118149355437,
+            "delta_x": 4.551914400963142e-15,
+            "ratio": 1.0000000000000064,
+            "element_share_before": 0.0,
+            "element_share_after": 0.0
+          },
+          "finite_mass_action_closure_ln": 8.029132914089132e-13,
+          "gibbs_corrected_current_min": -3.5473422517574706e-18,
+          "gibbs_corrected_candidate_max": 2.7816073680600085e-18,
+          "gibbs_scope": "First-order feasibility-corrected ordering within 5e-14 numerical tolerance; a trace-species response below that scale is not a resolved Gibbs improvement."
+        }
+      ],
+      "target_element": "N",
+      "highlight_case_index": 24,
+      "tight_case_indices": [
+        24,
+        48,
+        70
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 1.4580453409962502e-05,
+        "target_delta_ln_x": 8.668621376273222e-13,
+        "visible_delta_ln_x": 1.4580452862844595e-06,
+        "absolute_delta_x": 3.379513745932208e-14
+      },
+      "maximum_target_elements_relative_residual": 6.929523840516807e-13,
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.4594017739691475e-06,
+        "mass_action_max_abs_ln": 1.6484591469634324e-12,
+        "HCOS_element_relative_residual": 2.9397753399646213e-12,
+        "charge_relative_residual": 1.9936544911780586e-14
+      },
+      "path_target_ratios": [
+        0.9999999999999787,
+        1.3123451304546034,
+        1.7222497414279465,
+        2.2601860615896974,
+        2.9661441718487973
+      ],
+      "actual_new_endpoint_solves": 150
+    },
+    {
+      "network": "neutral",
+      "cases": 75,
+      "species_count": 421,
+      "variants": [
+        {
+          "variant": "nasa_atct",
+          "target_ratio_min": 2.158415245083363,
+          "target_ratio_max": 2.9661441718495984,
+          "target_maximum_absolute_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "N2O3",
+            "x_before": 1.0412208491198047e-26,
+            "x_after": 3.088411153223858e-26,
+            "delta_x": 2.047190304104053e-26,
+            "ratio": 2.9661441718485024,
+            "element_share_before": 1.9258877671446085e-22,
+            "element_share_after": 5.712460776150306e-22
+          },
+          "target_maximum_element_share_before": 1.9258877671446085e-22,
+          "target_maximum_element_share_after": 5.712460776150306e-22,
+          "largest_any_species_response": {
+            "case_index": 30,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.0,
+            "species": "H1",
+            "x_before": 0.7157128236174156,
+            "x_after": 0.715712823617423,
+            "delta_x": 7.438494264988549e-15,
+            "ratio": 1.0000000000000102,
+            "element_share_before": 0.0,
+            "element_share_after": 0.0
+          },
+          "finite_mass_action_closure_ln": 3.375077994860476e-13,
+          "gibbs_corrected_current_min": -1.7490678925452806e-18,
+          "gibbs_corrected_candidate_max": 3.72994957741831e-18,
+          "gibbs_scope": "First-order feasibility-corrected ordering within 5e-14 numerical tolerance; a trace-species response below that scale is not a resolved Gibbs improvement."
+        },
+        {
+          "variant": "energy_only",
+          "target_ratio_min": 0.8935303974426334,
+          "target_ratio_max": 0.9586630737724385,
+          "target_maximum_absolute_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "N2O3",
+            "x_before": 1.0412208491198047e-26,
+            "x_after": 9.981799796928355e-27,
+            "delta_x": -4.304086942696921e-28,
+            "ratio": 0.9586630737721457,
+            "element_share_before": 1.9258877671446085e-22,
+            "element_share_after": 1.8462774865910247e-22
+          },
+          "target_maximum_element_share_before": 1.9258877671446085e-22,
+          "target_maximum_element_share_after": 1.8462774865910247e-22,
+          "largest_any_species_response": {
+            "case_index": 21,
+            "temperature_K": 4000.0,
+            "pressure_bar": 0.0001,
+            "C_over_O": 0.5888436553555908,
+            "species": "F1",
+            "x_before": 2.315782523897679e-08,
+            "x_after": 2.3157793643412684e-08,
+            "delta_x": -3.1595564105145846e-14,
+            "ratio": 0.9999986356420009,
+            "element_share_before": 0.0,
+            "element_share_after": 0.0
+          },
+          "finite_mass_action_closure_ln": 6.181721801112872e-13,
+          "gibbs_corrected_current_min": -1.9112470802219707e-18,
+          "gibbs_corrected_candidate_max": 1.7483214203496663e-18,
+          "gibbs_scope": "First-order feasibility-corrected ordering within 5e-14 numerical tolerance; a trace-species response below that scale is not a resolved Gibbs improvement."
+        }
+      ],
+      "target_element": "N",
+      "highlight_case_index": 24,
+      "tight_case_indices": [
+        21,
+        24,
+        49
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 1.3643589682033053e-05,
+        "target_delta_ln_x": 2.5579538487363607e-13,
+        "visible_delta_ln_x": 1.3643589440448523e-06,
+        "absolute_delta_x": 3.159556443601809e-14
+      },
+      "maximum_target_elements_relative_residual": 7.002055850849574e-13,
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.3655160654929207e-06,
+        "mass_action_max_abs_ln": 1.2505552149377763e-12,
+        "HCOS_element_relative_residual": 2.9538392519263694e-12
+      },
+      "path_target_ratios": [
+        0.9999999999999147,
+        1.3123451304544915,
+        1.7222497414278364,
+        2.260186061589553,
+        2.9661441718483545
+      ],
+      "actual_new_endpoint_solves": 150
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "case_index": 24,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 3.3399736386524265e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.781518737942904e-11,
+          "mass_action_max_abs_ln": 4.282725285520428e-10
+        },
+        {
+          "dataset": "review-n2o3-nasa_atct",
+          "max_abs_delta_log10_x": 3.3399736386524265e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.781518737942904e-11,
+          "mass_action_max_abs_ln": 4.282725285520428e-10
+        },
+        {
+          "dataset": "review-n2o3-energy_only",
+          "max_abs_delta_log10_x": 3.3399983254355705e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.781518737942904e-11,
+          "mass_action_max_abs_ln": 4.282725285520428e-10
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "case_index": 48,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 4.421402861048159e-09,
+          "element_relative_residual": 3.1947634770061744e-11,
+          "charge_relative_residual": 1.627509253076453e-11,
+          "mass_action_max_abs_ln": 2.390088127413037e-10
+        },
+        {
+          "dataset": "review-n2o3-nasa_atct",
+          "max_abs_delta_log10_x": 4.415231165262218e-09,
+          "element_relative_residual": 3.1947634770061744e-11,
+          "charge_relative_residual": 1.627509253076453e-11,
+          "mass_action_max_abs_ln": 2.390088127413037e-10
+        },
+        {
+          "dataset": "review-n2o3-energy_only",
+          "max_abs_delta_log10_x": 4.4217484760121716e-09,
+          "element_relative_residual": 3.1947634770061744e-11,
+          "charge_relative_residual": 1.627509253076453e-11,
+          "mass_action_max_abs_ln": 2.390088127413037e-10
+        }
+      ]
+    }
+  ],
+  "elapsed_seconds": 25.588247375562787,
+  "scope": "Finite single-species substitutions in fixed ideal-gas networks and inventories, 1500-4000 K. No condensation, cooler-atmosphere, photochemical or complete physical validation."
+}
