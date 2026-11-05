@@ -1,0 +1,24 @@
+{
+  "command": "env JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src taskset -c 10-11 /home/kawahara/miniconda3/bin/python mceg/reviews/naoh_candidate.py --build",
+  "python": "3.12.7",
+  "dtype": "float64",
+  "backend": "cpu",
+  "result": "passed",
+  "input_sha256": {
+    "tests/data/validation/naoh_source_review/20261105/inputs.json": "6fa4277611f524d11af0ac2bdbc6635b97462ee29e453542a9d1a45788ab0426",
+    "tests/data/validation/naoh_source_review/20261105/janaf.txt": "7f7d3b1e7d5370d021545b2aafd795e80fb3a2549f927679ed75b53c7b7b6f2a",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/nao_source_review/20261105/inputs.json": "f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d",
+    "tests/data/validation/kh_source_review/20261105/inputs.json": "69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587",
+    "mceg/reviews/naoh_candidate.py": "43f2fba3e30b62fc3aacce7b26fbb5116490fd708188abe358cffbcd8d90bd1e",
+    "mceg/reviews/naoh_source_review.py": "1076affaf49add6ab39ddec7b6b0cea4dc9f207b8e8225481be88f53fcc471ea",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c"
+  },
+  "output_sha256": {
+    "candidate.json": "1b4c83d4e0c559b1aa46770c49e601cdc85dc8683c34fcbcb15efb01075a8416",
+    "validation.json": "ed6bd05497cc7fcf9328c635ec620add21c980076c5a6dd933c1a621e51940ec"
+  },
+  "scope": "Dense source reconstruction and analytic/JAX derivatives. No source-history mutation or production adoption."
+}
