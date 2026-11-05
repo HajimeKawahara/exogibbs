@@ -1,0 +1,286 @@
+{
+  "name": "CH2O",
+  "species_id": "C1H2O1",
+  "identity": "Neutral formaldehyde (methanal), ground electronic singlet; excludes hydroxymethylene isomers.",
+  "composition": {
+    "C": 1,
+    "H": 2,
+    "O": 1
+  },
+  "temperatures_K": [
+    300,
+    500,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "nasa_records": {
+    "CH2O": {
+      "source_name": "HCHO,formaldehy",
+      "reference": "Hf:TRC(6/78) w-5300. Gurvich,1991 pt1 p62 pt2 p47.",
+      "hf298_J_mol": -108580.0,
+      "mass_u": 30.02598,
+      "h298_minus_h0_J_mol": 10019.717,
+      "intervals": [
+        {
+          "bounds_K": [
+            300.0,
+            1000.0
+          ],
+          "coefficients": [
+            -117391.6343,
+            1873.628846,
+            -6.89028857,
+            0.02641561665,
+            -2.186389299e-05,
+            1.005693006e-08,
+            -2.023476949e-12,
+            -23073.51768,
+            64.2042055
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            1700825.405,
+            -7620.85384,
+            14.72447547,
+            -0.001649111754,
+            3.29214472e-07,
+            -3.49504977e-11,
+            1.526135e-15,
+            31468.12947,
+            -73.864785
+          ]
+        }
+      ]
+    },
+    "H": {
+      "source_name": "H",
+      "reference": "D0(H2):Herzberg,1970. Moore,1972. Gordon,1999.",
+      "hf298_J_mol": 217998.828,
+      "mass_u": 1.00794,
+      "h298_minus_h0_J_mol": 6197.428,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            25473.70801,
+            -0.446682853
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            60.7877425,
+            -0.1819354417,
+            2.500211817,
+            -1.226512864e-07,
+            3.73287633e-11,
+            -5.68774456e-15,
+            3.410210197e-19,
+            25474.86398,
+            -0.448191777
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            217375769.4,
+            -131203.5403,
+            33.991742,
+            -0.00381399968,
+            2.432854837e-07,
+            -7.69427554e-12,
+            9.64410563e-17,
+            1067638.086,
+            -274.2301051
+          ]
+        }
+      ]
+    },
+    "C": {
+      "source_name": "C",
+      "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+      "hf298_J_mol": 716680.0,
+      "mass_u": 12.0107,
+      "h298_minus_h0_J_mol": 6535.895,
+      "intervals": [
+        {
+          "bounds_K": [
+            300.0,
+            1000.0
+          ],
+          "coefficients": [
+            649.503147,
+            -0.964901086,
+            2.504675479,
+            -1.281448025e-05,
+            1.980133654e-08,
+            -1.606144025e-11,
+            5.314483411e-15,
+            85457.6311,
+            4.747924288
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -128913.6472,
+            171.9528572,
+            2.646044387,
+            -0.000335306895,
+            1.74209274e-07,
+            -2.902817829e-11,
+            1.642182385e-15,
+            84105.9785,
+            4.130047418
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            443252801.0,
+            -288601.8412,
+            77.3710832,
+            -0.00971528189,
+            6.64959533e-07,
+            -2.230078776e-11,
+            2.899388702e-16,
+            2355273.444,
+            -640.512316
+          ]
+        }
+      ]
+    },
+    "O": {
+      "source_name": "O",
+      "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+      "hf298_J_mol": 249175.003,
+      "mass_u": 15.9994,
+      "h298_minus_h0_J_mol": 6725.403,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -7953.6113,
+            160.7177787,
+            1.966226438,
+            0.00101367031,
+            -1.110415423e-06,
+            6.5175075e-10,
+            -1.584779251e-13,
+            28403.62437,
+            8.40424182
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            261902.0262,
+            -729.872203,
+            3.31717727,
+            -0.000428133436,
+            1.036104594e-07,
+            -9.43830433e-12,
+            2.725038297e-16,
+            33924.2806,
+            -0.667958535
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            177900426.4,
+            -108232.8257,
+            28.10778365,
+            -0.002975232262,
+            1.854997534e-07,
+            -5.79623154e-12,
+            7.191720164e-17,
+            889094.263,
+            -218.1728151
+          ]
+        }
+      ]
+    }
+  },
+  "atomic_janaf_tables": {
+    "C": "tests/data/validation/c3_source_review/20261102/C-003.txt",
+    "H": "tests/data/validation/oh_source_review/20261105/H-001.txt",
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt"
+  },
+  "atct_1.228": {
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998
+    },
+    "C": {
+      "hf0_kJ_mol": 711.37,
+      "hf298_kJ_mol": 716.855
+    },
+    "O": {
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229
+    },
+    "CH2O": {
+      "hf0_kJ_mol": -105.386,
+      "hf298_kJ_mol": -109.226,
+      "printed_hf298_uncertainty_kJ_mol": 0.078
+    }
+  },
+  "partition": {
+    "file": "AYTY.pf",
+    "definition_file": "AYTY.def",
+    "isotope_mass_u": 30.01056468,
+    "spin_divisor": 4,
+    "paper_temperature_limit_K": 1500,
+    "definition_temperature_limit_K": 3000,
+    "tabulated_maximum_K": 3000,
+    "nuclear_weights": [
+      1,
+      1,
+      3,
+      3
+    ]
+  },
+  "decision": "Prioritize a balanced ATcT energy-only candidate retaining current thermal functions; compare a NASA-thermal control separately. AYTY is not established complete over 1500\u20134000 K. No production replacement in this review."
+}

@@ -1,0 +1,13 @@
+{
+  "review_date": "2026-11-05",
+  "access": "Official displayed ATcT1.228 entries rechecked via web tool. Values match the existing frozen source review; no HTML byte hash or new audit of every original network input is claimed.",
+  "C": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21",
+  "S": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=138",
+  "molecule": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+  "hf0_kJ_mol": {
+    "C": 711.37,
+    "S": 276.85,
+    "CS2": 115.17
+  },
+  "scope": "Version-fixed energy central values; correlated network uncertainties are not propagated. Underlying papers retain access limits recorded in the historical source review."
+}
