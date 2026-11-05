@@ -1,0 +1,32 @@
+{
+  "current": "Inherited FastChem Lodders 2004 five-coefficient fit, not a NASA/ATcT hybrid. Source attribution corroborated; complete historical fit training/provenance remains unavailable.",
+  "primary_sources": [
+    {
+      "doi": "10.1063/1.1611178",
+      "access": "Full author PDF, sections 2.3 and tables 1,6,7 inspected.",
+      "finding": "Lodders selects spectroscopic D0=463 +/-24 kJ/mol and Hf298=283.40 +/-24; original JANAF NS formation values are erroneous. Thermal functions use Gurvich."
+    },
+    {
+      "doi": "10.1016/S0009-2614(02)01619-6",
+      "access": "Full author-repository PDF inspected; do not conflate its recommendation with Lodders.",
+      "finding": "Peebles and Marshall report Hf0=277.3 +/-2 and Hf298=278.0 +/-2 kJ/mol from three CCSD(T) working reactions; the paper gives D0=468.2 kJ/mol."
+    },
+    {
+      "doi": "10.1093/mnras/sty939",
+      "access": "Full author PDF section3.2 and official states/PF/definition inspected.",
+      "finding": "SNaSH includes X2Pi rovibronic levels, 14N32S gtot has nuclear spin factor3. Higher a4Pi electronic state is omitted; paper estimates its effect below1% at5000K. That is an author estimate, not a quantified uncertainty established here."
+    }
+  ],
+  "secondary_confirmation": {
+    "url": "https://jpldataeval.jpl.nasa.gov/pdf/NASA-JPL%20Evaluation%2019-5.pdf",
+    "access": "NS note76 inspected through primary evaluator PDF text",
+    "finding": "JPL2019 names Lodders thermal update and Peebles\u2013Marshall energy recommendation separately."
+  },
+  "decision": "Retain production for this source review; prioritize a Peebles/JPL energy candidate with explicitly balanced reference atoms and a substitution solve. Do not replace corrected Lodders by old NASA or uncorrected JANAF simply to reduce their ratio. SNaSH supports the current thermal family and does not require thermal replacement.",
+  "limitations": [
+    "Lodders molecular+NASA atomic reconstruction intentionally differs in atomic convention and inherited fit by approximately1\u20132%; it is an attribution diagnostic, not exact recovery of the historical fitting process.",
+    "Peebles H298 shift is only a scale diagnostic; no modern ATcT NS value or same-version NS/atom network has been pinned.",
+    "Natural elemental translation and one principal isotope Q are an approximation; explicit isotope mixture is uncomputed.",
+    "No new equilibrium solve; trace footprint on this grid is not a statement about all planetary atmospheres."
+  ]
+}
