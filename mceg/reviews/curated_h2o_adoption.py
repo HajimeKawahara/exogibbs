@@ -15,7 +15,7 @@ import numpy as np
 from scipy.special import logsumexp
 
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
-from exogibbs.presets import curated, curated_h2o, curated_tio
+from exogibbs.presets import curated_h2o as curated, curated_h2o, curated_tio
 
 from c2h_equilibrium_impact import independent_check
 import co2_candidate

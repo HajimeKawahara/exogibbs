@@ -3,23 +3,25 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The current dataset, ``curated-h2o-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-oh-v1``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
-The :doc:`H2O update <curated_h2o>` adopts the evaluated 2025 water thermal
-model with retained ATcT energy and NASA atomic references. It retains the
+The :doc:`OH update <curated_oh>` replaces inherited JANAF OH with the
+reviewed NASA thermal functions and balanced ATcT 1.172 energy. It retains the
+:doc:`evaluated H2O update <curated_h2o>`,
 :doc:`NIST 626 CO2 update <curated_co2>`, :doc:`TiO update <curated_tio>`
 and :doc:`C2H correction <curated_c2h>`.
 The source preference is supported within the declared gas-model domain;
 complete physical uncertainty remains unquantified.
 
 Use ``curated_v1.chemsetup``, ``curated_c2h.chemsetup``,
-``curated_tio.chemsetup`` or ``curated_co2.chemsetup`` to reproduce the earlier
-datasets, or ``curated_h2o.chemsetup`` to select this version explicitly. Each supports
+``curated_tio.chemsetup``, ``curated_co2.chemsetup`` or ``curated_h2o.chemsetup``
+to reproduce the earlier datasets, or ``curated_oh.chemsetup`` to select this
+version explicitly. Each supports
 ``ions=False`` and retains its identity and historical evidence. Changing one
 formation function can alter coupled abundances throughout the network.
-See the H2O guide for the adoption rationale and combined CO2/H2O verification.
+See the OH guide for the adoption rationale and production verification.
 
 Migration from the Ni/Co-only preset
 ------------------------------------
@@ -220,14 +222,16 @@ The model combines :doc:`../atomic_ion_adoption` and
 * H2O uses the evaluated 2025 thermal model with unchanged balanced ATcT 1.172
   total atomization energy, explicit nuclear-spin and isotope conventions,
   and analytically consistent G, H, S and Cp.
-* 426 other species retain pinned FastChem4 constants and are marked
+* OH uses the exact NASA9 reaction with balanced ATcT 1.172 atomization
+  energy, replacing the inherited JANAF electronic/caloric defect.
+* 425 other species retain pinned FastChem4 constants and are marked
   ``inherited_unreviewed``. The 27 atoms and electron define the zero reference
   gauge. This is not a claim that all 537 species have been independently audited.
 
 For known thermochemical differences and optional MCEG inspection, see
 :doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
-provides a record lookup without requiring MCEG. The default matches the H2O
-adoption record and retains the CO2, TiO and C2H updates. The earlier HCN comparison belongs to
+provides a record lookup without requiring MCEG. The default matches the OH
+adoption record and retains the H2O, CO2, TiO and C2H updates. The earlier HCN comparison belongs to
 ``curated_v1``; it is not evidence for the changed default.
 
 Use ``setup.metadata["species_provenance"][species]`` for a species decision,
@@ -267,8 +271,9 @@ absolute charge carried by all species plus the absolute requested net charge.
 Diagonal regularization of signed constraints scales with their own matrix diagonal;
 a fixed absolute shift previously overwhelmed weakly ionized cases.
 
-The current default's combined CO2/H2O verification and scope are recorded
-in :doc:`curated_h2o`. The preceding CO2-only execution remains in
+The current default's OH verification and scope are recorded in
+:doc:`curated_oh`. The preceding combined CO2/H2O execution remains in
+:doc:`curated_h2o`, and the CO2-only execution remains in
 :doc:`curated_co2`.
 The earlier TiO execution remains in :doc:`curated_tio`.
 The previous C2H default's 75 cold solves per network remain in
@@ -408,7 +413,7 @@ and :download:`the inverted column <../../tests/data/validation/curated_atmosphe
 Artifacts and reproduction
 --------------------------
 
-Current default evidence is in :doc:`curated_h2o`. The artifacts
+Current default evidence is in :doc:`curated_oh`. The artifacts
 below belong to **curated-gas-v1**; the reproduction scripts explicitly select
 ``curated_v1`` and preserve their original numerical scope.
 

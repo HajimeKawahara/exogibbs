@@ -1,0 +1,65 @@
+{
+  "id": "oh_nasa_thermal_atct_1_172_candidate_v1",
+  "species": "H1O1",
+  "reaction": "H(g)+O(g)->OH(g)",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "source_interval_K": [
+    1000,
+    6000
+  ],
+  "representation": "Exact OH-H-O NASA9 linear combination; only b1 receives the ATcT energy correction; no fit",
+  "D0_J_mol": 425604.0,
+  "D0_over_k_K": 51188.39539560438,
+  "nasa_D0_J_mol": 425785.9,
+  "ATcT_minus_nasa_D0_over_k_K": -21.585709716324345,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_gas_constant_J_mol_K": 8.31451,
+  "formation_nasa9_coefficients": [
+    755430.5650575,
+    -1779.9031375583004,
+    -0.7008412270000002,
+    0.0005587860802864001,
+    -1.8649101076330002e-07,
+    2.950875148456e-11,
+    -1.8298385067197e-15,
+    -39181.156810283675,
+    -9.896673058
+  ],
+  "nasa_molecular_thermal_coefficients": [
+    1017393.379,
+    -2509.957276,
+    5.11654786,
+    0.000130529993,
+    -8.28432226e-08,
+    2.006475941e-11,
+    -1.556993656e-15,
+    16772.856956319807,
+    -11.01282337
+  ],
+  "atomic_background_nasa9": [
+    -261962.81394249998,
+    730.0541384417,
+    -5.8173890870000005,
+    0.0004282560872864,
+    -1.036477881633e-07,
+    9.44399207456e-12,
+    -2.7284485071969997e-16,
+    -4765.618370999102,
+    1.116150312
+  ],
+  "molecular_mass_u": 17.00734,
+  "thermal_convention": "NASA dimensionless thermal functions retained; assigned H0 removed with native R, calorics expressed with modern SI R; balanced ATcT D0 inserted once",
+  "mythos_control": "Direct sum of all 10606 archived 16O1H MYTHOS states; Q/2 removes nuclear spin once; parity and electronic/fine structure retained; natural-mass translation; no extra symmetry factor, ZPE, cutoff, continuum or scattering term",
+  "uncertainty_scope": "Numerical reproduction and a finite-state thermal comparison; no new physical uncertainty or ATcT covariance estimate",
+  "source_sha256": {
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "tests/data/validation/oh_source_review/20261105/literature.json": "fe13a72ff050b3830b4c17b9901721501e844962584049971d588986e3b6c677",
+    "tests/data/validation/oh_source_review/20261105/states.npz": "c1d1a042b137ee52100e2f63f298ac5c7cd3b22d4410362e5ecfbb684ec2e7bb",
+    "tests/data/validation/oh_source_review/20261105/state_inventory.json": "7d09a1ac26b21de19fbe8aa2530fb25869c8e1e3eb6a3cc2a6b9e6b8fa1bd927"
+  }
+}

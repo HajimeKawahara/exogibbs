@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-11-04"
+RECORD_VERSION = "2026-11-05"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -219,7 +219,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
         raise ValueError("H2O summary differs from the archived execution")
     catalog["models"].append({
         "id": "exogibbs.curated_h2o.v1",
-        "label": "Curated default with evaluated H2O and NIST CO2 (ion-inclusive lookup)",
+        "label": "Versioned curated evaluated H2O and NIST CO2 (ion-inclusive lookup)",
         "dataset": h2o_data["id"],
         "identity": {"data_sha256": h2o_digest, "settings": {"ions": True}},
         "species": [c2h_species[k] for k in sorted(c2h_species)],
@@ -229,7 +229,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "physical_accuracy_review"],
             "artifacts": [h2o_receipt, h2o_summary],
             "summary": (
-                "Default curated-h2o-v1 adopts the exact reviewed evaluated-2025 water "
+                "Former default, retained as curated_h2o: curated-h2o-v1 adopts the exact reviewed evaluated-2025 water "
                 "Cp polynomial and analytic H/S integrals on curated-co2-v1 at 1500-4000 K. "
                 "The representative H2(16O) internal model uses NASA aggregate mass 18.01528 u, "
                 "NASA atoms and retained ATcT 1.172 total atomization 917.819 kJ/mol. "
@@ -242,6 +242,47 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "and physical atmospheric accuracy remain unknown. Earlier versioned presets "
                 "and their evidence remain available. Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/330"],
+        }],
+    })
+    oh_path = "src/exogibbs/data/curated/oh_v1.json"
+    oh_bytes = (ROOT / oh_path).read_bytes()
+    oh_data = json.loads(oh_bytes)
+    oh_digest = hashlib.sha256(oh_bytes).hexdigest()
+    oh_adoption = "tests/data/validation/curated_oh_adoption/20261105"
+    oh_execution = json.loads((ROOT / oh_adoption / "receipt.json").read_text())
+    if (oh_digest != oh_execution["selected_file_sha256"][oh_path]
+            or h2o_digest != oh_data["base_data_sha256"]):
+        raise ValueError("OH data changed; review new evidence before rebinding the adoption")
+    oh_contract = copy("mceg/contracts/curated_oh.yaml", "contracts/curated_oh.yaml")
+    oh_receipt = copy(f"{oh_adoption}/receipt.json", "artifacts/oh_adoption_receipt.json")
+    oh_summary = copy(f"{oh_adoption}/summary.json", "artifacts/oh_adoption_summary.json")
+    if oh_summary["sha256"] != oh_execution["output_sha256"]["summary.json"]:
+        raise ValueError("OH summary differs from the archived execution")
+    oh_species = {**c2h_species, "H1O1": {"id": "H1O1", "aliases": ["OH"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_oh.v1",
+        "label": "Curated default with NASA/ATcT OH (ion-inclusive lookup)",
+        "dataset": oh_data["id"],
+        "identity": {"data_sha256": oh_digest, "settings": {"ions": True}},
+        "species": [oh_species[k] for k in sorted(oh_species)],
+        "records": [{
+            "id": "oh_adoption", **oh_contract, "species": ["*", "H1O1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [oh_receipt, oh_summary],
+            "summary": (
+                "Default curated-oh-v1 replaces the inherited JANAF OH electronic/caloric defect "
+                "with the exact NASA9 reaction and balanced ATcT 1.172 D0=425.604 kJ/mol, "
+                "on curated-h2o-v1 at 1500-4000 K. Only OH changes; H2O, CO2, TiO, C2H, "
+                "other formation functions, species and budgets are retained. MYTHOS is a "
+                "finite-state thermal control, differing by less than 0.098 percent in K; "
+                "it is not adopted. Both network modes pass 75 fresh cold solves, six tighter "
+                "candidate controls and two independent FastChem comparisons. Scoped source "
+                "selection and numerical adoption are supported; complete isotope, continuum, "
+                "energy covariance and atmospheric physical accuracy remain unknown. "
+                "Earlier versioned presets and immutable evidence remain available. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/334"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")

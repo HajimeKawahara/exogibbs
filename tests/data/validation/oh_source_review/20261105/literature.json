@@ -1,0 +1,105 @@
+{
+  "nasa_headers": {
+    "OH": {
+      "source_line_1based": 7988,
+      "mass_u": 17.00734,
+      "hf298_J_mol": 37278.206,
+      "h298_minus_h0_J_mol": 8813.106
+    },
+    "H": {
+      "source_line_1based": 5372,
+      "mass_u": 1.00794,
+      "hf298_J_mol": 217998.828,
+      "h298_minus_h0_J_mol": 6197.428
+    },
+    "O": {
+      "source_line_1based": 7928,
+      "mass_u": 15.9994,
+      "hf298_J_mol": 249175.003,
+      "h298_minus_h0_J_mol": 6725.403
+    }
+  },
+  "atct": {
+    "version": "1.172",
+    "OH_hf0_kJ_mol": 37.274,
+    "OH_hf298_kJ_mol": 37.514,
+    "reported_uncertainty_kJ_mol": 0.022,
+    "source": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+    "inspection": "Official version table inspected through web; direct download returned HTTP 403. H/O values and source identifiers reuse the pinned major-molecule reference. Covariance is unavailable; no independent-error propagation."
+  },
+  "iupac2005": {
+    "doi": "10.1063/1.1724828",
+    "inspection": "OH section pp. 633–638 inspected through the official author-hosted PDF web extraction; no local PDF bytes retrieved. Numerical nodes selected from p. 637.",
+    "known_janaf_defect": "Ground electronic degeneracy and multiplicity are treated incorrectly; caloric increments and formation-enthalpy temperature corrections are affected (pp635,638).",
+    "columns": [
+      "T_K",
+      "Cp_J_mol_K",
+      "S_J_mol_K",
+      "H_minus_H0_kJ_mol"
+    ],
+    "nodes": [
+      [
+        298.15,
+        29.886,
+        183.737,
+        8.813
+      ],
+      [
+        500,
+        29.495,
+        199.066,
+        14.795
+      ],
+      [
+        1000,
+        30.682,
+        219.73,
+        29.734
+      ],
+      [
+        1500,
+        32.956,
+        232.605,
+        45.65
+      ],
+      [
+        2000,
+        34.766,
+        242.348,
+        62.606
+      ],
+      [
+        2500,
+        36.06,
+        250.252,
+        80.327
+      ],
+      [
+        3000,
+        37.036,
+        256.917,
+        98.613
+      ]
+    ],
+    "ancestry": "Thermal functions adopted from Gurvich 1989 direct rovibrational sums, not independent of the NASA/Gurvich thermal model."
+  },
+  "mythos2025": {
+    "doi": "10.1093/mnras/stae2803",
+    "inspection": "Full author-hosted paper inspected, especially sections4,6.2,6.3.",
+    "claims": [
+      "8000 K line list with 10606 states; Jmax=49.5. The 99.87% convergence metric at 10000 K is a last-shell diagnostic, not a rigorous omitted-tail bound.",
+      "Only X/A states below the X dissociation limit are strictly bound; higher included states may be quasi-bound. Continuum is excluded.",
+      "Barklem-Collet and Sauval-Tatum require a nuclear-spin factor of 2 for comparison."
+    ],
+    "limits": "Spectral accuracy and opacity reach do not imply quantified thermodynamic uncertainty. MYTHOS and MoLLIST share empirical spectroscopy."
+  },
+  "brooke2016": {
+    "doi": "10.1016/j.jqsrt.2015.07.021",
+    "inspection": "Author preprint arXiv:1503.08420v2 inspected, section 7; accepted Bristol manuscript URL returned HTTP 403.",
+    "claims": [
+      "X-state levels through v=13; Jmax depends on v; Q is tabulated at 5–6000 K.",
+      "Unresolved H hyperfine is represented by multiplying each level weight by 2."
+    ]
+  },
+  "decision": "Prioritize a replacement candidate for inherited JANAF/FastChem OH: known source defects plus modern source comparison justify follow-up. This source review itself does not adopt coefficients or run finite substitutions."
+}
