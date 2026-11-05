@@ -37,5 +37,6 @@
     "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
     "full_download_sha256": "42a597ff852d1a2995f81d4fdca069f3cdcaef77ead5e3c66e02e80ed6699101",
     "inspection": "Previously retrieved official selected PO record inspected; NASA7 fit explicitly derived from Gurvich1989, Hf298=-27.858 +/-3 kJ/mol; same ancestry as NASA9. Parenthetical JANAF sign in Burcat commentary is not the actual web table sign."
-  }
+  },
+  "NASA_line_number_note": "screening_baseline_source_line_1based preserves the original screening file locator. It is not a line number in the official NASA download or nasa-selected.txt; the official source hash and selected species/header records identify the inspected source."
 }
