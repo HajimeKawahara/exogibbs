@@ -1,0 +1,62 @@
+{
+  "retrieved_date": "2026-11-05",
+  "sources": [
+    {
+      "id": "official_NASA",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "upstream_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "file": "nasa_selected.txt",
+      "inspection": "Selected official molecular and atomic records inspected; both coefficient intervals match the frozen screening. Official 300 K lower bounds retained where present; no extrapolation to 298.15 K. NASA_R=8.314510 is distinct from SI_R.",
+      "sha256": "63f82865f05dc3ac347b5bff04fb962732308dd3f1a701f9b81389af884b38ed",
+      "archived": true
+    },
+    {
+      "id": "official_JANAF",
+      "url": "https://janaf.nist.gov/tables/H-012.txt",
+      "file": "janaf.txt",
+      "inspection": "Exact one-bar neutral monomer table inspected; formula checked against the frozen map. No dimer, ion or condensed-phase substitution.",
+      "sha256": "507eb58e7340de15c7f05207be0f22af9a08d177f8d3c4fd973115e49ae251ab",
+      "archived": true
+    },
+    {
+      "id": "evaluated_source",
+      "doi": "10.1063/1.555996",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.555996.pdf",
+      "inspection": "Full Gurvich 1997 evaluation text sections2.2.1-2.2.2 pp1046-1058 inspected, especially Table23 and selected formation enthalpy. Original ancestral experimental papers not independently inspected.",
+      "archived": false
+    },
+    {
+      "id": "ExoMol_partition",
+      "doi": "10.1093/mnras/staa4041",
+      "url": "https://www.exomol.com/db/KOH/39K-16O-1H/OYT4/39K-16O-1H__OYT4.pf",
+      "file": "OYT4.pf",
+      "inspection": "Official distributed partition table inspected and compared as a finite rovibrational sum; not a full thermodynamic convergence certificate.",
+      "sha256": "7dd7280227ba2d41e763bf757a6ca474ee17f31b27210b247174c5c82e8d32da",
+      "archived": true
+    },
+    {
+      "id": "ExoMol_definition",
+      "url": "https://www.exomol.com/db/KOH/39K-16O-1H/OYT4/39K-16O-1H__OYT4.def",
+      "file": "OYT4.def",
+      "inspection": "Mass, symmetry weights and stated line-list/partition limits inspected; disagreements are preserved, not silently corrected.",
+      "sha256": "0b85d87bbeaabee17f3d2b4cb3b7c6b4461ec882b7da84dee6e6f31c3d5dac47",
+      "archived": true
+    },
+    {
+      "id": "ExoMol_state_excerpt",
+      "url": "https://www.exomol.com/db/KOH/39K-16O-1H/OYT4/39K-16O-1H__OYT4.states.bz2",
+      "file": "first10.states",
+      "inspection": "First ten J=0 records only, read by streaming a small compressed prefix. Ground energy zero and total weights8 confirm the paper normalization; not a full state-sum recomputation.",
+      "sha256": "25d9afa326f77b25a6c3118d035241ab7757d4d876b174f52b91758a10de1160",
+      "archived": true
+    },
+    {
+      "id": "Owens2021_fulltext",
+      "doi": "10.1093/mnras/staa4041",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/21OwTeYu.pdf",
+      "upstream_sha256": "781066d7cfd8ba3ab224573e5d5029b873d9e8845521e89798c91a42257ed313",
+      "inspection": "Full author-hosted published article inspected, sections2/3, Table1 and Figures1/2. Opacity lower-state cutoff and total-PF convergence are different diagnostics. No full paper archived."
+    }
+  ],
+  "redistribution": "Only numerical tables, selected public NASA records, short state excerpts, source metadata and derived facts are archived. Full articles remain external."
+}
