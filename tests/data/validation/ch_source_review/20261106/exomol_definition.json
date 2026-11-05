@@ -1,0 +1,107 @@
+{
+    "isotopologue": {
+        "iso_formula": "(12C)(1H)",
+        "iso_slug": "12C-1H",
+        "inchi": "InChI=1S/CH/h1H/i1+0H",
+        "inchikey": "VRLIPUYDFBXWCH-HXFQMGJMSA-N",
+        "cas_registry_number": "3315-37-5",
+        "mass_in_Da": 13.00782503,
+        "point_group": "Cs"
+    },
+    "atoms": {
+        "number_of_atoms": 2,
+        "element": {
+            "C": 12,
+            "H": 1
+        }
+    },
+    "irreducible_representations": {
+        "Sigma+": 2,
+        "Sigma-": 2
+    },
+    "dataset": {
+        "name": "MoLLIST",
+        "version": 20190214,
+        "doi": "10.5281/zenodo.5716692",
+        "max_temperature": 8000.0,
+        "num_pressure_broadeners": 0,
+        "cooling_function_available": false,
+        "specific_heat_available": false,
+        "continuum": false,
+        "states": {
+            "number_of_states": 2681,
+            "max_energy": null,
+            "hyperfine_resolved_dataset": false,
+            "uncertainty_description": null,
+            "uncertainties_available": false,
+            "lifetime_available": false,
+            "lande_g_available": false,
+            "quantum_case_label": "dos",
+            "num_quanta": 4,
+            "num_quantum_types": 1,
+            "states_file_fields": [
+                {
+                    "name": "ID",
+                    "desc": "Unique integer identifier for the energy level",
+                    "ffmt": "I12",
+                    "cfmt": "%12d"
+                },
+                {
+                    "name": "E",
+                    "desc": "State energy in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "gtot",
+                    "desc": "Total energy level degeneracy",
+                    "ffmt": "I6",
+                    "cfmt": "%6d"
+                },
+                {
+                    "name": "J",
+                    "desc": "Total rotational quantum number, excluding nuclear spin",
+                    "ffmt": "F7.1",
+                    "cfmt": "%7.1f"
+                },
+                {
+                    "name": "v",
+                    "ffmt": "I3",
+                    "cfmt": "%3d",
+                    "desc": "Vibrational quantum number"
+                },
+                {
+                    "name": "hundb:N",
+                    "ffmt": "I3",
+                    "cfmt": "%3d",
+                    "desc": "N quantum number"
+                },
+                {
+                    "name": "e/f",
+                    "ffmt": "A1",
+                    "cfmt": "%1s",
+                    "desc": "Rotationless-parity"
+                },
+                {
+                    "name": "ElecState",
+                    "ffmt": "A12",
+                    "cfmt": "%12s",
+                    "desc": "Electronic state"
+                }
+            ]
+        },
+        "transitions": {
+            "number_of_transitions": 53079,
+            "number_of_transition_files": 1,
+            "max_wavenumber": 39140.274477
+        }
+    },
+    "partition_function": {
+        "max_partition_function_temperature": 8000.0,
+        "partition_function_step_size": 1.0
+    },
+    "broad": {
+        "default_Lorentzian_half-width": 0.07,
+        "default_temperature_exponent": 0.5
+    }
+}
