@@ -15,6 +15,11 @@ assumptions:
   evidence:
   - literature_review
   - source_replay
+- statement: The new RRHO calculation includes one well and one electronic component per archived record. Missing
+    states, enantiomer counting, anharmonic/hindered motion and dissociation coverage are not inferred from numerical
+    replay.
+  evidence:
+  - state_replay
 domains:
 - kind: numerical_evaluation
   status: documented
@@ -43,10 +48,11 @@ claims:
   scope: Neutral S4 gas; 4 S(g) -> S4(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
     curated-cos footprint only.
 - id: modern_source_screen
-  revision: '1'
+  revision: '2'
   kind: numerical_verification
-  statement: A primary abstract supports an illustrative triplet electronic weight, while physical TAE0 and complete
-    rovibrational/state counting remain unresolved.
+  statement: In the original source packet, a primary abstract supports an illustrative triplet electronic weight,
+    while physical TAE0 and complete rovibrational/state counting remain unresolved. The separate state_reconstruction
+    assessment records subsequent progress.
   scope: Neutral S4 gas; 4 S(g) -> S4(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
     curated-cos footprint only.
 - id: numerical_replay
@@ -68,6 +74,14 @@ claims:
   statement: S4 standard functions and atmospheric abundances have quantified physical accuracy over intended applications.
   scope: Neutral S4 gas; 4 S(g) -> S4(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
     curated-cos footprint only.
+- id: state_reconstruction
+  revision: '1'
+  kind: numerical_verification
+  statement: Recovered numerical structures support a reproducible but incomplete RRHO diagnostic; physical W4-08
+    S4 TAE0 is distinguished from JANAF D298 and a hybrid thermal sensitivity.
+  scope: S4 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim. Separately inspected W4-08
+    physical TAE0 and an explicitly hybrid JANAF/Jackson temperature bridge.
 evidence:
 - id: literature_review
   kind: literature
@@ -113,6 +127,37 @@ evidence:
     inspection: inspected
     note: Access is recorded per source. The archived grid is not a new substitution; convergence and trace abundance
       do not quantify physical uncertainty.
+  result: passed
+- id: state_replay
+  kind: numerical_test
+  summary: Independent RRHO reconstruction from selected primary numerical facts, with source access and limitations
+    recorded separately from the unchanged historical source packet.
+  sources:
+  - documents/mceg/s4_state_followup.rst
+  - tests/data/validation/s4_state_followup/20261105/sources.json
+  - tests/data/validation/s4_state_followup/20261105/diagnostic.json
+  - tests/data/validation/s4_state_followup/20261105/receipt.json
+  scope: S4 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim. Separately inspected W4-08
+    physical TAE0 and an explicitly hybrid JANAF/Jackson temperature bridge.
+  subject: s4_states_20261105
+  context: state_reconstruction
+  artifacts:
+  - source: documents/mceg/s4_state_followup.rst
+    sha256: f3ca25f7091f0bf3acec141fc283462737539ed65a08dabf1082ce069d8d6c8a
+  - source: tests/data/validation/s4_state_followup/20261105/sources.json
+    sha256: b33b165bdf7aa7e98361354f1d3d8cc68dbf54b77503207d5d48c17cd23bdf31
+  - source: tests/data/validation/s4_state_followup/20261105/diagnostic.json
+    sha256: 99dbaec19ef328c0c392e484c1a95ac2e94706718e5ec95f0af9785411dedfc7
+  - source: tests/data/validation/s4_state_followup/20261105/receipt.json
+    sha256: d256d7dc3a89ac7a2c7c5109aab94943d2e231335e248b58863905afab0a3448
+  provenance:
+    role: primary
+    location: documents/mceg/s4_state_followup.rst
+    inspection: inspected
+    note: Only selected numerical molecular facts are archived; author code is neither copied nor executed. Initial-submission
+      data is not asserted to reproduce every final-paper result. This is a restricted-state diagnostic, not a new
+      production candidate.
   result: passed
 subjects:
 - id: s4_sources_20261105
@@ -167,6 +212,22 @@ subjects:
     tests/data/validation/s4_source_review/20261105/sources.json: 3ff7fe46448ebb4b2faa854313d290848afa8223b25c54a3b0d615aea2c42791
     tests/model_evidence/s4_source_review_test.py: 02299ad25b3c272e81b19d0d97a72f136b7c2e039dab6e36d424babac8f465f5
     tests/data/validation/s4_source_review/20261105/receipt.json: 5f0ba2676bf7b8110c7d0d98454fa014b318856d14fa0bb13ab6894d5253021b
+- id: s4_states_20261105
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
+    entry_points:
+    - mceg/reviews/sulfur_state_followup.py
+  selected_files:
+    mceg/reviews/sulfur_state_followup.py: ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
+    documents/mceg/s4_state_followup.rst: f3ca25f7091f0bf3acec141fc283462737539ed65a08dabf1082ce069d8d6c8a
+    tests/model_evidence/s4_state_followup_test.py: ff10b4f14fbcc222b0e0a161ce050e75fe51ff26e984ec2d510d9ba3f528b558
+    tests/data/validation/s4_source_review/20261105/comparison.json: d351181d91cef6c325c5ba9bd63a7d00f48958e533ffe9ad28465c849e0b6a78
+    tests/data/validation/s4_state_followup/20261105/README.rst: 749bf946b54609548740512e0d98e8c0726c1674cf8b843f3a4f32777eaa8c1e
+    tests/data/validation/s4_state_followup/20261105/diagnostic.json: 99dbaec19ef328c0c392e484c1a95ac2e94706718e5ec95f0af9785411dedfc7
+    tests/data/validation/s4_state_followup/20261105/inputs.json: 6d349dbdf8bc7fa44558b1c9f5e7ccf106485d2cf6652f5ed799a93e94d99060
+    tests/data/validation/s4_state_followup/20261105/receipt.json: d256d7dc3a89ac7a2c7c5109aab94943d2e231335e248b58863905afab0a3448
+    tests/data/validation/s4_state_followup/20261105/sources.json: b33b165bdf7aa7e98361354f1d3d8cc68dbf54b77503207d5d48c17cd23bdf31
 contexts:
 - id: source_comparison
   scope: Neutral S4 gas; 4 S(g) -> S4(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
@@ -179,8 +240,22 @@ contexts:
       with molecular Hf.
     grid_reuse: curated_cos_adoption/20261105/ions.npz; no new solve
     curated_change: none
-    modern_diagnostic: A primary abstract supports an illustrative triplet electronic weight, while physical TAE0
-      and complete rovibrational/state counting remain unresolved.
+    modern_diagnostic: 'Historical source-packet status: A primary abstract supports an illustrative triplet electronic
+      weight, while physical TAE0 and complete rovibrational/state counting remain unresolved.'
+- id: state_reconstruction
+  scope: S4 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim. Separately inspected W4-08
+    physical TAE0 and an explicitly hybrid JANAF/Jackson temperature bridge.
+  settings:
+    temperature_K: 250-4000; formal RRHO diagnostic, not physical applicability
+    standard_pressure_bar: 1
+    atomic_mass_u: 32.065
+    electronic_components_per_record: 1
+    rotational_symmetry: Archived value; no extra enantiomer factor. One well per recorded geometry.
+    energy_reference: Relative electronic energy plus already-scaled harmonic ZPE among same-size records; no absolute
+      DFT calibration adoption.
+    new_equilibrium_solves: 0
+    curated_change: none
 assessments:
 - id: source_attribution_review
   kind: evidence_support
@@ -204,7 +279,7 @@ assessments:
 - id: modern_source_screen_review
   kind: evidence_support
   claim: modern_source_screen
-  claim_revision: '1'
+  claim_revision: '2'
   subject: s4_sources_20261105
   context: source_comparison
   method: *id002
@@ -212,8 +287,9 @@ assessments:
   - literature_review
   - source_replay
   reasons:
-  - A primary abstract supports an illustrative triplet electronic weight, while physical TAE0 and complete rovibrational/state
-    counting remain unresolved. The diagnostic does not claim a full high-temperature partition calculation.
+  - This assessment concerns the unchanged historical packet. A primary abstract supports an illustrative triplet
+    electronic weight, while physical TAE0 and complete rovibrational/state counting remain unresolved. The diagnostic
+    does not claim a full high-temperature partition calculation.
   status: supported
   origin: reviewed
 - id: numerical_replay_review
@@ -260,13 +336,33 @@ assessments:
     are not established; tiny archived abundance is not an error bound.
   status: unknown
   origin: reviewed
+- id: state_reconstruction_review
+  kind: evidence_support
+  claim: state_reconstruction
+  claim_revision: '1'
+  subject: s4_states_20261105
+  context: state_reconstruction
+  method:
+    id: sulfur_state_followup
+    revision: '1'
+    description: Reconstruct explicit RRHO wells, verify thermodynamic derivatives and geometry invariance, separate
+      conditional state counting and energy conventions from physical adoption.
+  evidence:
+  - state_replay
+  reasons:
+  - Two recovered S4 structures add less than 0.8 percent to Q by 4000 K but do not account for an omitted triplet.
+    Physical W4-08 TAE0 is recovered; intrinsic JANAF D0 is unavailable from the inspected table. The declared hybrid
+    comparison does not supply an adopted correction.
+  status: supported
+  origin: reviewed
 follow_ups:
 - id: candidate_step_1
   target_kind: claim
   target: candidate_adoption
   revision: '1'
-  action: Recover the S4 physical TAE0 entry and its convention from W4-11 supporting information (10.1016/j.cplett.2011.05.007);
-    compare against a consistently balanced legacy energy.
+  action: Use the recovered W4-08 physical TAE0 only with a defensible molecular thermal reference. JANAF D298 is
+    known, but its intrinsic D0 remains unavailable from the inspected table; the Jackson-based bridge is explicitly
+    hybrid.
   requires:
   - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
   - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
@@ -287,8 +383,8 @@ follow_ups:
   target_kind: claim
   target: candidate_adoption
   revision: '1'
-  action: Reconstruct a declared S4 thermal candidate using individual species data from Jackson 2016 or Fedyaeva
-    2023; compare H, S, Cp and ln K before any fixed-network substitution.
+  action: Extend the recovered two-structure Jackson diagnostic with validated triplet/low-barrier and state-counting
+    inputs before proposing a complete thermal candidate or fixed-network substitution.
   requires:
   - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
   - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
@@ -308,3 +404,7 @@ limitations:
     or new equilibrium substitution.
   evidence:
   - source_replay
+- statement: The follow-up has recovered a restricted numerical subset, not a physically complete partition function.
+    High-temperature conditional weights are a formal diagnostic, not atmospheric populations or accuracy bounds.
+  evidence:
+  - state_replay

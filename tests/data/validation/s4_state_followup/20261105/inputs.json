@@ -1,0 +1,101 @@
+{
+  "species": "S4",
+  "atoms_per_molecule": 4,
+  "atomic_mass_u": 32.065,
+  "pressure_Pa": 100000,
+  "frequency_scale_applied_in_source": 0.96,
+  "scope": "A limited one-electronic-component RRHO diagnostic of the archived PBE0/0.96 entries. 1500-4000 K values stress-test extrapolation and do not establish physical validity. Missing electronic states, isomers, anharmonicity and counting remain unresolved.",
+  "states": {
+    "S4_buckled": {
+      "positions_angstrom": [
+        [
+          6.02155312,
+          5.01832805,
+          5.02162185
+        ],
+        [
+          7.75441866,
+          6.01865645,
+          5.64888291
+        ],
+        [
+          5.0215719,
+          6.75126146,
+          5.64924874
+        ],
+        [
+          6.75415831,
+          7.75117603,
+          5.0205585
+        ]
+      ],
+      "all_frequencies_cm-1": [
+        -0.7260212256,
+        -0.500898336,
+        -0.46085478719999995,
+        -0.0038602944000000004,
+        0.017965843199999998,
+        0.0195383712,
+        204.6496992288,
+        290.3382235008,
+        434.5071032064,
+        434.50715377919994,
+        462.02007053759996,
+        520.2002899872
+      ],
+      "electronic_energy_eV": -43516.4146215398,
+      "rotational_symmetry_number": 4,
+      "point_group": "D2d"
+    },
+    "S4_eclipsed": {
+      "positions_angstrom": [
+        [
+          8.15229073,
+          5.00407361,
+          5.01275063
+        ],
+        [
+          5.38977354,
+          6.86638888,
+          5.01266006
+        ],
+        [
+          4.98243456,
+          5.01755737,
+          5.01266506
+        ],
+        [
+          7.76068832,
+          6.85630226,
+          5.01272425
+        ]
+      ],
+      "all_frequencies_cm-1": [
+        -0.22528875839999998,
+        -0.016558704,
+        -0.0008798111999999999,
+        0.08601580799999999,
+        0.2712079008,
+        0.5611329312,
+        67.2540390432,
+        101.1167568096,
+        243.1683822912,
+        267.331585968,
+        662.4503233728,
+        684.5943057503999
+      ],
+      "electronic_energy_eV": -43516.8422327601,
+      "rotational_symmetry_number": 2,
+      "point_group": "C2v"
+    }
+  },
+  "physical_energy_comparison": {
+    "W4_nonrelativistic_clamped_nuclei_TAEe_kcal_mol": 234.35,
+    "W4_physical_zero_point_exclusive_TAEe_kcal_mol": 231.44,
+    "W4_physical_TAE0_kcal_mol": 228.15,
+    "janaf_atom_Hf298_J_mol": 276980.0,
+    "janaf_molecule_Hf298_J_mol": 145771.0,
+    "janaf_atom_H298_minus_H0_J_mol": 6657.0,
+    "janaf_molecular_H298_minus_H0": "Unavailable in the inspected official S-017 table; do not invent it."
+  }
+}
