@@ -1,0 +1,22 @@
+{
+  "review_date": "2026-11-05",
+  "command": "python mceg/reviews/nao_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/nao_source_review.py": "2da65899b03bc3787f6a7f7eb70900ce6a2fbfe01e414ca3238b76c7b4017561",
+    "documents/mceg/nao_source_review.rst": "c32765b5b2be33f8203bb97b7534802fdb1fc34434ba480e7918b0316b55f490",
+    "tests/model_evidence/nao_source_review_test.py": "03d4f75d194b2207a34ced59f51a45b54ada4f1b72bb97513606836afdac6aab",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/curated_oh_adoption/20261105/ions.npz": "a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d",
+    "tests/data/validation/nao_source_review/20261105/README.rst": "698baafd8e2702911be3aab07f1f9a084c6e0631b378592723559a1a3dc9b541",
+    "tests/data/validation/nao_source_review/20261105/inputs.json": "f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d",
+    "tests/data/validation/nao_source_review/20261105/literature.json": "9c54b4baa02c282abc2178c2cc82c289c8223f2c770a339b0cb682ca38cd6e31",
+    "tests/data/validation/nao_source_review/20261105/sources.json": "7eaa613cb5855063f2aac98c94e764211276333f3a3f9b1caa7b6900ecf581e1",
+    "tests/data/validation/nao_source_review/20261105/state_inventory.json": "4754d0989801d4359e2fc70283c1c7134170de7b8f2acdb5d13105b1f42c8784",
+    "tests/data/validation/nao_source_review/20261105/states.npz": "2b2a506d24285cca6143e2a247d460a36a5a09f549db0f877475046d7521b009"
+  },
+  "output_sha256": {
+    "tests/data/validation/nao_source_review/20261105/comparison.json": "ce0cccf90490bf2c1dc3e0fef4b30c74e538961f19beb44479cbc2119f135d3a"
+  },
+  "scope": "NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change or finite substitution."
+}
