@@ -104,4 +104,3 @@ def test_actual_revised_table_reproduces_source_not_just_the_fit_label(report):
     # Legacy JANAF is a different table; selecting it would hide the current source.
     assert rows[1500]["legacy_janaf"]["ln_K"] != pytest.approx(rows[1500]["production_source"]["ln_K"], abs=.5)
     assert "retain current Dorofeeva2003" in report["decision"]
-
