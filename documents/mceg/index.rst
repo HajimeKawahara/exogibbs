@@ -55,6 +55,7 @@ HCN differences with optional MCEG tooling.
    sh_source_investigation
    s2o_source_investigation
    s8_source_review
+   s8_candidate
    ohno_p3
    ph2_source_review
    phosphorus_provenance
