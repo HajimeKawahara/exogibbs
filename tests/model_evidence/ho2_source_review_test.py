@@ -105,4 +105,3 @@ def test_modern_same_version_energy_is_balanced_not_molecular_Hf_shift(report):
         assert math.log(row["aligned_thermal_ratio"]) == pytest.approx(
             native["source_minus_nasa_ln_K_components"]["molecular_thermal"], abs=1e-13)
     assert "candidate" in report["decision"]
-

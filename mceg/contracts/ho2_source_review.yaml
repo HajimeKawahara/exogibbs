@@ -100,7 +100,7 @@ evidence:
   - source: tests/data/validation/ho2_source_review/20261105/comparison.json
     sha256: 1a6a3064367ccc72948f23a20403d7fcebc2e9407886b7122525c45112eed425
   - source: tests/data/validation/ho2_source_review/20261105/receipt.json
-    sha256: a54eb35d8fa853468de4e9ee9a4ea897a76b2c2598204d9f6fca2a16f08104c0
+    sha256: 7f3355951396c97df643576cb700934c277cd25e1d39e25e5b29f21d0bee0c4d
   provenance:
     role: primary
     location: documents/mceg/ho2_source_review.rst
@@ -143,7 +143,7 @@ subjects:
     tests/data/validation/oh_source_review/20261105/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
     mceg/reviews/ho2_source_review.py: b65f9b4be21c52086923f935e4f643a4990be01dbbf3de41da4ef73ef9f025ac
     documents/mceg/ho2_source_review.rst: bfe3f5a738ffd486f3bd85e1b9b38156c66a57b6a51725199043ff58adcbf165
-    tests/model_evidence/ho2_source_review_test.py: 871eb86d8563fbad2e5e3752bf1ace92c3702ef408a8922a1e31337b6b45983d
+    tests/model_evidence/ho2_source_review_test.py: 818229dd2e282e7dbc61df5aac878f508f5180fa5762aff455c3c63733fcba74
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
@@ -155,7 +155,7 @@ subjects:
     tests/data/validation/ho2_source_review/20261105/nasa_selected_records.txt: 76841915543eb26ed9db7c74a471e4f477fb1a2fd82bd2248706a9b96bb16a1d
     tests/data/validation/ho2_source_review/20261105/sources.json: 2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd
     tests/data/validation/ho2_source_review/20261105/comparison.json: 1a6a3064367ccc72948f23a20403d7fcebc2e9407886b7122525c45112eed425
-    tests/data/validation/ho2_source_review/20261105/receipt.json: a54eb35d8fa853468de4e9ee9a4ea897a76b2c2598204d9f6fca2a16f08104c0
+    tests/data/validation/ho2_source_review/20261105/receipt.json: 7f3355951396c97df643576cb700934c277cd25e1d39e25e5b29f21d0bee0c4d
 contexts:
 - id: source_review
   scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
