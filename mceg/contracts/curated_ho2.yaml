@@ -2,10 +2,10 @@ schema_version: '0.2'
 model:
   id: exogibbs.curated_ho2.v1
   name: Curated gas default with NASA/ATcT HO2
-  description: Adopt the exact reviewed NASA HO2 thermal reaction and balanced ATcT energy on the pinned
-    KH base. Scoped source choice and fresh cumulative production verification are supported; full physical
-    accuracy remains unknown.
-  implementation: &id001
+  description: Adopt the exact reviewed NASA HO2 thermal reaction and balanced ATcT energy on the pinned KH
+    base. Scoped source choice and fresh cumulative production verification are supported; full physical accuracy
+    remains unknown.
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
     entry_points:
@@ -21,9 +21,9 @@ assumptions:
     R and insert ATcT with modern SI R; delta(D0/R)=-2.0209623169357656 K is applied once.
   evidence:
   - scientific_sources
-- statement: Copy exact NASA9 reaction coefficients without fitting, extra spin, symmetry, ZPE or atomic
-    corrections. JANAF original nodes at identical energy and atomic reference are a thermal control,
-    not an adopted continuous model.
+- statement: Copy exact NASA9 reaction coefficients without fitting, extra spin, symmetry, ZPE or atomic corrections.
+    JANAF original nodes at identical energy and atomic reference are a thermal control, not an adopted continuous
+    model.
   evidence:
   - scientific_sources
   - production_execution
@@ -36,8 +36,8 @@ domains:
   - No extrapolation outside 1500-4000 K; invalid temperatures return NaN.
   - '75 conditions per network: five temperatures 1500/2000/2500/3000/4000 K, pressures 1e-6/1e-4/0.01/1/100
     bar and C/O=0.5888436553555908/1/1.5.'
-  - Production and frozen candidate thermodynamics agree on 2501 temperatures; every non-HO2 potential
-    equals curated-kh-v1.
+  - Production and frozen candidate thermodynamics agree on 2501 temperatures; every non-HO2 potential equals
+    curated-kh-v1.
   evidence:
   - scientific_sources
   - production_execution
@@ -53,37 +53,33 @@ claims:
 - id: scientific_selection
   revision: '1'
   kind: theoretical
-  statement: The NASA thermal reaction with balanced ATcT 1.172 energy is scientifically preferred to
-    inherited JANAF HO2 within the bounded gas model.
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  statement: The NASA thermal reaction with balanced ATcT 1.172 energy is scientifically preferred to inherited
+    JANAF HO2 within the bounded gas model.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
 - id: production_adoption
   revision: '1'
   kind: numerical_verification
-  statement: The public curated default implements the exact reviewed HO2 thermodynamics on curated-kh-v1
-    and passes new production solves and independently assembled candidate-on-KH controls in both network
-    modes.
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  statement: The public curated default implements the exact reviewed HO2 thermodynamics on curated-kh-v1 and
+    passes new production solves and independently assembled candidate-on-KH controls in both network modes.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
 - id: physical_accuracy
   revision: '1'
   kind: physical_validation
-  statement: The complete adopted gas model has quantified physical uncertainty and validated planetary
-    atmospheric abundance accuracy.
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  statement: The complete adopted gas model has quantified physical uncertainty and validated planetary atmospheric
+    abundance accuracy.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
 evidence:
 - id: scientific_sources
   kind: theory
   summary: Replace the obsolete JANAF formation energy with the exact NASA reaction and same-version balanced
-    ATcT energy. The Burgess evaluation documents the discrepancy; same-energy JANAF node controls show
-    a smaller thermal contrast.
+    ATcT energy. The Burgess evaluation documents the discrepancy; same-energy JANAF node controls show a smaller
+    thermal contrast.
   sources:
   - documents/presets/curated_ho2.rst
   - src/exogibbs/data/curated/ho2_v1.json
@@ -92,10 +88,9 @@ evidence:
   - tests/data/validation/ho2_candidate/20261105/candidate.json
   - tests/data/validation/ho2_candidate/20261105/validation.json
   - tests/data/validation/ho2_equilibrium_impact/20261105/summary.json
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
   subject: curated_ho2_production_20261105
   context: production_gas_domain
   artifacts:
@@ -122,15 +117,14 @@ evidence:
     derived_from:
     - evidence: source_inventory
       comparison: not_checked
-      note: Inspected NASA numerical records, the Burgess evaluation and same-version ATcT nodes justify
-        the bounded choice. Original historical papers and full network covariance were not completely
-        reconstructed.
+      note: Inspected NASA numerical records, the Burgess evaluation and same-version ATcT nodes justify the
+        bounded choice. Original historical papers and full network covariance were not completely reconstructed.
 - id: production_execution
   kind: numerical_test
   result: passed
-  summary: The public factory passes 150 fresh cold solves, six tighter candidate-on-KH controls and two
-    FastChem comparisons. Only HO2 changes from the KH background; the old OH-background candidate abundances
-    are not treated as identical.
+  summary: The public factory passes 150 fresh cold solves, six tighter candidate-on-KH controls and two FastChem
+    comparisons. Only HO2 changes from the KH background; the old OH-background candidate abundances are not
+    treated as identical.
   sources:
   - tests/data/validation/curated_ho2_adoption/20261105/receipt.json
   - tests/data/validation/curated_ho2_adoption/20261105/summary.json
@@ -139,13 +133,12 @@ evidence:
   - tests/data/validation/curated_ho2_adoption/20261105/diagnostics.json
   - tests/data/validation/curated_ho2_adoption/20261105/README.rst
   - mceg/reviews/build_ho2_adoption.py
-  - mceg/reviews/curated_ho2_adoption.py
+  - tests/data/validation/curated_cos_adoption/20261105/source/mceg/reviews/curated_ho2_adoption.py
   - tests/model_evidence/curated_ho2_adoption_test.py
   - tests/unittests/presets/curated_ho2_test.py
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
   subject: curated_ho2_production_20261105
   context: production_gas_domain
   artifacts:
@@ -163,7 +156,7 @@ evidence:
     sha256: 5a887b396e7cfa0daf27c0000b6aba561e3d57ed0276bf1912691089c01355a8
   - source: mceg/reviews/build_ho2_adoption.py
     sha256: 0c0ce970fd97b0e4e8df32c67ea86abf1bc391719a83883473d161545c29a15a
-  - source: mceg/reviews/curated_ho2_adoption.py
+  - source: tests/data/validation/curated_cos_adoption/20261105/source/mceg/reviews/curated_ho2_adoption.py
     sha256: 761f9d73094a5fd7d52b7ad736696da553f2be1c7e188295d7d6e8290338b603
   - source: tests/model_evidence/curated_ho2_adoption_test.py
     sha256: 7471d099a596b7bc87911b61e7487fa756a7c485afe75e5b2e6813ef73abf662
@@ -177,16 +170,15 @@ evidence:
       Scoped selection and numerical verification do not establish complete physical accuracy.
 - id: source_inventory
   kind: literature
-  summary: Official NASA coefficients, same-version ATcT nodes and the inspected Burgess evaluation are
-    recorded with historical source access limits.
+  summary: Official NASA coefficients, same-version ATcT nodes and the inspected Burgess evaluation are recorded
+    with historical source access limits.
   sources:
   - tests/data/validation/ho2_source_review/20261105/sources.json
   - tests/data/validation/ho2_source_review/20261105/nasa_records.json
   - tests/data/validation/ho2_source_review/20261105/atct_nodes.json
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
   subject: curated_ho2_production_20261105
   context: production_gas_domain
   artifacts:
@@ -205,7 +197,12 @@ evidence:
       justification.
 subjects:
 - id: curated_ho2_production_20261105
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_ho2.chemsetup
   selected_files:
     benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
     benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
@@ -220,7 +217,7 @@ subjects:
     mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
     mceg/reviews/co2_source_review.py: cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172
     mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
-    mceg/reviews/curated_ho2_adoption.py: 761f9d73094a5fd7d52b7ad736696da553f2be1c7e188295d7d6e8290338b603
+    tests/data/validation/curated_cos_adoption/20261105/source/mceg/reviews/curated_ho2_adoption.py: 761f9d73094a5fd7d52b7ad736696da553f2be1c7e188295d7d6e8290338b603
     mceg/reviews/curated_oh_adoption.py: 2a9b741d86a4fb0a90a5f7a9b6bef30845c5608f315f4028364ecd02768e0db2
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
@@ -262,7 +259,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    src/exogibbs/presets/curated.py: 9a54ceeab12728d0fa58fb826a5eaa3307de8b93c730590c6b53e04d7ea4de68
+    tests/data/validation/curated_cos_adoption/20261105/source/src/exogibbs/presets/curated.py: 9a54ceeab12728d0fa58fb826a5eaa3307de8b93c730590c6b53e04d7ea4de68
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
@@ -327,10 +324,9 @@ subjects:
     tests/unittests/presets/curated_ho2_test.py: 2436efb1f7be322f60fc0fd735a2da9b095d07ce93fe4d695c2b7eb5e4104502
 contexts:
 - id: production_gas_domain
-  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2
-    changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
-    D0=694.662 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
-    physical validation.
+  scope: curated-ho2-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-kh-v1. Only HO2 changes,
+    with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=694.662 kJ/mol.
+    Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
   settings:
     dataset: curated-ho2-v1
     base_dataset: curated-kh-v1
@@ -339,8 +335,8 @@ contexts:
     networks: ions and neutral
     energy_anchor: ATcT 1.172 balanced 694.662 kJ/mol
     thermal_source: Exact reviewed HO2-H-2O NASA9 reaction; energy constant shifted once
-    previous_follow_up: HO2 candidate production choice completed by authorized adoption; full physical
-      scope remains unknown
+    previous_follow_up: HO2 candidate production choice completed by authorized adoption; full physical scope
+      remains unknown
 assessments:
 - id: scientific_selection_review
   kind: evidence_support
@@ -351,15 +347,14 @@ assessments:
   method:
     id: review_ho2_scoped_production_adoption
     revision: '1'
-    description: Separate the justified bounded source choice and actual production verification from
-      complete physical accuracy.
+    description: Separate the justified bounded source choice and actual production verification from complete
+      physical accuracy.
   evidence:
   - scientific_sources
   reasons:
-  - Replace the obsolete JANAF formation energy with the exact NASA reaction and same-version balanced
-    ATcT energy. The Burgess evaluation documents the discrepancy; same-energy JANAF node controls show
-    a smaller thermal contrast. The +0.23% to -2.01% JANAF/NASA node contrast is a sensitivity, not a
-    confidence interval.
+  - Replace the obsolete JANAF formation energy with the exact NASA reaction and same-version balanced ATcT
+    energy. The Burgess evaluation documents the discrepancy; same-energy JANAF node controls show a smaller
+    thermal contrast. The +0.23% to -2.01% JANAF/NASA node contrast is a sensitivity, not a confidence interval.
   status: supported
   origin: reviewed
 - id: production_adoption_review
@@ -371,16 +366,16 @@ assessments:
   method:
     id: review_ho2_scoped_production_adoption
     revision: '1'
-    description: Separate the justified bounded source choice and actual production verification from
-      complete physical accuracy.
+    description: Separate the justified bounded source choice and actual production verification from complete
+      physical accuracy.
   evidence:
   - scientific_sources
   - production_execution
   reasons:
   - The public factory passes 150 fresh cold solves, six tighter candidate-on-KH controls and two FastChem
-    comparisons. Only HO2 changes from the KH background; the old OH-background candidate abundances are
-    not treated as identical. The dense potential discrepancy is below 3.56e-14; tighter HO2 ln(x) agreement
-    is below 3.27e-13 and FastChem agreement below 1.20e-8 dex.
+    comparisons. Only HO2 changes from the KH background; the old OH-background candidate abundances are not
+    treated as identical. The dense potential discrepancy is below 3.56e-14; tighter HO2 ln(x) agreement is
+    below 3.27e-13 and FastChem agreement below 1.20e-8 dex.
   status: supported
   origin: reviewed
 - id: physical_accuracy_review
@@ -392,8 +387,8 @@ assessments:
   method:
     id: review_ho2_scoped_production_adoption
     revision: '1'
-    description: Separate the justified bounded source choice and actual production verification from
-      complete physical accuracy.
+    description: Separate the justified bounded source choice and actual production verification from complete
+      physical accuracy.
   evidence:
   - scientific_sources
   - production_execution
@@ -407,21 +402,21 @@ follow_ups:
   target_kind: claim
   target: physical_accuracy
   revision: '1'
-  action: Resolve isotope/continuum conventions and same-version energy covariance when required by a
-    named application.
+  action: Resolve isotope/continuum conventions and same-version energy covariance when required by a named
+    application.
   requires:
   - JANAF/NASA agreement is not an independent experiment or a complete physical uncertainty interval.
   - Historical source-paper and covariance follow-ups remain recorded in the source/candidate contracts.
-  completion: Provide application-specific physical evidence or retain explicit unknown status without
-    blocking the bounded adopted source improvement.
+  completion: Provide application-specific physical evidence or retain explicit unknown status without blocking
+    the bounded adopted source improvement.
 limitations:
-- statement: Source selection, caloric closure, finite substitutions and solver parity do not establish
-    complete atmospheric physical accuracy.
+- statement: Source selection, caloric closure, finite substitutions and solver parity do not establish complete
+    atmospheric physical accuracy.
   evidence:
   - scientific_sources
   - production_execution
 - statement: The old isolated HO2 candidate used curated-oh-v1. New production combines the prior KH change
-    with HO2, so only target thermodynamics are compared to that archive; new candidate-on-KH controls
-    verify composition.
+    with HO2, so only target thermodynamics are compared to that archive; new candidate-on-KH controls verify
+    composition.
   evidence:
   - production_execution

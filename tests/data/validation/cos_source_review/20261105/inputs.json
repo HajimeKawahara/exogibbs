@@ -1,0 +1,30 @@
+{
+  "name": "COS",
+  "species_id": "C1O1S1",
+  "composition": {
+    "C": 1,
+    "O": 1,
+    "S": 1
+  },
+  "extra_nasa": {},
+  "literature_nodes": {},
+  "atct_1.228": {
+    "C": 711.37,
+    "S": 276.85,
+    "O": 246.843,
+    "COS": -141.79
+  },
+  "partition_table": {
+    "file": "OYT8.pf",
+    "mass_u": 59.96698562,
+    "nuclear_spin": 1,
+    "recommended_max_K": 2000
+  },
+  "tips2025": {
+    "file": "TIPS2025.pf",
+    "mass_u": 59.96698562,
+    "nuclear_spin": 1,
+    "recommended_max_K": 5000,
+    "cross_over_K": 3380
+  }
+}

@@ -3,10 +3,12 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The current dataset, ``curated-ho2-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-cos-v1``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
+The :doc:`COS update <curated_cos>` adopts balanced ATcT energy while retaining
+its JANAF molecular and NASA atomic thermal functions on the HO2 base.
 The :doc:`HO2 update <curated_ho2>` replaces the obsolete JANAF formation energy
 with exact NASA thermal functions and balanced ATcT energy on the KH base.
 The :doc:`KH update <curated_kh>` adopts the spectroscopic KH energy while
@@ -22,11 +24,12 @@ complete physical uncertainty remains unquantified.
 Use ``curated_v1.chemsetup``, ``curated_c2h.chemsetup``,
 ``curated_tio.chemsetup``, ``curated_co2.chemsetup`` or ``curated_h2o.chemsetup``
 to reproduce the earlier datasets, or ``curated_oh.chemsetup`` for the preceding OH version, and
-``curated_kh.chemsetup`` for its KH version. Use ``curated_ho2.chemsetup`` to select this
+``curated_kh.chemsetup`` and ``curated_ho2.chemsetup`` for those versions.
+Use ``curated_cos.chemsetup`` to select this
 version explicitly. Each supports
 ``ions=False`` and retains its identity and historical evidence. Changing one
 formation function can alter coupled abundances throughout the network.
-See the HO2 guide for the adoption rationale and production verification.
+See the COS guide for the adoption rationale and cumulative production verification.
 
 Migration from the Ni/Co-only preset
 ------------------------------------
@@ -276,8 +279,9 @@ absolute charge carried by all species plus the absolute requested net charge.
 Diagonal regularization of signed constraints scales with their own matrix diagonal;
 a fixed absolute shift previously overwhelmed weakly ionized cases.
 
-The current default's OH verification and scope are recorded in
-:doc:`curated_oh`. The preceding combined CO2/H2O execution remains in
+The current default's cumulative verification and scope are recorded in
+:doc:`curated_cos`. The preceding KH/HO2 and OH stages remain in
+:doc:`curated_kh`, :doc:`curated_ho2` and :doc:`curated_oh`. The preceding combined CO2/H2O execution remains in
 :doc:`curated_h2o`, and the CO2-only execution remains in
 :doc:`curated_co2`.
 The earlier TiO execution remains in :doc:`curated_tio`.
@@ -418,7 +422,7 @@ and :download:`the inverted column <../../tests/data/validation/curated_atmosphe
 Artifacts and reproduction
 --------------------------
 
-Current default evidence is in :doc:`curated_ho2`. The artifacts
+Current default evidence is in :doc:`curated_cos`. The artifacts
 below belong to **curated-gas-v1**; the reproduction scripts explicitly select
 ``curated_v1`` and preserve their original numerical scope.
 

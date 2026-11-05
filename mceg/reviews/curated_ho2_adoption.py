@@ -12,7 +12,7 @@ import jax
 import numpy as np
 from scipy.special import logsumexp
 
-from exogibbs.presets import curated, curated_kh, curated_ho2
+from exogibbs.presets import curated_ho2 as curated, curated_kh, curated_ho2
 from c2h_equilibrium_impact import independent_check
 from curated_h2o_adoption import solve_cases
 from ho2_equilibrium_impact import candidate_setup, constraints

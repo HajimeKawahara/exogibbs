@@ -1,0 +1,90 @@
+{
+  "temperature_count": 2501,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "step_K": 1,
+  "maximum_abs_current_h_replay_error": 4.263256414560601e-14,
+  "maximum_abs_energy_shift_h_error": 4.779510121011299e-14,
+  "maximum_abs_energy_only_property_errors": {
+    "G_J_mol": 1.1641532182693481e-10,
+    "H_J_mol": 4.656612873077393e-10,
+    "S_J_mol_K": 0.0,
+    "Cp_J_mol_K": 0.0
+  },
+  "maximum_abs_jax_property_errors": {
+    "G_J_mol": 8.731149137020111e-10,
+    "H_J_mol": 1.862645149230957e-09,
+    "S_J_mol_K": 9.094947017729282e-13,
+    "Cp_J_mol_K": 7.198686091669515e-13
+  },
+  "internal_knot_jumps": [
+    {
+      "temperature_K": 2000.0,
+      "G_jump_J_mol": 0.0,
+      "S_jump_J_mol_K": 0.0,
+      "Cp_jump_J_mol_K": 0.0
+    },
+    {
+      "temperature_K": 3000.0,
+      "G_jump_J_mol": 0.0,
+      "S_jump_J_mol_K": 0.0,
+      "Cp_jump_J_mol_K": 6.394884621840902e-14
+    }
+  ],
+  "samples": [
+    {
+      "temperature_K": 1500.0,
+      "candidate_over_current_K": 1.5682792057997526,
+      "reaction_properties": {
+        "G_J_mol": -985367.542743814,
+        "H_J_mol": -1398048.617814511,
+        "S_J_mol_K": -275.1207167137982,
+        "Cp_J_mol_K": -2.627564503368142
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "candidate_over_current_K": 1.4014175054109796,
+      "reaction_properties": {
+        "G_J_mol": -847650.6846614127,
+        "H_J_mol": -1398960.4304214825,
+        "S_J_mol_K": -275.6548728800349,
+        "Cp_J_mol_K": -1.258752117064935
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "candidate_over_current_K": 1.3099479224919377,
+      "reaction_properties": {
+        "G_J_mol": -709759.7587240272,
+        "H_J_mol": -1399483.053833593,
+        "S_J_mol_K": -275.8893180438262,
+        "Cp_J_mol_K": -0.950883267812037
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "candidate_over_current_K": 1.252309548713792,
+      "reaction_properties": {
+        "G_J_mol": -571770.0104111132,
+        "H_J_mol": -1399974.35042374,
+        "S_J_mol_K": -276.0681133375423,
+        "Cp_J_mol_K": -1.096083985989816
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "candidate_over_current_K": 1.183814810437418,
+      "reaction_properties": {
+        "G_J_mol": -295503.12615305104,
+        "H_J_mol": -1401438.7411681807,
+        "S_J_mol_K": -276.48390375378244,
+        "Cp_J_mol_K": -1.8550839222367592
+      }
+    }
+  ],
+  "production_change": "none",
+  "scope": "Numerical consistency of an energy-only candidate, not an independent physical uncertainty assessment"
+}
