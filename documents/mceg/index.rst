@@ -63,6 +63,8 @@ HCN differences with optional MCEG tooling.
    ph2_source_review
    phosphorus_provenance
    naoh_dimer_source_review
+   naoh_source_review
+   naoh_candidate
    koh_dimer_source_review
    phosphorus_cold_validation
    po2_source_review
