@@ -1,0 +1,77 @@
+{
+  "temperature_count": 2501,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "step_K": 1,
+  "maximum_abs_current_h_replay_error": 2.1316282072803006e-14,
+  "maximum_abs_independent_native_source_h_error": 9.237055564881302e-14,
+  "maximum_abs_energy_shift_h_error": 2.735789025876123e-14,
+  "maximum_abs_energy_only_property_errors": {
+    "G_J_mol": 1.1641532182693481e-10,
+    "H_J_mol": 2.3283064365386963e-10,
+    "S_J_mol_K": 0.0,
+    "Cp_J_mol_K": 0.0
+  },
+  "maximum_abs_jax_property_errors": {
+    "G_J_mol": 3.4924596548080444e-10,
+    "H_J_mol": 1.1641532182693481e-09,
+    "S_J_mol_K": 4.547473508864641e-13,
+    "Cp_J_mol_K": 8.690825836765725e-13
+  },
+  "samples": [
+    {
+      "temperature_K": 1500,
+      "candidate_over_current_K": 0.9957593936599195,
+      "reaction_properties": {
+        "G_J_mol": -803302.2094651653,
+        "H_J_mol": -1438290.811027148,
+        "S_J_mol_K": -423.32573437465516,
+        "Cp_J_mol_K": -4.039564535006798
+      }
+    },
+    {
+      "temperature_K": 2000,
+      "candidate_over_current_K": 0.9968178563769221,
+      "reaction_properties": {
+        "G_J_mol": -591378.9787564024,
+        "H_J_mol": -1439888.5510419607,
+        "S_J_mol_K": -424.25478614277915,
+        "Cp_J_mol_K": -2.6141007712413193
+      }
+    },
+    {
+      "temperature_K": 2500,
+      "candidate_over_current_K": 0.997453473985566,
+      "reaction_properties": {
+        "G_J_mol": -379109.78917418304,
+        "H_J_mol": -1441086.4633049034,
+        "S_J_mol_K": -424.79066965228816,
+        "Cp_J_mol_K": -2.3053735120845644
+      }
+    },
+    {
+      "temperature_K": 3000,
+      "candidate_over_current_K": 0.9978774442084156,
+      "reaction_properties": {
+        "G_J_mol": -166603.72116810156,
+        "H_J_mol": -1442289.6660668808,
+        "S_J_mol_K": -425.22864829959303,
+        "Cp_J_mol_K": -2.578841176505553
+      }
+    },
+    {
+      "temperature_K": 4000,
+      "candidate_over_current_K": 0.9984076604157853,
+      "reaction_properties": {
+        "G_J_mol": 259070.4550351247,
+        "H_J_mol": -1445499.434579574,
+        "S_J_mol_K": -426.1424724036746,
+        "Cp_J_mol_K": -3.9586339245150155
+      }
+    }
+  ],
+  "production_change": "none",
+  "new_fit": "none"
+}
