@@ -1,0 +1,62 @@
+{
+  "temperatures_K": [
+    500,
+    1000,
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "janaf1973": {
+    "formation_H298_kJ_mol": -305.432,
+    "printed_uncertainty_kJ_mol": 12.6,
+    "bending_cm-1": 270,
+    "bending_uncertainty_cm-1": 80,
+    "frequencies_cm-1": [
+      962,
+      270,
+      935
+    ],
+    "estimated_electronic_gap_cm-1": 18880,
+    "estimated_electronic_degeneracy": 3,
+    "reference_pages": [
+      1762,
+      1815
+    ]
+  },
+  "brunken2008": {
+    "rotational_constants_MHz": [
+      30520.54148,
+      8471.75838,
+      6613.58731
+    ],
+    "isotopologue": "48Ti16O2",
+    "symmetry_number": 2,
+    "electronic_degeneracy": 1,
+    "nuclear_spin_weight": 1
+  },
+  "gas_fundamentals": {
+    "frequencies_cm-1": [
+      959,
+      322,
+      944
+    ],
+    "bend_uncertainty_cm-1": 6,
+    "sources": [
+      "DeVore and Gallaher 1983 as compiled by NIST WebBook",
+      "Wang et al. 2009 primary abstract"
+    ]
+  },
+  "diagnostic_mass_u": 79.8788,
+  "hildenbrand1976": {
+    "atomization_D0_kJ_mol": 1271.9,
+    "reported_uncertainty_kJ_mol": 11.7,
+    "access": "primary publisher abstract only"
+  },
+  "sindel2022": {
+    "DFT_minus_JANAF_binding_deviation_magnitude_kJ_mol": 0.22,
+    "selection_tolerance_kJ_mol": 4,
+    "independent_energy_validation": false,
+    "access": "author manuscript section 2.3 and Table 2 inspected"
+  }
+}
