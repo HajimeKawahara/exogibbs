@@ -1,0 +1,57 @@
+{
+  "molecule": "N2O3",
+  "species_id": "N2O3",
+  "composition": {
+    "N": 2,
+    "O": 3
+  },
+  "footprint_element": "N",
+  "temperatures_K": [
+    300,
+    500,
+    800,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "atomic_tables": {
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt",
+    "N": "tests/data/validation/n3_source_review/20261103/N-002.txt"
+  },
+  "molecular_janaf_table": "N-028.txt",
+  "atct_version": "1.228",
+  "atct": {
+    "O": {
+      "name": "Oxygen atom",
+      "formula": "O  (g)",
+      "atct_id": "17778-80-2*0",
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    },
+    "N": {
+      "name": "Nitrogen atom",
+      "formula": "N  (g)",
+      "atct_id": "17778-88-0*0",
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    },
+    "N2O3": {
+      "name": "Nitrogen sesquioxide",
+      "formula": "ONN(O)O  (g)",
+      "atct_id": "10544-73-7*0",
+      "hf0_kJ_mol": 90.85,
+      "hf298_kJ_mol": 86.29,
+      "uncertainty_95pct_kJ_mol": 0.14,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=401"
+    }
+  },
+  "partition": null
+}
