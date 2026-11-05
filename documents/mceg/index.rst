@@ -42,6 +42,7 @@ HCN differences with optional MCEG tooling.
    fastchem_hcn_followup
    c3_source_review
    c4_source_review
+   h2so4_source_review
    gas_source_comparison
    cs_source_review
    co_source_review
