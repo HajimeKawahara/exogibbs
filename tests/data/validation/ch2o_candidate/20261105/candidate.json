@@ -1,0 +1,63 @@
+{
+  "id": "ch2o_retained_thermal_atct_1_228_candidate_v1",
+  "species": "C1H2O1",
+  "reaction": "C(g)+2H(g)+O(g)->CH2O(g)",
+  "baseline_dataset": "curated-cos-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_R_J_mol_K": 8.31451,
+  "atct_version": "1.228",
+  "same_version_hf0_kJ_mol": {
+    "H": 216.034,
+    "C": 711.37,
+    "O": 246.843,
+    "CH2O": -105.386
+  },
+  "D0_J_mol": 1495667.0,
+  "retained_source_D0_J_mol": 1502104.0,
+  "delta_D0_J_mol": -6437.0,
+  "delta_D0_over_R_K": -774.1931494100276,
+  "original_logK_coefficients": [
+    181075.5089260422,
+    -5.953949071868806,
+    -1.274370555582209,
+    0.0018600855763312718,
+    -9.867050011451773e-08
+  ],
+  "candidate_logK_coefficients": [
+    180301.3157766322,
+    -5.953949071868806,
+    -1.274370555582209,
+    0.0018600855763312718,
+    -9.867050011451773e-08
+  ],
+  "nasa_D0_J_mol": 1494796.222,
+  "nasa_control_coefficients": [
+    1567715.4505150001,
+    -7062.5706233166,
+    3.760830179000001,
+    -0.0008854261204272,
+    5.13200810734e-08,
+    3.5273604091200034e-12,
+    -3.8923325673939966e-16,
+    -137617.612637124,
+    -76.430490329
+  ],
+  "representation": "Exact inherited formation fit with one 1/T energy shift; no refit",
+  "source_anchor_scope": "JANAF Hf298 plus H0-H298 for molecule and atoms gives 1502104 J/mol; separately rounded Hf0 entries give 1502102. The fit is not extrapolated to zero K or claimed to reproduce every JANAF caloric node.",
+  "nasa_control_scope": "Same balanced ATcT energy; NASA molecular and atomic dimensionless thermals, native-R removal of H0 and SI-R calorics. A thermal-reference alternative, not an uncertainty interval.",
+  "uncertainty_scope": "Same-version ATcT central energies; molecular uncertainty is not reaction covariance. Historical thermal, natural-isotope and electronic-completeness limitations remain.",
+  "source_sha256": {
+    "tests/data/validation/ch2o_source_review/20261105/inputs.json": "b0a15ff73229c10bc2676398be90d3554bf0856d6da8c844c7f7af5d3971bf6b",
+    "tests/data/validation/ch2o_source_review/20261105/sources.json": "8337125191e6628767e9d79675d2037b97e262d919c9b9ec1f134b46de074027",
+    "src/exogibbs/data/fastchem/logK/logK.dat": "dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806",
+    "tests/data/validation/ch2o_source_review/20261105/C-061.txt": "cea35990692155fde725b444246c4acd644c3628a02b658cf3473ebb6c7f7c9c",
+    "tests/data/validation/c3_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/oh_source_review/20261105/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+  }
+}
