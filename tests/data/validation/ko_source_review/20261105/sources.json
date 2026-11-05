@@ -1,0 +1,36 @@
+{
+  "review_date": "2026-11-05",
+  "downloads": {
+    "KO.pdf": {
+      "url": "https://ira.lib.polyu.edu.hk/bitstream/10397/5062/1/Lee_What_ground_electronic.pdf",
+      "sha256": "eab71cb8ebf5ec2be19bd102869e7121e759c6fa0b6d3f5f5d5b6a27ac6ed630",
+      "archived": false,
+      "inspection": "Full paper read; numerical distributions parsed completely."
+    },
+    "K-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/K-005.txt",
+      "sha256": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "O-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "KO-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/K-008.txt",
+      "sha256": "0f87a5c7c894d028bb8ed22f359c2bdce33a30d6785a1443c2adc61352115558",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    }
+  },
+  "NASA": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Molecule header, native H(298)-H(0), mass and both intervals inspected; neutral atoms reuse pinned existing records. Gurvich book originals not reaudited."
+  },
+  "primary_doi": "10.1063/1.1511179",
+  "scope": "Primary electronic publication and current distribution inspected; this does not establish full physical uncertainty."
+}
