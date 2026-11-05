@@ -1,5 +1,4 @@
 {
-  "retrieved_UTC_date": "2026-11-06",
   "inherited_source": "FastChem logK [U], JANAF 1998 table, inherited unchanged by curated-cos-v1",
   "downloads": {
     "C-080.txt": {
@@ -76,5 +75,6 @@
     ],
     "atomic_mass_constant_kg": 1.6605390666e-27,
     "note": "CODATA 2018 mass constant is used consistently for this diagnostic; isotope effect is explicitly separated from internal Q."
-  }
+  },
+  "retrieved_date_JST": "2026-11-06"
 }

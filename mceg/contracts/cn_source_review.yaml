@@ -77,7 +77,7 @@ evidence:
   context: source_review
   artifacts:
   - source: tests/data/validation/cn_source_review/20261106/sources.json
-    sha256: b1644169625fb26f6fb89fad48ade998a08c0e22681574ad13851e8497387009
+    sha256: f70e01349c0278343a32c6008954c8c615281b61a72412f29a9454bc049b3e9a
   provenance:
     role: primary
     location: documents/mceg/cn_source_review.rst
@@ -120,7 +120,7 @@ evidence:
   - source: tests/data/validation/cn_source_review/20261106/partition.pf
     sha256: dd9b8e541c98d5a896ec20d91e8a698d809a8a6c278a72fa6fd55cafd6b2ae52
   - source: tests/data/validation/cn_source_review/20261106/receipt.json
-    sha256: c28aa86fc5c377ce2034714c89e52b98661f814d4f72fdf237751d2f5e9f10e6
+    sha256: 614e2fff2eba2256cf40e737107303c458e140c1d0c6d5170fd925e7d5a7635e
   - source: tests/data/validation/cn_source_review/20261106/states.npz
     sha256: cf9555b7f3e54a9dbdc1c3c6ebf1ed4b1689d8d12d6f5b078f8a8bc83c9c7468
   provenance:
@@ -186,7 +186,7 @@ subjects:
     tests/data/validation/cn_source_review/20261106/nasa_records.json: 752d8f38bf6075bce0ef99996a5fa1a86e3e0ecacd06970a9a0ba71572528ebe
     tests/data/validation/cn_source_review/20261106/nasa_selected_records.txt: 8be9f81a3c812c573383257d28979101fc4d70657f779f05d23ca873601d8742
     tests/data/validation/cn_source_review/20261106/partition.pf: dd9b8e541c98d5a896ec20d91e8a698d809a8a6c278a72fa6fd55cafd6b2ae52
-    tests/data/validation/cn_source_review/20261106/sources.json: b1644169625fb26f6fb89fad48ade998a08c0e22681574ad13851e8497387009
+    tests/data/validation/cn_source_review/20261106/sources.json: f70e01349c0278343a32c6008954c8c615281b61a72412f29a9454bc049b3e9a
     tests/data/validation/cn_source_review/20261106/states.npz: cf9555b7f3e54a9dbdc1c3c6ebf1ed4b1689d8d12d6f5b078f8a8bc83c9c7468
     tests/data/validation/curated_cos_adoption/20261105/ions.npz: 5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49
     tests/data/validation/curated_cos_adoption/20261105/receipt.json: 08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385
@@ -194,7 +194,7 @@ subjects:
     tests/data/validation/n3_source_review/20261103/N-002.txt: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
     tests/model_evidence/carbon_radical_source_review_test.py: cad0913dac8f8335f3c0d4e846d48b58a1cfa1a0456dbca1b13f25fbf49d8847
     tests/data/validation/cn_source_review/20261106/comparison.json: 15a1dcec71e54c8eafdf86d40dea3db2d8b7a2bffe69ace588cbe54b675787d5
-    tests/data/validation/cn_source_review/20261106/receipt.json: c28aa86fc5c377ce2034714c89e52b98661f814d4f72fdf237751d2f5e9f10e6
+    tests/data/validation/cn_source_review/20261106/receipt.json: 614e2fff2eba2256cf40e737107303c458e140c1d0c6d5170fd925e7d5a7635e
 contexts:
 - id: source_review
   scope: CN; exact source knots 300-4000 K, curated 1500-4000 K, one bar. Frozen importance grid only;
