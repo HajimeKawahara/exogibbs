@@ -1,0 +1,57 @@
+{
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "v",
+    "N",
+    "raw_label_index"
+  ],
+  "raw_labels": [
+    "X(3Sigma-g)",
+    "B(3Sigma+g)",
+    "B''(3Pig)"
+  ],
+  "states": 17766,
+  "maximum_energy_cm-1": 45188.777334,
+  "maximum_J": 150.0,
+  "gtot_over_2Jplus1": [
+    1.0
+  ],
+  "by_raw_label": {
+    "X(3Sigma-g)": {
+      "states": 2486,
+      "maximum_v": 10,
+      "minimum_energy_cm-1": 0.0,
+      "N_parities": [
+        1.0
+      ]
+    },
+    "B(3Sigma+g)": {
+      "states": 6300,
+      "maximum_v": 27,
+      "minimum_energy_cm-1": 31690.330052,
+      "N_parities": [
+        0.0
+      ]
+    },
+    "B''(3Pig)": {
+      "states": 8980,
+      "maximum_v": 19,
+      "minimum_energy_cm-1": 30878.88549,
+      "N_parities": [
+        0.0,
+        1.0
+      ]
+    }
+  },
+  "published_pf": {
+    "rows": 5000,
+    "first_last_T_K": [
+      1.0,
+      5000.0
+    ],
+    "Gomez_equals_HITRAN_every_row": true
+  },
+  "label_note": "The distributed excited-state g/u and Sigma sign labels disagree with Gomez 2024's B3Sigma-u and B''3Piu names. Raw labels, energies and weights are preserved; no relabeling changes the sum."
+}

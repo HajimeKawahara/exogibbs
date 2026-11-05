@@ -1,0 +1,103 @@
+{
+  "downloads": [
+    {
+      "file": "gomez-paper.pdf",
+      "url": "https://arxiv.org/pdf/2401.10782",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "bytes": 2176428,
+      "sha256": "17fc6b0262994e3d7126dd9e3e40349c65424c37a3eeab01ce1531f00e8e00d3"
+    },
+    {
+      "file": "exomol-S2.html",
+      "url": "https://www.exomol.com/data/molecules/S2/",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "bytes": 12045,
+      "sha256": "beb8a79b5ebce5cac60ade8ef9c461703e033d631bf562a99b25b0f6c5256210"
+    },
+    {
+      "file": "Gomez.states.bz2",
+      "url": "https://www.exomol.com/db/S2/32S2/Gomez/32S2__Gomez.states.bz2",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "bytes": 235761,
+      "sha256": "8c754ddd93fb9fe05544c3ff2beba6314d7c9e08ff79b7070c4fea0225cf1ad0"
+    },
+    {
+      "file": "Gomez.pf",
+      "url": "https://www.exomol.com/db/S2/32S2/Gomez/32S2__Gomez.pf",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "bytes": 180000,
+      "sha256": "8a4bbdc7c72c47e5e71d64cacfe3a7c6f2174228cf420bacac0dcbe34e2e61b5"
+    },
+    {
+      "file": "Gomez.def",
+      "url": "https://www.exomol.com/db/S2/32S2/Gomez/32S2__Gomez.def",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "bytes": 5806,
+      "sha256": "b213afe3344526dd630cb2a41de0a596ae00869d107bf649e2e0b00e9a7acaba"
+    },
+    {
+      "file": "q152.txt",
+      "url": "https://hitran.org/data/Q/q152.txt",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "bytes": 179998,
+      "sha256": "ea1f6ef9605bc27d80108d0bd1e735bbfeec270009915d3195c60e3402dc8982"
+    },
+    {
+      "file": "atct1228-s2.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=273",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "file": "frederix2009.pdf",
+      "url": "https://research-information.bris.ac.uk/files/32554442/S2_imaging_2009.pdf",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "file": "thorpe2026.pdf",
+      "url": "https://pubs.acs.org/jpcafh/article-pdf/130/43/8576/68886434/acs.jpca.6c05060.pdf",
+      "access_date": "2026-11-05",
+      "archived": false,
+      "error": "HTTP Error 403: Forbidden"
+    }
+  ],
+  "inspected_pages": [
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Rendered official 1.172 table inspected; frozen same-version S/S2 values reused. No new raw download hash."
+    },
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=138",
+      "inspection": "Rendered official S table, provenance and correlations inspected; raw download not archived."
+    },
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=273",
+      "inspection": "Rendered official S2 table and 35636.0 +/-2.5 cm-1 ground-atom dissociation input inspected; raw URL returned HTTP 403."
+    },
+    {
+      "url": "https://pubs.acs.org/doi/10.1021/jp905104u",
+      "inspection": "Publisher abstract inspected. D0=35636.9 +/-2.5 cm-1 refers to lowest rovibrational level and two ground sulfur atoms. Full paper download blocked HTTP 403."
+    },
+    {
+      "url": "https://pubs.acs.org/jpcafh/article/doi/10.1021/acs.jpca.6c05060/5452753/Active-Thermochemical-Tables-A-Revision-of-the?searchresult=1",
+      "inspection": "Publisher indexed abstract and publication metadata inspected; full PDF download blocked HTTP 403. Online 2026-10-16, issue 2026-10-29, volume 130(43), pages 8576-8596."
+    },
+    {
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C23550450&Mask=FFFFFF",
+      "inspection": "Official compiled thermochemistry and legacy dissociation note inspected; source no longer provides latest asymptote assignment."
+    },
+    {
+      "url": "https://github.com/ExoMol/exomol.com",
+      "inspection": "Official release log inspected: Gomez S2 added 2026-05-06; paper itself is 2024."
+    }
+  ]
+}

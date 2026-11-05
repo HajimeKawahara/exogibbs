@@ -1,0 +1,87 @@
+{
+  "Gomez2024": {
+    "doi": "10.1093/mnras/stae246",
+    "title": "A HITRAN-formatted UV line list of S2-containing transitions involving X3Sigma-g, B3Sigma-u, and Bpp3Piu electronic states",
+    "inspection": "Full author manuscript read, including spectroscopy, partition sum and results sections; official numerical states/PF/definition inspected.",
+    "scope": "UV X/B/B-double-prime model; author warning above 1500 K. Table maximum 5000 K is availability, not completeness.",
+    "lowest_occupied_zero_shift_from_PGOPHER_cm-1": 15.120664,
+    "ground_state_v_max": 10,
+    "J_max": 150,
+    "missing_low_singlet_Te_cm-1": {
+      "a1Delta_g": 4322.99,
+      "b1Sigma+g": 7788.72
+    },
+    "missing_level_note": "Te values are quoted by Gomez from Xing 2013. They are potential-minimum separations, not directly adopted lowest-level T0 values. No synthetic singlet correction is added.",
+    "X_allowed_N": "odd",
+    "B_allowed_N": "even"
+  },
+  "ExoMol_distribution": {
+    "definition_version": 20260504,
+    "maximum_linelist_temperature_K": 1500,
+    "maximum_partition_temperature_K": 5000,
+    "states": 17766,
+    "isotope_mass_u": 63.944142,
+    "nuclear_spin_product": 1,
+    "no_extra_symmetry_division": true,
+    "raw_label_conflict": "Excited labels B(3Sigma+g) and Bpp(3Pig) disagree with the paper. Raw labels retained; numeric weights and energies unchanged."
+  },
+  "ATcT_1.228": {
+    "records": {
+      "S": {
+        "hf0_kJ_mol": 276.85,
+        "hf298_kJ_mol": 279.1,
+        "reported_95_percent_uncertainty_kJ_mol": 0.12
+      },
+      "S2": {
+        "hf0_kJ_mol": 127.42,
+        "hf298_kJ_mol": 127.72,
+        "reported_95_percent_uncertainty_kJ_mol": 0.24
+      }
+    },
+    "S_S2_correlation_percent": 99.2,
+    "note": "Rounded displayed values. Do not propagate independent species error bars for this highly correlated atomization reaction. The 10 J/mol change from 1.172 is comparable to display rounding; no significant physical revision is claimed.",
+    "paper_doi": "10.1021/acs.jpca.6c05060",
+    "paper_inspection": "Publisher abstract/metadata only; full text not acquired. Official evaluated tables inspected."
+  },
+  "Frederix2009": {
+    "doi": "10.1021/jp905104u",
+    "D0_cm-1": 35636.9,
+    "reported_uncertainty_cm-1": 2.5,
+    "zero": "lowest rovibrational level",
+    "products": "S(3P2)+S(3P2)",
+    "inspection": "Publisher abstract only; full author PDF attempt returned HTTP 403. Consistent evaluated ATcT provenance inspected."
+  },
+  "legacy": {
+    "NASA": "Gurvich 1989 part 1 p270, part 2 p165; frozen NASA9 coefficients and heat increments inspected. Original Gurvich pages not acquired.",
+    "JANAF": "NIST compiled evaluation 1977; frozen node values inspected.",
+    "Barklem_Collet2016": {
+      "doi": "10.1051/0004-6361/201526961",
+      "inspection": "Frozen CDS partition samples and D0 record used as an alternative source comparison, not independent proof of completeness. The full compilation was not reaudited.",
+      "role": "Its disagreement at 4000 K is retained; no NASA accuracy assumption."
+    }
+  },
+  "decision": {
+    "curated": "retain current NASA thermal plus ATcT 1.172 balanced D0",
+    "reason": "The updated balanced energy nearly cancels; the UV list omits low electronic states and has explicit J/v coverage limits. A direct 4000 K replacement is unsupported.",
+    "merge_scope": "The scoped source review can merge independently of a production replacement or additional original papers.",
+    "next_calculations": [
+      "Construct converged X plus low-singlet and relevant higher electronic state sums on one lowest-occupied zero. Separate bound levels, resonances and dissociation continuum.",
+      "Check J/v/electronic convergence for Q and first/second moments through 4000 K, including symmetry and isotope convention.",
+      "Fit a derivative-consistent thermal candidate only after those checks, then perform sulfur-conserving finite substitution."
+    ],
+    "follow_up_sources": [
+      {
+        "doi": "10.1080/00268976.2012.741721",
+        "purpose": "Xing 2013 low electronic states and potential curves; cited within inspected Gomez paper, original not acquired."
+      },
+      {
+        "doi": "10.1021/jp905104u",
+        "purpose": "Optional full-text audit of ground-atom threshold and rovibrational zero."
+      },
+      {
+        "doi": "10.1021/acs.jpca.6c05060",
+        "purpose": "Optional detailed audit of revised sulfur network and covariance; current retention does not wait for it."
+      }
+    ]
+  }
+}
