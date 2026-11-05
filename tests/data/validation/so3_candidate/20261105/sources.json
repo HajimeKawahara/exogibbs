@@ -1,0 +1,23 @@
+{
+  "access_date": "2026-11-05",
+  "source_replay": "Earlier source packet retained unchanged; current official displayed ATcT1.228 values rechecked for O, S and gaseous SO3. The SO3 species page had a browser cache miss; the versioned full table and gas SO3 row on a correlated-species page confirm the same values. No new audit of every underlying network determination is claimed.",
+  "sources": [
+    {
+      "species": "O",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22",
+      "hf0_kJ_mol": 246.843
+    },
+    {
+      "species": "S",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=138",
+      "hf0_kJ_mol": 276.85
+    },
+    {
+      "species": "SO3 (g)",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "confirming_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=3181",
+      "hf0_kJ_mol": -389.68
+    }
+  ],
+  "scope": "Same-version evaluated molecule and gas atoms; covariance remains unavailable. No primary experimental full-text access is newly asserted."
+}
