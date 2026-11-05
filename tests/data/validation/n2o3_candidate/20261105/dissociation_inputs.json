@@ -1,0 +1,22 @@
+{
+  "reaction": "N2O3 -> NO + NO2",
+  "temperature_K": 300,
+  "standard_pressure_Pa": 100000,
+  "ATcT_version": "1.228",
+  "same_version_Hf0_J_mol": {
+    "N2O3": 90850,
+    "NO": 90687,
+    "NO2": 36926
+  },
+  "network_input": {
+    "id": "TN1573.10",
+    "delta_G_J_mol": -1840,
+    "prior_margin_J_mol": 70,
+    "reference": "Beattie 1957, third law apud Gurvich TPIS",
+    "independent_validation": false
+  },
+  "source_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=401",
+  "access_date": "2026-11-05",
+  "inspection": "Displayed N2O3 energy, correlated NO/NO2 species values and TN1573.10 inspected on the official ATcT page. Original experimental full text and Gurvich derivation were not obtained.",
+  "scope": "Closed-reaction source diagnostic using original NASA intervals. This does not evaluate or extend the candidate below its 1500-4000 K domain, add a conformer ensemble, or establish independent physical validation."
+}

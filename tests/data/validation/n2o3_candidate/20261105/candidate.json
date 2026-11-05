@@ -1,0 +1,65 @@
+{
+  "id": "n2o3_atct_1_228_candidates_v1",
+  "species": "N2O3",
+  "molecule": "N2O3",
+  "base_dataset": "curated-cos-v1",
+  "composition": {
+    "N": 2,
+    "O": 3
+  },
+  "variants": [
+    "nasa_atct",
+    "energy_only"
+  ],
+  "primary": "nasa_atct",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_gas_constant_J_mol_K": 8.31451,
+  "atct_version": "1.228",
+  "same_version_hf0_kJ_mol": {
+    "O": 246.843,
+    "N": 470.655,
+    "N2O3": 90.85
+  },
+  "D0_J_mol": 1590989.0,
+  "documented_source_D0_J_mol": 1592393.0,
+  "native_NASA_D0_J_mol": 1590804.2040000001,
+  "delta_D0_J_mol": -1404.0,
+  "delta_D0_over_R_K": -168.86238647998738,
+  "NASA_energy_shift_over_R_K": 23.316179889283376,
+  "current_fastchem_coefficients": [
+    192787.83329914676,
+    -3.950409205515882,
+    -32.83490873944993,
+    0.0014232833836675118,
+    -8.40108416195074e-08
+  ],
+  "current_source_header": "N2O3 Nitrogen_Oxide : N 2 O 3 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+  "nasa_formation_coefficients": [
+    -184847.92020000005,
+    -2079.161751,
+    1.990771856000002,
+    -0.0013610875862,
+    5.660258128e-07,
+    -1.1384275681e-10,
+    7.229900310899999e-15,
+    -182134.06007988926,
+    -75.118711287
+  ],
+  "thermal_scope": "Exact continuous high NASA interval on 1500-4000 K, or unchanged current five-coefficient reaction; no new fit or internal join.",
+  "energy_only_reference_scope": "Offset uses the documented molecular-table plus JANAF-atom energy anchor; no unique zero-temperature energy is inferred from the finite-range FastChem fit. Historical fit atom basis remains unrecovered.",
+  "nasa_convention": "Retain dimensionless NASA molecular-minus-atoms thermal functions; remove source D0 with native NASA R, then insert same-version ATcT D0 with SI R exactly once.",
+  "physical_scope": "Neutral ground-state elemental species; no added conformers, isotopic mixture, nuclear-spin factor, physical covariance or high-temperature accuracy certificate.",
+  "source_sha256": {
+    "tests/data/validation/n2o3_source_review/20261105/inputs.json": "cd7b865dd53c0e2b7f40f0a87cb091de457172d426473605940a56eb99f1fb9f",
+    "tests/data/validation/n2o3_source_review/20261105/nasa_records.json": "80b1954e3bdbd778dbb558f06cc27adb6337e95c5c979d6e2e42ee63bcb4fae7",
+    "tests/data/validation/n2o3_source_review/20261105/comparison.json": "c595b4996e5023fe9d0e5d58899a358ddf37e6cbd291a386b230ef7015fb2390",
+    "tests/data/validation/n2o3_source_review/20261105/sources.json": "60db25e246f2ab341e4a82349b614d6e35b1953bc5a40af4482613a0ab4423c0",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/n2o3_candidate/20261105/dissociation_inputs.json": "1dc88af6d533f379999007e893b6d6d7c6d6b95698a6525a1766999924c34c26"
+  }
+}

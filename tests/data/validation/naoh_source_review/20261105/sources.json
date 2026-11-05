@@ -1,0 +1,62 @@
+{
+  "retrieved_date": "2026-11-05",
+  "sources": [
+    {
+      "id": "official_NASA",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "upstream_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "file": "nasa_selected.txt",
+      "inspection": "Selected official molecular and atomic records inspected; both coefficient intervals match the frozen screening. Official 300 K lower bounds retained where present; no extrapolation to 298.15 K. NASA_R=8.314510 is distinct from SI_R.",
+      "sha256": "e6a1e94016dca83afeb15437d16d6ac027732d690aa7bc06f9e3a629088a8e94",
+      "archived": true
+    },
+    {
+      "id": "official_JANAF",
+      "url": "https://janaf.nist.gov/tables/H-036.txt",
+      "file": "janaf.txt",
+      "inspection": "Exact one-bar neutral monomer table inspected; formula checked against the frozen map. No dimer, ion or condensed-phase substitution.",
+      "sha256": "7f7d3b1e7d5370d021545b2aafd795e80fb3a2549f927679ed75b53c7b7b6f2a",
+      "archived": true
+    },
+    {
+      "id": "evaluated_source",
+      "doi": "10.1063/1.555982",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.555982.pdf",
+      "inspection": "Full Gurvich 1996 evaluation text sections 3.2.1-3.2.2, pp1261-1267 inspected, especially Table3-22 and selected formation enthalpy. Original ancestral experimental papers not independently inspected. Table3-22 p1267 visually checked against PDFpage58; entropy at4000K is372.451 J/mol/K.",
+      "archived": false
+    },
+    {
+      "id": "ExoMol_partition",
+      "doi": "10.1093/mnras/staa4041",
+      "url": "https://www.exomol.com/db/NaOH/23Na-16O-1H/OYT5/23Na-16O-1H__OYT5.pf",
+      "file": "OYT5.pf",
+      "inspection": "Official distributed partition table inspected and compared as a finite rovibrational sum; not a full thermodynamic convergence certificate.",
+      "sha256": "080506ac5fe979f8ef1a8f52b7ba2c9e9ecddeb8b4ad942b2d9d8d1a1a94bdc9",
+      "archived": true
+    },
+    {
+      "id": "ExoMol_definition",
+      "url": "https://www.exomol.com/db/NaOH/23Na-16O-1H/OYT5/23Na-16O-1H__OYT5.def",
+      "file": "OYT5.def",
+      "inspection": "Mass, symmetry weights and stated line-list/partition limits inspected; disagreements are preserved, not silently corrected.",
+      "sha256": "6c931cc2b511acb9a724854c85fefaf47367b6aba893e166b55b43d4be0d1897",
+      "archived": true
+    },
+    {
+      "id": "ExoMol_state_excerpt",
+      "url": "https://www.exomol.com/db/NaOH/23Na-16O-1H/OYT5/23Na-16O-1H__OYT5.states.bz2",
+      "file": "first10.states",
+      "inspection": "First ten J=0 records only, read by streaming a small compressed prefix. Ground energy zero and total weights8 confirm the paper normalization; not a full state-sum recomputation.",
+      "sha256": "fc6828ac80fb895af6279793d325bb04ba3026c29f3c2adec502916c4cfb0614",
+      "archived": true
+    },
+    {
+      "id": "Owens2021_fulltext",
+      "doi": "10.1093/mnras/staa4041",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/21OwTeYu.pdf",
+      "upstream_sha256": "781066d7cfd8ba3ab224573e5d5029b873d9e8845521e89798c91a42257ed313",
+      "inspection": "Full author-hosted published article inspected, sections2/3, Table1 and Figures1/2. Opacity lower-state cutoff and total-PF convergence are different diagnostics. No full paper archived."
+    }
+  ],
+  "redistribution": "Only numerical tables, selected public NASA records, short state excerpts, source metadata and derived facts are archived. Full articles remain external."
+}
