@@ -1,0 +1,90 @@
+{
+  "atct.html": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+    "sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "bytes": 4289738,
+    "status": 200,
+    "access": "primary page or author full text inspected; not committed"
+  },
+  "atct-n.html": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25",
+    "sha256": "0ebbde5bff3964a26de942d7f5412b797a029b89a3a29c0b8e49b2b64021bb65",
+    "bytes": 53870,
+    "status": 200,
+    "access": "primary page or author full text inspected; not committed"
+  },
+  "nh-2kNigHt.pf": {
+    "url": "https://exomol.com/db/NH/14N-1H/2kNigHt/14N-1H__2kNigHt.pf",
+    "sha256": "8d72844da4fb3b76219fe6893734b8c1d1b3bf4ccb05f9cccece056c08087cb5",
+    "bytes": 250000,
+    "status": 200,
+    "access": "full numerical file inspected"
+  },
+  "nh-2kNigHt.states.bz2": {
+    "url": "https://exomol.com/db/NH/14N-1H/2kNigHt/14N-1H__2kNigHt.states.bz2",
+    "sha256": "1df5146d3c5977412be29bab98f81edf95fed5696b6710e7739045f3c58488bf",
+    "bytes": 98496,
+    "status": 200,
+    "access": "full numerical file inspected"
+  },
+  "H-026.txt": {
+    "url": "https://janaf.nist.gov/tables/H-026.txt",
+    "status": 200,
+    "bytes": 3871,
+    "sha256": "e5ba963d656282c09408a33e62045d47e76cf0cd1686c5a5e0d084072438f006",
+    "access": "full numerical file inspected"
+  },
+  "N-002.txt": {
+    "url": "https://janaf.nist.gov/tables/N-002.txt",
+    "status": 200,
+    "bytes": 3847,
+    "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "access": "full numerical file inspected"
+  },
+  "nh-page.html": {
+    "url": "https://exomol.com/data/molecules/NH/14N-1H/2kNigHt/",
+    "sha256": "ea9fa03828f214dde73d84c97e1d013cd72bd2d8b13ed3433aa2612dd9506176",
+    "bytes": 36203,
+    "status": 200,
+    "access": "primary page or author full text inspected; not committed"
+  },
+  "atct-nh.html": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=140",
+    "sha256": "4758a43b8bb55ff4c901ecddea8269e250858351bfed822398c64f366f68ab8a",
+    "bytes": 54680,
+    "status": 200,
+    "access": "primary page or author full text inspected; not committed"
+  },
+  "H-001.txt": {
+    "url": "https://janaf.nist.gov/tables/H-001.txt",
+    "status": 200,
+    "bytes": 3802,
+    "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "access": "full numerical file inspected"
+  },
+  "nh-2kNigHt.def": {
+    "url": "https://exomol.com/db/NH/14N-1H/2kNigHt/14N-1H__2kNigHt.def",
+    "sha256": "ac9a5348c9314bf76cb1a1198dc84e22ec74860bf990167f9f1518941dfc561d",
+    "bytes": 7461,
+    "status": 200,
+    "access": "full numerical file inspected"
+  },
+  "nh-paper.pdf": {
+    "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/26PeUhKi.pdf",
+    "status": 200,
+    "bytes": 2808843,
+    "sha256": "2135b760429fdf8be0aba0a153767f9b1d0c51853cdaa6d7b07fa6f483e4cc78",
+    "access": "primary page or author full text inspected; not committed",
+    "doi": "10.1093/mnras/stag744",
+    "note": "Formal publication is 2026; ExoMol landing page retains 2025 in-press metadata. Separate bound-bound .states distribution from continuum quadrature states."
+  },
+  "nasa_cea": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "access": "Original public file already downloaded; selected literal records inspected and committed."
+  },
+  "historical_sources": {
+    "access": "NASA header and exact current files inspected; original Gurvich 1978 book inputs and original FastChem Goos/Burcat fit procedure not independently recovered.",
+    "required_for_evidence_merge": false
+  }
+}
