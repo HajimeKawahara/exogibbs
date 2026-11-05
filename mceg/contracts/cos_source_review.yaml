@@ -166,7 +166,7 @@ subjects:
     tests/data/validation/cos_source_review/20261105/TIPS2025.pf: 3145c4811c74aa378a39b4474fac778c373be6de17bdd6694a5969b1bb1b5aaa
     tests/data/validation/cos_source_review/20261105/sources.json: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
     documents/mceg/cos_source_review.rst: bf4258b8297ed3a08839e7128536c46752405eb5804cd65d4baf06024307fb03
-    tests/model_evidence/cos_source_review_test.py: 8a370b5de11dd61d6bed558d6fef09b539d189c6e406a21dd824a3479c38efc9
+    tests/model_evidence/cos_source_review_test.py: 52adde170b3d66241228bf66beea3b6ada8557a9edba8ad635766baa4ba40d59
     tests/data/validation/cos_source_review/20261105/README.rst: 88642b11519ebedc5d90dc4f93c6eb4ee146c5bead3c37677a2254c085b0078d
     tests/data/validation/cos_source_review/20261105/comparison.json: dbd6e325af049a260c08a63824f4cd8317e4e9d3abf85b4234ff210b9d1db9cc
     tests/data/validation/cos_source_review/20261105/receipt.json: 7ddbd4bf6cc46a8d86046ec68b957df4707f4876c1ada74a9933aaf484b9255d

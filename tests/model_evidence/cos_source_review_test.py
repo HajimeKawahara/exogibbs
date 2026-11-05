@@ -63,15 +63,30 @@ def test_archived_sulfur_share_accounts_for_stoichiometry(report):
 
 def test_report_and_actual_input_receipts(report):
     expected=json.loads((study.DATA/"comparison.json").read_text())
-    def equal(a,b):
+    def equal(a,b,path=()):
         if isinstance(a,dict):
             assert a.keys()==b.keys()
-            for k in a:equal(a[k],b[k])
+            for k in a:equal(a[k],b[k],path+(k,))
         elif isinstance(a,list):
             assert len(a)==len(b)
-            for x,y in zip(a,b):equal(x,y)
-        elif isinstance(a,float):assert a==pytest.approx(b,rel=2e-11,abs=2e-10)
+            for i,(x,y) in enumerate(zip(a,b)):equal(x,y,path+(i,))
+        elif isinstance(a,float):
+            # Cp second differences amplify roundoff by R * T**2 / step**2.
+            # 1e-7 J/mol/K is far below even the table-rounding contribution
+            # (roughly 0.1 J/mol/K for TIPS); it is not a physical tolerance.
+            finite_difference_cp = (
+                len(path)>=2 and path[-2] in {"tips2025", "modern_partition"}
+                and path[-1] in {"Cp_J_mol_K", "Cp_step20_J_mol_K", "delta_Cp_J_mol_K"}
+            )
+            tolerance = 1e-7 if finite_difference_cp else 2e-10
+            assert a==pytest.approx(b,rel=2e-11,abs=tolerance),path
         else:assert a==b
+    # The observed CI cancellation is accepted only in partition-derived Cp.
+    ci_value, saved_value = 0.10511039269358236, 0.10511039204531158
+    equal(ci_value,saved_value,("source_samples",3,"tips2025","delta_Cp_J_mol_K"))
+    for path in (("source_samples",3,"curated_ln_K"), ("balanced_D0_J_mol","atct")):
+        with pytest.raises(AssertionError):
+            equal(ci_value,saved_value,path)
     equal(report,expected)
     receipt=json.loads((study.DATA/"receipt.json").read_text())
     for group in ("selected_input_sha256","output_sha256"):
