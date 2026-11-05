@@ -56,7 +56,6 @@ HCN differences with optional MCEG tooling.
    ho2_candidate
    gas_source_comparison
    cs_source_review
-   po_source_review
    cs_candidate
    cos_source_review
    cos_candidate
@@ -80,6 +79,7 @@ HCN differences with optional MCEG tooling.
    koh_source_review
    koh_candidate
    phosphorus_cold_validation
+   po_source_review
    po2_source_review
    c5_source_review
    cs2_source_review
