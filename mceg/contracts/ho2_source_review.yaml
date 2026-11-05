@@ -169,6 +169,8 @@ contexts:
     finite_substitution: not_run
     source_coverage: Neutral gas HO2 radical; equilibrium hot H-rich grid cannot validate photochemical
       radical production/loss or lower-temperature atmospheres.
+    subsequent_candidate_record: mceg/contracts/ho2_candidate.yaml completes next_calculation; the source_review
+      context retains its original source-only scope.
 assessments:
 - id: source_assessment_review
   kind: evidence_support
@@ -257,8 +259,9 @@ follow_ups:
   requires:
   - Preserve identity, state counting, same-version energy balance, continuous-domain boundary checks
     and element-conserving solver diagnostics.
-  completion: A reviewable candidate and finite-substitution report, if replacement is proposed; not required
-    to merge this scoped source review.
+  completion: 'Completed 2026-11-05 in mceg/contracts/ho2_candidate.yaml: exact bounded continuous candidate,
+    derivatives and 150 fresh finite substitutions. Production remains unchanged pending a separately
+    authorized decision; physical accuracy remains unknown.'
 - id: source_ancestry
   target_kind: claim
   target: physical_accuracy
@@ -275,8 +278,9 @@ limitations:
   evidence:
   - literature
   - source_replay
-- statement: Source availability, approximate fit agreement and trace abundance in the selected grid do
-    not independently establish physical accuracy. No new finite substitution has been run.
+- statement: The dated source-only review did not run a finite substitution. The subsequent candidate
+    contract records its completion; neither source availability, numerical agreement nor trace abundance
+    independently establishes physical accuracy.
   evidence:
   - source_replay
 - statement: Underlying historical experiments and original Gurvich details are only partially inspected;
