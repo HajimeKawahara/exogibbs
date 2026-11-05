@@ -120,7 +120,7 @@ evidence:
   - source: tests/data/validation/naoh_candidate/20261105/validation.json
     sha256: ed6bd05497cc7fcf9328c635ec620add21c980076c5a6dd933c1a621e51940ec
   - source: tests/data/validation/naoh_candidate/20261105/receipt.json
-    sha256: 05e6447a551ed0235c034694cd862f14c37a9ca45a61083691cd9531f5781f2b
+    sha256: 36d9ecbfb52f6936e0689c86925f96cf889937c3574bf53089a8b65de850164f
   provenance:
     role: primary
     location: documents/mceg/naoh_candidate.rst
@@ -190,7 +190,9 @@ subjects:
   implementation: *id001
   selected_files:
     documents/mceg/naoh_candidate.rst: 61ced8a284e6a2803f0bbc66f6be3777cf2cc30cbb647edaf262a669934f7165
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
     mceg/reviews/build_cos_adoption.py: 55da578ac4c97ebb66d16246983605569f626a7e98d9741369d8d6223d5e2d75
     mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
@@ -235,6 +237,7 @@ subjects:
     src/exogibbs/condensates/initialization_policy.py: 938698fee34a0ae3b82727a29d53ad074e637fa5870b74cdbb58972e55794772
     src/exogibbs/condensates/native_bundle.py: 903ab6ad2aed9654c9a886ecff645a6d5e82f27918f0f079dad7b682c326a965
     src/exogibbs/condensates/support_selection_policy.py: 92d873aedcbbcd1dcac586c321e532624de6e2acadaa39e087ddd82c650153ca
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
     src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
@@ -393,7 +396,7 @@ subjects:
     tests/data/validation/nao_source_review/20261105/inputs.json: f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d
     tests/data/validation/naoh_candidate/20261105/README.rst: 820c47ce65e038732c8c25cef8f377af015bc0baeaa6dd6c638ff6e46e2f3a22
     tests/data/validation/naoh_candidate/20261105/candidate.json: 1b4c83d4e0c559b1aa46770c49e601cdc85dc8683c34fcbcb15efb01075a8416
-    tests/data/validation/naoh_candidate/20261105/receipt.json: 05e6447a551ed0235c034694cd862f14c37a9ca45a61083691cd9531f5781f2b
+    tests/data/validation/naoh_candidate/20261105/receipt.json: 36d9ecbfb52f6936e0689c86925f96cf889937c3574bf53089a8b65de850164f
     tests/data/validation/naoh_candidate/20261105/validation.json: ed6bd05497cc7fcf9328c635ec620add21c980076c5a6dd933c1a621e51940ec
     tests/data/validation/naoh_equilibrium_impact/20261105/README.rst: 8729ba7d1b7eb5733f006c148a4407fff23ff8b7202e6b9168e46f56c899b1de
     tests/data/validation/naoh_equilibrium_impact/20261105/diagnostics.json: 04416b23b201d7204e7b73a670db7e99004b6bcb326de33ab6f4478c844ef1b3
@@ -411,7 +414,7 @@ subjects:
     tests/data/validation/naoh_source_review/20261105/nasa_selected.txt: e6a1e94016dca83afeb15437d16d6ac027732d690aa7bc06f9e3a629088a8e94
     tests/data/validation/naoh_source_review/20261105/receipt.json: ffb2a254b493079d266e6c60fca3d2e10125f2795e47e6fbe3c5866cdf8c02ca
     tests/data/validation/naoh_source_review/20261105/sources.json: 328b83c7cb5342889cda6870530186526b1ef2d9681e51f18c648ce99c696380
-    tests/model_evidence/naoh_candidate_test.py: 265999453fda61c581ef79362f739bc00d33bee76c1787de01aeba6a03b90469
+    tests/model_evidence/naoh_candidate_test.py: 3abff1b632c86937c167db43243b00c1c6f7a6803caa8d87942e1893fa4c2f72
     tests/model_evidence/naoh_equilibrium_impact_test.py: 67c6e5f8156aafcc6babe09278e864456c91c4eb51294c12b7aa24bfefc8ba7e
 contexts:
 - id: candidate_evaluation
