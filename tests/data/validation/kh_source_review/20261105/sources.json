@@ -1,0 +1,54 @@
+{
+  "review_date": "2026-11-05",
+  "downloads": {
+    "KH.pdf": {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/26KhBrYu.pdf",
+      "sha256": "016d6d01bb7294489d806c9304d4eff5a455928389cab95baec7ecf1b347de41",
+      "archived": false,
+      "inspection": "Full paper read; numerical distributions parsed completely."
+    },
+    "KH.states.bz2": {
+      "url": "https://exomol.com/db/KH/39K-1H/Khan/39K-1H__Khan.states.bz2",
+      "sha256": "c1418caeedd0e32c9d27745aa68a9241f1f0c21c9bb7c0de7ef9aa1c997897d2",
+      "archived": false,
+      "inspection": "All rows inspected computationally; source definition read."
+    },
+    "KH.pf": {
+      "url": "https://exomol.com/db/KH/39K-1H/Khan/39K-1H__Khan.pf",
+      "sha256": "22edff23e7716d982daf80e427ade05071ec132ea2ab68b5716286ea3bb558e6",
+      "archived": false,
+      "inspection": "All rows inspected computationally; source definition read."
+    },
+    "KH.def.json": {
+      "url": "https://exomol.com/db/KH/39K-1H/Khan/39K-1H__Khan.def.json",
+      "sha256": "ffd8b8feebffc605b52ab737f8135034e91379116bf109e88296411d0730b9b0",
+      "archived": false,
+      "inspection": "All rows inspected computationally; source definition read."
+    },
+    "H-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "K-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/K-005.txt",
+      "sha256": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "KH-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/H-008.txt",
+      "sha256": "c33581acfafb5fa853e580cda333849d897698a6e56c7ee774da1a63b8ba468a",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    }
+  },
+  "NASA": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Molecule header, native H(298)-H(0), mass and both intervals inspected; neutral atoms reuse pinned existing records. Gurvich book originals not reaudited."
+  },
+  "primary_doi": "10.1093/mnras/stag979",
+  "scope": "Primary electronic publication and current distribution inspected; this does not establish full physical uncertainty."
+}

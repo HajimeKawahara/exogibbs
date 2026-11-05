@@ -1,0 +1,54 @@
+{
+  "id": "ho2_nasa_thermal_atct_1_172_candidate_v1",
+  "species": "H1O2",
+  "reaction": "H(g)+2O(g)->HO2(g)",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "source_interval_K": [
+    1000,
+    6000
+  ],
+  "representation": "Exact NASA9 molecular-minus-atoms reaction, constant b1 energy shift; no fit",
+  "D0_J_mol": 694662.0,
+  "D0_over_k_K": 83548.63469869016,
+  "nasa_D0_J_mol": 694682.7620000001,
+  "ATcT_minus_nasa_D0_over_k_K": -2.0209623169357656,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_gas_constant_J_mol_K": 8.31451,
+  "formation_nasa9_coefficients": [
+    -2334534.5641425,
+    6423.1183714417,
+    -10.174065349000001,
+    0.0054165380532864,
+    -1.2691176945632999e-06,
+    1.3333908420456e-10,
+    -5.308412840419699e-15,
+    -125329.57611768306,
+    42.452618047
+  ],
+  "nasa_molecular_thermal_coefficients": [
+    -1810669.724,
+    4963.19203,
+    -1.039498992,
+    0.00456014853,
+    -1.061859447e-06,
+    1.144567878e-10,
+    -4.76306416e-15,
+    -32250.86064533797,
+    40.6685092
+  ],
+  "thermal_convention": "NASA dimensionless thermal functions retained; ground H0 removed using native NASA R; calorics use modern SI R; same-version ATcT D0 inserted once",
+  "janaf_control": "Original source nodes only, aligned to identical ATcT D0 and NASA atomic thermal functions; not a fitted continuous alternative",
+  "uncertainty_scope": "No reaction covariance or high-temperature electronic-state completeness bound; inherited source inspection limits retained",
+  "source_sha256": {
+    "tests/data/validation/ho2_source_review/20261105/nasa_records.json": "95b4aa2c8d061b5cc1209c5af0d66cd0516eb90136e7351cceb1f8f54b8c045d",
+    "tests/data/validation/ho2_source_review/20261105/atct_nodes.json": "f38f1d012a895574d1128769e1c3e2d59150563d4541d955e75c2090b04f4eab",
+    "tests/data/validation/ho2_source_review/20261105/sources.json": "2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd",
+    "tests/data/validation/ho2_source_review/20261105/H-043.txt": "92a340244deaa3d2d32e19a25acdff3765b78b33f5abda37fd477fb9fd88f6ac",
+    "tests/data/validation/oh_source_review/20261105/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+  }
+}

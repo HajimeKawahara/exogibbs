@@ -1,0 +1,60 @@
+{
+  "id": "curated-ho2-v1",
+  "species": "H1O2",
+  "reaction": "H(g)+2O(g)->HO2(g)",
+  "base_dataset": "curated-kh-v1",
+  "base_data_sha256": "d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "source_interval_K": [
+    1000,
+    6000
+  ],
+  "representation": "Exact NASA9 molecular-minus-atoms reaction, constant b1 energy shift; no fit",
+  "formation_nasa9_coefficients": [
+    -2334534.5641425,
+    6423.1183714417,
+    -10.174065349000001,
+    0.0054165380532864,
+    -1.2691176945632999e-06,
+    1.3333908420456e-10,
+    -5.308412840419699e-15,
+    -125329.57611768306,
+    42.452618047
+  ],
+  "D0_J_mol": 694662.0,
+  "D0_over_k_K": 83548.63469869016,
+  "nasa_D0_J_mol": 694682.7620000001,
+  "ATcT_minus_nasa_D0_over_k_K": -2.0209623169357656,
+  "thermal_convention": "NASA dimensionless thermal functions retained; ground H0 removed using native NASA R; calorics use modern SI R; same-version ATcT D0 inserted once",
+  "decision": {
+    "name": "HO2",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "NASA CEA HO2 thermal functions",
+    "energy_source": "ATcT 1.172 balanced H+2O-HO2 atomization",
+    "reason": "Replace the obsolete JANAF formation energy with the exact reviewed NASA9 reaction and balanced ATcT 1.172 energy. Dense caloric checks, small same-energy JANAF node controls and conserved finite substitutions support this bounded adoption.",
+    "condition": "1500-4000 K, 1 bar standard pressure. Shared source ancestry, isotope approximation, continuum and ATcT covariance limits remain; complete atmospheric physical accuracy is unknown."
+  },
+  "sources": {
+    "nist_evaluation": "https://doi.org/10.6028/jres.121.005",
+    "nasa": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "atct": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+    "candidate": "tests/data/validation/ho2_candidate/20261105/candidate.json",
+    "review": "documents/mceg/ho2_candidate.rst",
+    "substitution": "tests/data/validation/ho2_equilibrium_impact/20261105/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/ho2_candidate/20261105/candidate.json": "b04c3146c88d2d688d1ea284815c85f4e1990d1cf8305b2534813a86f45be34d",
+    "tests/data/validation/ho2_source_review/20261105/nasa_records.json": "95b4aa2c8d061b5cc1209c5af0d66cd0516eb90136e7351cceb1f8f54b8c045d",
+    "tests/data/validation/ho2_source_review/20261105/atct_nodes.json": "f38f1d012a895574d1128769e1c3e2d59150563d4541d955e75c2090b04f4eab",
+    "tests/data/validation/ho2_source_review/20261105/sources.json": "2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd",
+    "tests/data/validation/ho2_source_review/20261105/H-043.txt": "92a340244deaa3d2d32e19a25acdff3765b78b33f5abda37fd477fb9fd88f6ac",
+    "tests/data/validation/oh_source_review/20261105/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+  },
+  "interpretation": "HO2-only adoption on curated-kh-v1, retaining KH, OH, H2O, CO2, TiO and C2H updates. Exact reviewed NASA9 reaction coefficients; no fit, extra spin factor, ZPE or atomic correction. Scoped scientific and numerical support does not establish full physical accuracy."
+}
