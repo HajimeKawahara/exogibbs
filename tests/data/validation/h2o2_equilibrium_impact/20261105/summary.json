@@ -1,0 +1,199 @@
+{
+  "baseline_dataset": "curated-cos-v1",
+  "production_change": "none",
+  "reused_baseline_cases": 150,
+  "new_endpoint_solves": 150,
+  "new_tighter_cold_solves": 12,
+  "new_finite_path_solves": 10,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "cases": 75,
+      "species_count": 537,
+      "variants": [
+        {
+          "variant": "energy_only",
+          "target_ratio_min": 0.9693685012150571,
+          "target_ratio_max": 0.9884013707990158,
+          "target_maximum_absolute_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "H2O2",
+            "x_before": 3.1817737900526372e-12,
+            "x_after": 3.144869575660407e-12,
+            "delta_x": -3.690421439223016e-14,
+            "ratio": 0.9884013707990158,
+            "element_share_before": 8.1237813620445e-09,
+            "element_share_after": 8.029556634316338e-09
+          },
+          "target_maximum_element_share_before": 8.1237813620445e-09,
+          "target_maximum_element_share_after": 8.029556634316338e-09,
+          "largest_any_species_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "H2O1",
+            "x_before": 0.00026970958827369953,
+            "x_after": 0.000269709588335378,
+            "delta_x": 6.167847265911575e-14,
+            "ratio": 1.0000000002286846,
+            "element_share_before": 0.34431450363200283,
+            "element_share_after": 0.34431450371074346
+          },
+          "finite_mass_action_closure_ln": 2.9809488211185453e-13,
+          "gibbs_corrected_current_min": -2.482161365845732e-18,
+          "gibbs_corrected_candidate_max": 3.162834804172543e-18,
+          "gibbs_scope": "First-order feasibility-corrected ordering within 5e-14 numerical tolerance; a trace-species response below that scale is not a resolved Gibbs improvement."
+        }
+      ],
+      "target_element": "O",
+      "highlight_case_index": 24,
+      "tight_case_indices": [
+        24,
+        53,
+        70
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 1.4578366176465352e-05,
+        "target_delta_ln_x": 6.892264536872972e-13,
+        "visible_delta_ln_x": 1.457836575013971e-06,
+        "absolute_delta_x": 3.379029986556313e-14
+      },
+      "maximum_target_elements_relative_residual": 1.499148852451851e-13,
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.459193055116362e-06,
+        "mass_action_max_abs_ln": 1.6484591469634324e-12,
+        "HCOS_element_relative_residual": 2.9457932686532637e-12,
+        "charge_relative_residual": 1.9516399694714846e-14
+      },
+      "path_target_ratios": [
+        0.9999999999999751,
+        0.99708764466387,
+        0.9941837711410791,
+        0.9912883547294581,
+        0.9884013707990053
+      ],
+      "actual_new_endpoint_solves": 75
+    },
+    {
+      "network": "neutral",
+      "cases": 75,
+      "species_count": 421,
+      "variants": [
+        {
+          "variant": "energy_only",
+          "target_ratio_min": 0.9693685012153533,
+          "target_ratio_max": 0.9884013707989737,
+          "target_maximum_absolute_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "H2O2",
+            "x_before": 3.181732405150534e-12,
+            "x_after": 3.1448286707663035e-12,
+            "delta_x": -3.6903734384230464e-14,
+            "ratio": 0.9884013707989737,
+            "element_share_before": 8.12366058922385e-09,
+            "element_share_after": 8.02943726229448e-09
+          },
+          "target_maximum_element_share_before": 8.12366058922385e-09,
+          "target_maximum_element_share_after": 8.02943726229448e-09,
+          "largest_any_species_response": {
+            "case_index": 24,
+            "temperature_K": 4000.0,
+            "pressure_bar": 100.0,
+            "C_over_O": 0.5888436553555908,
+            "species": "H2O1",
+            "x_before": 0.00026970809657819093,
+            "x_after": 0.0002697080966398623,
+            "delta_x": 6.167137113488597e-14,
+            "ratio": 1.0000000002286598,
+            "element_share_before": 0.34431195898499267,
+            "element_share_after": 0.34431195906372547
+          },
+          "finite_mass_action_closure_ln": 2.0961010704922955e-13,
+          "gibbs_corrected_current_min": -2.593120200290018e-18,
+          "gibbs_corrected_candidate_max": 1.7272871021376781e-18,
+          "gibbs_scope": "First-order feasibility-corrected ordering within 5e-14 numerical tolerance; a trace-species response below that scale is not a resolved Gibbs improvement."
+        }
+      ],
+      "target_element": "O",
+      "highlight_case_index": 24,
+      "tight_case_indices": [
+        21,
+        24,
+        53
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 1.3647025241425581e-05,
+        "target_delta_ln_x": 2.7000623958883807e-13,
+        "visible_delta_ln_x": 1.364702516326588e-06,
+        "absolute_delta_x": 3.160352057678698e-14
+      },
+      "maximum_target_elements_relative_residual": 2.612239986852623e-13,
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.365859631114216e-06,
+        "mass_action_max_abs_ln": 1.3358203432289883e-12,
+        "HCOS_element_relative_residual": 2.9534215119671097e-12
+      },
+      "path_target_ratios": [
+        1.0000000000000107,
+        0.9970876446639338,
+        0.9941837711411109,
+        0.9912883547295179,
+        0.9884013707989807
+      ],
+      "actual_new_endpoint_solves": 75
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "case_index": 24,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 3.3399736386524265e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.781518737942904e-11,
+          "mass_action_max_abs_ln": 4.282725285520428e-10
+        },
+        {
+          "dataset": "review-h2o2-energy_only",
+          "max_abs_delta_log10_x": 3.3417017134724903e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.7764129165997524e-11,
+          "mass_action_max_abs_ln": 4.5288572891877266e-10
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "case_index": 53,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 7.893327355604006e-09,
+          "element_relative_residual": 2.5238013528686958e-11,
+          "charge_relative_residual": 1.8691460237560174e-12,
+          "mass_action_max_abs_ln": 1.1744560879378696e-10
+        },
+        {
+          "dataset": "review-h2o2-energy_only",
+          "max_abs_delta_log10_x": 7.892438631410828e-09,
+          "element_relative_residual": 2.5238013528686958e-11,
+          "charge_relative_residual": 1.8691460237560174e-12,
+          "mass_action_max_abs_ln": 1.1744560879378696e-10
+        }
+      ]
+    }
+  ],
+  "elapsed_seconds": 18.96464460156858,
+  "scope": "Finite single-species substitutions in fixed ideal-gas networks and inventories, 1500-4000 K. No condensation, cooler-atmosphere, photochemical or complete physical validation."
+}

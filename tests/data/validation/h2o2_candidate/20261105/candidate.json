@@ -1,0 +1,63 @@
+{
+  "id": "h2o2_atct_1_228_candidates_v1",
+  "species": "H2O2",
+  "molecule": "H2O2",
+  "base_dataset": "curated-cos-v1",
+  "composition": {
+    "H": 2,
+    "O": 2
+  },
+  "variants": [
+    "energy_only"
+  ],
+  "primary": "energy_only",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_gas_constant_J_mol_K": 8.31451,
+  "atct_version": "1.228",
+  "same_version_hf0_kJ_mol": {
+    "H": 216.034,
+    "O": 246.843,
+    "H2O2": -129.4
+  },
+  "D0_J_mol": 1055154.0,
+  "documented_source_D0_J_mol": 1055542.0,
+  "native_NASA_D0_J_mol": 1055540.835,
+  "delta_D0_J_mol": -388.0,
+  "delta_D0_over_R_K": -46.665673756577704,
+  "NASA_energy_shift_over_R_K": -45.80209370769444,
+  "current_fastchem_coefficients": [
+    127437.6966980867,
+    -5.031884147883515,
+    -5.539225796958037,
+    0.001379878880827548,
+    -6.614526455249969e-08
+  ],
+  "current_source_header": "H2O2 Hydrogen_Peroxide : H 2 O 2 # Dorofeeva, O.V. et al., J. Phys. Chem. Ref. Data 32, 879-901, 2003.",
+  "nasa_formation_coefficients": [
+    965502.399115,
+    -3710.7135031166,
+    -0.35272847400000096,
+    0.0007760881966728001,
+    -2.254794140166e-07,
+    2.583524973912e-11,
+    -1.0284728914394e-15,
+    -104569.9766862923,
+    -44.276255976
+  ],
+  "thermal_scope": "Exact continuous high NASA interval on 1500-4000 K, or unchanged current five-coefficient reaction; no new fit or internal join.",
+  "energy_only_reference_scope": "Offset uses the documented molecular-table plus JANAF-atom energy anchor; no unique zero-temperature energy is inferred from the finite-range FastChem fit. Historical fit atom basis remains unrecovered.",
+  "nasa_convention": "Retain dimensionless NASA molecular-minus-atoms thermal functions; remove source D0 with native NASA R, then insert same-version ATcT D0 with SI R exactly once.",
+  "physical_scope": "Neutral ground-state elemental species; no added conformers, isotopic mixture, nuclear-spin factor, physical covariance or high-temperature accuracy certificate.",
+  "source_sha256": {
+    "tests/data/validation/h2o2_source_review/20261105/inputs.json": "03c99455eadfef19f7325fa6b2d74e434f63eb310f64b15458d24c2b2b879e06",
+    "tests/data/validation/h2o2_source_review/20261105/nasa_records.json": "2462f39dfbbd2389b870a9f863e80d92749103e15273f625ea52b2b821b79b7b",
+    "tests/data/validation/h2o2_source_review/20261105/comparison.json": "9bc2e6e3d9462470685f69f5b9edebc436ae092f8cc9fb51ee345fbf152b4d88",
+    "tests/data/validation/h2o2_source_review/20261105/sources.json": "62e6fbc2dea32a5bc63dd3514efc3ac44271a916d15953a476843c44a5671198",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+  }
+}

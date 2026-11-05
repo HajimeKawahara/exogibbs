@@ -1,0 +1,83 @@
+{
+  "id": "naoh_controlled_gurvich_candidate_v1",
+  "molecule": "NaOH",
+  "species": "H1Na1O1",
+  "baseline_dataset": "curated-cos-v1",
+  "standard_pressure_Pa": 100000,
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "primary": "energy",
+  "control": "nasa",
+  "composition": {
+    "Na": 1,
+    "O": 1,
+    "H": 1
+  },
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_R_J_mol_K": 8.31451,
+  "janaf_source_h0_gauge_J_mol": {
+    "Na": 101103.0,
+    "O": 242448.0,
+    "H": 211802.0,
+    "NaOH": -209142.0
+  },
+  "nasa_native_h0_gauge_J_mol": {
+    "Na": 101302.572,
+    "O": 242449.6,
+    "H": 211801.40000000002,
+    "NaOH": -202397.671
+  },
+  "Gurvich_molecular_hf298_J_mol": -191000,
+  "Gurvich_molecular_heat_content_J_mol": 11396,
+  "Gurvich_molecular_h0_gauge_J_mol": -202396,
+  "original_source_D0_J_mol": 764495.0,
+  "target_D0_J_mol": 757949.572,
+  "nasa_native_D0_J_mol": 757951.243,
+  "delta_D0_J_mol": -6545.427999999956,
+  "atomic_h0_change_J_mol": 200.57200000002922,
+  "molecular_h0_change_J_mol": 6746.0,
+  "original_logK_coefficients": [
+    92410.79903452193,
+    -1.7873295242017093,
+    -12.555733702745101,
+    0.0005097916908541333,
+    -2.9019854557465712e-08
+  ],
+  "nasa_coefficients": {
+    "nasa": [
+      -339156.37594249996,
+      1011.3467434416993,
+      -3.0015158170000005,
+      0.0017401198244864,
+      -3.9696329206330005e-07,
+      3.216712186456e-11,
+      -1.5668506107197e-15,
+      -98039.0004511344,
+      -5.709783087999998
+    ],
+    "nasa_retained": [
+      -339156.37594249996,
+      1011.3467434416993,
+      -3.0015158170000005,
+      0.0017401198244864,
+      -3.9696329206330005e-07,
+      3.216712186456e-11,
+      -1.5668506107197e-15,
+      -98826.234491457,
+      -5.709783087999998
+    ]
+  },
+  "molecular_Hf298_evaluation_margin_J_mol": 8000,
+  "uncertainty_scope": "Published total evaluation margin, not an independent Gaussian error or balanced D0 covariance. Atom references, heat-content approximation and thermal-model limitations remain explicit.",
+  "thermal_scope": "NASA/Gurvich molecular and atomic thermal functions are a declared reference alternative. The full-range OYT partition sum is not adopted or extrapolated.",
+  "anchor_scope": "Original D0 is the documented JANAF source anchor, not an inferred unique zero-temperature limit of the finite-range inherited fit.",
+  "source_sha256": {
+    "tests/data/validation/naoh_source_review/20261105/inputs.json": "6fa4277611f524d11af0ac2bdbc6635b97462ee29e453542a9d1a45788ab0426",
+    "tests/data/validation/naoh_source_review/20261105/janaf.txt": "7f7d3b1e7d5370d021545b2aafd795e80fb3a2549f927679ed75b53c7b7b6f2a",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/nao_source_review/20261105/inputs.json": "f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d",
+    "tests/data/validation/kh_source_review/20261105/inputs.json": "69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587"
+  }
+}
