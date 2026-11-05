@@ -1,0 +1,41 @@
+{
+  "review_date": "2026-11-06",
+  "downloads": {
+    "NASA": {
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official molecular and atomic coefficient/header records; official 300 K lower limits retained. H0 from printed H298 and H298-H0, not polynomial extrapolation."
+    },
+    "JANAF": {
+      "url": "https://janaf.nist.gov/tables/O-004.txt",
+      "sha256": "1d0840518240ca926c61ba15de617ef32b0edca2b559d9815ed80febe0f96310",
+      "inspection": "Full official table; atomic tables separately pinned. PH web enthalpy is the uncorrected red-P value, not an adoption recommendation."
+    },
+    "pf": {
+      "url": "https://www.exomol.com/db/PO/31P-16O/POPS/31P-16O__POPS.pf",
+      "sha256": "123a3745c9fff58bfdf49591e7541699b639a6df4b934d6a4572465f4c2f46e6",
+      "inspection": "Distributed file inspected; every state retained, no transition files needed."
+    },
+    "def": {
+      "url": "https://www.exomol.com/db/PO/31P-16O/POPS/31P-16O__POPS.def",
+      "sha256": "e7978eeb05a48dab36deaa46da8c26b946f78d1b7e97de3f87447c5caa8b03df",
+      "inspection": "Distributed file inspected; every state retained, no transition files needed."
+    },
+    "states.bz2": {
+      "url": "https://www.exomol.com/db/PO/31P-16O/POPS/31P-16O__POPS.states.bz2",
+      "sha256": "54705811e6b030b534e8f582bee0c2ec396d157a8bb9cc6b24594fc1478814f5",
+      "inspection": "Distributed file inspected; every state retained, no transition files needed."
+    }
+  },
+  "original_evaluation_access": "Gurvich original volume not obtained; selected NASA headers and evaluation lineage inspected. Missing ancestral full text does not block this bounded evidence review.",
+  "modern_paper": {
+    "doi": "10.1093/mnras/stx2229",
+    "full_text_sha256": "929b741f45124ed29799cdce154206c9481a838bc9e862392ed547677eb4a3f5",
+    "inspection": "Full primary article inspected: potential asymptote, state inventory, statistical weights, partition table and declared limits. Full paper not committed."
+  },
+  "current_evaluation": {
+    "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
+    "full_download_sha256": "42a597ff852d1a2995f81d4fdca069f3cdcaef77ead5e3c66e02e80ed6699101",
+    "inspection": "Previously retrieved official selected PO record inspected; NASA7 fit explicitly derived from Gurvich1989, Hf298=-27.858 +/-3 kJ/mol; same ancestry as NASA9. Parenthetical JANAF sign in Burcat commentary is not the actual web table sign."
+  }
+}
