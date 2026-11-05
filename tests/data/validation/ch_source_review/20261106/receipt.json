@@ -38,7 +38,7 @@
     "tests/data/validation/ch_source_review/20261106/nasa_records.json": "9e64e16ad0db34d2e5ddad95760c774f5b25539de30be52fcd79fbc809ad3519",
     "tests/data/validation/ch_source_review/20261106/nasa_selected_records.txt": "382aa7db695883f1a260681d382aa1428deb8cb2714b0e2ff272de5d2b203058",
     "tests/data/validation/ch_source_review/20261106/partition.pf": "197f04e47a4e6ba8e035a5c6b0ef480d0fc550a065893ff6556d4096ab99aedd",
-    "tests/data/validation/ch_source_review/20261106/sources.json": "06587692d7599b235be7594f5de08f150ab7aba8006daace0e06e219f41e19cf",
+    "tests/data/validation/ch_source_review/20261106/sources.json": "53f99b206434af4cb639d2e19bf90d127c7ebb360940023f2965c65cdb0426d9",
     "tests/data/validation/ch_source_review/20261106/states.npz": "790f1b08923981fa2701b1dba80419e845909b52b22c3ab46c0fed57654a0ddf",
     "tests/data/validation/curated_cos_adoption/20261105/ions.npz": "5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49",
     "tests/data/validation/curated_cos_adoption/20261105/receipt.json": "08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385",
