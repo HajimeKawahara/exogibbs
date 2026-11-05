@@ -1,0 +1,64 @@
+{
+  "janaf": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf?download=1",
+    "full_download_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+    "bytes": 12474349,
+    "printed_page": 696,
+    "PDF_page_1based": 148,
+    "inspection": "Official scanned original C5 evaluation notes visually inspected; all bracketed molecular constants are estimates. Original Drowart/Pitzer/Sandborn articles uninspected.",
+    "evaluation": "December1969, converted to1bar",
+    "ground_state": "estimated linear3Sigma",
+    "spin_multiplicity": 3,
+    "symmetry_number": 2,
+    "rotational_constant_cm-1": 0.085664,
+    "frequencies_cm-1": [
+      1920,
+      770,
+      2240,
+      1430,
+      550,
+      550,
+      550
+    ],
+    "mode_degeneracies": [
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "historical_bends_cm-1": [
+      130,
+      330,
+      520
+    ],
+    "selected_bends_cm-1": [
+      550,
+      550,
+      550
+    ],
+    "molecular_constants": "All estimated; selected bending modes intended to fit vapor-pressure observations.",
+    "stated_agreement_range_K": [
+      2000,
+      3000
+    ],
+    "outside_range_caution": "Evaluation cautions that functions outside the range may not represent the molecule.",
+    "Hf298_display_kJ_mol": 979,
+    "stated_Hf_uncertainty_kJ_mol": 25,
+    "S298_display_J_mol_K": 242,
+    "stated_S298_uncertainty_J_mol_K": 16.7
+  },
+  "w4": {
+    "doi": "10.1080/00268970802708959",
+    "url": "https://arxiv.org/pdf/0812.3852",
+    "full_download_sha256": "e3ba13cfcd707be5079bf403937d68d98bf13ff593d069a4eab745c342f827ce",
+    "bytes": 309488,
+    "inspection": "Full author manuscript inspected, abstract and TableV; C5 row identifies linear1Sigma_g+ and zero-K total atomization energy.",
+    "state": "linear1Sigma_g+",
+    "linear_TAE0_kcal_mol": 596.64,
+    "ZPE_kcal_mol": 11.89,
+    "caution": "TAE0 includes zero-point energy; no cyclic-state or hot-state completeness claim."
+  }
+}
