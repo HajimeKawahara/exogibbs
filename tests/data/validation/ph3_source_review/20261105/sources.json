@@ -1,0 +1,54 @@
+{
+  "retrieved_date": "2026-11-05",
+  "sources": [
+    {
+      "id": "official_NASA",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "upstream_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "file": "nasa_selected.txt",
+      "inspection": "Selected official molecular and atomic records inspected; both coefficient intervals match the frozen screening. Official 300 K lower bounds retained where present; no extrapolation to 298.15 K. NASA_R=8.314510 is distinct from SI_R.",
+      "sha256": "85bce4e6c0a0a354a948f436ed89722d1121d3dbfb14cc488f84be288e37e9d7",
+      "archived": true
+    },
+    {
+      "id": "official_JANAF",
+      "url": "https://janaf.nist.gov/tables/H-088.txt",
+      "file": "janaf.txt",
+      "inspection": "Exact one-bar neutral monomer table inspected; formula checked against the frozen map. No dimer, ion or condensed-phase substitution.",
+      "sha256": "71551695754d885eba17568c7fd830edfa3235e43602b905227b23c10386a27e",
+      "archived": true
+    },
+    {
+      "id": "evaluated_source",
+      "doi": "10.1063/1.556046",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.556046.pdf",
+      "inspection": "NIST-hosted full Lodders1999 article inspected via web PDF renderer, Tables2/4 and section2.2. Download attempted but blocked; full PDF not archived. White/red reference and printed-table error are distinguished.",
+      "archived": false
+    },
+    {
+      "id": "ExoMol_partition",
+      "doi": "10.1093/mnras/stu2246",
+      "url": "https://www.exomol.com/db/PH3/31P-1H3/SAlTY/31P-1H3__SAlTY.pf",
+      "file": "SAlTY.pf",
+      "inspection": "Official distributed partition table inspected and compared as a finite rovibrational sum; not a full thermodynamic convergence certificate.",
+      "sha256": "95340094c1aba9250e546636f1f40404be609e7d8715111f40a1b66599a44b40",
+      "archived": true
+    },
+    {
+      "id": "ExoMol_definition",
+      "url": "https://www.exomol.com/db/PH3/31P-1H3/SAlTY/31P-1H3__SAlTY.def",
+      "file": "SAlTY.def",
+      "inspection": "Mass, symmetry weights and stated line-list/partition limits inspected; disagreements are preserved, not silently corrected.",
+      "sha256": "93b4eff17d2ff3d5b8022c3c6ba5f3554f2a926962cff629c628f55b01ce6265",
+      "archived": true
+    },
+    {
+      "id": "SousaSilva2014",
+      "doi": "10.1016/j.jqsrt.2014.03.012",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/14SoHeYu.pdf",
+      "upstream_sha256": "c10f6daf83d552bab3ef6f9b06aa12c16e4c0c895a0a16b31011afe4fb46fcc5",
+      "inspection": "Previously acquired full author-hosted text read, sections2/3, Eq18 and Table1. PH3 printed coefficients and direct Q296 value independently checked numerically. Electronic supplementary tables and moments not acquired; those are distinct from SAlTY.pf."
+    }
+  ],
+  "redistribution": "Only numerical tables, selected public NASA records, short state excerpts, source metadata and derived facts are archived. Full articles remain external."
+}
