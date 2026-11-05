@@ -38,5 +38,6 @@
     "url": "https://solarsystem.wustl.edu/wp-content/uploads/reprints/2004/Lodders%202004%20J%20Phys%20Chem%20Ref%20Data.pdf",
     "full_text_sha256": "0b9edd5cf4977e6a6db4e9b38890a044adafebf099608e2426b821bc1bcd9a3e",
     "inspection": "Full primary PDF Tables 8/9 and section 2.4 inspected. Hf298=152.44 +/-10 kJ/mol, D0=438 +/-10 kJ/mol based on Drowart1973; thermal functions from Gurvich1989."
-  }
+  },
+  "NASA_line_number_note": "screening_baseline_source_line_1based preserves the original screening file locator. It is not a line number in the official NASA download or nasa-selected.txt; the official source hash and selected species/header records identify the inspected source."
 }

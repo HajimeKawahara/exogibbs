@@ -77,7 +77,7 @@ evidence:
   context: source_review
   artifacts:
   - source: tests/data/validation/ps_source_review/20261106/sources.json
-    sha256: 66cdae473672212d028119e44f081dcfa5075d580136fef1cd158f5dfceb1982
+    sha256: a5517cd537c575b8a63fdfeecead151657326982f2995b6791a0510ba331b681
   - source: documents/mceg/ps_source_review.rst
     sha256: 249e2b3c77aea9153d017e8f8b07c87258fe2f7983078d66b2f51deae028b4e4
   provenance:
@@ -98,11 +98,11 @@ evidence:
   context: source_review
   artifacts:
   - source: tests/data/validation/ps_source_review/20261106/inputs.json
-    sha256: ff292b38757c439529b57044b2b12d5fee87e3a665b80c5f424dc73b91d87fbd
+    sha256: 62180583ebe6433f7f308678b533826fccf24cb544b88a3d12177647e5340b05
   - source: tests/data/validation/ps_source_review/20261106/comparison.json
     sha256: f4f69418a43d91022223e58858c9d0f456c42ae7de9d416cb44103ae9e9bee94
   - source: tests/data/validation/ps_source_review/20261106/receipt.json
-    sha256: 82f526183f9d04ff43f263cab6b3b55fd9e05910cb59f6c92f5a6128d48b6760
+    sha256: 28b6da258e8f2aefe1066e46752862551c81f65080524f3b5f47413a4f90c2e4
   provenance:
     role: primary
     location: documents/mceg/ps_source_review.rst
@@ -122,7 +122,7 @@ evidence:
   context: source_review
   artifacts:
   - source: tests/data/validation/ps_source_review/20261106/sources.json
-    sha256: 66cdae473672212d028119e44f081dcfa5075d580136fef1cd158f5dfceb1982
+    sha256: a5517cd537c575b8a63fdfeecead151657326982f2995b6791a0510ba331b681
   - source: documents/mceg/ps_source_review.rst
     sha256: 249e2b3c77aea9153d017e8f8b07c87258fe2f7983078d66b2f51deae028b4e4
   provenance:
@@ -320,16 +320,16 @@ subjects:
     tests/data/validation/ps_source_review/20261106/README.rst: 2f53c1d8798f2e838ad646d4bf7205394e224e0ec212540df77b3e1cb231e957
     tests/data/validation/ps_source_review/20261106/comparison.json: f4f69418a43d91022223e58858c9d0f456c42ae7de9d416cb44103ae9e9bee94
     tests/data/validation/ps_source_review/20261106/definition.def: a82892a1273db07e8c9526aa09639bf96f8eb07376bc07957d8d3c649e122d07
-    tests/data/validation/ps_source_review/20261106/inputs.json: ff292b38757c439529b57044b2b12d5fee87e3a665b80c5f424dc73b91d87fbd
+    tests/data/validation/ps_source_review/20261106/inputs.json: 62180583ebe6433f7f308678b533826fccf24cb544b88a3d12177647e5340b05
     tests/data/validation/ps_source_review/20261106/janaf.txt: 720105ae4c3ea42e176258f3d4fadafd2d74a25410e63dbe828e9725c5101461
     tests/data/validation/ps_source_review/20261106/nasa-selected.txt: 733e1c13e845b84eca0f6efaa530387e91e67940a344fd1eed1be109e8b70f1f
     tests/data/validation/ps_source_review/20261106/partition.pf: ebe582b071deabcfdd6dc2855df31be2396ed24408c1beadc20522b5ae553fcb
-    tests/data/validation/ps_source_review/20261106/sources.json: 66cdae473672212d028119e44f081dcfa5075d580136fef1cd158f5dfceb1982
+    tests/data/validation/ps_source_review/20261106/sources.json: a5517cd537c575b8a63fdfeecead151657326982f2995b6791a0510ba331b681
     tests/data/validation/ps_source_review/20261106/state_inventory.json: dda7153c98aba828f34ade1dc57a21171acc7db3be3d076872f51260aeb39a6b
     tests/data/validation/ps_source_review/20261106/states.npz: 8d6b3c12d64da9b1dc0cbb85b521dd60ad6899bbb6608eb7156679c9869ed65b
     tests/data/validation/s2o_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
     tests/model_evidence/ps_source_review_test.py: f7b2054a92a02a24fcc38083c57fa6d369c42813e69fc5b56dd53370c4a42dce
-    tests/data/validation/ps_source_review/20261106/receipt.json: 82f526183f9d04ff43f263cab6b3b55fd9e05910cb59f6c92f5a6128d48b6760
+    tests/data/validation/ps_source_review/20261106/receipt.json: 28b6da258e8f2aefe1066e46752862551c81f65080524f3b5f47413a4f90c2e4
 contexts:
 - id: source_review
   scope: Neutral PS, balanced gas atoms, 1 bar, 300-4000 K source nodes and 1500-4000 K curated; saved 75-case allocation
