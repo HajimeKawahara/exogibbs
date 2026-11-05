@@ -9,7 +9,7 @@
   "dtype": "float64",
   "interpretation": "Selected source and modern-fact replay plus an existing curated-cos grid footprint. No new replacement model, solve, adoption or complete physical validation.",
   "input_and_artifact_sha256": {
-    "documents/mceg/s8_source_review.rst": "dc426b85b4b1f13ca6b000ef7c47d7b747ef79fd63e5106248acd88e77dd0921",
+    "documents/mceg/s8_source_review.rst": "c84bcb2a721ec65d1c82a39ae86c27eced0cac42cbcdaef6f2aed39ce4908416",
     "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
     "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
     "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
@@ -57,5 +57,6 @@
     "tests/data/validation/s8_source_review/20261105/nasa-record.txt": "7be5109ff757a3c059a06130d71487d6e4851ce61994ce9e41c1afae9a71224d",
     "tests/data/validation/s8_source_review/20261105/sources.json": "552d3d967e7cf5e8ba8ec20aa18824e4495986c344f2911196219daca7ea3af5",
     "tests/model_evidence/s8_source_review_test.py": "9defdd16679bd9a208bf918dde742c49e6c9c5536e8625d315697d1e61acd3b6"
-  }
+  },
+  "post_replay_artifact_update": "Clarify that the less-than-3-percent residual concerns formation K reconstructed from JANAF H/S, not separate H or S. Numerical inputs and comparison output are unchanged; no numerical replay was rerun for this wording update."
 }

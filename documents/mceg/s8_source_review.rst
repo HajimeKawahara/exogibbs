@@ -66,9 +66,9 @@ JANAF only; it is a diagnostic, not a candidate model.
      - 0.200724
      - 1.00798
 
-The inherited fit differs from the sampled JANAF H/S values by less than 3%,
-so fitting error does not explain the source disagreement. Energy alignment
-still leaves a substantial thermal difference. The archived JSON separates
+The inherited formation K differs from that reconstructed from sampled JANAF
+H/S by less than 3%, so fitting error does not explain the source disagreement.
+Energy alignment still leaves a substantial thermal difference. The archived JSON separates
 H298, enthalpy increments, S298 and entropy increments for the molecule and
 its atomic references. Printed formation-G values independently close the
 H/S reconstruction within the propagation of their printed rounding. Neither closer
