@@ -1,0 +1,282 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.nao_source_review.v1
+  name: NaO source audit and candidate priorities
+  description: Retain production provisionally; prioritize a complete NaOUCMe-based thermal candidate after resolving
+    version and 2500-4000 K completeness.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:2da65899b03bc3787f6a7f7eb70900ce6a2fbfe01e414ca3238b76c7b4017561
+    entry_points:
+    - mceg/reviews/nao_source_review.py
+assumptions:
+- statement: Neutral gas-phase molecule and atoms, one bar, common ground-relative zeros; source-native NASA R retained.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production
+    change or finite substitution.
+  conditions:
+  - Saved allocation is not a finite-substitution response.
+  - Modern state-sum ranges and published-table mismatches are diagnostic limits, not certified physical completeness.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty and planetary accuracy remain unestablished.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged inherited formation fit reproduces all saved species potentials; same-reference energy,
+    molecular thermal and atomic thermal contributions are separated.
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+- id: modern_source_scope
+  revision: '1'
+  kind: numerical_verification
+  statement: Modern source access limits, conventions and numerical diagnostics are explicit; paper values are not
+    silently substituted for current distributions.
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+- id: provisional_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retain production provisionally; prioritize a complete NaOUCMe-based thermal candidate after resolving
+    version and 2500-4000 K completeness.
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: NaO has complete quantified physical uncertainty and validated planetary abundance accuracy.
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary publications and official evaluated data inspected to individually recorded limits.
+  sources:
+  - tests/data/validation/nao_source_review/20261105/sources.json
+  - tests/data/validation/nao_source_review/20261105/literature.json
+  - tests/data/validation/nao_source_review/20261105/inputs.json
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  subject: nao_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nao_source_review/20261105/sources.json
+    sha256: 7eaa613cb5855063f2aac98c94e764211276333f3a3f9b1caa7b6900ecf581e1
+  - source: tests/data/validation/nao_source_review/20261105/literature.json
+    sha256: 9c54b4baa02c282abc2178c2cc82c289c8223f2c770a339b0cb682ca38cd6e31
+  - source: tests/data/validation/nao_source_review/20261105/inputs.json
+    sha256: f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d
+  provenance:
+    role: primary
+    location: documents/mceg/nao_source_review.rst
+    inspection: inspected
+    note: This review inspects the numerical and textual evidence to the explicit limits in literature.json; unavailable
+      ancestry is not claimed as inspected.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline caloric, source-energy, state-distribution and archived-footprint replay.
+  sources:
+  - tests/data/validation/nao_source_review/20261105/comparison.json
+  - tests/data/validation/nao_source_review/20261105/receipt.json
+  - tests/data/validation/nao_source_review/20261105/states.npz
+  - tests/data/validation/nao_source_review/20261105/state_inventory.json
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  subject: nao_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nao_source_review/20261105/comparison.json
+    sha256: ce0cccf90490bf2c1dc3e0fef4b30c74e538961f19beb44479cbc2119f135d3a
+  - source: tests/data/validation/nao_source_review/20261105/receipt.json
+    sha256: 53a3bda41543bc10972c1396f0812c315f2b946e788a6ff298d6ec0178516ce3
+  - source: tests/data/validation/nao_source_review/20261105/states.npz
+    sha256: 2b2a506d24285cca6143e2a247d460a36a5a09f549db0f877475046d7521b009
+  - source: tests/data/validation/nao_source_review/20261105/state_inventory.json
+    sha256: 4754d0989801d4359e2fc70283c1c7134170de7b8f2acdb5d13105b1f42c8784
+  provenance:
+    role: primary
+    location: documents/mceg/nao_source_review.rst
+    inspection: inspected
+    note: This review inspects the numerical and textual evidence to the explicit limits in literature.json; unavailable
+      ancestry is not claimed as inspected.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Scoped retention and explicit candidate priorities.
+  sources:
+  - documents/mceg/nao_source_review.rst
+  - tests/data/validation/nao_source_review/20261105/literature.json
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  subject: nao_sources_20261105
+  context: source_review
+  artifacts:
+  - source: documents/mceg/nao_source_review.rst
+    sha256: c32765b5b2be33f8203bb97b7534802fdb1fc34434ba480e7918b0316b55f490
+  - source: tests/data/validation/nao_source_review/20261105/literature.json
+    sha256: 9c54b4baa02c282abc2178c2cc82c289c8223f2c770a339b0cb682ca38cd6e31
+  provenance:
+    role: primary
+    location: documents/mceg/nao_source_review.rst
+    inspection: inspected
+    note: This review inspects the numerical and textual evidence to the explicit limits in literature.json; unavailable
+      ancestry is not claimed as inspected.
+subjects:
+- id: nao_sources_20261105
+  implementation: *id001
+  selected_files:
+    mceg/reviews/nao_source_review.py: 2da65899b03bc3787f6a7f7eb70900ce6a2fbfe01e414ca3238b76c7b4017561
+    documents/mceg/nao_source_review.rst: c32765b5b2be33f8203bb97b7534802fdb1fc34434ba480e7918b0316b55f490
+    tests/model_evidence/nao_source_review_test.py: 03d4f75d194b2207a34ced59f51a45b54ada4f1b72bb97513606836afdac6aab
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
+    tests/data/validation/nao_source_review/20261105/README.rst: 698baafd8e2702911be3aab07f1f9a084c6e0631b378592723559a1a3dc9b541
+    tests/data/validation/nao_source_review/20261105/inputs.json: f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d
+    tests/data/validation/nao_source_review/20261105/literature.json: 9c54b4baa02c282abc2178c2cc82c289c8223f2c770a339b0cb682ca38cd6e31
+    tests/data/validation/nao_source_review/20261105/sources.json: 7eaa613cb5855063f2aac98c94e764211276333f3a3f9b1caa7b6900ecf581e1
+    tests/data/validation/nao_source_review/20261105/state_inventory.json: 4754d0989801d4359e2fc70283c1c7134170de7b8f2acdb5d13105b1f42c8784
+    tests/data/validation/nao_source_review/20261105/states.npz: 2b2a506d24285cca6143e2a247d460a36a5a09f549db0f877475046d7521b009
+    tests/data/validation/nao_source_review/20261105/comparison.json: ce0cccf90490bf2c1dc3e0fef4b30c74e538961f19beb44479cbc2119f135d3a
+    tests/data/validation/nao_source_review/20261105/receipt.json: 53a3bda41543bc10972c1396f0812c315f2b946e788a6ff298d6ec0178516ce3
+contexts:
+- id: source_review
+  scope: NaO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  settings:
+    reaction: Na(g) + O(g) -> NaO(g)
+    standard_pressure_bar: 1
+    production_change: none
+    finite_substitution: not_run
+    current_grid_model: curated-oh-v1
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: nao_sources_20261105
+  context: source_review
+  method:
+    id: review_nao_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Balanced NASA/JANAF D0=246.999972/269.298000 kJ/mol; all 75 current potentials replay; no new equilibrium solve.
+  status: supported
+  origin: reviewed
+- id: modern_source_scope_review
+  kind: evidence_support
+  claim: modern_source_scope
+  claim_revision: '1'
+  subject: nao_sources_20261105
+  context: source_review
+  method:
+    id: review_nao_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Finite state sums retain all distributed states and nuclear-spin normalization; revision and applicability limits
+    remain explicit.
+  status: supported
+  origin: reviewed
+- id: provisional_retention_review
+  kind: evidence_support
+  claim: provisional_retention
+  claim_revision: '1'
+  subject: nao_sources_20261105
+  context: source_review
+  method:
+    id: review_nao_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Retain production provisionally; prioritize a complete NaOUCMe-based thermal candidate after resolving version
+    and 2500-4000 K completeness.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: nao_sources_20261105
+  context: source_review
+  method:
+    id: review_nao_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Complete energy covariance, missing-state/continuum bounds, isotope mixing and planetary validation are unestablished.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: followup_1
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Reconcile current NaOUCMe distribution with paper Table 4 and converge coupled electronic/rovibrational
+    thermal moments to 4000 K before fitting a candidate.
+  requires:
+  - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
+  completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+- id: followup_2
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect the full neutral NaO thermochemistry in DOI 10.1021/jp9034826 if selecting a new energy; balance
+    to the same neutral-atom ground references.
+  requires:
+  - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
+  completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+- id: followup_3
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Run a fixed-network finite substitution only after the candidate is defined; historical source full texts
+    are not a condition for merging this scoped audit.
+  requires:
+  - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
+  completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+limitations:
+- statement: No formal missing-state bound above 2500 K. Top-J population is a local boundary diagnostic, not a
+    completeness certificate.
+  evidence:
+  - literature
+  - source_replay
+- statement: Current PF/table discrepancy has not been diagnosed; no artificial constant shift is applied.
+  evidence:
+  - literature
+  - source_replay
+- statement: JANAF and NASA ancestral Gurvich/OHare measurements were not independently reaudited.
+  evidence:
+  - literature
+  - source_replay
+- statement: No new finite equilibrium substitution or observational physical validation.
+  evidence:
+  - source_replay
