@@ -20,7 +20,6 @@
         "P": 2
       },
       "reference": "Gurvich,1989 pt1 p398 pt2 p255.",
-      "source_line_1based": 8292,
       "intervals": [
         {
           "bounds_K": [
@@ -60,14 +59,14 @@
       "source_name": "P2",
       "hf298_J_mol": 144000.0,
       "h298_minus_h0_J_mol": 8904.107,
-      "mass_u": 61.947522
+      "mass_u": 61.947522,
+      "screening_baseline_source_line_1based": 8292
     },
     "P": {
       "composition": {
         "P": 1
       },
       "reference": "Hf:Cox,1989. Martin,W.C.,1985. Gordon,1999.",
-      "source_line_1based": 7981,
       "intervals": [
         {
           "bounds_K": [
@@ -124,7 +123,8 @@
       "source_name": "P",
       "hf298_J_mol": 316500.0,
       "h298_minus_h0_J_mol": 6197.428,
-      "mass_u": 30.973761
+      "mass_u": 30.973761,
+      "screening_baseline_source_line_1based": 7981
     }
   },
   "janaf_paths": {

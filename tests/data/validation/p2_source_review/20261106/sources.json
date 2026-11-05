@@ -18,5 +18,6 @@
     "url": "https://arxiv.org/pdf/2601.02294",
     "full_text_sha256": "b6d57f5ea45c1ee00fe4b1652e595c4df995edd102465bb82403b85571297949",
     "inspection": "Downloaded PDF is published J. Phys. Chem. A 130 (2026),2943-2955. Table 4 visually inspected at p.2950. P2 comparison column is Gurvich footnote a, not ATcT; W5prelim is theoretical, not a new measurement."
-  }
+  },
+  "NASA_line_number_note": "screening_baseline_source_line_1based preserves the original screening file locator. It is not a line number in the official NASA download or nasa-selected.txt; the official source hash and selected species/header records identify the inspected source."
 }
