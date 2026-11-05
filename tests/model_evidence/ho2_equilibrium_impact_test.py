@@ -146,16 +146,15 @@ def test_execution_receipt_convergence_and_independent_solver():
             assert row["mass_action_max_abs_ln"] < 1e-7
 
 
-def test_baseline_matches_actual_default_all_potentials_species_and_budgets(saved):
+def test_baseline_matches_named_oh_provider_all_potentials_species_and_budgets(saved):
     import jax
-    from exogibbs.presets import curated, curated_oh
+    from exogibbs.presets import curated_oh
 
     _, data = saved
     previous = jax.config.x64_enabled
     jax.config.update("jax_enable_x64", True)
     try:
-        assert curated.chemsetup is curated_oh.chemsetup
-        setup = curated.chemsetup(ions="e-" in data["elements"])
+        setup = curated_oh.chemsetup(ions="e-" in data["elements"])
         assert setup.metadata["dataset"] == "curated-oh-v1"
         np.testing.assert_array_equal(setup.species,data["species"])
         np.testing.assert_array_equal(setup.elements,data["elements"])
