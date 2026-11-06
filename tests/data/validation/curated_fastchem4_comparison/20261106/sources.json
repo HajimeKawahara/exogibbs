@@ -1,0 +1,254 @@
+{
+  "recommended_release": {
+    "repository": "NewStrangeWorlds/FastChem",
+    "tag": "v4.0.4",
+    "release_url": "https://github.com/NewStrangeWorlds/FastChem/releases/tag/v4.0.4",
+    "published_at": "2026-11-03T13:42:33Z",
+    "tag_commit": "0c4b448166e1d0a0f01e3416bf7da0082ef0546e",
+    "default_branch_head_matches_release": true,
+    "release_notes": "Minor stability and performance updates to FastChem 4.",
+    "data_update_commit": "15f5d7030d13771eb6bc9c8b74f2e81b35c75234",
+    "data_update_commit_date": "2026-11-03T13:34:07Z",
+    "data_update_message": "Add revised equilibrium constants for element ions and HCN"
+  },
+  "selection_reason": "Use the standard full gas file and select the neutral target records. All108 requested curated identities exist and agree exactly with the extended file. Do not use either wo_ions file: those still contain the old JANAF HCN coefficients in v4.0.4.",
+  "table_record_counts": {
+    "logK_extended.dat": 800,
+    "logK.dat": 511,
+    "logK_extended_wo_ions.dat": 632,
+    "logK_hoeijmakers2019.dat": 678,
+    "logK_wo_ions.dat": 394
+  },
+  "standard_neutral_records": 394,
+  "convention": {
+    "fit": "L(T)=a1/T+a2*ln(T)+a3+a4*T+a5*T^2",
+    "logarithm": "natural",
+    "reaction": "sum_j nu_j neutral gas atoms -> one molecular species",
+    "standard_pressure_bar": 1.0,
+    "Kp": "(p_molecule/p0)/product_j(p_atom_j/p0)^nu_j",
+    "delta_n": "sigma=1-sum_j nu_j",
+    "density_conversion": "ln K_number_density = L - sigma*ln(k_B*T/p0); n_molecule=K_number_density*product_j n_atom_j^nu_j",
+    "native_kB_cgs_erg_per_K": 1.380649e-16,
+    "pressure_p0_cgs_dyn_cm2": 1000000.0,
+    "source_comment_typo": "molecule_struct.cpp says 1bar=1e-6 dyn cm-2; this exponent is a comment typo. Executed code uses its inverse1e-6 to form kBT/(1e6 dyn cm-2), the correct one-bar conversion.",
+    "native_R": "No gas constant is evaluated in the tabulated dimensionless logK formula. Native R used in the external fit construction is not specified; do not add an R rescaling.",
+    "comparison_instruction": "For dimensionless Kcurated/KFastChem at the same one-bar atom-formation convention, use exp(-h_curated-L) directly. Do not apply density kBT/p0 conversion, extra1e6, extra atom subtraction or an assumed native-R correction.",
+    "independent_algebra_error": 7.105427357601002e-15
+  },
+  "limits": [
+    "Official software numerical test range100\u20136000K and1e-13\u20131000bar is not a species-by-species fit-validity or physical-uncertainty guarantee.",
+    "The official v4.0.4 full-table files incorporate both HCN and atomic-ion updates; neutral molecule Kp comparison excludes ion coefficient changes but a future full-mixture abundance solve would not.",
+    "Bundled FastChem4 and fastchem4_hot.json are older frozen inputs, not automatically the latest upstream dataset."
+  ],
+  "official_files": {
+    "input/logK/logK.dat": {
+      "bytes": 115486,
+      "sha256": "3697abccf664aa5f531103b6c7aac6e77efcd4366f8b69d46b7e6ea29a10e0c5",
+      "git_blob_sha": "4d2ada723e426ecdc34fed2752f33c6a251e931b",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/input/logK/logK.dat"
+    },
+    "input/logK/logK_extended.dat": {
+      "bytes": 183778,
+      "sha256": "ac26c8ce3ae0a90a8b3e6de2205440d2e82c53d8c57127e8ba19cd41285191cb",
+      "git_blob_sha": "57b26aee90ba790c351e5a7eb7ce1b1f9d61addc",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/input/logK/logK_extended.dat"
+    },
+    "input/logK/logK_wo_ions.dat": {
+      "bytes": 86619,
+      "sha256": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606",
+      "git_blob_sha": "023644b86bac293b01b76a4c7f023b853ff2dfdc",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/input/logK/logK_wo_ions.dat"
+    },
+    "input/logK/logK_extended_wo_ions.dat": {
+      "bytes": 140982,
+      "sha256": "140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5",
+      "git_blob_sha": "b117fc4c02853ead856c914530f10f1025c2dce8",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/input/logK/logK_extended_wo_ions.dat"
+    },
+    "input/logK/logK_hoeijmakers2019.dat": {
+      "bytes": 164777,
+      "sha256": "6ee0fe65acf88b80621d2e3bab82ba32828835bf789cacb42c9687955d3d122b",
+      "git_blob_sha": "624ffd057e31e95c3c0a0df4ca4ebf7d621cac70",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/input/logK/logK_hoeijmakers2019.dat"
+    },
+    "fastchem_src/gas_phase/molecule_struct.cpp": {
+      "bytes": 2590,
+      "sha256": "3355aa776e14e5347428d63bdc24c7ca02a0b4a9162c6120069c02d882c9651b",
+      "git_blob_sha": "d3ff2bc862982a16621e91b6a8f334097a5d47f7",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/fastchem_src/gas_phase/molecule_struct.cpp"
+    },
+    "fastchem_src/gas_phase/calc_species_densities.cpp": {
+      "bytes": 4650,
+      "sha256": "909ae2111d2efaff4a2116ed5b4f18c85d3ae5843ffb92ccf13bf936419b5377",
+      "git_blob_sha": "57802d4602e346d5a06c957ba362763d92698da5",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/fastchem_src/gas_phase/calc_species_densities.cpp"
+    },
+    "fastchem_src/fastchem_constants.h": {
+      "bytes": 3571,
+      "sha256": "8b35008aa1ae4bf4d71f0b9181c91634162710ac298a8efc3e06ff93a54983b7",
+      "git_blob_sha": "5f84a660f4a8c61625698a83d6705353bffab3aa",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/fastchem_src/fastchem_constants.h"
+    },
+    "fastchem_src/gas_phase/init_read_files.cpp": {
+      "bytes": 4468,
+      "sha256": "8406a572eb18318dfe6b731d6a714a8e49cd20358ddcddc4cd82ef230fff53b6",
+      "git_blob_sha": "b195093f0b4c982126ff24d8773a2d96c0644b84",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/fastchem_src/gas_phase/init_read_files.cpp"
+    },
+    "README.md": {
+      "bytes": 7439,
+      "sha256": "b0ccb56a02898d649138fab2712622df2e665271542f46c86724436bcc6812d3",
+      "git_blob_sha": "bd660a5403d0bf0c0d2be5ef321e52787dc7d118",
+      "url": "https://github.com/NewStrangeWorlds/FastChem/blob/0c4b448166e1d0a0f01e3416bf7da0082ef0546e/README.md"
+    }
+  },
+  "HCN": {
+    "new": {
+      "identifier": "C1H1N1_hcn",
+      "name": "Hydrogen_Cyanide_HCN",
+      "composition": {
+        "C": 1,
+        "H": 1,
+        "N": 1
+      },
+      "source": "Goos et al., Extended Third Millennium Ideal Gas Thermochemical Database, 2023.",
+      "coefficients": [
+        152819.1624337678,
+        -3.255395178299571,
+        -5.915904346195281,
+        0.0010101019438732398,
+        -5.3488185063095e-08
+      ],
+      "header_line": "C1H1N1_hcn Hydrogen_Cyanide_HCN : C 1 H 1 N 1 # Goos et al., Extended Third Millennium Ideal Gas Thermochemical Database, 2023.",
+      "line_number": 163
+    },
+    "old_coefficients": [
+      152207.7093653261,
+      -3.204402289903612,
+      -6.267032837028637,
+      0.0009843330109892967,
+      -5.178257029882916e-08
+    ],
+    "aliases": {
+      "FastChem3": "C1H1N1_1",
+      "FastChem4": "C1H1N1_hcn"
+    },
+    "distinct_HNC": {
+      "identifier": "C1H1N1_hnc",
+      "name": "Hydrogen_Isocyanide_HNC",
+      "composition": {
+        "C": 1,
+        "H": 1,
+        "N": 1
+      },
+      "source": "Goos et al., Extended Third Millenium Ideal Gas Thermochemical Database, 2023.",
+      "coefficients": [
+        145383.9706728254,
+        -2.938196985615019,
+        -7.380414445068316,
+        0.000866421612553809,
+        -4.695937733428566e-08
+      ],
+      "header_line": "C1H1N1_hnc Hydrogen_Isocyanide_HNC : C 1 H 1 N 1 # Goos et al., Extended Third Millenium Ideal Gas Thermochemical Database, 2023.",
+      "line_number": 166
+    },
+    "zip_sha256": "1eb830a1f3e1fa9b4034c6ed2e2c63652c324a709f63665c2e029df10d28159f",
+    "official_files_equal_supplied_zip": {
+      "logK.dat": {
+        "entire_file_byte_identical": true,
+        "sha256": "3697abccf664aa5f531103b6c7aac6e77efcd4366f8b69d46b7e6ea29a10e0c5"
+      },
+      "logK_extended.dat": {
+        "entire_file_byte_identical": true,
+        "sha256": "ac26c8ce3ae0a90a8b3e6de2205440d2e82c53d8c57127e8ba19cd41285191cb"
+      },
+      "logK_hoeijmakers2019.dat": {
+        "entire_file_byte_identical": true,
+        "sha256": "6ee0fe65acf88b80621d2e3bab82ba32828835bf789cacb42c9687955d3d122b"
+      }
+    },
+    "wo_ions_remain_old": true,
+    "HCN_only_neutral_coefficient_change_from_v403": true,
+    "all_v403_changed_records": [
+      "C1H1N1_hcn",
+      "Al1+",
+      "Al1-",
+      "Ar1+",
+      "C1+",
+      "C1-",
+      "Ca1+",
+      "Ca1-",
+      "Cl1+",
+      "Cl1-",
+      "Co1+",
+      "Co1-",
+      "Cr1+",
+      "Cr1-",
+      "Cu1+",
+      "Cu1-",
+      "F1+",
+      "F1-",
+      "Fe1+",
+      "Fe1-",
+      "Ge1+",
+      "Ge1-",
+      "H1+",
+      "H1-",
+      "He1+",
+      "K1+",
+      "K1-",
+      "Mg1+",
+      "Mn1+",
+      "N1+",
+      "Na1+",
+      "Na1-",
+      "Ne1+",
+      "Ni1+",
+      "Ni1-",
+      "O1+",
+      "O1-",
+      "P1+",
+      "P1-",
+      "S1+",
+      "S1-",
+      "Si1+",
+      "Si1-",
+      "Ti1+",
+      "Ti1-",
+      "V1+",
+      "V1-",
+      "Zn1+"
+    ],
+    "source_only_new_over_old_Kp_ratios": [
+      {
+        "T_K": 1500.0,
+        "delta_lnK": 0.42065740488688164,
+        "new_over_old_Kp": 1.5229624295365993
+      },
+      {
+        "T_K": 2000.0,
+        "delta_lnK": 0.3139784609370224,
+        "new_over_old_Kp": 1.3688602522626638
+      },
+      {
+        "T_K": 2500.0,
+        "delta_lnK": 0.25050125310678695,
+        "new_over_old_Kp": 1.2846691997527009
+      },
+      {
+        "T_K": 3000.0,
+        "delta_lnK": 0.2086346382531552,
+        "new_over_old_Kp": 1.2319947925217367
+      },
+      {
+        "T_K": 4000.0,
+        "delta_lnK": 0.1568401056030364,
+        "new_over_old_Kp": 1.1698085531131632
+      }
+    ],
+    "provider_comment_url": "https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6439534232",
+    "lineage_limit": "Official incorporation and exact ZIP identity are now established. The exact Goos/Burcat input bytes, fitting grid/weights, atomic construction and original fit gas constant remain unspecified; do not promote the cited2023 source family into a fully reconstructed independent physical validation."
+  },
+  "archive": "tests/data/validation/new_fastchem_hcn/logK_hcn.zip",
+  "checked_scope": "108 exact neutral record IDs and compositions; standard and extended coefficients agree. This does not establish independent molecular identity or physical accuracy."
+}

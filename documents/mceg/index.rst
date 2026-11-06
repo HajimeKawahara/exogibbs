@@ -188,6 +188,7 @@ HCN differences with optional MCEG tooling.
    ch2_candidate
    curated_ch2_adoption
    curated_gas_v2_adoption
+   curated_fastchem4_comparison
 
    kh_source_review
    k2_source_review
