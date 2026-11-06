@@ -69,7 +69,7 @@ The final **curated-tio2-v1** archive contains 75 converged ion-inclusive endpoi
 These finite hot hydrogen-rich results do not bound cooler or oxidizing atmospheres, photochemistry, non-LTE populations, condensation or reaction kinetics. A small inventory here is not evidence that a molecule is unimportant in those settings.
 
 Decision, access needs and MCEG
-------------------------------
+-------------------------------
 
 Construct the energy-only candidate first. Before treating a NASA or TIPS thermal replacement as preferable, compare excited electronic states, vibration-rotation treatment and high-temperature derivatives explicitly; run fixed-network substitutions for the selected continuous candidate. Full historical books are an optional ancestry follow-up, not a mandatory merge hold.
 
