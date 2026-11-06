@@ -1,0 +1,570 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.ch2_candidate.v1
+  name: CH2 retained-thermal ATcT candidate and reconstructed thermal sensitivity
+  description: Evaluate the balanced energy correction and independently reconstruct published state constants without
+    equating that model with an inconsistent printed equilibrium table.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:edd12923c6dc3722ff221f3ee216dcb13865ac08abc39ccd40166a90c24b486d
+    entry_points:
+    - mceg/reviews/ch2_candidate.py
+    - mceg/reviews/ch2_equilibrium_impact.py
+    - mceg/reviews/ch2_rrho_audit.py
+assumptions:
+- statement: Use only ATcT1.228 neutral C/H/regular CH2 in the balanced ground-level energy cycle; apply delta D0=-4948
+    J/mol once, without adding ZPE.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: Preserve the literal current thermals for the primary. For thermal sensitivities preserve the full
+    residual relative to NASA thermal proxies and the same atomic gauge; NASA re-insertion is identically the energy-only
+    model.
+  evidence:
+  - continuous_model
+- statement: Use electronic weights3/1/1, sigma2 per state, excluded nuclear spin weight1 and mean mass14.02658u;
+    triplet-only is a different partial species. The reconstructed three-state RRHO is not the printed IUPAC equilibrium
+    model.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: Verify archived baseline hashes, named factory potentials, species, elements, formula matrix, conditions
+    and budgets before reuse; fresh tighter baseline checks accompany candidate endpoints.
+  evidence:
+  - finite_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+  conditions:
+  - Five temperatures1500,2000,2500,3000,4000K; five pressures1e-6-100bar; three C/O values;75 cases per network.
+  - Two candidates each receive75 ions+75 neutral fresh endpoints;150 unique baselines reused;34 selected fresh
+    cold controls;4 independent ion-inclusive FastChem comparisons.
+  - Independent RRHO sensitivity1500-4000K; component tables150-3000K; extension beyond3000K is not author-validated
+    physical applicability.
+  evidence:
+  - continuous_model
+  - finite_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Complete high-temperature CH2 thermal and atmospheric accuracy is not established.
+  conditions: []
+  evidence:
+  - source_scope
+  - decision_reasoning
+claims:
+- id: source_reconstruction_audit
+  revision: '1'
+  kind: numerical_verification
+  statement: Independent component-table reconstruction and direct combination of printed calorics identify a discrepancy
+    with the published equilibrated CH2 table, without fitting source parameters.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+- id: continuous_thermodynamics
+  revision: '1'
+  kind: numerical_verification
+  statement: The energy candidate preserves current thermals; the RRHO sensitivity preserves the full current-fit
+    residual relative to the declared NASA thermal proxy, with continuous scalar/JAX G/H/S/Cp.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+- id: finite_substitution
+  revision: '1'
+  kind: numerical_verification
+  statement: Fresh endpoints and selected tighter/path/triplet/FastChem controls verify the finite network response
+    while preserving unresolved numerical comparisons.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+- id: candidate_direction
+  revision: '1'
+  kind: theoretical
+  statement: Prefer the evaluated ATcT energy-only candidate for a separately scoped production update; do not recommend
+    the reconstructed thermal sensitivity for adoption.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+- id: universal_gibbs_resolution
+  revision: '1'
+  kind: numerical_verification
+  statement: Every same-model total-system Gibbs exchange is numerically resolved over the sampled conditions.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Complete thermal/reaction uncertainty and atmosphere-specific physical accuracy are established across
+    intended applications.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+- id: production_adoption
+  revision: '1'
+  kind: numerical_verification
+  statement: The evaluated candidate is adopted into production curated data and public presets.
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+evidence:
+- id: source_scope
+  kind: literature
+  summary: Same-version ATcT atom cycle, inspected IUPAC component/equilibrium tables and original state constants;
+    author Burcat report and 2024 full manuscript/SI delimit the independent reconstruction.
+  sources:
+  - tests/data/validation/ch2_source_review/20261106/inputs.json
+  - tests/data/validation/ch2_source_review/20261106/atct-selected.tsv
+  - tests/data/validation/ch2_source_review/20261106/sources.json
+  - tests/data/validation/ch2_candidate/20261106/sources.json
+  - tests/data/validation/ch2_candidate/20261106/thermal_inputs.json
+  - documents/mceg/ch2_candidate.rst
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  artifacts:
+  - source: tests/data/validation/ch2_source_review/20261106/inputs.json
+    sha256: 6ee75797a267bc3f36e7b6c7b19aae3512214669f0d98f68b0921370ddaa43b3
+  - source: tests/data/validation/ch2_source_review/20261106/atct-selected.tsv
+    sha256: 458888d4238bbb2602b058235dbba1f0082658a5c9ea53e907d3387d7819a214
+  - source: tests/data/validation/ch2_source_review/20261106/sources.json
+    sha256: dc40198155506232d2f5d6ef9eaccd7772d6b3de5ffb235da2125b4720aa1688
+  - source: tests/data/validation/ch2_candidate/20261106/sources.json
+    sha256: b392ac1fb2b7bc0d9b5b31da6469f29361bb8483d0acc4e41042ba5f4590af3b
+  - source: tests/data/validation/ch2_candidate/20261106/thermal_inputs.json
+    sha256: 352823e0983319d7efb8b7851cdacf7b0da588fd224d60fa6e2643b1f67ed659
+  - source: documents/mceg/ch2_candidate.rst
+    sha256: e9e00a19903d4577f642f6a6e8b68d27e1e0352b8dd39d2d76d5ca961be86382
+  provenance:
+    role: primary
+    location: documents/mceg/ch2_candidate.rst
+    inspection: inspected
+    note: Inspected sources, independently reconstructed model, finite numerical execution and complete physical
+      validation are distinct. No full high-temperature state archive or resolution of the 2005 combined-table discrepancy
+      is claimed.
+- id: continuous_model
+  kind: numerical_test
+  summary: 2501-node scalar/JAX G/H/S/Cp, physical versus formal fit anchors, component-table reproduction and direct
+    printed-component recombination; independent oscillator sums and asymmetric-rotor diagonalization.
+  sources:
+  - tests/data/validation/ch2_candidate/20261106/candidate.json
+  - tests/data/validation/ch2_candidate/20261106/validation.json
+  - tests/data/validation/ch2_candidate/20261106/independent_rrho_audit.json
+  - tests/data/validation/ch2_candidate/20261106/receipt.json
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  artifacts:
+  - source: tests/data/validation/ch2_candidate/20261106/candidate.json
+    sha256: 8caae4adfbb73910514f5273b012cb857231f14dea06045a72c3392e9495bddb
+  - source: tests/data/validation/ch2_candidate/20261106/validation.json
+    sha256: 0c862686654737f6f266b688d98897f50cfc1c6dca138bbaa96db64bb6a9642a
+  - source: tests/data/validation/ch2_candidate/20261106/independent_rrho_audit.json
+    sha256: 8db636364014c1155c80802430f2863385bdab7308046caab92974f878acd5b9
+  - source: tests/data/validation/ch2_candidate/20261106/receipt.json
+    sha256: 5dcd326bc70fd3137d53a0326c6e803b14685e0ae104c651627c0b650acc19e5
+  provenance:
+    role: primary
+    location: documents/mceg/ch2_candidate.rst
+    inspection: inspected
+    note: Inspected sources, independently reconstructed model, finite numerical execution and complete physical
+      validation are distinct. No full high-temperature state archive or resolution of the 2005 combined-table discrepancy
+      is claimed.
+  result: passed
+- id: finite_execution
+  kind: numerical_test
+  summary: 300 fresh endpoints, 150 unique verified reused baselines, 34 fresh selected controls and four independent
+    FastChem comparisons. Each candidate/network has 63/75 resolved Gibbs conditions, with 12 unresolved explicitly.
+  sources:
+  - tests/data/validation/ch2_equilibrium_impact/20261106/summary.json
+  - tests/data/validation/ch2_equilibrium_impact/20261106/diagnostics.json
+  - tests/data/validation/ch2_equilibrium_impact/20261106/selected_diagnostics.json
+  - tests/data/validation/ch2_equilibrium_impact/20261106/ions.npz
+  - tests/data/validation/ch2_equilibrium_impact/20261106/neutral.npz
+  - tests/data/validation/ch2_equilibrium_impact/20261106/receipt.json
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  artifacts:
+  - source: tests/data/validation/ch2_equilibrium_impact/20261106/summary.json
+    sha256: a3dcf819d538c98d195e513a650ec32ed212b4c1d709f3f3e06db528b2846490
+  - source: tests/data/validation/ch2_equilibrium_impact/20261106/diagnostics.json
+    sha256: 11de017916878408af3dca4284714d2be6c80234da845d71e8d133118ca2cee4
+  - source: tests/data/validation/ch2_equilibrium_impact/20261106/selected_diagnostics.json
+    sha256: 0d8d93e7388d9db393163db0333c6ba69518b025d78df3bca54838487d9ce7c4
+  - source: tests/data/validation/ch2_equilibrium_impact/20261106/ions.npz
+    sha256: cddac1db563c99a8f430ac82521ac811ab3eea6de34e186ef3352f95eb508983
+  - source: tests/data/validation/ch2_equilibrium_impact/20261106/neutral.npz
+    sha256: 34f175e9ca52f440cfac6e7f597efeef333ee19eb74801b5c9e279de94145b69
+  - source: tests/data/validation/ch2_equilibrium_impact/20261106/receipt.json
+    sha256: 25187ebbe123904a14ddcca1f33662881ed78cad07fb2d01057a10c08534ea1c
+  provenance:
+    role: primary
+    location: documents/mceg/ch2_candidate.rst
+    inspection: inspected
+    note: Inspected sources, independently reconstructed model, finite numerical execution and complete physical
+      validation are distinct. No full high-temperature state archive or resolution of the 2005 combined-table discrepancy
+      is claimed.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: The modern balanced energy and finite coupled response support a separate energy-only adoption. The combined-table
+    discrepancy and incomplete high-temperature thermal evidence prevent recommending the RRHO sensitivity for adoption.
+  sources:
+  - documents/mceg/ch2_candidate.rst
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  artifacts:
+  - source: documents/mceg/ch2_candidate.rst
+    sha256: e9e00a19903d4577f642f6a6e8b68d27e1e0352b8dd39d2d76d5ca961be86382
+  provenance:
+    role: primary
+    location: documents/mceg/ch2_candidate.rst
+    inspection: inspected
+    note: Inspected sources, independently reconstructed model, finite numerical execution and complete physical
+      validation are distinct. No full high-temperature state archive or resolution of the 2005 combined-table discrepancy
+      is claimed.
+subjects:
+- id: ch2_energy_and_rrho_candidates_20261106
+  implementation: *id001
+  selected_files:
+    benchmarks/__init__.py: b1c18fc68440927cbfd4f278276efe1484336ceed8fd6012ff362494e695c0ec
+    benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    documents/mceg/ch2_candidate.rst: e9e00a19903d4577f642f6a6e8b68d27e1e0352b8dd39d2d76d5ca961be86382
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/ch2_candidate.py: edd12923c6dc3722ff221f3ee216dcb13865ac08abc39ccd40166a90c24b486d
+    mceg/reviews/ch2_equilibrium_impact.py: c97a6e11ee283871f9cb754b0d1a50887e6aeba0b8935b87f90962177fce310e
+    mceg/reviews/ch2_rrho_audit.py: a76d1419758370f063d66a78998fc8f000c5b9358e21a2be1f9fd3d13ab5797d
+    mceg/reviews/ch2_source_review.py: aad387ed7f5443b864377cff9161e06006ac313b0a8c031a569792cf5c9066b7
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
+    mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/ph3_source_review.py: 246aacd6c10ab0718d70042acb60668a95e93c0e9c60e28f11abd82daff89ec8
+    mceg/reviews/phosphorus_diatomic_source_review.py: cde4fc597d3048e84c4a089a2be3c4d0f0c60140f9ce408d03e669223611dd22
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/api/__init__.py: b50e66690ae01674e930f9495b111c7ea66bbd5b544d93b041261b3498b90b02
+    src/exogibbs/api/chemistry.py: 015434f7a6a9598f42d553a5b6248426ab96f085e0fe51bf1b1b09889556b245
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/cn_v1.json: 28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/ps_v1.json: d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6
+    src/exogibbs/data/curated/tio2_v1.json: 7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/__init__.py: 63a05e6341d70e90ab683936f8fb02604804d0ef6a807e7f6c13df2e62f9d058
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/io/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/io/load_data.py: e6c9333d71a5179b20b9d71847c175028c02628f00b1475c00c7ead9761fe7ac
+    src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_cn.py: 8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_ps.py: 73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_tio2.py: 876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/thermo/composition.py: 77d4fe5c05f7adc3ce9f98f0761aabecd21ded9d75e13be9d445a7482073fa8f
+    src/exogibbs/thermo/fugacity.py: 85348725ac895bec2cd653520cf795de5e10aa9d1b1d9afed1d9205b1480e31e
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/stoichiometry.py: 8b3dc769db8e89859ddff3fad26a724a41faec2f1b5b99d96d435799554fd254
+    src/exogibbs/utils/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/utils/elements.py: cf7714ca683370ee9607d7c9b183e3e49ebeb611c0d62aac35ac239e6d9225dd
+    src/exogibbs/utils/fastchem_parity.py: 6c88bca8effd17c3fd27dc364a0e0677bc14cc4b547919b0aa59ae0481a5115d
+    src/exogibbs/utils/interpolation.py: f8a564dcf8dd1c39acf8df6e313b5a458e7b2078a6e599e5ebe24825495e0f06
+    src/exogibbs/utils/nameparser.py: 81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a
+    tests/data/validation/ch2_candidate/20261106/candidate.json: 8caae4adfbb73910514f5273b012cb857231f14dea06045a72c3392e9495bddb
+    tests/data/validation/ch2_candidate/20261106/independent_rrho_audit.json: 8db636364014c1155c80802430f2863385bdab7308046caab92974f878acd5b9
+    tests/data/validation/ch2_candidate/20261106/receipt.json: 5dcd326bc70fd3137d53a0326c6e803b14685e0ae104c651627c0b650acc19e5
+    tests/data/validation/ch2_candidate/20261106/sources.json: b392ac1fb2b7bc0d9b5b31da6469f29361bb8483d0acc4e41042ba5f4590af3b
+    tests/data/validation/ch2_candidate/20261106/thermal_inputs.json: 352823e0983319d7efb8b7851cdacf7b0da588fd224d60fa6e2643b1f67ed659
+    tests/data/validation/ch2_candidate/20261106/validation.json: 0c862686654737f6f266b688d98897f50cfc1c6dca138bbaa96db64bb6a9642a
+    tests/data/validation/ch2_equilibrium_impact/20261106/diagnostics.json: 11de017916878408af3dca4284714d2be6c80234da845d71e8d133118ca2cee4
+    tests/data/validation/ch2_equilibrium_impact/20261106/ions.npz: cddac1db563c99a8f430ac82521ac811ab3eea6de34e186ef3352f95eb508983
+    tests/data/validation/ch2_equilibrium_impact/20261106/neutral.npz: 34f175e9ca52f440cfac6e7f597efeef333ee19eb74801b5c9e279de94145b69
+    tests/data/validation/ch2_equilibrium_impact/20261106/receipt.json: 25187ebbe123904a14ddcca1f33662881ed78cad07fb2d01057a10c08534ea1c
+    tests/data/validation/ch2_equilibrium_impact/20261106/selected_diagnostics.json: 0d8d93e7388d9db393163db0333c6ba69518b025d78df3bca54838487d9ce7c4
+    tests/data/validation/ch2_equilibrium_impact/20261106/summary.json: a3dcf819d538c98d195e513a650ec32ed212b4c1d709f3f3e06db528b2846490
+    tests/data/validation/ch2_source_review/20261106/atct-selected.tsv: 458888d4238bbb2602b058235dbba1f0082658a5c9ea53e907d3387d7819a214
+    tests/data/validation/ch2_source_review/20261106/comparison.json: a76bfc9fb587397266dda5714365fc04f654ce66ec95e109c33386cebc8b47d4
+    tests/data/validation/ch2_source_review/20261106/inputs.json: 6ee75797a267bc3f36e7b6c7b19aae3512214669f0d98f68b0921370ddaa43b3
+    tests/data/validation/ch2_source_review/20261106/nasa-selected.txt: ff98968625c8341f2b145344e1ca35b64267cee81bb954f1c7d67e91a41af795
+    tests/data/validation/ch2_source_review/20261106/sources.json: dc40198155506232d2f5d6ef9eaccd7772d6b3de5ffb235da2125b4720aa1688
+    tests/data/validation/curated_tio2_adoption/20261106/ions.npz: 9333c4893a4abac147f6f9c12cee11027a617d305cbf638363a6e1ad73e49bb3
+    tests/data/validation/curated_tio2_adoption/20261106/neutral.npz: 54cc6ff449ae0d9efa92fe5796a4918b8f7a062b2cfad2a2ab45a0c5cc158727
+    tests/data/validation/curated_tio2_adoption/20261106/receipt.json: 35078166bd7a19aa891ee2f6d9b872cb4cee454d2f429cbdedfde79a921c993a
+    tests/model_evidence/ch2_candidate_test.py: fb9582ac17125ad3c6c73249ca761358c4f7be18f2f6525fa4d2418ae2d851fd
+    tests/model_evidence/ch2_equilibrium_impact_test.py: a166fba587a2034ce84ee0526e3a4dace3a0663970d39dae74b7b76f65ad9782
+contexts:
+- id: fixed_tio2_network
+  scope: C(g) + 2 H(g) -> CH2(g), 1 bar, 1500-4000 K; retained-thermal ATcT1.228 energy candidate and independent
+    reconstructed three-state RRHO sensitivity; fixed curated-tio2-v1 ion-inclusive 537-species and neutral 421-species
+    networks; no production adoption.
+  settings:
+    baseline_dataset: curated-tio2-v1
+    species: C1H2
+    standard_pressure_bar: 1
+    delta_D0_J_mol: -4948
+    new_endpoint_solves: 300
+    selected_cold_solves: 34
+    unique_reused_baselines: 150
+    independent_fastchem_comparisons: 4
+    curated_update: none
+    gibbs_conditions_above_displayed_scale_per_candidate_network: 63
+assessments:
+- id: source_reconstruction_audit_review
+  kind: evidence_support
+  claim: source_reconstruction_audit
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - 'The triplet-only and singlet-only tables reproduce within 1.076 and 0.468 J/mol in H over all 16 printed nodes.
+    Direct combination of the two printed tables with the physical 3147 cm-1 origin independently disagrees with
+    the printed equilibrated table: at 3000 K delta H=-2974.938 J/mol, delta S=-2.716719 J/mol/K, delta G=5175.220
+    J/mol. The cause remains unresolved; the independent model is not relabeled as the IUPAC equilibrated table.'
+  status: supported
+  origin: reviewed
+- id: continuous_thermodynamics_review
+  kind: evidence_support
+  claim: continuous_thermodynamics
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - The balanced ATcT D0=752392 J/mol versus JANAF757340 produces G/H+4948 and unchanged S/Cp. The formal fit intercept758027.186
+    J/mol is distinct. The RRHO sensitivity retains the current-fit residual relative to NASA molecular and atomic
+    thermal proxies. Dense scalar/JAX calorics and independent finite sums agree within their declared precision.
+    The 3000-4000 K interval is an explicit model extension, not source-validated physical accuracy.
+  status: supported
+  origin: reviewed
+- id: finite_substitution_review
+  kind: evidence_support
+  claim: finite_substitution
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - All 300 fresh endpoints and 34 selected controls converge; source/baseline hashes, all species/formula matrix/budgets
+    and named-factory potentials match before reuse. Four FastChem comparisons agree within2.34e-8 dex. Maximum
+    major-element residual2.69e-13, all-element trace-relative residual1.40e-6, charge2.82e-14 and formation1.37e-12.
+    Tighter target ln(x) change is below3e-13; all-species difference reaches1.40e-5.
+  status: supported
+  origin: reviewed
+- id: candidate_direction_review
+  kind: evidence_support
+  claim: candidate_direction
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - The supported direction is energy-only ATcT1.228. Ion-inclusive CH2 abundance becomes0.672510-0.868368 of baseline,
+    and maximum carbon allocation becomes2.25999205% from2.60379173%. The reconstructed RRHO sensitivity gives2.24792979%
+    at the same4000K/100bar/C/O1.5 condition, but its proximity to NASA and solver convergence do not justify thermal
+    adoption. Production adoption remains separate.
+  status: supported
+  origin: reviewed
+- id: universal_gibbs_resolution_review
+  kind: evidence_support
+  claim: universal_gibbs_resolution
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Each candidate/network has63 of75 feasibility-corrected same-model Gibbs exchanges above the displayed floating-point
+    scale;12 remain unresolved. The diagnostic is not a rigorous numerical bound, and absolute cross-model Gibbs
+    values do not select the physical source.
+  status: unknown
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Complete correlated reaction uncertainty, large-amplitude and Renner-Teller thermals, anharmonicity, isotope
+    mixtures, spin-resolved populations and planetary nonequilibrium/condensation accuracy remain unestablished.
+    The 2024 manuscript/SI validates convergence at296K only and does not provide a complete1500-4000K state or
+    partition archive.
+  status: unknown
+  origin: reviewed
+- id: production_adoption_review
+  kind: evidence_support
+  claim: production_adoption
+  claim_revision: '1'
+  subject: ch2_energy_and_rrho_candidates_20261106
+  context: fixed_tio2_network
+  method:
+    id: review_ch2_candidates
+    revision: '1'
+    description: Separate source-table reconstruction, balanced physical energy, continuous proxy residual, finite
+      numerical response, scoped recommendation and physical/adoption limits.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Only review helpers, offline evidence and documentation are added. Production runtime and packaged curated data
+    are unchanged; a separately authorized implementation and verification are required.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: scoped_energy_adoption
+  target_kind: claim
+  target: candidate_direction
+  revision: '1'
+  action: Adopt the retained-thermal ATcT energy correction only in a separately scoped production change; preserve
+    physical-versus-fit energy distinction and immutable source history.
+  requires:
+  - Explicit production adoption scope and deterministic packaged potential verification.
+  - Retain correlated energy uncertainty and thermal-model limits.
+  completion: Production decision and verification; no new ancestral full text is mandatory for the bounded energy
+    candidate.
+- id: resolve_thermal_model
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Resolve the printed component/equilibrium discrepancy and obtain a converged large-amplitude/anharmonic
+    thermal model before recommending a thermal replacement.
+  requires:
+  - Consistent electronic origins, degeneracies, nuclear-spin and energy zeros.
+  - Q/H/S/Cp convergence across the claimed temperature domain.
+  completion: A separately justified thermal candidate; this does not block merging the scoped energy and sensitivity
+    evidence.
+limitations:
+- statement: The reconstructed RRHO model fails to reproduce the published combined table even within1500-3000K;3000-4000K
+    is a declared analytic sensitivity extension. Neither is asserted as source-guaranteed physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: The thermal residual is defined against NASA molecular and atomic proxies, not directly against a literal
+    JANAF molecular table. The NASA control is an exact identity and adds no independent solves.
+  evidence:
+  - continuous_model
+- statement: Marginal ATcT uncertainties do not give the correlated atomization uncertainty; old fitting construction
+    and source residual are retained explicitly.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: Twelve of75 same-model Gibbs exchanges per candidate/network remain below the diagnostic scale; finite
+    ideal-gas numerical agreement does not prove planetary physical accuracy.
+  evidence:
+  - finite_execution
+  - decision_reasoning
