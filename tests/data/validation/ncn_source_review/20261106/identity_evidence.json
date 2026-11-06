@@ -1,0 +1,43 @@
+{
+  "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+  "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+  "inspection": "Original printed page image inspected; selected factual numerical/identity transcription only.",
+  "printed_page": 637,
+  "connectivity": "linear N-C-N",
+  "point_group": "D-infinity-h",
+  "rotational_symmetry": 2,
+  "ground_electronic_weight": 3,
+  "evaluation_date": "1970-12",
+  "B0_cm-1": 0.396469,
+  "electronic_terms_cm-1_and_weights": [
+    [
+      0,
+      3
+    ],
+    [
+      30384,
+      6
+    ],
+    [
+      38000,
+      2
+    ]
+  ],
+  "fundamentals_cm-1_and_degeneracies": [
+    [
+      1197,
+      1
+    ],
+    [
+      423,
+      2
+    ],
+    [
+      1475,
+      1
+    ]
+  ],
+  "hf298_kJ_mol_rounded": 473,
+  "listed_uncertainty_kJ_mol": 21,
+  "notes": "The 38000 cm-1 singlet term is estimated, not a new measured complete-state inventory."
+}
