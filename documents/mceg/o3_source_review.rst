@@ -69,7 +69,7 @@ The final **curated-tio2-v1** archive contains 75 converged ion-inclusive endpoi
 These finite hot hydrogen-rich results do not bound cooler or oxidizing atmospheres, photochemistry, non-LTE populations, condensation or reaction kinetics. A small inventory here is not evidence that a molecule is unimportant in those settings.
 
 Decision, access needs and MCEG
-------------------------------
+-------------------------------
 
 Identify an ozone state/thermodynamic calculation with a defensible 1500-4000 K domain, first-dissociation treatment and converged Q/H/S/Cp; compare it against both old thermal models at a common ATcT atomization energy. A standalone energy-only sensitivity is possible, but is not evidence that the large thermal discrepancy is resolved. No additional DOI is mandatory to merge this scoped source-gap record.
 

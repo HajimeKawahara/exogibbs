@@ -117,7 +117,7 @@ evidence:
   - source: tests/data/validation/o3_source_review/20261106/README.rst
     sha256: 267a3d4db555de17b7c84af343756327341ebaf7402197a56073ccde4a369bb8
   - source: tests/data/validation/o3_source_review/20261106/receipt.json
-    sha256: ceeefe5b8df5dcf2b12af2635ac4f02a1ebae4a78b12f4814c1f1fafd9d97a20
+    sha256: 252111de19a07c093ce4b5ebb2adaedd26749c52e0351d11a5c4a11ac96955ca
   - source: tests/data/validation/o3_source_review/20261106/O-001.txt
     sha256: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
   - source: tests/data/validation/o3_source_review/20261106/nasa_selected_records.txt
@@ -150,7 +150,7 @@ evidence:
   context: source_review
   artifacts:
   - source: documents/mceg/o3_source_review.rst
-    sha256: 8d7703a3866161f3b737bfd8a2e0f7ce0611a0dcd28fd770571ae3a54c51f12f
+    sha256: 4312a602334b930ed694ce7b8a01be417b9b3c6f64532001d9e4631deb451c8a
   provenance:
     role: primary
     location: documents/mceg/o3_source_review.rst
@@ -165,7 +165,7 @@ subjects:
     entry_points:
     - mceg/reviews/o3_source_review.py
   selected_files:
-    documents/mceg/o3_source_review.rst: 8d7703a3866161f3b737bfd8a2e0f7ce0611a0dcd28fd770571ae3a54c51f12f
+    documents/mceg/o3_source_review.rst: 4312a602334b930ed694ce7b8a01be417b9b3c6f64532001d9e4631deb451c8a
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
