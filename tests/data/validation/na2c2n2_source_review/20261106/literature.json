@@ -1,0 +1,37 @@
+{
+  "janaf_printed": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+    "page": 683,
+    "evaluation": "March 1966; 1-bar conversion",
+    "identity": "Neutral (NaCN)2 ideal gas, six atoms, assumed D2h planar structure.",
+    "sigma": 4,
+    "ground_weight": 1,
+    "mass_u": 98.01494,
+    "inertia_product_g3_cm6": 4.483815e-113,
+    "vibrational_frequencies_expanded_cm_inverse": [
+      295,
+      175,
+      250,
+      170,
+      250,
+      290,
+      239,
+      239,
+      239,
+      239,
+      2176,
+      2176
+    ],
+    "Hf298_J_mol": -8786.0,
+    "Hf298_uncertainty_J_mol": 13000.0,
+    "thermal_model": "Estimated dimer geometry/frequencies with the last six modes taken from historical linear monomer bend/stretch assumptions."
+  },
+  "primary_energy": {
+    "doi": "10.1063/1.1731908",
+    "access": "Publisher-registered primary abstract inspected via Crossref and explicit JANAF attribution; complete body not obtained.",
+    "temperature_K": 1000.0,
+    "dimer_to_two_monomers_H_J_mol": 171544.0,
+    "reported_uncertainty_J_mol": 12552.0,
+    "scope": "41.0 +/-3.0 kcal/mol at 1000 K, not zero-K total atomization."
+  }
+}
