@@ -1,0 +1,140 @@
+{
+  "molecule": "K2",
+  "species_id": "K2",
+  "composition": {
+    "K": 2
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "K2": "K-011.txt",
+    "K": "K-005.txt"
+  },
+  "nasa9": {
+    "K2": {
+      "composition": {
+        "K": 2
+      },
+      "reference": "Gurvich,1982 pt1 p370 pt2 p402.",
+      "source_line_1based": 6333,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            15241.69293,
+            -330.178936,
+            7.07079595,
+            -0.00976707246,
+            2.021535863e-05,
+            -1.886092452e-08,
+            6.11297464e-12,
+            15334.02849,
+            -9.1010358
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -27344707.45,
+            65621.8001,
+            -44.7635044,
+            0.00893885915,
+            2.984557092e-06,
+            -1.064158914e-09,
+            8.33493693e-14,
+            -422624.383,
+            386.714251
+          ]
+        }
+      ],
+      "source_name": "K2",
+      "hf298_J_mol": 126546.329,
+      "h298_minus_h0_J_mol": 10741.129,
+      "mass_u": 78.1966
+    },
+    "K": {
+      "composition": {
+        "K": 1
+      },
+      "reference": "Hf:Cox,1989. Sugar,1985. Gordon 1999.",
+      "source_line_1based": 6188,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            9.66514393,
+            -0.1458059455,
+            2.500865861,
+            -2.601219276e-06,
+            4.18730658e-09,
+            -3.43972211e-12,
+            1.131569009e-15,
+            9959.49349,
+            5.03582226
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -3566422.36,
+            10852.89825,
+            -10.54134898,
+            0.00800980135,
+            -2.696681041e-06,
+            4.71529415e-10,
+            -2.97689735e-14,
+            -58753.3701,
+            97.3855124
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            920578659.0,
+            -693530.028,
+            191.1270788,
+            -0.02305931672,
+            1.430294866e-06,
+            -4.40933502e-11,
+            5.366769166e-16,
+            5395082.19,
+            -1622.158805
+          ]
+        }
+      ],
+      "source_name": "K",
+      "hf298_J_mol": 89000.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 39.0983
+    }
+  },
+  "decision": "Retain K2 production; review a measured-D0, finite-bound rovibronic thermal candidate separately rather than substitute NASA or Barklem-Collet wholesale.",
+  "follow_ups": [
+    "Construct K2 partition moments with measured ground-state D0, explicit bound/quasibound convention, complete relevant electronic states and normalized nuclear-spin/isotope weights; preserve the source fit residual and test fixed-network substitutions.",
+    "Inspect the corrected 2025 thermal tables/supplement and, for K2, the 2026 direct-potential data; compare derivative-consistent G/H/S/Cp before adoption."
+  ],
+  "limitations": [
+    "Barklem-Collet tables are a spectroscopic compilation with shared old constants and approximate level truncation, not independent full physical validation.",
+    "Published Q and K nodes do not establish a derivative-consistent thermal candidate; molecular electronic and isotope completeness remain bounded.",
+    "The 2025 thermal preprint was inspected, but corrected final numerical tables and correction text were not obtained; no result is adopted from that preprint."
+  ]
+}
