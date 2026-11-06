@@ -1,0 +1,38 @@
+{
+  "main_frequencies_cm_inverse": [
+    2061,
+    373,
+    181
+  ],
+  "control_frequencies_cm_inverse": [
+    2031,
+    173,
+    460
+  ],
+  "new_primary_doi": "10.1111/j.1365-2966.2011.20132.x",
+  "primary_url": "https://academic.oup.com/mnras/article/420/2/1188/984020",
+  "inspection": "Full primary publisher article and Table1 image read. Main uses Table1 harmonic modes, control treats Table2a anharmonic fundamentals as harmonic surrogates, not a Dunham extrapolation.",
+  "source_file_sha256": {
+    "nacn-senent2012.html": "bcbc4a9ea1d38182199c4f9c4b29a7fb0af26c728fa91d89e709573d26d7a2fe",
+    "nacn-senent2012-table1.jpeg": "41dc9d2c98f42afa952ce0cd780779a438fd88c5e499c57b297a874dc897a0ca"
+  },
+  "T_shaped_relative_minimum_cm_inverse": 0,
+  "linear_NaNC_relative_minimum_cm_inverse": 774,
+  "linear_NaCN_relative_minimum_cm_inverse": 944,
+  "transition_barriers_cm_inverse": [
+    787,
+    1380
+  ],
+  "anharmonic_x22_cm_inverse": -50.592,
+  "anharmonic_x23_cm_inverse": 188.568,
+  "scope": "Single T-shaped well, measured ground-state rotation and computed harmonic three-mode model; analytic1500-4000K sensitivity, not a converged high-temperature state sum. Low barriers lie inside the thermally occupied region, and strong anharmonic coupling invalidates uncontrolled extrapolation. Linear minima on one connected potential are not extra independently counted species.",
+  "shared_conventions": {
+    "rotational_doi": "10.1016/j.jms.2011.12.005",
+    "sigma": 1,
+    "electronic_weight": 1,
+    "nuclear_weight_added": 1,
+    "mean_mass": "Retained JANAF natural mean mass for translation; measured principal-isotope rotation is not a complete natural-isotope calculation.",
+    "energy": "JANAF physical D0 unchanged; no ZPE added.",
+    "finite_domain": "1500-4000K is a sensitivity domain, not primary-author high-temperature validation."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "result": "passed",
+  "scope": "Continuous model and source-validation record; separate from equilibrium execution",
+  "selected_file_sha256": {
+    "mceg/reviews/nacn_candidate.py": "ffc6bdb238a579dbcafe888653c8a36b23675b1fddd272e59d8ecdba37de64f8",
+    "tests/data/validation/nacn_candidate/20261106/sources.json": "334e5b2bac955b556b89e16e7a255fa658211e5e82be13aefe630a9fd41102ca",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "mceg/reviews/nacn_source_review.py": "085a10522de3235680b87f05e289d28eaaec3910f21e3b1df4a0b424c5851785",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/nacn_source_review/20261106/literature.json": "2e2aec39420fd2f63f1d269802eb8c379b7eaba8582d0384f19eb9a46cdde32a",
+    "tests/data/validation/nacn_source_review/20261106/nasa-selected-records.txt": "3a870d9055a1418c83d44f5bf739cc86a7a45ba8882b3a6093ca08cb0c2fefe3",
+    "tests/data/validation/nacn_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/nacn_source_review/20261106/inputs.json": "ae22542c8fa9a6399fdbe16b52371f2cf3bccfd9cd1cbfe183f3ce403407efba",
+    "tests/data/validation/nacn_source_review/20261106/C-086.txt": "cf97a936282d4816f579b02ce3348d75001a92acb74d4049a9d64957d91be545",
+    "tests/data/validation/nacn_source_review/20261106/README.rst": "7444c56e27ce51b62564d8730d22b073bd0027711dfb19d486ff43fe2426fe97",
+    "tests/data/validation/nacn_source_review/20261106/Na-005.txt": "56df39453bc3895f80161d7ca0146b344669da2d1a9918b27139e917d491c255",
+    "tests/data/validation/nacn_source_review/20261106/receipt.json": "e430106d3626dddae2bc51babd953dc43f75909d330e485aaf04ceae60a7b66f",
+    "tests/data/validation/nacn_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/nacn_source_review/20261106/comparison.json": "8cee925c808d4152d5fa2f2a737c38784bf7876e1ddba32a0d7d43193501298b",
+    "tests/data/validation/nacn_source_review/20261106/sources.json": "e65fd937477535a69063ba7349b126c9e1831354ec5fb43e1ba3f49d24863180",
+    "tests/data/validation/nacn_candidate/20261106/candidate.json": "3aefe19f9355739bf56c40ebfab726750456a42e0f0578039a217d2b0670cb7e"
+  },
+  "output_sha256": {
+    "review.json": "7f8b2d4782d45595163ce5bb151d4d7cbf4f8ef55d1ae625bf5bbc6815b118cc",
+    "candidate.json": "3aefe19f9355739bf56c40ebfab726750456a42e0f0578039a217d2b0670cb7e",
+    "validation.json": "eed162c1686312b1b05ecde75dd900660874b2e92123639034498a0a81d0d255",
+    "sources.json": "334e5b2bac955b556b89e16e7a255fa658211e5e82be13aefe630a9fd41102ca"
+  }
+}

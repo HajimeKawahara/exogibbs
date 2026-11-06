@@ -1,0 +1,261 @@
+{
+  "continuous": {
+    "temperature_count": 2752,
+    "offgrid_count": 251,
+    "range_K": [
+      1500,
+      4000
+    ],
+    "models": [
+      {
+        "variant": "t_shaped_rrho_sensitivity",
+        "species": "C1N1Na1",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 9.89530235528946e-10,
+          "H_J_mol": 1.3969838619232178e-09,
+          "S_J_mol_K": 4.831690603168681e-13,
+          "Cp_J_mol_K": 7.762679388179095e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -885651.9249697797,
+            "H_J_mol": -1214057.4158535914,
+            "S_J_mol_K": -218.936993922541,
+            "Cp_J_mol_K": -6.860218698217106
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -775701.3212552972,
+            "H_J_mol": -1217142.3262390676,
+            "S_J_mol_K": -220.72050249188527,
+            "Cp_J_mol_K": -5.626072797561643
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -665026.1606229444,
+            "H_J_mol": -1219832.6003811785,
+            "S_J_mol_K": -221.92257590329365,
+            "Cp_J_mol_K": -5.286104510155301
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -553811.4539636417,
+            "H_J_mol": -1222580.8276385798,
+            "S_J_mol_K": -222.92312455831268,
+            "Cp_J_mol_K": -5.860194061064456
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": -329863.0209474406,
+            "H_J_mol": -1230094.081201546,
+            "S_J_mol_K": -225.05776506352635,
+            "Cp_J_mol_K": -9.78574082756253
+          }
+        ]
+      },
+      {
+        "variant": "alternate_low_mode_surrogate",
+        "species": "C1N1Na1",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 1.2223608791828156e-09,
+          "H_J_mol": 1.1641532182693481e-09,
+          "S_J_mol_K": 4.547473508864641e-13,
+          "Cp_J_mol_K": 8.810729923425242e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -884099.0414718731,
+            "H_J_mol": -1214388.4287295179,
+            "S_J_mol_K": -220.19292483842975,
+            "Cp_J_mol_K": -6.8499255281669615
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -773521.30747717,
+            "H_J_mol": -1217467.763566044,
+            "S_J_mol_K": -221.97322804443698,
+            "Cp_J_mol_K": -5.615213055130833
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -662220.3736200331,
+            "H_J_mol": -1220153.1406803338,
+            "S_J_mol_K": -223.17310682412028,
+            "Cp_J_mol_K": -5.2774218582916435
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -550380.7777704195,
+            "H_J_mol": -1222897.5350322553,
+            "S_J_mol_K": -224.17225242061198,
+            "Cp_J_mol_K": -5.85346268575705
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": -325184.09068581706,
+            "H_J_mol": -1230405.454018659,
+            "S_J_mol_K": -226.30534083321047,
+            "Cp_J_mol_K": -9.781541548478334
+          }
+        ]
+      }
+    ],
+    "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks."
+  },
+  "samples": [
+    {
+      "temperature_K": 1500.0,
+      "reference_molecular": {
+        "G_J_mol": -418617.4684216628,
+        "H_J_mol": 79762.09338716134,
+        "S_J_mol_K": 332.25304120588277,
+        "Cp_J_mol_K": 59.72517071198145
+      },
+      "new_molecular": {
+        "G_J_mol": -444862.1247522026,
+        "H_J_mol": 75644.28957703519,
+        "S_J_mol_K": 347.0042762194918,
+        "Cp_J_mol_K": 55.84148695843504
+      },
+      "reaction": {
+        "G_J_mol": -885651.9249697797,
+        "H_J_mol": -1214057.4158535914,
+        "S_J_mol_K": -218.936993922541,
+        "Cp_J_mol_K": -6.860218698217106
+      },
+      "full_molecular_partition_ratio": 8.201669650358435,
+      "independent_old_model_error": {
+        "H_J_mol": 2.9103830456733704e-11,
+        "S_J_mol_K": 0.0,
+        "Cp_J_mol_K": -1.4210854715202004e-14
+      },
+      "reference_minus_JANAF": {
+        "old_RRHO_minus_JANAF_thermal_H_J_mol": 1.093387161308783,
+        "old_RRHO_minus_JANAF_S_J_mol_K": 0.002041205882790109,
+        "old_RRHO_minus_JANAF_Cp_J_mol_K": 0.00017071198146112465
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "reference_molecular": {
+        "G_J_mol": -589274.1944323495,
+        "H_J_mol": 109911.06584437142,
+        "S_J_mol_K": 349.59263013836045,
+        "Cp_J_mol_K": 60.75198908051602
+      },
+      "new_molecular": {
+        "G_J_mol": -622599.0861767825,
+        "H_J_mol": 103824.62877673286,
+        "S_J_mol_K": 363.21185747675764,
+        "Cp_J_mol_K": 56.77052333672271
+      },
+      "reaction": {
+        "G_J_mol": -775701.3212552972,
+        "H_J_mol": -1217142.3262390676,
+        "S_J_mol_K": -220.72050249188527,
+        "Cp_J_mol_K": -5.626072797561643
+      },
+      "full_molecular_partition_ratio": 7.418905991597972,
+      "independent_old_model_error": {
+        "H_J_mol": 4.3655745685100555e-11,
+        "S_J_mol_K": 5.684341886080802e-14,
+        "Cp_J_mol_K": 1.4210854715202004e-14
+      },
+      "reference_minus_JANAF": {
+        "old_RRHO_minus_JANAF_thermal_H_J_mol": 2.0658443713764427,
+        "old_RRHO_minus_JANAF_S_J_mol_K": 0.0026301383604163675,
+        "old_RRHO_minus_JANAF_Cp_J_mol_K": -1.091948399789544e-05
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "reference_molecular": {
+        "G_J_mol": -767597.0647606351,
+        "H_J_mol": 140434.52938889974,
+        "S_J_mol_K": 363.21263765981394,
+        "Cp_J_mol_K": 61.28921715835432
+      },
+      "new_molecular": {
+        "G_J_mol": -807500.0275865276,
+        "H_J_mol": 132342.18159153688,
+        "S_J_mol_K": 375.93688367122576,
+        "Cp_J_mol_K": 57.251992730557774
+      },
+      "reaction": {
+        "G_J_mol": -665026.1606229444,
+        "H_J_mol": -1219832.6003811785,
+        "S_J_mol_K": -221.92257590329365,
+        "Cp_J_mol_K": -5.286104510155301
+      },
+      "full_molecular_partition_ratio": 6.818839696484866
+    },
+    {
+      "temperature_K": 3000.0,
+      "reference_molecular": {
+        "G_J_mol": -952087.1380512553,
+        "H_J_mol": 171163.2259715276,
+        "S_J_mol_K": 374.4167880075943,
+        "Cp_J_mol_K": 61.59960693033339
+      },
+      "new_molecular": {
+        "G_J_mol": -998162.0441954781,
+        "H_J_mol": 161043.2010733178,
+        "S_J_mol_K": 386.40174842293203,
+        "Cp_J_mol_K": 57.5287668997109
+      },
+      "reaction": {
+        "G_J_mol": -553811.4539636417,
+        "H_J_mol": -1222580.8276385798,
+        "S_J_mol_K": -222.92312455831268,
+        "Cp_J_mol_K": -5.860194061064456
+      },
+      "full_molecular_partition_ratio": 6.341904748081724,
+      "independent_old_model_error": {
+        "H_J_mol": 0.0,
+        "S_J_mol_K": -5.684341886080802e-14,
+        "Cp_J_mol_K": 0.0
+      },
+      "reference_minus_JANAF": {
+        "old_RRHO_minus_JANAF_thermal_H_J_mol": 2.2259715276013594,
+        "old_RRHO_minus_JANAF_S_J_mol_K": 0.002788007594347164,
+        "old_RRHO_minus_JANAF_Cp_J_mol_K": 0.0006069303333902099
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "reference_molecular": {
+        "G_J_mol": -1335807.508433062,
+        "H_J_mol": 232945.97057483604,
+        "S_J_mol_K": 392.18836975197445,
+        "Cp_J_mol_K": 61.922135378047514
+      },
+      "new_molecular": {
+        "G_J_mol": -1393251.7025995033,
+        "H_J_mol": 218734.7544982601,
+        "S_J_mol_K": 402.9966142744409,
+        "Cp_J_mol_K": 57.815299235571736
+      },
+      "reaction": {
+        "G_J_mol": -329863.0209474406,
+        "H_J_mol": -1230094.081201546,
+        "S_J_mol_K": -225.05776506352635,
+        "Cp_J_mol_K": -9.78574082756253
+      },
+      "full_molecular_partition_ratio": 5.625091018253326,
+      "independent_old_model_error": {
+        "H_J_mol": 1.1641532182693481e-10,
+        "S_J_mol_K": 1.1368683772161603e-13,
+        "Cp_J_mol_K": 0.0
+      },
+      "reference_minus_JANAF": {
+        "old_RRHO_minus_JANAF_thermal_H_J_mol": 1.9705748359265272,
+        "old_RRHO_minus_JANAF_S_J_mol_K": 0.0023697519743564044,
+        "old_RRHO_minus_JANAF_Cp_J_mol_K": 0.00013537804751706517
+      }
+    }
+  ],
+  "minimum_main_molecular_Cp_J_mol_K": 55.84148695843504,
+  "physical_accuracy": "unknown; finite sensitivity only, not a high-temperature complete coupled-state construction"
+}
