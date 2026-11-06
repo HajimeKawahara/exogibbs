@@ -1,5 +1,5 @@
 CN retained-thermal ATcT energy candidate
-========================================
+=========================================
 
 The same-thermal calculation recommended in :doc:`cn_source_review` is now
 complete. The tested energy update is scientifically preferable to the older

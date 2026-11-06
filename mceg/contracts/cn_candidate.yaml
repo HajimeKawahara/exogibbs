@@ -110,7 +110,7 @@ evidence:
   - source: tests/data/validation/cn_candidate/20261106/sources.json
     sha256: 45076ea781649d19991f7ea194efd18ee2a65722d650cc1dc17d21d87e256fb4
   - source: documents/mceg/cn_candidate.rst
-    sha256: 5b735e1de303afb6327a1e8380ce511842a1177560f6fdcfccf0c68d3eee4108
+    sha256: 90f84c9d008552145a982fd322fe5a6e1054513204421792a22d562c1479e2f0
   provenance:
     role: primary
     location: documents/mceg/cn_candidate.rst
@@ -187,7 +187,7 @@ evidence:
   context: fixed_cos_network
   artifacts:
   - source: documents/mceg/cn_candidate.rst
-    sha256: 5b735e1de303afb6327a1e8380ce511842a1177560f6fdcfccf0c68d3eee4108
+    sha256: 90f84c9d008552145a982fd322fe5a6e1054513204421792a22d562c1479e2f0
   provenance:
     role: primary
     location: documents/mceg/cn_candidate.rst
@@ -203,7 +203,7 @@ subjects:
     benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
     benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
     benchmarks/fastchem4/run_production_comparison.py: 2ad1b907914924698d4631d533f81a27f4f843660e0fd7c77bd4d864b4b0666e
-    documents/mceg/cn_candidate.rst: 5b735e1de303afb6327a1e8380ce511842a1177560f6fdcfccf0c68d3eee4108
+    documents/mceg/cn_candidate.rst: 90f84c9d008552145a982fd322fe5a6e1054513204421792a22d562c1479e2f0
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
     examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
