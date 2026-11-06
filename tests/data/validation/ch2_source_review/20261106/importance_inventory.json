@@ -1,0 +1,72 @@
+{
+  "molecule": "CH2",
+  "canonical": "C1H2",
+  "composition": {
+    "C": 1,
+    "H": 2
+  },
+  "max_mole_fraction": 3.0585975528011364e-05,
+  "max_mole_fraction_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 0.02603791726999461,
+      "maximum_share_percent": 2.6037917269994613,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "H": {
+      "maximum_share": 3.825846113793367e-05,
+      "maximum_share_percent": 0.003825846113793367,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  },
+  "max_element": "C",
+  "max_element_share": 0.02603791726999461,
+  "max_element_share_percent": 2.6037917269994613,
+  "max_element_share_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "archive_vs_runtime_max_abs_h_error": 0.0,
+  "runtime_provenance": {
+    "status": "inherited_unreviewed",
+    "source_group": "FastChem4",
+    "record": {
+      "species": "C1H2",
+      "record_name": "Methylene",
+      "source_file": "FastChem4/logK/logK.dat",
+      "record_line_number": 178,
+      "coefficient_line_number": 179,
+      "record_line": "C1H2 Methylene : C 1 H 2 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "coefficient_line": "   9.1169714849968557e+04  -3.7350318476311486e+00   1.0643297706315025e+00   9.7909623883390973e-04  -4.9466163560058486e-08 ",
+      "coefficients": [
+        91169.71484996856,
+        -3.7350318476311486,
+        1.0643297706315025,
+        0.0009790962388339097,
+        -4.9466163560058486e-08
+      ],
+      "selected_temperature_segment_index": null,
+      "selected_temperature_segment_upper_bound": null,
+      "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+      "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+      "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+    }
+  }
+}
