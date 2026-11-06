@@ -1,0 +1,522 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.nco_candidate.v1
+  name: NCO bounded candidate evaluation
+  description: Recommend the retained-thermal ATcT energy update, coordinating its production selection with
+    HNCO. Separate and joint fixed-network variants quantify coupled response; they do not provide reaction
+    covariance or validate an entire rovibronic model.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e
+    entry_points:
+    - mceg/reviews/pending_molecule_inputs.py
+    - mceg/reviews/pending_candidate.py
+    - mceg/reviews/pending_equilibrium_impact.py
+assumptions:
+- statement: Physical energy shifts are explicit and distinct from fitted1/T coefficients, H298-only anchors
+    and native NASA energy-over-R.
+  evidence:
+  - source_scope
+  - candidate_validation
+- statement: All candidates share one hash-verified named baseline, fixed network, atomic sources and elemental
+    budgets.
+  evidence:
+  - finite_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+  conditions:
+  - T1500-4000 K;P1e-6-100 bar;C/O reference,1,1.5;ideal gas only.
+  evidence:
+  - candidate_validation
+  - finite_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Complete atmospheric and thermochemical accuracy remains unestablished.
+  conditions: []
+  evidence:
+  - source_scope
+claims:
+- id: continuous_thermodynamics
+  revision: '1'
+  kind: numerical_verification
+  statement: Explicit physical source anchors, scalar/JAX calorics and independent source expansion agree.
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+- id: finite_substitution
+  revision: '1'
+  kind: numerical_verification
+  statement: Declared candidates and finite controls converge on both fixed networks with bounded closure and
+    independent solver agreement.
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+- id: candidate_direction
+  revision: '1'
+  kind: theoretical
+  statement: Recommend the retained-thermal ATcT energy update, coordinating its production selection with
+    HNCO. Separate and joint fixed-network variants quantify coupled response; they do not provide reaction
+    covariance or validate an entire rovibronic model.
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Complete thermal uncertainty and atmosphere-specific abundance accuracy are established.
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+- id: universal_gibbs_resolution
+  revision: '1'
+  kind: numerical_verification
+  statement: Every arbitrarily small Gibbs or path response has a resolved sign.
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+evidence:
+- id: source_scope
+  kind: literature
+  summary: Preserve exact identity, primary-source energies and original inspection limitations.
+  sources:
+  - tests/data/validation/nco_source_review/20261106/inputs.json
+  - tests/data/validation/nco_source_review/20261106/sources.json
+  - tests/data/validation/nco_source_review/20261106/comparison.json
+  - documents/mceg/nco_candidate.rst
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/nco_source_review/20261106/inputs.json
+    sha256: 1d9edd4509f15c1fc504fd0f5e16fb6a7e9e08ad9ab30ed070e75a056976dc1d
+  - source: tests/data/validation/nco_source_review/20261106/sources.json
+    sha256: 1df8fe5109de4ac2e65ef67ba88eef370eb3f118872190d8384a534c2b9169e9
+  - source: tests/data/validation/nco_source_review/20261106/comparison.json
+    sha256: d286c6b4c7cb0bdc5f9005804f3d093f31bf2865239e062e450422408b76ad0c
+  - source: documents/mceg/nco_candidate.rst
+    sha256: 909782cf51feafc3c786fb51865f37d0098d02a9a0acaf59730e4c7195660856
+  provenance:
+    role: primary
+    location: documents/mceg/nco_candidate.rst
+    inspection: inspected
+    note: Source inspection levels remain those of the immutable source review. Numerical support is distinct
+      from complete physical accuracy.
+- id: candidate_validation
+  kind: numerical_test
+  summary: 2752 scalar/JAX and independent-source caloric points, explicit energy versus thermal-reference
+    definitions.
+  sources:
+  - tests/data/validation/nco_candidate/20261106/README.rst
+  - tests/data/validation/nco_candidate/20261106/candidate.json
+  - tests/data/validation/nco_candidate/20261106/receipt.json
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/C-003.txt
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/C-053.txt
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/H-001.txt
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/N-002.txt
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/O-001.txt
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/identity.json
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/inputs.json
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/literature.json
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/nasa_records.json
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/nasa_selected_records.txt
+  - tests/data/validation/nco_candidate/20261106/source/hnco_source_review/sources.json
+  - tests/data/validation/nco_candidate/20261106/validation.json
+  - mceg/reviews/pending_molecule_inputs.py
+  - mceg/reviews/pending_candidate.py
+  - tests/model_evidence/nco_candidate_test.py
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/nco_candidate/20261106/README.rst
+    sha256: 15ceb2ebc5373a8c1703cf2dd153ce33419709802dc9b536852f9df3e6946476
+  - source: tests/data/validation/nco_candidate/20261106/candidate.json
+    sha256: 823c82db7752e17b06a2026c74931f77fbbd5bc83389ccdd0fc8311bf66f791f
+  - source: tests/data/validation/nco_candidate/20261106/receipt.json
+    sha256: d0308d116a9f20711a3ce2882ae95ffe525ce4b2900b7b82b12a8c03eb1b91a0
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/C-003.txt
+    sha256: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/C-053.txt
+    sha256: 6607b4c9a1adf36bef0f44bd361af679c14dab5b98afab121d55fe94ecf0f3ad
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/H-001.txt
+    sha256: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/N-002.txt
+    sha256: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/O-001.txt
+    sha256: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/identity.json
+    sha256: 9a30d135bfcbc3adb71ae5e43b6fa586751596874e4a0dc26bf12bc6df296923
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/inputs.json
+    sha256: 03ae753ab3e029c4ea5efbd0c134fe0dcc88b6aeecca48256cfbb7be33b4fd95
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/literature.json
+    sha256: 51a25e2beefe760a84e6cda20fb223eafef9b8abcb797c3504c1f9f6ac62877e
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/nasa_records.json
+    sha256: 2e8703e4e42d21165f023262a8ea625a311f442f3a5e7afdbba4500945700317
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/nasa_selected_records.txt
+    sha256: df5c7533acd57d0554326dba693fb2f7d8378f5c480a5360de620628f1f19b74
+  - source: tests/data/validation/nco_candidate/20261106/source/hnco_source_review/sources.json
+    sha256: eaa39a3076927dd5b720705e17b9c778f41029d94e8a63d2cbc2c159e23dcdff
+  - source: tests/data/validation/nco_candidate/20261106/validation.json
+    sha256: e2ce08cd1a40585c981e6308df5402665c02de1524ff2966f13110c6c67726d6
+  - source: mceg/reviews/pending_molecule_inputs.py
+    sha256: 131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e
+  - source: mceg/reviews/pending_candidate.py
+    sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
+  - source: tests/model_evidence/nco_candidate_test.py
+    sha256: b21f6ff8005b54ef0d1ee914815747daf1e3dd6276aa335bffd9a23dd0c06311
+  provenance:
+    role: primary
+    location: documents/mceg/nco_candidate.rst
+    inspection: inspected
+    note: Source inspection levels remain those of the immutable source review. Numerical support is distinct
+      from complete physical accuracy.
+  result: passed
+- id: finite_execution
+  kind: numerical_test
+  summary: 300 fresh endpoints,150 reused baseline,18 tighter,10 path,0 selected variants,6 FastChem actual
+    runs.
+  sources:
+  - tests/data/validation/nco_equilibrium_impact/20261106/README.rst
+  - tests/data/validation/nco_equilibrium_impact/20261106/diagnostics.json
+  - tests/data/validation/nco_equilibrium_impact/20261106/ions.npz
+  - tests/data/validation/nco_equilibrium_impact/20261106/neutral.npz
+  - tests/data/validation/nco_equilibrium_impact/20261106/receipt.json
+  - tests/data/validation/nco_equilibrium_impact/20261106/selected_diagnostics.json
+  - tests/data/validation/nco_equilibrium_impact/20261106/summary.json
+  - mceg/reviews/pending_equilibrium_impact.py
+  - tests/model_evidence/nco_candidate_test.py
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/README.rst
+    sha256: 6c25980f25d0f7e79c61ca6e83f612f76c0232ef5f64c4bb911fce2612a2aa5f
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/diagnostics.json
+    sha256: c82eb6096ba83a81c1a4aeb2a7bb28944f8e1f6c2321f6f99de855a3d4e67917
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/ions.npz
+    sha256: 153a06ed8e2d44af3fee0f13f9346f75295fa0cfe4271619e81f320c00296ed7
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/neutral.npz
+    sha256: 3f27af87c7a40bea0728fac11a453d83225a2b21de84ea22a73f8a155b8cda7f
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/receipt.json
+    sha256: 6074d1c00db42f621baf392b6801eccdb6215fa335ce3faf0b7ad469e1f058fa
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/selected_diagnostics.json
+    sha256: af9a354dbf9f7805f7c1f7319b089ad956deb938bea91dda64cd0dc54c052b5a
+  - source: tests/data/validation/nco_equilibrium_impact/20261106/summary.json
+    sha256: 29caa8ec5ef6095172482d4d0294d7806f6fe269243cdf17a3b59eff99620bb0
+  - source: mceg/reviews/pending_equilibrium_impact.py
+    sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
+  - source: tests/model_evidence/nco_candidate_test.py
+    sha256: b21f6ff8005b54ef0d1ee914815747daf1e3dd6276aa335bffd9a23dd0c06311
+  provenance:
+    role: primary
+    location: documents/mceg/nco_candidate.rst
+    inspection: inspected
+    note: Source inspection levels remain those of the immutable source review. Numerical support is distinct
+      from complete physical accuracy.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Recommend the retained-thermal ATcT energy update, coordinating its production selection with HNCO.
+    Separate and joint fixed-network variants quantify coupled response; they do not provide reaction covariance
+    or validate an entire rovibronic model.
+  sources:
+  - documents/mceg/nco_candidate.rst
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  artifacts:
+  - source: documents/mceg/nco_candidate.rst
+    sha256: 909782cf51feafc3c786fb51865f37d0098d02a9a0acaf59730e4c7195660856
+  provenance:
+    role: primary
+    location: documents/mceg/nco_candidate.rst
+    inspection: inspected
+    note: Source inspection levels remain those of the immutable source review. Numerical support is distinct
+      from complete physical accuracy.
+subjects:
+- id: nco_candidates_and_substitution_20261106
+  implementation: *id001
+  selected_files:
+    benchmarks/__init__.py: b1c18fc68440927cbfd4f278276efe1484336ceed8fd6012ff362494e695c0ec
+    benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    documents/mceg/nco_candidate.rst: 909782cf51feafc3c786fb51865f37d0098d02a9a0acaf59730e4c7195660856
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
+    mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/pending_candidate.py: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
+    mceg/reviews/pending_equilibrium_impact.py: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
+    mceg/reviews/pending_molecule_inputs.py: 131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/api/__init__.py: b50e66690ae01674e930f9495b111c7ea66bbd5b544d93b041261b3498b90b02
+    src/exogibbs/api/chemistry.py: 015434f7a6a9598f42d553a5b6248426ab96f085e0fe51bf1b1b09889556b245
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h2_v1.json: cdd7f4348e05477c158b9fe0f9e3250b2d3f71d2e6fdd3cb8d051aa147bb169e
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/ch2_v1.json: a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536
+    src/exogibbs/data/curated/cn_v1.json: 28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/hcp_v1.json: 7a193d32ca1b2796924a9ad024ee09396382cff530083f6ad2f24947b9061249
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/ps_v1.json: d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6
+    src/exogibbs/data/curated/tio2_v1.json: 7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/__init__.py: 63a05e6341d70e90ab683936f8fb02604804d0ef6a807e7f6c13df2e62f9d058
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/io/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/io/load_data.py: e6c9333d71a5179b20b9d71847c175028c02628f00b1475c00c7ead9761fe7ac
+    src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_c2h2.py: fda4ea4fdff2d99ff041bf0b4b648afdf903d812ba35b30283b33033f0445bb6
+    src/exogibbs/presets/curated_ch2.py: 89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701
+    src/exogibbs/presets/curated_cn.py: 8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_hcp.py: 08f44b9d2b51a61576beb6f0cc6cfd20a133ffff21f06f966e7eb681b998038a
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_ps.py: 73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_tio2.py: 876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/thermo/composition.py: 77d4fe5c05f7adc3ce9f98f0761aabecd21ded9d75e13be9d445a7482073fa8f
+    src/exogibbs/thermo/fugacity.py: 85348725ac895bec2cd653520cf795de5e10aa9d1b1d9afed1d9205b1480e31e
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/stoichiometry.py: 8b3dc769db8e89859ddff3fad26a724a41faec2f1b5b99d96d435799554fd254
+    src/exogibbs/utils/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/utils/elements.py: cf7714ca683370ee9607d7c9b183e3e49ebeb611c0d62aac35ac239e6d9225dd
+    src/exogibbs/utils/fastchem_parity.py: 6c88bca8effd17c3fd27dc364a0e0677bc14cc4b547919b0aa59ae0481a5115d
+    src/exogibbs/utils/interpolation.py: f8a564dcf8dd1c39acf8df6e313b5a458e7b2078a6e599e5ebe24825495e0f06
+    src/exogibbs/utils/nameparser.py: 81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a
+    tests/data/validation/curated_ch2_adoption/20261106/ions.npz: 2b8b5cf2275e5177c90a11dbd604989362f04a39efcf80f5a45294c5a0832b84
+    tests/data/validation/curated_ch2_adoption/20261106/neutral.npz: c93f8ed204949b0921e19c8bf2ab60abe80120101ccc4b9df9ce9dc9b612d320
+    tests/data/validation/curated_ch2_adoption/20261106/receipt.json: 693d76930fa681883e25f91c494ab6cd87e0db6f78fae1f8f305797ab80239b2
+    tests/data/validation/nco_candidate/20261106/README.rst: 15ceb2ebc5373a8c1703cf2dd153ce33419709802dc9b536852f9df3e6946476
+    tests/data/validation/nco_candidate/20261106/candidate.json: 823c82db7752e17b06a2026c74931f77fbbd5bc83389ccdd0fc8311bf66f791f
+    tests/data/validation/nco_candidate/20261106/receipt.json: d0308d116a9f20711a3ce2882ae95ffe525ce4b2900b7b82b12a8c03eb1b91a0
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/C-053.txt: 6607b4c9a1adf36bef0f44bd361af679c14dab5b98afab121d55fe94ecf0f3ad
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/N-002.txt: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/identity.json: 9a30d135bfcbc3adb71ae5e43b6fa586751596874e4a0dc26bf12bc6df296923
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/inputs.json: 03ae753ab3e029c4ea5efbd0c134fe0dcc88b6aeecca48256cfbb7be33b4fd95
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/literature.json: 51a25e2beefe760a84e6cda20fb223eafef9b8abcb797c3504c1f9f6ac62877e
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/nasa_records.json: 2e8703e4e42d21165f023262a8ea625a311f442f3a5e7afdbba4500945700317
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/nasa_selected_records.txt: df5c7533acd57d0554326dba693fb2f7d8378f5c480a5360de620628f1f19b74
+    tests/data/validation/nco_candidate/20261106/source/hnco_source_review/sources.json: eaa39a3076927dd5b720705e17b9c778f41029d94e8a63d2cbc2c159e23dcdff
+    tests/data/validation/nco_candidate/20261106/validation.json: e2ce08cd1a40585c981e6308df5402665c02de1524ff2966f13110c6c67726d6
+    tests/data/validation/nco_equilibrium_impact/20261106/README.rst: 6c25980f25d0f7e79c61ca6e83f612f76c0232ef5f64c4bb911fce2612a2aa5f
+    tests/data/validation/nco_equilibrium_impact/20261106/diagnostics.json: c82eb6096ba83a81c1a4aeb2a7bb28944f8e1f6c2321f6f99de855a3d4e67917
+    tests/data/validation/nco_equilibrium_impact/20261106/ions.npz: 153a06ed8e2d44af3fee0f13f9346f75295fa0cfe4271619e81f320c00296ed7
+    tests/data/validation/nco_equilibrium_impact/20261106/neutral.npz: 3f27af87c7a40bea0728fac11a453d83225a2b21de84ea22a73f8a155b8cda7f
+    tests/data/validation/nco_equilibrium_impact/20261106/receipt.json: 6074d1c00db42f621baf392b6801eccdb6215fa335ce3faf0b7ad469e1f058fa
+    tests/data/validation/nco_equilibrium_impact/20261106/selected_diagnostics.json: af9a354dbf9f7805f7c1f7319b089ad956deb938bea91dda64cd0dc54c052b5a
+    tests/data/validation/nco_equilibrium_impact/20261106/summary.json: 29caa8ec5ef6095172482d4d0294d7806f6fe269243cdf17a3b59eff99620bb0
+    tests/data/validation/nco_source_review/20261106/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
+    tests/data/validation/nco_source_review/20261106/C-087.txt: 286f26a5026d9aba57a26533184d7ab8a47cf24dc5dae25613d356d740a69a09
+    tests/data/validation/nco_source_review/20261106/N-002.txt: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
+    tests/data/validation/nco_source_review/20261106/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/nco_source_review/20261106/comparison.json: d286c6b4c7cb0bdc5f9005804f3d093f31bf2865239e062e450422408b76ad0c
+    tests/data/validation/nco_source_review/20261106/identity.json: 7f6379d58bd6cb45db7ad426fd5490f75605e21f0dff57d7cb379479530b2df8
+    tests/data/validation/nco_source_review/20261106/inputs.json: 1d9edd4509f15c1fc504fd0f5e16fb6a7e9e08ad9ab30ed070e75a056976dc1d
+    tests/data/validation/nco_source_review/20261106/literature.json: 800d606a0b6e402991cccceee1f55f8bd4ece347f84768d2094f80998fe149fc
+    tests/data/validation/nco_source_review/20261106/nasa_records.json: 0d40a938ba20d424cbb7c9fe1e9c9f2c6eb0f8e0b08ea199e77f6912b8e98e57
+    tests/data/validation/nco_source_review/20261106/nasa_selected_records.txt: 6d4fd7d2ee5a168b0af3dad3ed11dfd2223696d57eb5351fdb3c44c08816f4af
+    tests/data/validation/nco_source_review/20261106/sources.json: 1df8fe5109de4ac2e65ef67ba88eef370eb3f118872190d8384a534c2b9169e9
+    tests/model_evidence/nco_candidate_test.py: b21f6ff8005b54ef0d1ee914815747daf1e3dd6276aa335bffd9a23dd0c06311
+contexts:
+- id: candidate_evaluation
+  scope: Neutral linear N-C-O radical, X2Pi, C1N1O1; not anion, CON/CNO or HNCO. 1 bar standard pressure,1500-4000
+    K. Fixed curated-ch2-v1 ion537/neutral421 networks and75 cases each. No production adoption.
+  settings:
+    dataset: curated-ch2-v1
+    curated_update: none
+    fresh_endpoints: 300
+    reused_baseline: 150
+    tighter_solves: 18
+    path_solves: 10
+    selected_variant_solves: 0
+    FastChem_executions: 6
+    dtype: float64
+assessments:
+- id: continuous_thermodynamics_review
+  kind: evidence_support
+  claim: continuous_thermodynamics
+  claim_revision: '1'
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  method:
+    id: nco_source_and_finite_substitution
+    revision: '1'
+    description: Separate source energies, model contrasts and finite numerical response from physical-accuracy
+      claims.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Original physical D0=1269.854000000 and selected D0=1301.838000000 kJ/mol. The retained G/H shift is -31.984000000
+    kJ/mol; S/Cp and the complete fit residual are unchanged. Dense and off-grid independent calorics agree.
+  status: supported
+  origin: reviewed
+- id: finite_substitution_review
+  kind: evidence_support
+  claim: finite_substitution
+  claim_revision: '1'
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  method:
+    id: nco_source_and_finite_substitution
+    revision: '1'
+    description: Separate source energies, model contrasts and finite numerical response from physical-accuracy
+      claims.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - 300 fresh endpoints and explicit selected controls pass. Bulk/source accuracy is not inferred from solver
+    agreement.
+  status: supported
+  origin: reviewed
+- id: candidate_direction_review
+  kind: evidence_support
+  claim: candidate_direction
+  claim_revision: '1'
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  method:
+    id: nco_source_and_finite_substitution
+    revision: '1'
+    description: Separate source energies, model contrasts and finite numerical response from physical-accuracy
+      claims.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Recommend the retained-thermal ATcT energy update, coordinating its production selection with HNCO. Separate
+    and joint fixed-network variants quantify coupled response; they do not provide reaction covariance or
+    validate an entire rovibronic model.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  method:
+    id: nco_source_and_finite_substitution
+    revision: '1'
+    description: Separate source energies, model contrasts and finite numerical response from physical-accuracy
+      claims.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - JANAF already counts the0/95.6 cm-1 spin-orbit components with weights2 each; no extra orbital or spin
+    factor is added. A complete rovibronic update remains separate from the few-percent aligned thermal contrast.
+    The jointly changed HNCO->H+NCO reaction shifts G/H by -14.724 kJ/mol, preserving the matched energy ledger.
+    Marginal source widths do not supply reaction covariance or a complete thermal uncertainty.
+  status: unknown
+  origin: reviewed
+- id: universal_gibbs_resolution_review
+  kind: evidence_support
+  claim: universal_gibbs_resolution
+  claim_revision: '1'
+  subject: nco_candidates_and_substitution_20261106
+  context: candidate_evaluation
+  method:
+    id: nco_source_and_finite_substitution
+    revision: '1'
+    description: Separate source energies, model contrasts and finite numerical response from physical-accuracy
+      claims.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Some finite trace exchanges remain below the displayed numerical scale. Path tolerances are finite consistency
+    checks, not rigorous monotonicity proof for arbitrary small effects.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: separate_adoption_decision
+  target_kind: claim
+  target: candidate_direction
+  revision: '1'
+  action: Separately authorize and verify any packaged production energy update; this packet only evaluates
+    candidates.
+  completion: Distinct production decision/verification or explicit retention.
+- id: thermal_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: JANAF already counts the0/95.6 cm-1 spin-orbit components with weights2 each; no extra orbital or
+    spin factor is added. A complete rovibronic update remains separate from the few-percent aligned thermal
+    contrast. The jointly changed HNCO->H+NCO reaction shifts G/H by -14.724 kJ/mol, preserving the matched
+    energy ledger.
+  completion: Scoped additional physical evidence, or retain the stated unknown; do not indefinitely block
+    this completed finite review.
+limitations:
+- statement: JANAF already counts the0/95.6 cm-1 spin-orbit components with weights2 each; no extra orbital
+    or spin factor is added. A complete rovibronic update remains separate from the few-percent aligned thermal
+    contrast. The jointly changed HNCO->H+NCO reaction shifts G/H by -14.724 kJ/mol, preserving the matched
+    energy ledger.
+  evidence:
+  - source_scope
+- statement: Finite hot ideal-gas scope excludes transport, condensation, opacity and arbitrary compositions.
+    Trace and major-element numerical errors are separate; partial solver controls are not physical uncertainty.
+  evidence:
+  - finite_execution

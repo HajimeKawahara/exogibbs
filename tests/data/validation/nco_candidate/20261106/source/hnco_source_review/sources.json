@@ -1,0 +1,80 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "HNCO",
+        "file": "C-053.txt",
+        "url": "https://janaf.nist.gov/tables/C-053.txt",
+        "sha256": "6607b4c9a1adf36bef0f44bd361af679c14dab5b98afab121d55fe94ecf0f3ad"
+      },
+      {
+        "name": "C",
+        "file": "C-003.txt",
+        "url": "https://janaf.nist.gov/tables/C-003.txt",
+        "sha256": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4"
+      },
+      {
+        "name": "H",
+        "file": "H-001.txt",
+        "url": "https://janaf.nist.gov/tables/H-001.txt",
+        "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "O",
+        "file": "O-001.txt",
+        "url": "https://janaf.nist.gov/tables/O-001.txt",
+        "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+      }
+    ],
+    "original_evaluation": {
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+      "printed_page": 601,
+      "zero_based_pdf_page": 52,
+      "inspection": "Selected original evaluation page visually inspected, including molecular geometry, electronic weights, formation-enthalpy rationale and thermal assumptions; underlying cited experimental papers are not all recovered."
+    },
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Exact original CEA header and numerical coefficients inspected; original label preserves mixture versus single-isomer identity."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact neutral gas and isomer suffix selected; formation values and individual provenance page inspected."
+  },
+  "references": [
+    {
+      "title": "NCO and CHNO isomer focal-point thermochemistry (Schuurman et al., 2004)",
+      "doi": "10.1063/1.1707013",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/15268193/",
+      "access": "Primary author abstract inspected; original full numerical derivation not obtained"
+    },
+    {
+      "title": "Jet-cooled HNCO photodissociation thermochemistry (Zyrianov et al., 1996)",
+      "doi": "10.1063/1.472665",
+      "url": "https://experts.arizona.edu/en/publications/competitive-photodissociation-channels-in-jet-cooled-hnco-thermoc/",
+      "access": "Author institutional abstract and current ATcT provenance inspected; full original paper not obtained"
+    },
+    {
+      "title": "HNCO observations and CHNO partition functions (Canelo et al., 2021)",
+      "doi": "10.1093/mnras/stab1163",
+      "url": "https://arxiv.org/abs/2104.10605",
+      "access": "Complete author manuscript inspected, especially Table 2 and Appendix A; range ends at 500 K",
+      "inspected_artifact_sha256": "83cb28e5efe6bce28002bae70da021796fe6c95f34b0a36b0033d14c92f9efbf"
+    }
+  ],
+  "local_reference_scope": "Local refs_exogibbs_202611 and -2 inventoried; no original Gurvich volume present."
+}
