@@ -1,0 +1,63 @@
+{
+  "scope": "Candidate-stage source audit; existing CH2 source-review packet remains unchanged.",
+  "sources": [
+    {
+      "id": "IUPAC2005",
+      "doi": "10.1063/1.1724828",
+      "url": "https://atct.anl.gov/~ruscic/reprints/Ruscic%202005.pdf",
+      "inspection": "Full molecular data and all16 table rows for each of equilibrated/triplet-only/singlet-only inspected. Printed PDF image confirmed. Constants reconstruct the two component tables but not the equilibrated table; direct recombination independently confirms the discrepancy."
+    },
+    {
+      "id": "BurcatRuscic2005",
+      "doi": "10.2172/925269",
+      "url": "https://atct.anl.gov/~ruscic/reprints/Burcat%202005.pdf",
+      "inspection": "Author-hosted ANL-05/20 report, printed pp51-52, supplies b1B1 rotation and vibrations. Distinguish8350cm-1 above a from11497cm-1 above X. The equilibrium record has a1A1 nu1=3147 and Hf298319.2 apparent inconsistencies; use IUPAC a1A1 nu1=2806 and ATcT energy, not those values."
+    },
+    {
+      "id": "ATcT2015",
+      "doi": "10.1021/acs.jpca.5b01346",
+      "url": "https://pubs.acs.org/doi/10.1021/acs.jpca.5b01346",
+      "inspection": "Author explains regular versus partial triplet/singlet species; singlet contribution to regular heat content at298K is below0.001kJ/mol for its anharmonic partition functions. Those unpublished full partition functions are not imported here."
+    },
+    {
+      "id": "Egorov2024",
+      "doi": "10.1021/acs.jpca.4c04205",
+      "url": "https://hal.science/hal-04780391/document",
+      "pdf_sha256": "5159b784ecc631e16c2e265a4fd2b92980c4b1056d9ab4268dae94382b542477",
+      "inspection": "Full author manuscript and official SI file inventory inspected. Variational rovibrational line lists treat ground triplet and first singlet separately; convergence of Q is demonstrated at296K with Jmax18/20, not at1500-4000K. Triplet low linearity barrier about2000cm-1 and singlet near9000cm-1 plus Renner-Teller mixing limit a high-temperature RRHO claim. The figure uses J=N,S=0; spin statistical weights and electronic multiplicity must not be conflated.",
+      "Q_296_printed": {
+        "triplet": 169.347,
+        "singlet": 265.028
+      },
+      "nuclear_weights_A1_A2_B1_B2": {
+        "triplet": [
+          3,
+          3,
+          1,
+          1
+        ],
+        "singlet": [
+          1,
+          1,
+          3,
+          3
+        ]
+      },
+      "SI_doi": "10.1021/acs.jpca.4c04205.s001",
+      "SI_sha256": "6fa2b3eb86b5790023e7b0b5a50efdea83c34c6c67c44ddf2b6d430e598ee165",
+      "SI_scope": "296K line lists, PES/DMS data and examples; no complete high-temperature states/partition archive found. No large PDF/line list vendored."
+    },
+    {
+      "id": "ATcT1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "inspection": "Same-version CH2/C/H rows inherited from the pinned inspected source packet; D0=752392J/mol and JANAF difference-4948J/mol. No new zero-point or singlet-energy shift."
+    }
+  ],
+  "judgment": "Prefer the retained-thermal ATcT energy update after separate adoption authorization. The independently reconstructed RRHO+ATcT remains a finite sensitivity, not a reproduced IUPAC-table candidate or recommended thermal adoption.",
+  "limits": [
+    "Full correlated atomization uncertainty is unavailable.",
+    "The complete inherited fit residual to the chosen NASA molecular/atomic thermal proxy is retained; this is not a literal JANAF-table thermal replacement.",
+    "Above3000K is explicit analytic sensitivity extension. Numerical quadrature/convergence does not validate large-amplitude/anharmonic/nonadiabatic physics.",
+    "No production change, isotope mixture, fixed ortho/para ratio, condensation or photochemical validation."
+  ]
+}
