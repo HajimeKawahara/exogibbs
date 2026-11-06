@@ -69,7 +69,7 @@ The final **curated-tio2-v1** archive contains 75 converged ion-inclusive endpoi
 These finite hot hydrogen-rich results do not bound cooler or oxidizing atmospheres, photochemistry, non-LTE populations, condensation or reaction kinetics. A small inventory here is not evidence that a molecule is unimportant in those settings.
 
 Decision, access needs and MCEG
-------------------------------
+-------------------------------
 
 Build continuous NASA/ATcT and retained-thermal energy-only candidates, validate all caloric derivatives and perform current-network substitutions. A TIPS-based replacement would additionally need a smooth state/caloric representation and treatment of its source crossover, not extrapolation of sparse partition nodes. No unavailable ancestral book is required for the bounded candidate calculation or source-review merge.
 

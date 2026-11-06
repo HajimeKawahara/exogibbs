@@ -120,7 +120,7 @@ evidence:
   - source: tests/data/validation/n2o_source_review/20261106/README.rst
     sha256: 3ef9e5613703b8c1e3eb4afa7bfd7e4cb1ad60c7d161f10444258b32b1ec15c7
   - source: tests/data/validation/n2o_source_review/20261106/receipt.json
-    sha256: 4f43fbbaec18dbb8de416c38ee3f549a59276303f0eaa479d01c01afe78cf3b7
+    sha256: d2d333877ffbfaa7bfebd768682ba2b38d34bcbe6850d17270631d4bf6b94fab
   - source: tests/data/validation/n2o_source_review/20261106/O-001.txt
     sha256: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
   - source: tests/data/validation/n2o_source_review/20261106/nasa_selected_records.txt
@@ -153,7 +153,7 @@ evidence:
   context: source_review
   artifacts:
   - source: documents/mceg/n2o_source_review.rst
-    sha256: 7f5a6e35c0def6e579305ab8b779765e18b80abb23802e684e8315db8821f06d
+    sha256: 4b5af48ad777a7b2c373f5b950afbb6222704fe73b29a6edd14b100c85e85adb
   provenance:
     role: primary
     location: documents/mceg/n2o_source_review.rst
@@ -168,7 +168,7 @@ subjects:
     entry_points:
     - mceg/reviews/n2o_source_review.py
   selected_files:
-    documents/mceg/n2o_source_review.rst: 7f5a6e35c0def6e579305ab8b779765e18b80abb23802e684e8315db8821f06d
+    documents/mceg/n2o_source_review.rst: 4b5af48ad777a7b2c373f5b950afbb6222704fe73b29a6edd14b100c85e85adb
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
