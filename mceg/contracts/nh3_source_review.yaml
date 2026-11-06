@@ -1,0 +1,289 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.nh3_source_review.v1
+  name: NH3 energy, inversion and thermal source review
+  description: Keep current production provisionally while preserving concrete modern-source discrepancies
+    and candidate follow-ups.
+  implementation: &id003
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:02ea709cbb642668b0e798ff8e138aaefe1aec5b39e050c2d7c6606c29909899
+    entry_points:
+    - mceg/reviews/nh3_source_review.py
+assumptions:
+- statement: ATcT atomization is balanced using N,H,NH3 in the same version; a dissociation-channel cutoff
+    and individual source-gaugeH0 are not atomization energies.
+  evidence:
+  - literature
+  - source_replay
+- statement: Q/24 is the chemical equilibrium spin convention. Formal vibrational and lowest-allowed-state
+    zeros require consistent energy anchors; natural-mass and dominant-isotope comparisons remain proxies.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+  conditions:
+  - No extrapolation of the distributedCoYuTePF above2000K; paper opacity target1500K remains explicit.
+  - 2014 fit is diagnostic only, not accepted direct-sum input.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Full physical uncertainty and atmosphere accuracy are unresolved.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged NH3 reaction reproduces NASA thermal functions with same-version balanced ATcT1.172
+    energy, separating nativeNASA R and JANAF atomic/thermal terms.
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+- id: normalized_thermal_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: Frozen officialPF arrays reproduce normalized thermal differences, the allowed inversion-state
+    check and the unresolved2014 printed-fit mismatch with explicit source domains.
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+- id: provisional_retention
+  revision: '1'
+  kind: theoretical
+  statement: 'Retain production provisionally while reconciling dedicated direct-sum data: the2025 high-T
+    product approximation, CoYuTe domain and unreconciled2014 fit do not establish a full-domain replacement.
+    This is not proof that an update is unnecessary.'
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The NH3 construction has fully quantified physical accuracy across the production and planetary-atmosphere
+    domain.
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary methods, officialarrays, inspected printed coefficients and concrete acquisition limits.
+  sources: &id002
+  - tests/data/validation/nh3_source_review/20261104/literature.json
+  - tests/data/validation/nh3_source_review/20261104/sources.json
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+  subject: nh3_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nh3_source_review/20261104/literature.json
+    sha256: 156674c60311de6e1849e99f821b82c7fbb08bfbbb3bcd01c6fa5505c94391da
+  - source: tests/data/validation/nh3_source_review/20261104/sources.json
+    sha256: 06539462af3fbc60467c590a3b6cc499eca2934262c28846381abdc89e5d93ef
+  provenance: &id001
+    role: primary
+    location: documents/mceg/nh3_source_review.rst
+    inspection: inspected
+    note: Original source access/inspection limits are explicit. Numerical source replay and provisional
+      retention are not full physical validation.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline balanced energy, normalizedPF, independent thermal identities, source perturbation
+    rejection and current saved-grid footprint.
+  sources:
+  - tests/data/validation/nh3_source_review/20261104/CoYuTe.pf
+  - tests/data/validation/nh3_source_review/20261104/CoYuTe.def
+  - tests/data/validation/nh3_source_review/20261104/hapi_tips2021_nh3.txt
+  - tests/data/validation/nh3_source_review/20261104/hapi_tips2025_nh3.txt
+  - tests/data/validation/nh3_source_review/20261104/comparison.json
+  - tests/data/validation/nh3_source_review/20261104/receipt.json
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+  subject: nh3_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nh3_source_review/20261104/CoYuTe.pf
+    sha256: 671bcb85a59500feaee1898f49c64e590c5cb0bbe565b12bf00df0e460627b68
+  - source: tests/data/validation/nh3_source_review/20261104/CoYuTe.def
+    sha256: 0ff5897c999ecb0230233b67771314c0a36cad553a0bda0f9c3513e674d5124a
+  - source: tests/data/validation/nh3_source_review/20261104/hapi_tips2021_nh3.txt
+    sha256: 358c2a6830bc59fbd276a47b41cf257e3e2ffa0286e86fe8cfc1fcb6d0b5bb5d
+  - source: tests/data/validation/nh3_source_review/20261104/hapi_tips2025_nh3.txt
+    sha256: f7640cb661c11b30bf4d4184a5008ad747972d8327e7ac434db04434f18de024
+  - source: tests/data/validation/nh3_source_review/20261104/comparison.json
+    sha256: ebc3a542c30f4492e139dbc787e5f78fc1f67c20c9aa97e49f81241d2b1422c3
+  - source: tests/data/validation/nh3_source_review/20261104/receipt.json
+    sha256: 96473825b164c65093e976da59253c6fcdcf66aac68f4443322d33f60e9a27c3
+  provenance: *id001
+  result: passed
+- id: retention_reasoning
+  kind: theory
+  summary: Material upper-temperature source spread remains unresolved; source dates and opacity improvements
+    alone do not justify full-domain adoption.
+  sources: *id002
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+  subject: nh3_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nh3_source_review/20261104/literature.json
+    sha256: 156674c60311de6e1849e99f821b82c7fbb08bfbbb3bcd01c6fa5505c94391da
+  - source: tests/data/validation/nh3_source_review/20261104/sources.json
+    sha256: 06539462af3fbc60467c590a3b6cc499eca2934262c28846381abdc89e5d93ef
+  provenance: *id001
+subjects:
+- id: nh3_sources_20261104
+  implementation: *id003
+  selected_files:
+    mceg/reviews/nh3_source_review.py: 02ea709cbb642668b0e798ff8e138aaefe1aec5b39e050c2d7c6606c29909899
+    documents/mceg/nh3_source_review.rst: 53d4a73fa621fe6a0c857fd4efd52da281329b78d74886aea5841a5efcafe89d
+    tests/model_evidence/nh3_source_review_test.py: de4ba341f274b5f8c24f9b975b2d552cdf7dfa860ae198cab05def00c0c9255c
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/nh3_source_review/20261104/CoYuTe.def: 0ff5897c999ecb0230233b67771314c0a36cad553a0bda0f9c3513e674d5124a
+    tests/data/validation/nh3_source_review/20261104/CoYuTe.pf: 671bcb85a59500feaee1898f49c64e590c5cb0bbe565b12bf00df0e460627b68
+    tests/data/validation/nh3_source_review/20261104/README.rst: 9abf500fe68adb32c77f101704e61a0e22da6df58e8774628ddb1cf007033bfc
+    tests/data/validation/nh3_source_review/20261104/hapi_tips2021_nh3.txt: 358c2a6830bc59fbd276a47b41cf257e3e2ffa0286e86fe8cfc1fcb6d0b5bb5d
+    tests/data/validation/nh3_source_review/20261104/hapi_tips2025_nh3.txt: f7640cb661c11b30bf4d4184a5008ad747972d8327e7ac434db04434f18de024
+    tests/data/validation/nh3_source_review/20261104/literature.json: 156674c60311de6e1849e99f821b82c7fbb08bfbbb3bcd01c6fa5505c94391da
+    tests/data/validation/nh3_source_review/20261104/sources.json: 06539462af3fbc60467c590a3b6cc499eca2934262c28846381abdc89e5d93ef
+    tests/data/validation/nh3_source_review/20261104/comparison.json: ebc3a542c30f4492e139dbc787e5f78fc1f67c20c9aa97e49f81241d2b1422c3
+    tests/data/validation/nh3_source_review/20261104/receipt.json: 96473825b164c65093e976da59253c6fcdcf66aac68f4443322d33f60e9a27c3
+contexts:
+- id: source_review
+  scope: Neutral NH3, N(g)+3H(g)->NH3(g), one bar; eight500-4000K diagnostic nodes, production1500-4000K;
+    current75-case gas-only footprint, no new solve.
+  settings:
+    reaction: N(g)+3H(g)->NH3(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT1.172
+    atomic_thermal: NASA; nativeJANAF atomic term separately reported
+    partition_normalization: Divide total nuclear spin by24; no extra symmetry/inversion factor
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: nh3_sources_20261104
+  context: source_review
+  method: &id004
+    id: review_nh3_energy_partition_domain
+    revision: '1'
+    description: Separate balanced energy, spin/zero conventions, source thermal spread, printed-fit failure
+      and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - ATcT balancedD0=1157.249kJ/mol versus nativeNASA1157.869893. NativeR treatment gives -73.8826647K
+    hybrid shift and reproduces every saved NH3 potential below7.2e-15.
+  status: supported
+  origin: reviewed
+- id: normalized_thermal_comparison_review
+  kind: evidence_support
+  claim: normalized_thermal_comparison
+  claim_revision: '1'
+  subject: nh3_sources_20261104
+  context: source_review
+  method: *id004
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - TIPS2025/24 relativeNASA is0.994369 at1500K and0.915291 at4000K; the relevant2025 method is a product
+    approximation. AllowedE=.793374cm-1,g12 reproduces CoYuTeQ1. Printed2014Q296=1779.076858 disagrees
+    with reported1725.24 by3.1205%, beyond fit and coefficient-rounding scales.
+  status: supported
+  origin: reviewed
+- id: provisional_retention_review
+  kind: evidence_support
+  claim: provisional_retention
+  claim_revision: '1'
+  subject: nh3_sources_20261104
+  context: source_review
+  method: *id004
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - An independently unresolved3.1205% printed-fit discrepancy requires the electronic2014 Q/moment supplement
+    before candidate use. CoYuTe opacity target1500K and2014 Q/moment convergence do not establish4000K
+    completeness. Source-only review may merge; no claim that future correction is unnecessary.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: nh3_sources_20261104
+  context: source_review
+  method: *id004
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - No direct2014 moment supplement or independently complete4000K state sum, full isotope mixture, exact
+    ATcT-to-formal-zero alignment, correlated energy uncertainty or finite atmospheric replacement has
+    been established.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: direct_moment_data
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Obtain and reconcile the electronic NH3Q and first/second moments from DOI10.1016/j.jqsrt.2014.03.012,
+    or author-confirmed corrected data.
+  requires:
+  - Full text already acquired; only the electronic supplement/representation is unresolved.
+  - Explain the printed296K mismatch before treating the fit as direct-sum evidence.
+  completion: Archive hash-pinned direct moment data and reproduce Q,H,S,Cp where converged. This does
+    not block source-only merge.
+- id: candidate_upper_domain
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: If a material correction is established, build a bounded candidate with a validated upper-temperature
+    tail and fixed-network finite substitution.
+  requires:
+  - Compare DOI10.1016/j.jqsrt.2025.109568 product approximation and DOI10.1093/mnras/stz2778 distributions
+    to reconciled direct thermodynamics.
+  - Align energy zero and nuclear-spin conventions, separate isotope mass, and state the valid domain.
+  - Do not require all historicalNASA/ATcT original papers as a blanket merge gate.
+  completion: Document whether the candidate supports the full1500-4000K domain and any equilibrium response;
+    retain explicit limitations.
+limitations:
+- statement: 2014 electronic supplement unavailable; the visually inspected polynomial fails a stated
+    direct-Q checkpoint. No erratum was found by limited search; a typo is not asserted.
+  evidence:
+  - literature
+  - source_replay
+- statement: CoYuTe metadata2000K differs from the paper opacity target1500K. Full states and direct thermal
+    moments were not summed; PF range is not a completeness proof.
+  evidence:
+  - literature
+- statement: TIPS2021 describes direct sums as converged6000K whereas2025 uses a product approximation
+    above692K; source labels and sharedExoMol ancestry do not establish independent high-T accuracy.
+  evidence:
+  - literature
+  - source_replay
+- statement: The75-case archive gives existing NH3allocation, not replacement sensitivity, condensation,
+    transport or observational validation.
+  evidence:
+  - source_replay
