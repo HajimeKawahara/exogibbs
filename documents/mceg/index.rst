@@ -45,6 +45,7 @@ HCN differences with optional MCEG tooling.
    nco_source_review
    nco_candidate
    so3_source_review
+   k2so4_source_review
    so3_candidate
    s2_source_review
    o2_source_review
