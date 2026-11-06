@@ -1,0 +1,4399 @@
+{
+  "baseline_dataset": "curated-tio2-v1",
+  "curated_update": "none",
+  "reused_baseline_cases": 150,
+  "new_endpoint_solves": 300,
+  "tighter_control_solves": 18,
+  "path_control_solves": 10,
+  "independent_fastchem_runs": 6,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "species": 537,
+      "cases": 75,
+      "C2H2_ratio_min": 0.913012157958744,
+      "C2H2_ratio_max": 0.9956796989582433,
+      "highlighted_case": {
+        "case_index": 55,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1e-06,
+        "C_over_O": 1.5,
+        "species": "C2H2",
+        "x_before": 4.68632019557609e-05,
+        "x_after": 4.4726261388914757e-05,
+        "delta_x": -2.1369405668461434e-06,
+        "ratio": 0.9544004575516751,
+        "carbon_share_before": 0.11578608978162722,
+        "carbon_share_after": 0.11050649854982347
+      },
+      "largest_absolute_response": {
+        "case_index": 58,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 1.5,
+        "species": "C1H4",
+        "x_before": 0.00011865391590260779,
+        "x_after": 0.0001217652143102403,
+        "delta_x": 3.1112984076325117e-06,
+        "ratio": 1.0262216243262152,
+        "carbon_share_before": 0.09417990213017516,
+        "carbon_share_after": 0.096649150145016
+      },
+      "species_extrema": [
+        {
+          "case_index": 52,
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "C_over_O": 1.5,
+          "species": "C2H2",
+          "x_before": 0.00016595418591139961,
+          "x_after": 0.00016370711852007808,
+          "delta_x": -2.2470673913215346e-06,
+          "ratio": 0.9864597124864255,
+          "carbon_share_before": 0.2632818709629161,
+          "carbon_share_after": 0.2597161828952217
+        },
+        {
+          "case_index": 51,
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.0001,
+          "C_over_O": 1.5,
+          "species": "C1O1",
+          "x_before": 0.0008308109632765995,
+          "x_after": 0.0008311642511102017,
+          "delta_x": 3.5328783360214205e-07,
+          "ratio": 1.0004252325128318,
+          "carbon_share_before": 0.6595772328468119,
+          "carbon_share_after": 0.659857833572287
+        },
+        {
+          "case_index": 69,
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "C1O2",
+          "x_before": 2.0351619874843157e-09,
+          "x_after": 2.0125403994195925e-09,
+          "delta_x": -2.2621588064723194e-11,
+          "ratio": 0.9888846253006689,
+          "carbon_share_before": 1.6258251438412138e-06,
+          "carbon_share_after": 1.6077501314752521e-06
+        },
+        {
+          "case_index": 58,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.5,
+          "species": "C1H4",
+          "x_before": 0.00011865391590260779,
+          "x_after": 0.0001217652143102403,
+          "delta_x": 3.1112984076325117e-06,
+          "ratio": 1.0262216243262152,
+          "carbon_share_before": 0.09417990213017516,
+          "carbon_share_after": 0.096649150145016
+        },
+        {
+          "case_index": 67,
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "C_over_O": 1.5,
+          "species": "C2",
+          "x_before": 2.795612506717856e-06,
+          "x_after": 2.8192783008180702e-06,
+          "delta_x": 2.3665794100214257e-08,
+          "ratio": 1.0084653341775176,
+          "carbon_share_before": 0.006866586355404662,
+          "carbon_share_after": 0.006924722300204523
+        },
+        {
+          "case_index": 74,
+          "temperature_K": 4000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "C1H2",
+          "x_before": 3.0585975528011364e-05,
+          "x_after": 3.091134578448168e-05,
+          "delta_x": 3.253702564703142e-07,
+          "ratio": 1.0106378904335527,
+          "carbon_share_before": 0.02603791726999461,
+          "carbon_share_after": 0.026314899636595702
+        },
+        {
+          "case_index": 74,
+          "temperature_K": 4000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "C1H1",
+          "x_before": 1.1540634746743605e-05,
+          "x_after": 1.166340786695089e-05,
+          "delta_x": 1.2277312020728487e-07,
+          "ratio": 1.0106383334107274,
+          "carbon_share_before": 0.009824571150386737,
+          "carbon_share_after": 0.009929085895495892
+        },
+        {
+          "case_index": 69,
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "H2O1",
+          "x_before": 1.5610263944061182e-05,
+          "x_after": 1.5430799247503676e-05,
+          "delta_x": -1.7946469655750563e-07,
+          "ratio": 0.9885034169056583,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        },
+        {
+          "case_index": 55,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 1.5,
+          "species": "H1",
+          "x_before": 0.7156343940998903,
+          "x_after": 0.7156348548385717,
+          "delta_x": 4.6073868142926244e-07,
+          "ratio": 1.000000643818527,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        },
+        {
+          "case_index": 58,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.5,
+          "species": "H2",
+          "x_before": 0.8562731843901911,
+          "x_after": 0.8562710613724077,
+          "delta_x": -2.123017783350889e-06,
+          "ratio": 0.9999975206303058,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        },
+        {
+          "case_index": 74,
+          "temperature_K": 4000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "e1-",
+          "x_before": 1.6435038372823574e-06,
+          "x_after": 1.643450646818171e-06,
+          "delta_x": -5.319046418637171e-11,
+          "ratio": 0.9999676359355057,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        }
+      ],
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.3779474953343946e-06,
+        "mass_action_max_abs_ln": 1.3642420526593924e-12,
+        "carbon_relative_residual": 2.1356561520063263e-13,
+        "major_element_relative_residual": 2.1356561520063263e-13,
+        "charge_relative_residual": 1.7670135209779956e-14
+      },
+      "tight_case_indices": [
+        1,
+        51,
+        74
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 3.694822225952521e-12,
+        "C2H2_delta_ln_x": 3.979039320256561e-13,
+        "visible_delta_ln_x": 6.750155989720952e-13,
+        "absolute_delta_x": 2.831068712794149e-15
+      },
+      "nasa_control_C2H2_ratio_min": 0.9270155447227337,
+      "nasa_over_current_ratio_min": 0.8767490951313702,
+      "nasa_over_current_ratio_max": 0.9934573773498752,
+      "nasa_control_C2H2_ratio_max": 0.9977680356336549,
+      "nasa_control_max_absolute_delta_x": 2.633106699666057e-06,
+      "gibbs_corrected_current_min": -1.940366949458627e-18,
+      "gibbs_corrected_candidate_max": 1.968518798917394e-18,
+      "candidate_responses": [
+        {
+          "variant": 1,
+          "model": "retained",
+          "target_ratio_min": 0.913012157958744,
+          "target_ratio_max": 0.9956796989582433,
+          "maximum_absolute_target_delta_x": 2.2470673913215346e-06,
+          "maximum_absolute_all_species_delta_x": 3.1112984076325117e-06,
+          "highlight": {
+            "case_index": 55,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.5,
+            "carbon_share_before": 0.11578608978162722,
+            "carbon_share_after": 0.11050649854982347,
+            "x_before": 4.68632019557609e-05,
+            "x_after": 4.4726261388914757e-05
+          },
+          "all_carbon_species_effects": [
+            {
+              "species": "C2H2",
+              "case_index": 55,
+              "carbon_share_before": 0.11578608978162722,
+              "carbon_share_after": 0.11050649854982347,
+              "maximum_absolute_carbon_share_change": 0.005279591231803743,
+              "x_before": 4.68632019557609e-05,
+              "x_after": 4.4726261388914757e-05
+            },
+            {
+              "species": "C3H1",
+              "case_index": 55,
+              "carbon_share_before": 0.11666933788478052,
+              "carbon_share_after": 0.1205082537460916,
+              "maximum_absolute_carbon_share_change": 0.0038389158613110763,
+              "x_before": 3.148045822344226e-05,
+              "x_after": 3.251623948094027e-05
+            },
+            {
+              "species": "C1H4",
+              "case_index": 58,
+              "carbon_share_before": 0.09417990213017516,
+              "carbon_share_after": 0.096649150145016,
+              "maximum_absolute_carbon_share_change": 0.002469248014840844,
+              "x_before": 0.00011865391590260779,
+              "x_after": 0.0001217652143102403
+            },
+            {
+              "species": "C1H1N1_hcn",
+              "case_index": 51,
+              "carbon_share_before": 0.03429407753351671,
+              "carbon_share_after": 0.03542911747235997,
+              "maximum_absolute_carbon_share_change": 0.0011350399388432575,
+              "x_before": 4.319720901725042e-05,
+              "x_after": 4.46269096056484e-05
+            },
+            {
+              "species": "C1",
+              "case_index": 67,
+              "carbon_share_before": 0.20951307258076426,
+              "carbon_share_after": 0.2103982457740905,
+              "maximum_absolute_carbon_share_change": 0.000885173193326233,
+              "x_before": 0.00017059928637368834,
+              "x_after": 0.00017131985460949425
+            },
+            {
+              "species": "C3",
+              "case_index": 55,
+              "carbon_share_before": 0.02258721624606151,
+              "carbon_share_after": 0.02333041640340703,
+              "maximum_absolute_carbon_share_change": 0.000743200157345518,
+              "x_before": 6.094625462949103e-06,
+              "x_after": 6.295148949395878e-06
+            },
+            {
+              "species": "C1H3",
+              "case_index": 74,
+              "carbon_share_before": 0.05943176456192695,
+              "carbon_share_after": 0.06006395280998845,
+              "maximum_absolute_carbon_share_change": 0.0006321882480615007,
+              "x_before": 6.981274568271209e-05,
+              "x_after": 7.05553750967121e-05
+            },
+            {
+              "species": "C1O1",
+              "case_index": 51,
+              "carbon_share_before": 0.6595772328468119,
+              "carbon_share_after": 0.659857833572287,
+              "maximum_absolute_carbon_share_change": 0.00028060072547508863,
+              "x_before": 0.0008308109632765995,
+              "x_after": 0.0008311642511102017
+            },
+            {
+              "species": "C2H1",
+              "case_index": 68,
+              "carbon_share_before": 0.0068930851848577075,
+              "carbon_share_after": 0.007170499148866199,
+              "maximum_absolute_carbon_share_change": 0.00027741396400849175,
+              "x_before": 4.050781748593074e-06,
+              "x_after": 4.2138058196869135e-06
+            },
+            {
+              "species": "C1H2",
+              "case_index": 74,
+              "carbon_share_before": 0.02603791726999461,
+              "carbon_share_after": 0.026314899636595702,
+              "maximum_absolute_carbon_share_change": 0.00027698236660109177,
+              "x_before": 3.0585975528011364e-05,
+              "x_after": 3.091134578448168e-05
+            },
+            {
+              "species": "C2Si1",
+              "case_index": 50,
+              "carbon_share_before": 0.0018138674445821665,
+              "carbon_share_after": 0.0019696909724958933,
+              "maximum_absolute_carbon_share_change": 0.00015582352791372687,
+              "x_before": 1.1340529413175253e-06,
+              "x_after": 1.2314756957118776e-06
+            },
+            {
+              "species": "C1S1",
+              "case_index": 56,
+              "carbon_share_before": 0.006374950854831572,
+              "carbon_share_after": 0.006487184372783798,
+              "maximum_absolute_carbon_share_change": 0.00011223351795222603,
+              "x_before": 7.477636709840322e-06,
+              "x_after": 7.609280161938047e-06
+            },
+            {
+              "species": "C1H1",
+              "case_index": 74,
+              "carbon_share_before": 0.009824571150386737,
+              "carbon_share_after": 0.009929085895495892,
+              "maximum_absolute_carbon_share_change": 0.00010451474510915493,
+              "x_before": 1.1540634746743605e-05,
+              "x_after": 1.166340786695089e-05
+            },
+            {
+              "species": "C1Si2",
+              "case_index": 51,
+              "carbon_share_before": 0.0021761802198434466,
+              "carbon_share_after": 0.0022796498881890604,
+              "maximum_absolute_carbon_share_change": 0.00010346966834561379,
+              "x_before": 2.7411412866816226e-06,
+              "x_after": 2.8714723016204755e-06
+            },
+            {
+              "species": "C1H1N1_hnc",
+              "case_index": 68,
+              "carbon_share_before": 0.007512296954834513,
+              "carbon_share_after": 0.007597708744878381,
+              "maximum_absolute_carbon_share_change": 8.541179004386851e-05,
+              "x_before": 8.829333913210053e-06,
+              "x_after": 8.929718464722763e-06
+            },
+            {
+              "species": "C2H4",
+              "case_index": 58,
+              "carbon_share_before": 0.0011109376246333583,
+              "carbon_share_after": 0.0011699647998746961,
+              "maximum_absolute_carbon_share_change": 5.902717524133784e-05,
+              "x_before": 6.99815441006151e-07,
+              "x_after": 7.370008653900522e-07
+            },
+            {
+              "species": "C2",
+              "case_index": 67,
+              "carbon_share_before": 0.006866586355404662,
+              "carbon_share_after": 0.006924722300204523,
+              "maximum_absolute_carbon_share_change": 5.81359447998607e-05,
+              "x_before": 2.795612506717856e-06,
+              "x_after": 2.8192783008180702e-06
+            },
+            {
+              "species": "C1N1",
+              "case_index": 67,
+              "carbon_share_before": 0.006709920606886995,
+              "carbon_share_after": 0.006731930222931917,
+              "maximum_absolute_carbon_share_change": 2.2009616044922457e-05,
+              "x_before": 5.463657484750785e-06,
+              "x_after": 5.481572827714047e-06
+            },
+            {
+              "species": "C1H1P1",
+              "case_index": 62,
+              "carbon_share_before": 0.00020765144916552928,
+              "carbon_share_after": 0.00020961131053971315,
+              "maximum_absolute_carbon_share_change": 1.9598613741838666e-06,
+              "x_before": 2.348487518987335e-07,
+              "x_after": 2.370652103307835e-07
+            },
+            {
+              "species": "C2N1",
+              "case_index": 67,
+              "carbon_share_before": 0.00015978527196941925,
+              "carbon_share_after": 0.00016098649962547807,
+              "maximum_absolute_carbon_share_change": 1.201227656058817e-06,
+              "x_before": 6.505382464977366e-08,
+              "x_after": 6.554280813619932e-08
+            },
+            {
+              "species": "C2Si2",
+              "case_index": 51,
+              "carbon_share_before": 8.8394368314187e-06,
+              "carbon_share_after": 9.663579320607548e-06,
+              "maximum_absolute_carbon_share_change": 8.241424891888483e-07,
+              "x_before": 5.567127443920772e-09,
+              "x_after": 6.086175885473445e-09
+            },
+            {
+              "species": "C1Si1",
+              "case_index": 74,
+              "carbon_share_before": 1.8794860176752133e-05,
+              "carbon_share_after": 1.900043309545911e-05,
+              "maximum_absolute_carbon_share_change": 2.0557291870697817e-07,
+              "x_before": 2.2077769410573678e-08,
+              "x_after": 2.2319255082845058e-08
+            },
+            {
+              "species": "C1N1Na1",
+              "case_index": 52,
+              "carbon_share_before": 5.280728249706104e-06,
+              "carbon_share_after": 5.441665367896213e-06,
+              "maximum_absolute_carbon_share_change": 1.609371181901087e-07,
+              "x_before": 6.657191811150142e-09,
+              "x_after": 6.860098954158619e-09
+            },
+            {
+              "species": "C2O1",
+              "case_index": 74,
+              "carbon_share_before": 8.565107829460301e-06,
+              "carbon_share_after": 8.657726196131788e-06,
+              "maximum_absolute_carbon_share_change": 9.261836667148674e-08,
+              "x_before": 5.030590114988584e-09,
+              "x_after": 5.084989337823988e-09
+            },
+            {
+              "species": "C1H1O1",
+              "case_index": 49,
+              "carbon_share_before": 0.00044600526945474234,
+              "carbon_share_after": 0.000446080501755562,
+              "maximum_absolute_carbon_share_change": 7.523230081968183e-08,
+              "x_before": 3.4927508439681204e-07,
+              "x_after": 3.493339636503566e-07
+            },
+            {
+              "species": "C5",
+              "case_index": 55,
+              "carbon_share_before": 1.2043335785351388e-06,
+              "carbon_share_after": 1.2710985836389492e-06,
+              "maximum_absolute_carbon_share_change": 6.67650051038104e-08,
+              "x_before": 1.9497653930429939e-10,
+              "x_after": 2.0578513752214398e-10
+            },
+            {
+              "species": "C1N1-",
+              "case_index": 74,
+              "carbon_share_before": 9.441976815282544e-06,
+              "carbon_share_after": 9.498798863949546e-06,
+              "maximum_absolute_carbon_share_change": 5.6822048667002414e-08,
+              "x_before": 1.1091212435069768e-08,
+              "x_after": 1.1157962229597589e-08
+            },
+            {
+              "species": "C2-",
+              "case_index": 74,
+              "carbon_share_before": 2.4596068947482875e-06,
+              "carbon_share_after": 2.5121378051163237e-06,
+              "maximum_absolute_carbon_share_change": 5.2530910368036266e-08,
+              "x_before": 1.4446139357311696e-09,
+              "x_after": 1.4754675378702182e-09
+            },
+            {
+              "species": "C4",
+              "case_index": 55,
+              "carbon_share_before": 1.01716398133911e-06,
+              "carbon_share_after": 1.0620307293212361e-06,
+              "maximum_absolute_carbon_share_change": 4.486674798212619e-08,
+              "x_before": 2.0584321125932152e-10,
+              "x_after": 2.1492249155494282e-10
+            },
+            {
+              "species": "C1O2",
+              "case_index": 44,
+              "carbon_share_before": 8.118907831169357e-06,
+              "carbon_share_after": 8.098151913102712e-06,
+              "maximum_absolute_carbon_share_change": 2.0755918066644815e-08,
+              "x_before": 6.774704468150325e-09,
+              "x_after": 6.757384823673251e-09
+            },
+            {
+              "species": "C1K1N1",
+              "case_index": 52,
+              "carbon_share_before": 4.18824020459063e-07,
+              "carbon_share_after": 4.3158371798975264e-07,
+              "maximum_absolute_carbon_share_change": 1.2759697530689623e-08,
+              "x_before": 5.279938121163931e-10,
+              "x_after": 5.440810509739267e-10
+            },
+            {
+              "species": "C1H2O1",
+              "case_index": 69,
+              "carbon_share_before": 2.998613422090762e-05,
+              "carbon_share_after": 2.9997523061067242e-05,
+              "maximum_absolute_carbon_share_change": 1.1388840159622273e-08,
+              "x_before": 3.7535795746036256e-08,
+              "x_after": 3.755013037226301e-08
+            },
+            {
+              "species": "C1P1",
+              "case_index": 74,
+              "carbon_share_before": 4.3828963117599267e-07,
+              "carbon_share_after": 4.419241853390213e-07,
+              "maximum_absolute_carbon_share_change": 3.6345541630286324e-09,
+              "x_before": 5.148459377270612e-10,
+              "x_after": 5.191154628058114e-10
+            },
+            {
+              "species": "C1Al1",
+              "case_index": 74,
+              "carbon_share_before": 2.4389010019821237e-07,
+              "carbon_share_after": 2.464847865606873e-07,
+              "maximum_absolute_carbon_share_change": 2.5946863624749155e-09,
+              "x_before": 2.864905268280812e-10,
+              "x_after": 2.8953849618319287e-10
+            },
+            {
+              "species": "C2N2",
+              "case_index": 68,
+              "carbon_share_before": 8.577420099524826e-08,
+              "carbon_share_after": 8.773571843669737e-08,
+              "maximum_absolute_carbon_share_change": 1.9615174414491102e-09,
+              "x_before": 5.040595880854155e-11,
+              "x_after": 5.15586534866858e-11
+            },
+            {
+              "species": "C1H1-",
+              "case_index": 74,
+              "carbon_share_before": 1.2145808859677294e-07,
+              "carbon_share_after": 1.2274619888249865e-07,
+              "maximum_absolute_carbon_share_change": 1.2881102857257132e-09,
+              "x_before": 1.4267324406091776e-10,
+              "x_after": 1.441863829915989e-10
+            },
+            {
+              "species": "C2Ti1",
+              "case_index": 57,
+              "carbon_share_before": 7.048084939425201e-09,
+              "carbon_share_after": 7.513348392678806e-09,
+              "maximum_absolute_carbon_share_change": 4.652634532536049e-10,
+              "x_before": 4.409270887790455e-12,
+              "x_after": 4.700338790971402e-12
+            },
+            {
+              "species": "C1S2",
+              "case_index": 68,
+              "carbon_share_before": 5.2445115662769656e-08,
+              "carbon_share_after": 5.283791571447632e-08,
+              "maximum_absolute_carbon_share_change": 3.928000517066611e-10,
+              "x_before": 6.163966109001032e-11,
+              "x_after": 6.210131599359918e-11
+            },
+            {
+              "species": "C1H1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 8.671579145859729e-08,
+              "carbon_share_after": 8.63370128443584e-08,
+              "maximum_absolute_carbon_share_change": 3.7877861423888045e-10,
+              "x_before": 1.0186248953564394e-10,
+              "x_after": 1.0141757311966912e-10
+            },
+            {
+              "species": "C1O1S1",
+              "case_index": 69,
+              "carbon_share_before": 3.880302369846265e-07,
+              "carbon_share_after": 3.876545689786328e-07,
+              "maximum_absolute_carbon_share_change": 3.756680059936742e-10,
+              "x_before": 4.857252892767225e-10,
+              "x_after": 4.852560518052719e-10
+            },
+            {
+              "species": "C1-",
+              "case_index": 74,
+              "carbon_share_before": 3.420625334010125e-08,
+              "carbon_share_after": 3.4569039117631276e-08,
+              "maximum_absolute_carbon_share_change": 3.62785777530025e-10,
+              "x_before": 4.018107964306888e-11,
+              "x_after": 4.060724290646062e-11
+            },
+            {
+              "species": "C2H1Cl1",
+              "case_index": 68,
+              "carbon_share_before": 1.9061932349824613e-09,
+              "carbon_share_after": 1.98290777701673e-09,
+              "maximum_absolute_carbon_share_change": 7.671454203426853e-11,
+              "x_before": 1.1201911130477258e-12,
+              "x_after": 1.1652728990305682e-12
+            },
+            {
+              "species": "C1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 1.2219947893509064e-08,
+              "carbon_share_after": 1.2166575924980485e-08,
+              "maximum_absolute_carbon_share_change": 5.3371968528578536e-11,
+              "x_before": 1.4354413348380646e-11,
+              "x_after": 1.4291722203918507e-11
+            },
+            {
+              "species": "C1+",
+              "case_index": 73,
+              "carbon_share_before": 1.1537028886710798e-07,
+              "carbon_share_after": 1.1541506191351684e-07,
+              "maximum_absolute_carbon_share_change": 4.4773046408864215e-11,
+              "x_before": 9.375563569646358e-11,
+              "x_after": 9.379200847063206e-11
+            },
+            {
+              "species": "C1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 3.4396432022648475e-09,
+              "carbon_share_after": 3.476236967612462e-09,
+              "maximum_absolute_carbon_share_change": 3.6593765347614686e-11,
+              "x_before": 4.04044769474701e-12,
+              "x_after": 4.0834342679852254e-12
+            },
+            {
+              "species": "C2Cr1",
+              "case_index": 68,
+              "carbon_share_before": 8.096481569587605e-10,
+              "carbon_share_after": 8.42232512562769e-10,
+              "maximum_absolute_carbon_share_change": 3.258435560400849e-11,
+              "x_before": 4.757968150742171e-13,
+              "x_after": 4.949452177994746e-13
+            },
+            {
+              "species": "C2N1O1",
+              "case_index": 74,
+              "carbon_share_before": 4.985451619392725e-09,
+              "carbon_share_after": 5.016484561105076e-09,
+              "maximum_absolute_carbon_share_change": 3.1032941712351044e-11,
+              "x_before": 2.9281316866796736e-12,
+              "x_after": 2.9463591165513063e-12
+            },
+            {
+              "species": "C1H3Cl1",
+              "case_index": 69,
+              "carbon_share_before": 1.938025637912136e-09,
+              "carbon_share_after": 1.961309126314708e-09,
+              "maximum_absolute_carbon_share_change": 2.3283488402571944e-11,
+              "x_before": 2.425965746679356e-12,
+              "x_after": 2.455116485567803e-12
+            },
+            {
+              "species": "C1H1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 1.6360228630741396e-09,
+              "carbon_share_after": 1.6534275008381004e-09,
+              "maximum_absolute_carbon_share_change": 1.740463776396077e-11,
+              "x_before": 1.9217879346639075e-12,
+              "x_after": 1.9422331042030845e-12
+            },
+            {
+              "species": "C2V1",
+              "case_index": 57,
+              "carbon_share_before": 2.5023810396059306e-10,
+              "carbon_share_after": 2.667567497194809e-10,
+              "maximum_absolute_carbon_share_change": 1.651864575888783e-11,
+              "x_before": 1.565485655028596e-13,
+              "x_after": 1.6688259786830932e-13
+            },
+            {
+              "species": "C1N2_ncn",
+              "case_index": 74,
+              "carbon_share_before": 1.0468031160084095e-08,
+              "carbon_share_after": 1.0483560026962707e-08,
+              "maximum_absolute_carbon_share_change": 1.5528866878611603e-11,
+              "x_before": 1.229648829316133e-11,
+              "x_after": 1.2314732471757104e-11
+            },
+            {
+              "species": "C1F1",
+              "case_index": 74,
+              "carbon_share_before": 1.1345293775031979e-09,
+              "carbon_share_after": 1.1465992692902067e-09,
+              "maximum_absolute_carbon_share_change": 1.2069891787008804e-11,
+              "x_before": 1.3326982882809465e-12,
+              "x_after": 1.3468767496256646e-12
+            },
+            {
+              "species": "C1H1+",
+              "case_index": 73,
+              "carbon_share_before": 1.526335579620826e-08,
+              "carbon_share_after": 1.5269278729314084e-08,
+              "maximum_absolute_carbon_share_change": 5.922933105823255e-12,
+              "x_before": 1.2403762178173692e-11,
+              "x_after": 1.2408573856620214e-11
+            },
+            {
+              "species": "C1H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.7113511650617633e-10,
+              "carbon_share_after": 2.740195153733905e-10,
+              "maximum_absolute_carbon_share_change": 2.8843988672141506e-12,
+              "x_before": 3.1849444608993187e-13,
+              "x_after": 3.2188273975491217e-13
+            },
+            {
+              "species": "C1H1O1+",
+              "case_index": 49,
+              "carbon_share_before": 1.4056310605218722e-08,
+              "carbon_share_after": 1.4058709309183722e-08,
+              "maximum_absolute_carbon_share_change": 2.398703964999598e-12,
+              "x_before": 1.1007760242267182e-11,
+              "x_after": 1.100963755971672e-11
+            },
+            {
+              "species": "C1Cl1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.2634854717823296e-10,
+              "carbon_share_after": 2.277181525222566e-10,
+              "maximum_absolute_carbon_share_change": 1.3696053440236306e-12,
+              "x_before": 2.658849804693223e-13,
+              "x_after": 2.6749387803971277e-13
+            },
+            {
+              "species": "C1H3F1",
+              "case_index": 69,
+              "carbon_share_before": 6.320913906465655e-11,
+              "carbon_share_after": 6.39684095341919e-11,
+              "maximum_absolute_carbon_share_change": 7.592704695353465e-13,
+              "x_before": 7.912341470010053e-14,
+              "x_after": 8.007401520536607e-14
+            },
+            {
+              "species": "C3O2",
+              "case_index": 74,
+              "carbon_share_before": 6.494513770879669e-11,
+              "carbon_share_after": 6.565878022313328e-11,
+              "maximum_absolute_carbon_share_change": 7.136425143365869e-13,
+              "x_before": 2.542971431530567e-14,
+              "x_after": 2.5709151941713746e-14
+            },
+            {
+              "species": "C1N2_cnn",
+              "case_index": 74,
+              "carbon_share_before": 4.5958636879647426e-10,
+              "carbon_share_after": 4.602681450953035e-10,
+              "maximum_absolute_carbon_share_change": 6.81776298829267e-13,
+              "x_before": 5.398625889796236e-13,
+              "x_after": 5.406635777868196e-13
+            },
+            {
+              "species": "C4N2",
+              "case_index": 68,
+              "carbon_share_before": 1.0006749830269892e-11,
+              "carbon_share_after": 1.064752062998995e-11,
+              "maximum_absolute_carbon_share_change": 6.407707997200587e-13,
+              "x_before": 2.9402769941273205e-15,
+              "x_after": 3.128553777388178e-15
+            },
+            {
+              "species": "C2H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.975372773556258e-11,
+              "carbon_share_after": 3.039016557669538e-11,
+              "maximum_absolute_carbon_share_change": 6.364378411327992e-13,
+              "x_before": 1.7475414391836587e-14,
+              "x_after": 1.7849220965343784e-14
+            },
+            {
+              "species": "C4Ti1",
+              "case_index": 51,
+              "carbon_share_before": 1.0854814659036862e-12,
+              "carbon_share_after": 1.2876055718234116e-12,
+              "maximum_absolute_carbon_share_change": 2.0212410591972542e-13,
+              "x_before": 3.4182119143725347e-16,
+              "x_after": 4.0547056743878455e-16
+            },
+            {
+              "species": "C1O2-",
+              "case_index": 49,
+              "carbon_share_before": 8.768834156732945e-11,
+              "carbon_share_after": 8.751352962600325e-11,
+              "maximum_absolute_carbon_share_change": 1.7481194132620192e-13,
+              "x_before": 6.867038351136194e-14,
+              "x_after": 6.853347782960665e-14
+            },
+            {
+              "species": "C2H4O1",
+              "case_index": 69,
+              "carbon_share_before": 6.764798972710723e-12,
+              "carbon_share_after": 6.848676361044185e-12,
+              "maximum_absolute_carbon_share_change": 8.387738833346196e-14,
+              "x_before": 4.233992128362103e-15,
+              "x_after": 4.286498750432088e-15
+            },
+            {
+              "species": "C1Cl1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.5582646950856756e-10,
+              "carbon_share_after": 1.558527279951363e-10,
+              "maximum_absolute_carbon_share_change": 2.625848656872657e-14,
+              "x_before": 1.2203062837217223e-13,
+              "x_after": 1.2205117910779207e-13
+            },
+            {
+              "species": "C1F1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.682235824070204e-12,
+              "carbon_share_after": 2.6984652836757954e-12,
+              "maximum_absolute_carbon_share_change": 1.6229459605591553e-14,
+              "x_before": 3.1507435262460793e-15,
+              "x_after": 3.1698085352041615e-15
+            },
+            {
+              "species": "C1N1+",
+              "case_index": 73,
+              "carbon_share_before": 4.9856473519739526e-12,
+              "carbon_share_after": 4.987369495666966e-12,
+              "maximum_absolute_carbon_share_change": 1.7221436930133368e-15,
+              "x_before": 4.051585043538663e-15,
+              "x_after": 4.052984023300886e-15
+            },
+            {
+              "species": "C4V1",
+              "case_index": 57,
+              "carbon_share_before": 1.187659285385095e-14,
+              "carbon_share_after": 1.3496342211581944e-14,
+              "maximum_absolute_carbon_share_change": 1.6197493577309943e-15,
+              "x_before": 3.714988934348461e-18,
+              "x_after": 4.2216450986845035e-18
+            },
+            {
+              "species": "C2H2O2",
+              "case_index": 69,
+              "carbon_share_before": 3.3822195904568343e-13,
+              "carbon_share_after": 3.3848026469026474e-13,
+              "maximum_absolute_carbon_share_change": 2.583056445813121e-16,
+              "x_before": 2.1168834698790828e-16,
+              "x_after": 2.118504591476317e-16
+            },
+            {
+              "species": "C1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.0466463142748962e-12,
+              "carbon_share_after": 1.0468226265951502e-12,
+              "maximum_absolute_carbon_share_change": 1.7631232025401348e-16,
+              "x_before": 8.196483422693551e-16,
+              "x_after": 8.197863299296321e-16
+            },
+            {
+              "species": "C1H1F1O1",
+              "case_index": 69,
+              "carbon_share_before": 3.9315198309004906e-13,
+              "carbon_share_after": 3.9330181549629e-13,
+              "maximum_absolute_carbon_share_change": 1.4983240624093409e-16,
+              "x_before": 4.921365463684119e-16,
+              "x_after": 4.923251302272018e-16
+            },
+            {
+              "species": "C1F1+",
+              "case_index": 73,
+              "carbon_share_before": 2.9830454569082583e-13,
+              "carbon_share_after": 2.984202649290745e-13,
+              "maximum_absolute_carbon_share_change": 1.1571923824866368e-16,
+              "x_before": 2.424171126467711e-16,
+              "x_after": 2.4251112074963876e-16
+            },
+            {
+              "species": "C2N2Na2",
+              "case_index": 64,
+              "carbon_share_before": 6.6906455315956195e-15,
+              "carbon_share_after": 6.73273224694685e-15,
+              "maximum_absolute_carbon_share_change": 4.2086715351230516e-17,
+              "x_before": 4.214399241669474e-18,
+              "x_after": 4.240915213736218e-18
+            },
+            {
+              "species": "C3N2O1",
+              "case_index": 74,
+              "carbon_share_before": 5.095456244374614e-16,
+              "carbon_share_after": 5.158197535324973e-16,
+              "maximum_absolute_carbon_share_change": 6.274129095035875e-18,
+              "x_before": 1.9951608568694432e-19,
+              "x_after": 2.0197281114631512e-19
+            },
+            {
+              "species": "C1Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.0447097477142993e-16,
+              "carbon_share_after": 1.0558245311906161e-16,
+              "maximum_absolute_carbon_share_change": 1.1114783476316836e-18,
+              "x_before": 1.227189811156161e-19,
+              "x_after": 1.2402463099644017e-19
+            },
+            {
+              "species": "C2Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.2019033968770615e-17,
+              "carbon_share_after": 1.2276134025847777e-17,
+              "maximum_absolute_carbon_share_change": 2.571000570771618e-19,
+              "x_before": 7.059202835373915e-21,
+              "x_after": 7.210208456237024e-21
+            },
+            {
+              "species": "C2K2N2",
+              "case_index": 64,
+              "carbon_share_before": 2.5487738616109575e-17,
+              "carbon_share_after": 2.5647823715374314e-17,
+              "maximum_absolute_carbon_share_change": 1.600850992647397e-19,
+              "x_before": 1.6054580352276554e-20,
+              "x_after": 1.6155439100237572e-20
+            },
+            {
+              "species": "C1H2Cl2",
+              "case_index": 69,
+              "carbon_share_before": 1.0992981178987819e-17,
+              "carbon_share_after": 1.1125087470839905e-17,
+              "maximum_absolute_carbon_share_change": 1.3210629185208615e-19,
+              "x_before": 1.3760703301554705e-20,
+              "x_after": 1.3926099301013608e-20
+            },
+            {
+              "species": "C1H4O2",
+              "case_index": 49,
+              "carbon_share_before": 3.289260104026554e-17,
+              "carbon_share_after": 3.282709480815344e-17,
+              "maximum_absolute_carbon_share_change": 6.550623211210037e-20,
+              "x_before": 2.5758812263394566e-20,
+              "x_after": 2.570751041421258e-20
+            },
+            {
+              "species": "C1F2",
+              "case_index": 74,
+              "carbon_share_before": 5.47972785783574e-18,
+              "carbon_share_after": 5.5380256629143115e-18,
+              "maximum_absolute_carbon_share_change": 5.829780507857179e-20,
+              "x_before": 6.436875131831943e-21,
+              "x_after": 6.50535736764162e-21
+            },
+            {
+              "species": "C1H2Cl1F1",
+              "case_index": 69,
+              "carbon_share_before": 1.349381602738453e-18,
+              "carbon_share_after": 1.3655948843475498e-18,
+              "maximum_absolute_carbon_share_change": 1.6213281609096837e-20,
+              "x_before": 1.6891177719245316e-21,
+              "x_after": 1.7094166687881715e-21
+            },
+            {
+              "species": "C1H2F2",
+              "case_index": 69,
+              "carbon_share_before": 9.286387201178886e-20,
+              "carbon_share_after": 9.397947852406812e-20,
+              "maximum_absolute_carbon_share_change": 1.1156065122792533e-21,
+              "x_before": 1.1624437169330597e-22,
+              "x_after": 1.1764110202405817e-22
+            },
+            {
+              "species": "C2H4O3",
+              "case_index": 64,
+              "carbon_share_before": 5.274435073528954e-20,
+              "carbon_share_after": 5.258651831561237e-20,
+              "maximum_absolute_carbon_share_change": 1.578324196771697e-22,
+              "x_before": 3.322336397757738e-23,
+              "x_after": 3.31239914766002e-23
+            },
+            {
+              "species": "C2F2",
+              "case_index": 74,
+              "carbon_share_before": 7.469397697018334e-22,
+              "carbon_share_after": 7.629173897183377e-22,
+              "maximum_absolute_carbon_share_change": 1.5977620016504326e-23,
+              "x_before": 4.3870408835129165e-25,
+              "x_after": 4.480884131091552e-25
+            },
+            {
+              "species": "C1Cl2O1",
+              "case_index": 49,
+              "carbon_share_before": 3.8431981604379935e-20,
+              "carbon_share_after": 3.8438452046083264e-20,
+              "maximum_absolute_carbon_share_change": 6.470441703329644e-24,
+              "x_before": 3.009680498801515e-23,
+              "x_after": 3.0101868960864076e-23
+            },
+            {
+              "species": "C1Cl1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.8104169024041302e-20,
+              "carbon_share_after": 1.810721603396438e-20,
+              "maximum_absolute_carbon_share_change": 3.0470099230797148e-24,
+              "x_before": 1.4177714024627297e-23,
+              "x_after": 1.418009871071258e-23
+            },
+            {
+              "species": "C4Ni1O4",
+              "case_index": 59,
+              "carbon_share_before": 3.055978208806731e-20,
+              "carbon_share_after": 3.056228455338388e-20,
+              "maximum_absolute_carbon_share_change": 2.5024653165687917e-24,
+              "x_before": 9.639884441556162e-24,
+              "x_after": 9.640674184747231e-24
+            },
+            {
+              "species": "C1F2O1",
+              "case_index": 49,
+              "carbon_share_before": 2.498107521482074e-21,
+              "carbon_share_after": 2.4985278225300185e-21,
+              "maximum_absolute_carbon_share_change": 4.203010479444492e-25,
+              "x_before": 1.956314813196396e-24,
+              "x_after": 1.9566437539863244e-24
+            },
+            {
+              "species": "C2H2O4",
+              "case_index": 44,
+              "carbon_share_before": 2.809809479088389e-23,
+              "carbon_share_after": 2.7954612042707163e-23,
+              "maximum_absolute_carbon_share_change": 1.4348274817672808e-25,
+              "x_before": 1.1723023113744086e-26,
+              "x_after": 1.1663159273625473e-26
+            },
+            {
+              "species": "C2H3Cl1O2",
+              "case_index": 64,
+              "carbon_share_before": 2.1648810967820534e-22,
+              "carbon_share_after": 2.165792068434583e-22,
+              "maximum_absolute_carbon_share_change": 9.109716525295677e-26,
+              "x_before": 1.3636461847362288e-25,
+              "x_after": 1.364221863564919e-25
+            },
+            {
+              "species": "C2H6O2",
+              "case_index": 69,
+              "carbon_share_before": 6.02152855503806e-24,
+              "carbon_share_after": 6.026104706886351e-24,
+              "maximum_absolute_carbon_share_change": 4.576151848290739e-27,
+              "x_before": 3.768789672181881e-27,
+              "x_after": 3.771661695531332e-27
+            },
+            {
+              "species": "C1F2+",
+              "case_index": 74,
+              "carbon_share_before": 1.0719502314816082e-25,
+              "carbon_share_after": 1.0833895734289165e-25,
+              "maximum_absolute_carbon_share_change": 1.1439341947308304e-27,
+              "x_before": 1.259188406175826e-28,
+              "x_after": 1.272626161833843e-28
+            },
+            {
+              "species": "C1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 1.047584649098961e-25,
+              "carbon_share_after": 1.058730318098171e-25,
+              "maximum_absolute_carbon_share_change": 1.1145668999210028e-27,
+              "x_before": 1.2305668732492971e-28,
+              "x_after": 1.2436596531698142e-28
+            },
+            {
+              "species": "C1H1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 4.031150857373126e-26,
+              "carbon_share_after": 4.0740380861031256e-26,
+              "maximum_absolute_carbon_share_change": 4.288722872999985e-28,
+              "x_before": 4.735274338374982e-29,
+              "x_after": 4.78565382189595e-29
+            },
+            {
+              "species": "C1H1Cl2F1",
+              "case_index": 74,
+              "carbon_share_before": 1.5123044571314276e-26,
+              "carbon_share_after": 1.52839356976077e-26,
+              "maximum_absolute_carbon_share_change": 1.6089112629342457e-28,
+              "x_before": 1.7764595623025364e-29,
+              "x_after": 1.795359388866959e-29
+            },
+            {
+              "species": "C1H1Cl1F2",
+              "case_index": 74,
+              "carbon_share_before": 3.310296493803181e-27,
+              "carbon_share_after": 3.3455136010935e-27,
+              "maximum_absolute_carbon_share_change": 3.5217107290319034e-29,
+              "x_before": 3.888507920969621e-30,
+              "x_after": 3.9298773386265096e-30
+            },
+            {
+              "species": "C1F3",
+              "case_index": 74,
+              "carbon_share_before": 3.800393249290649e-28,
+              "carbon_share_after": 3.840825445689525e-28,
+              "maximum_absolute_carbon_share_change": 4.04321963988764e-30,
+              "x_before": 4.464210163751213e-31,
+              "x_after": 4.5117057290401625e-31
+            },
+            {
+              "species": "C1H1F3",
+              "case_index": 74,
+              "carbon_share_before": 2.8745524925006717e-28,
+              "carbon_share_after": 2.905133441375335e-28,
+              "maximum_absolute_carbon_share_change": 3.0580948874663387e-30,
+              "x_before": 3.3766522597768306e-31,
+              "x_after": 3.412575597724464e-31
+            },
+            {
+              "species": "C5Fe1O5",
+              "case_index": 59,
+              "carbon_share_before": 8.789782600674624e-29,
+              "carbon_share_after": 8.790682291995294e-29,
+              "maximum_absolute_carbon_share_change": 8.996913206703956e-33,
+              "x_before": 2.2181437889241993e-32,
+              "x_after": 2.2183709124420065e-32
+            },
+            {
+              "species": "C2F3N1",
+              "case_index": 74,
+              "carbon_share_before": 9.161420039237626e-34,
+              "carbon_share_after": 9.314911793944543e-34,
+              "maximum_absolute_carbon_share_change": 1.5349175470691699e-35,
+              "x_before": 5.380825321325949e-37,
+              "x_after": 5.470977723474572e-37
+            },
+            {
+              "species": "C1F3+",
+              "case_index": 74,
+              "carbon_share_before": 1.1098156581337575e-33,
+              "carbon_share_after": 1.121659233652426e-33,
+              "maximum_absolute_carbon_share_change": 1.1843575518668527e-35,
+              "x_before": 1.3036678090762633e-36,
+              "x_after": 1.3175804165169353e-36
+            },
+            {
+              "species": "C1Cl4",
+              "case_index": 74,
+              "carbon_share_before": 4.1538102350070544e-35,
+              "carbon_share_after": 4.198005457340419e-35,
+              "maximum_absolute_carbon_share_change": 4.419522233336458e-37,
+              "x_before": 4.87935870133268e-38,
+              "x_after": 4.931274680467651e-38
+            },
+            {
+              "species": "C1Cl3F1",
+              "case_index": 74,
+              "carbon_share_before": 2.894616037583059e-35,
+              "carbon_share_after": 2.9254134027167993e-35,
+              "maximum_absolute_carbon_share_change": 3.0797365133740267e-37,
+              "x_before": 3.400220316028481e-38,
+              "x_after": 3.436397877352319e-38
+            },
+            {
+              "species": "C1Cl2F2",
+              "case_index": 74,
+              "carbon_share_before": 9.256504541905424e-36,
+              "carbon_share_after": 9.354988057579258e-36,
+              "maximum_absolute_carbon_share_change": 9.848351567383405e-38,
+              "x_before": 1.0873343611084585e-38,
+              "x_after": 1.0989031866014786e-38
+            },
+            {
+              "species": "C2Cl4",
+              "case_index": 74,
+              "carbon_share_before": 2.8735680750746097e-36,
+              "carbon_share_after": 2.9350384437837432e-36,
+              "maximum_absolute_carbon_share_change": 6.14703687091335e-38,
+              "x_before": 1.6877479467912294e-39,
+              "x_after": 1.7238520663095324e-39
+            },
+            {
+              "species": "C1Cl1F3",
+              "case_index": 74,
+              "carbon_share_before": 1.9544967482273862e-36,
+              "carbon_share_after": 1.9752911008497948e-36,
+              "maximum_absolute_carbon_share_change": 2.0794352622408536e-38,
+              "x_before": 2.2958898398432808e-39,
+              "x_after": 2.3203168960015446e-39
+            },
+            {
+              "species": "C1F4",
+              "case_index": 74,
+              "carbon_share_before": 1.8883777629919587e-37,
+              "carbon_share_after": 1.908468379164093e-37,
+              "maximum_absolute_carbon_share_change": 2.0090616172134243e-39,
+              "x_before": 2.2182218127358214e-40,
+              "x_after": 2.241822192057686e-40
+            },
+            {
+              "species": "C4H6O4",
+              "case_index": 69,
+              "carbon_share_before": 5.527014305063095e-39,
+              "carbon_share_after": 5.53546085389722e-39,
+              "maximum_absolute_carbon_share_change": 8.446548834124651e-42,
+              "x_before": 1.729640093917299e-42,
+              "x_after": 1.73228699842364e-42
+            },
+            {
+              "species": "C2F4",
+              "case_index": 74,
+              "carbon_share_before": 1.2663470139479449e-40,
+              "carbon_share_after": 1.2934355071490582e-40,
+              "maximum_absolute_carbon_share_change": 2.708849320111337e-42,
+              "x_before": 7.437702942396293e-44,
+              "x_after": 7.596804997084079e-44
+            },
+            {
+              "species": "C1F4O1",
+              "case_index": 49,
+              "carbon_share_before": 1.6241651908007563e-46,
+              "carbon_share_after": 1.6244377813800911e-46,
+              "maximum_absolute_carbon_share_change": 2.725905793347993e-50,
+              "x_before": 1.2719141968542557e-49,
+              "x_after": 1.2721275344687783e-49
+            },
+            {
+              "species": "C2Cl6",
+              "case_index": 74,
+              "carbon_share_before": 2.567547124204221e-56,
+              "carbon_share_after": 2.6224726810510556e-56,
+              "maximum_absolute_carbon_share_change": 5.49255568468346e-58,
+              "x_before": 1.5080110420049424e-59,
+              "x_after": 1.5402711196661896e-59
+            },
+            {
+              "species": "C2F6",
+              "case_index": 74,
+              "carbon_share_before": 3.4651589065107803e-60,
+              "carbon_share_after": 3.5392832543136e-60,
+              "maximum_absolute_carbon_share_change": 7.4124347802819896e-62,
+              "x_before": 2.0352101209981127e-63,
+              "x_after": 2.0787464518991774e-63
+            },
+            {
+              "species": "C1F8S1",
+              "case_index": 74,
+              "carbon_share_before": 1.0569203707799484e-89,
+              "carbon_share_after": 1.067496004568517e-89,
+              "maximum_absolute_carbon_share_change": 1.0575633788568635e-91,
+              "x_before": 1.2415332709035386e-92,
+              "x_after": 1.2539564496335914e-92
+            }
+          ]
+        },
+        {
+          "variant": 2,
+          "model": "nasa",
+          "target_ratio_min": 0.8767490951313702,
+          "target_ratio_max": 0.9934573773498752,
+          "maximum_absolute_target_delta_x": 3.817566228712376e-06,
+          "maximum_absolute_all_species_delta_x": 4.710148058388155e-06,
+          "highlight": {
+            "case_index": 55,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.5,
+            "carbon_share_before": 0.11578608978162722,
+            "carbon_share_after": 0.10787324829501872,
+            "x_before": 4.68632019557609e-05,
+            "x_after": 4.3660443306069125e-05
+          },
+          "all_carbon_species_effects": [
+            {
+              "species": "C2H2",
+              "case_index": 55,
+              "carbon_share_before": 0.11578608978162722,
+              "carbon_share_after": 0.10787324829501872,
+              "maximum_absolute_carbon_share_change": 0.007912841486608493,
+              "x_before": 4.68632019557609e-05,
+              "x_after": 4.3660443306069125e-05
+            },
+            {
+              "species": "C3H1",
+              "case_index": 55,
+              "carbon_share_before": 0.11666933788478052,
+              "carbon_share_after": 0.12242688336046131,
+              "maximum_absolute_carbon_share_change": 0.005757545475680789,
+              "x_before": 3.148045822344226e-05,
+              "x_after": 3.3033905282860164e-05
+            },
+            {
+              "species": "C1H4",
+              "case_index": 58,
+              "carbon_share_before": 0.09417990213017516,
+              "carbon_share_after": 0.09791805363682934,
+              "maximum_absolute_carbon_share_change": 0.003738151506654186,
+              "x_before": 0.00011865391590260779,
+              "x_after": 0.00012336406396099594
+            },
+            {
+              "species": "C1H3",
+              "case_index": 74,
+              "carbon_share_before": 0.05943176456192695,
+              "carbon_share_after": 0.0614720704675278,
+              "maximum_absolute_carbon_share_change": 0.0020403059056008505,
+              "x_before": 6.981274568271209e-05,
+              "x_after": 7.220948790393436e-05
+            },
+            {
+              "species": "C1",
+              "case_index": 67,
+              "carbon_share_before": 0.20951307258076426,
+              "carbon_share_after": 0.21120729595803278,
+              "maximum_absolute_carbon_share_change": 0.0016942233772685167,
+              "x_before": 0.00017059928637368834,
+              "x_after": 0.00017197845394004377
+            },
+            {
+              "species": "C1H1N1_hcn",
+              "case_index": 51,
+              "carbon_share_before": 0.03429407753351671,
+              "carbon_share_after": 0.03594127817616366,
+              "maximum_absolute_carbon_share_change": 0.001647200642646951,
+              "x_before": 4.319720901725042e-05,
+              "x_after": 4.527202916605298e-05
+            },
+            {
+              "species": "C3",
+              "case_index": 55,
+              "carbon_share_before": 0.02258721624606151,
+              "carbon_share_after": 0.023701855755816965,
+              "maximum_absolute_carbon_share_change": 0.0011146395097554537,
+              "x_before": 6.094625462949103e-06,
+              "x_after": 6.395367067871764e-06
+            },
+            {
+              "species": "C1H2",
+              "case_index": 74,
+              "carbon_share_before": 0.02603791726999461,
+              "carbon_share_after": 0.02693184302702108,
+              "maximum_absolute_carbon_share_change": 0.0008939257570264696,
+              "x_before": 3.0585975528011364e-05,
+              "x_after": 3.163606786788856e-05
+            },
+            {
+              "species": "C2H1",
+              "case_index": 74,
+              "carbon_share_before": 0.012474514467861117,
+              "carbon_share_after": 0.013345827015291257,
+              "maximum_absolute_carbon_share_change": 0.0008713125474301402,
+              "x_before": 7.326722607677731e-06,
+              "x_after": 7.838481176079306e-06
+            },
+            {
+              "species": "C1O1",
+              "case_index": 49,
+              "carbon_share_before": 0.9262201550772142,
+              "carbon_share_after": 0.9267082538642848,
+              "maximum_absolute_carbon_share_change": 0.00048809878707056775,
+              "x_before": 0.0007253403602834546,
+              "x_after": 0.000725722362413408
+            },
+            {
+              "species": "C1H1",
+              "case_index": 74,
+              "carbon_share_before": 0.009824571150386737,
+              "carbon_share_after": 0.010161879705303863,
+              "maximum_absolute_carbon_share_change": 0.00033730855491712584,
+              "x_before": 1.1540634746743605e-05,
+              "x_after": 1.1936870257997764e-05
+            },
+            {
+              "species": "C1H1N1_hnc",
+              "case_index": 74,
+              "carbon_share_before": 0.012250774397008826,
+              "carbon_share_after": 0.012487090618186121,
+              "maximum_absolute_carbon_share_change": 0.00023631622117729553,
+              "x_before": 1.4390624335299522e-05,
+              "x_after": 1.4668229198909978e-05
+            },
+            {
+              "species": "C2Si1",
+              "case_index": 50,
+              "carbon_share_before": 0.0018138674445821665,
+              "carbon_share_after": 0.0020429695641446654,
+              "maximum_absolute_carbon_share_change": 0.00022910211956249892,
+              "x_before": 1.1340529413175253e-06,
+              "x_after": 1.277290351323631e-06
+            },
+            {
+              "species": "C1S1",
+              "case_index": 56,
+              "carbon_share_before": 0.006374950854831572,
+              "carbon_share_after": 0.006544162653643454,
+              "maximum_absolute_carbon_share_change": 0.00016921179881188193,
+              "x_before": 7.477636709840322e-06,
+              "x_after": 7.676112289772347e-06
+            },
+            {
+              "species": "C1Si2",
+              "case_index": 51,
+              "carbon_share_before": 0.0021761802198434466,
+              "carbon_share_after": 0.0023260238972240455,
+              "maximum_absolute_carbon_share_change": 0.00014984367738059886,
+              "x_before": 2.7411412866816226e-06,
+              "x_after": 2.9298852756411135e-06
+            },
+            {
+              "species": "C2",
+              "case_index": 67,
+              "carbon_share_before": 0.006866586355404662,
+              "carbon_share_after": 0.00697807297468371,
+              "maximum_absolute_carbon_share_change": 0.00011148661927904736,
+              "x_before": 2.795612506717856e-06,
+              "x_after": 2.8409960844945527e-06
+            },
+            {
+              "species": "C2H4",
+              "case_index": 58,
+              "carbon_share_before": 0.0011109376246333583,
+              "carbon_share_after": 0.00120089231356718,
+              "maximum_absolute_carbon_share_change": 8.995468893382183e-05,
+              "x_before": 6.99815441006151e-07,
+              "x_after": 7.564843799420069e-07
+            },
+            {
+              "species": "C1N1",
+              "case_index": 67,
+              "carbon_share_before": 0.006709920606886995,
+              "carbon_share_after": 0.006752006728554909,
+              "maximum_absolute_carbon_share_change": 4.20861216679138e-05,
+              "x_before": 5.463657484750785e-06,
+              "x_after": 5.497914609921326e-06
+            },
+            {
+              "species": "C1H1P1",
+              "case_index": 68,
+              "carbon_share_before": 0.00019282876201410105,
+              "carbon_share_after": 0.0001961297215079497,
+              "maximum_absolute_carbon_share_change": 3.3009594938486573e-06,
+              "x_before": 2.266350143144625e-07,
+              "x_after": 2.3051461745067752e-07
+            },
+            {
+              "species": "C2N1",
+              "case_index": 74,
+              "carbon_share_before": 4.379779971950505e-05,
+              "carbon_share_after": 4.6175544256936995e-05,
+              "maximum_absolute_carbon_share_change": 2.3777445374319455e-06,
+              "x_before": 2.5723993522808353e-08,
+              "x_after": 2.712054742194022e-08
+            },
+            {
+              "species": "C2Si2",
+              "case_index": 51,
+              "carbon_share_before": 8.8394368314187e-06,
+              "carbon_share_after": 1.0049204513649329e-05,
+              "maximum_absolute_carbon_share_change": 1.2097676822306286e-06,
+              "x_before": 5.567127443920772e-09,
+              "x_after": 6.329044248338476e-09
+            },
+            {
+              "species": "C1Si1",
+              "case_index": 74,
+              "carbon_share_before": 1.8794860176752133e-05,
+              "carbon_share_after": 1.9458325743612947e-05,
+              "maximum_absolute_carbon_share_change": 6.634655668608137e-07,
+              "x_before": 2.2077769410573678e-08,
+              "x_after": 2.2857140270823564e-08
+            },
+            {
+              "species": "C2O1",
+              "case_index": 74,
+              "carbon_share_before": 8.565107829460301e-06,
+              "carbon_share_after": 8.86402491970956e-06,
+              "maximum_absolute_carbon_share_change": 2.989170902492595e-07,
+              "x_before": 5.030590114988584e-09,
+              "x_after": 5.2061586290480574e-09
+            },
+            {
+              "species": "C1H1O1",
+              "case_index": 49,
+              "carbon_share_before": 0.00044600526945474234,
+              "carbon_share_after": 0.00044624033131329845,
+              "maximum_absolute_carbon_share_change": 2.3506185855610593e-07,
+              "x_before": 3.4927508439681204e-07,
+              "x_after": 3.4945905153474117e-07
+            },
+            {
+              "species": "C1N1Na1",
+              "case_index": 52,
+              "carbon_share_before": 5.280728249706104e-06,
+              "carbon_share_after": 5.513945154714071e-06,
+              "maximum_absolute_carbon_share_change": 2.3321690500796673e-07,
+              "x_before": 6.657191811150142e-09,
+              "x_after": 6.951228766190059e-09
+            },
+            {
+              "species": "C1N1-",
+              "case_index": 74,
+              "carbon_share_before": 9.441976815282544e-06,
+              "carbon_share_after": 9.623124346368494e-06,
+              "maximum_absolute_carbon_share_change": 1.8114753108595055e-07,
+              "x_before": 1.1091212435069768e-08,
+              "x_after": 1.13040097039552e-08
+            },
+            {
+              "species": "C2-",
+              "case_index": 74,
+              "carbon_share_before": 2.4596068947482875e-06,
+              "carbon_share_after": 2.631134134523978e-06,
+              "maximum_absolute_carbon_share_change": 1.7152723977569053e-07,
+              "x_before": 1.4446139357311696e-09,
+              "x_after": 1.5453591119962392e-09
+            },
+            {
+              "species": "C5",
+              "case_index": 55,
+              "carbon_share_before": 1.2043335785351388e-06,
+              "carbon_share_after": 1.3050046904457647e-06,
+              "maximum_absolute_carbon_share_change": 1.0067111191062593e-07,
+              "x_before": 1.9497653930429939e-10,
+              "x_after": 2.1127419152350762e-10
+            },
+            {
+              "species": "C4",
+              "case_index": 55,
+              "carbon_share_before": 1.01716398133911e-06,
+              "carbon_share_after": 1.0846345446705385e-06,
+              "maximum_absolute_carbon_share_change": 6.747056333142857e-08,
+              "x_before": 2.0584321125932152e-10,
+              "x_after": 2.1949661196759838e-10
+            },
+            {
+              "species": "C1O2",
+              "case_index": 49,
+              "carbon_share_before": 6.629025501838666e-06,
+              "carbon_share_after": 6.587761353526007e-06,
+              "maximum_absolute_carbon_share_change": 4.126414831265839e-08,
+              "x_before": 5.191314094683059e-09,
+              "x_after": 5.1589976808351535e-09
+            },
+            {
+              "species": "C1H2O1",
+              "case_index": 69,
+              "carbon_share_before": 2.998613422090762e-05,
+              "carbon_share_after": 3.0008006534724498e-05,
+              "maximum_absolute_carbon_share_change": 2.1872313816878147e-08,
+              "x_before": 3.7535795746036256e-08,
+              "x_after": 3.756332714173865e-08
+            },
+            {
+              "species": "C1K1N1",
+              "case_index": 52,
+              "carbon_share_before": 4.18824020459063e-07,
+              "carbon_share_after": 4.373142430740535e-07,
+              "maximum_absolute_carbon_share_change": 1.8490222614990508e-08,
+              "x_before": 5.279938121163931e-10,
+              "x_after": 5.51306054200067e-10
+            },
+            {
+              "species": "C1P1",
+              "case_index": 74,
+              "carbon_share_before": 4.3828963117599267e-07,
+              "carbon_share_after": 4.499592166610629e-07,
+              "maximum_absolute_carbon_share_change": 1.1669585485070227e-08,
+              "x_before": 5.148459377270612e-10,
+              "x_after": 5.285542583101073e-10
+            },
+            {
+              "species": "C1Al1",
+              "case_index": 74,
+              "carbon_share_before": 2.4389010019821237e-07,
+              "carbon_share_after": 2.5226413119125407e-07,
+              "maximum_absolute_carbon_share_change": 8.374030993041703e-09,
+              "x_before": 2.864905268280812e-10,
+              "x_after": 2.9632747996464143e-10
+            },
+            {
+              "species": "C2N2",
+              "case_index": 74,
+              "carbon_share_before": 1.2243341595114848e-07,
+              "carbon_share_after": 1.272028876138414e-07,
+              "maximum_absolute_carbon_share_change": 4.7694716626929246e-09,
+              "x_before": 7.19094662077293e-11,
+              "x_after": 7.471080203284556e-11
+            },
+            {
+              "species": "C1H1-",
+              "case_index": 74,
+              "carbon_share_before": 1.2145808859677294e-07,
+              "carbon_share_after": 1.2561506308266363e-07,
+              "maximum_absolute_carbon_share_change": 4.1569744858906965e-09,
+              "x_before": 1.4267324406091776e-10,
+              "x_after": 1.475564318760181e-10
+            },
+            {
+              "species": "C1H1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 8.671579145859729e-08,
+              "carbon_share_after": 8.550107813196733e-08,
+              "maximum_absolute_carbon_share_change": 1.2147133266299524e-09,
+              "x_before": 1.0186248953564394e-10,
+              "x_after": 1.0043567786455166e-10
+            },
+            {
+              "species": "C1-",
+              "case_index": 74,
+              "carbon_share_before": 3.420625334010125e-08,
+              "carbon_share_after": 3.5377032614633944e-08,
+              "maximum_absolute_carbon_share_change": 1.1707792745326923e-09,
+              "x_before": 4.018107964306888e-11,
+              "x_after": 4.155639120717316e-11
+            },
+            {
+              "species": "C2Ti1",
+              "case_index": 68,
+              "carbon_share_before": 9.67073869245769e-09,
+              "carbon_share_after": 1.0439488314331035e-08,
+              "maximum_absolute_carbon_share_change": 7.687496218733451e-10,
+              "x_before": 5.683094106667293e-12,
+              "x_after": 6.134854617282705e-12
+            },
+            {
+              "species": "C1S2",
+              "case_index": 68,
+              "carbon_share_before": 5.2445115662769656e-08,
+              "carbon_share_after": 5.320137367755372e-08,
+              "maximum_absolute_carbon_share_change": 7.562580147840665e-10,
+              "x_before": 6.163966109001032e-11,
+              "x_after": 6.252848475408016e-11
+            },
+            {
+              "species": "C1O1S1",
+              "case_index": 69,
+              "carbon_share_before": 3.880302369846265e-07,
+              "carbon_share_after": 3.873067128617366e-07,
+              "maximum_absolute_carbon_share_change": 7.235241228898636e-10,
+              "x_before": 4.857252892767225e-10,
+              "x_after": 4.848215672901067e-10
+            },
+            {
+              "species": "C2H1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 2.7577776229578818e-09,
+              "carbon_share_after": 2.950403961986399e-09,
+              "maximum_absolute_carbon_share_change": 1.9262633902851713e-10,
+              "x_before": 1.6197401276923337e-12,
+              "x_after": 1.7328776921327026e-12
+            },
+            {
+              "species": "C1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 1.2219947893509064e-08,
+              "carbon_share_after": 1.2048788150335212e-08,
+              "maximum_absolute_carbon_share_change": 1.7115974317385162e-10,
+              "x_before": 1.4354413348380646e-11,
+              "x_after": 1.415336779095946e-11
+            },
+            {
+              "species": "C1+",
+              "case_index": 73,
+              "carbon_share_before": 1.1537028886710798e-07,
+              "carbon_share_after": 1.1550941229562634e-07,
+              "maximum_absolute_carbon_share_change": 1.39123428518357e-10,
+              "x_before": 9.375563569646358e-11,
+              "x_after": 9.386865690167948e-11
+            },
+            {
+              "species": "C1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 3.4396432022648475e-09,
+              "carbon_share_after": 3.557745327091515e-09,
+              "maximum_absolute_carbon_share_change": 1.181021248266673e-10,
+              "x_before": 4.04044769474701e-12,
+              "x_after": 4.179181963581346e-12
+            },
+            {
+              "species": "C2Cr1",
+              "case_index": 74,
+              "carbon_share_before": 1.4577467331465123e-09,
+              "carbon_share_after": 1.5595699513281239e-09,
+              "maximum_absolute_carbon_share_change": 1.0182321818161159e-10,
+              "x_before": 8.561861043593924e-13,
+              "x_after": 9.159911702929882e-13
+            },
+            {
+              "species": "C2N1O1",
+              "case_index": 74,
+              "carbon_share_before": 4.985451619392725e-09,
+              "carbon_share_after": 5.084402380786675e-09,
+              "maximum_absolute_carbon_share_change": 9.895076139395032e-11,
+              "x_before": 2.9281316866796736e-12,
+              "x_after": 2.9862512310211737e-12
+            },
+            {
+              "species": "C1H1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 1.6360228630741396e-09,
+              "carbon_share_after": 1.6921942491143748e-09,
+              "maximum_absolute_carbon_share_change": 5.6171386040235135e-11,
+              "x_before": 1.9217879346639075e-12,
+              "x_after": 1.987772320554569e-12
+            },
+            {
+              "species": "C1N2_ncn",
+              "case_index": 74,
+              "carbon_share_before": 1.0468031160084095e-08,
+              "carbon_share_after": 1.0514790336072251e-08,
+              "maximum_absolute_carbon_share_change": 4.675917598815585e-11,
+              "x_before": 1.229648829316133e-11,
+              "x_after": 1.2351424310428799e-11
+            },
+            {
+              "species": "C1H3Cl1",
+              "case_index": 69,
+              "carbon_share_before": 1.938025637912136e-09,
+              "carbon_share_after": 1.983170881594048e-09,
+              "maximum_absolute_carbon_share_change": 4.51452436819119e-11,
+              "x_before": 2.425965746679356e-12,
+              "x_after": 2.482487349404053e-12
+            },
+            {
+              "species": "C1F1",
+              "case_index": 74,
+              "carbon_share_before": 1.1345293775031979e-09,
+              "carbon_share_after": 1.1734835493447804e-09,
+              "maximum_absolute_carbon_share_change": 3.8954171841582514e-11,
+              "x_before": 1.3326982882809465e-12,
+              "x_after": 1.3784576559307439e-12
+            },
+            {
+              "species": "C2V1",
+              "case_index": 68,
+              "carbon_share_before": 3.292861625841691e-10,
+              "carbon_share_after": 3.5545857359660014e-10,
+              "maximum_absolute_carbon_share_change": 2.6172411012431026e-11,
+              "x_before": 1.935078911240437e-13,
+              "x_after": 2.0888827170659707e-13
+            },
+            {
+              "species": "C1H1+",
+              "case_index": 73,
+              "carbon_share_before": 1.526335579620826e-08,
+              "carbon_share_after": 1.5281760143714072e-08,
+              "maximum_absolute_carbon_share_change": 1.840434750581181e-11,
+              "x_before": 1.2403762178173692e-11,
+              "x_after": 1.241871351671981e-11
+            },
+            {
+              "species": "C1H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.7113511650617633e-10,
+              "carbon_share_after": 2.804441684725694e-10,
+              "maximum_absolute_carbon_share_change": 9.309051966393086e-12,
+              "x_before": 3.1849444608993187e-13,
+              "x_after": 3.2942976602270525e-13
+            },
+            {
+              "species": "C1H1O1+",
+              "case_index": 49,
+              "carbon_share_before": 1.4056310605218722e-08,
+              "carbon_share_after": 1.4063805782444409e-08,
+              "maximum_absolute_carbon_share_change": 7.495177225686538e-12,
+              "x_before": 1.1007760242267182e-11,
+              "x_after": 1.1013626256590578e-11
+            },
+            {
+              "species": "C1Cl1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.2634854717823296e-10,
+              "carbon_share_after": 2.3071532711598019e-10,
+              "maximum_absolute_carbon_share_change": 4.366779937747223e-12,
+              "x_before": 2.658849804693223e-13,
+              "x_after": 2.7101471442114633e-13
+            },
+            {
+              "species": "C3O2",
+              "case_index": 74,
+              "carbon_share_before": 6.494513770879669e-11,
+              "carbon_share_after": 6.724838300073517e-11,
+              "maximum_absolute_carbon_share_change": 2.3032452919384823e-12,
+              "x_before": 2.542971431530567e-14,
+              "x_after": 2.6331585829241838e-14
+            },
+            {
+              "species": "C2H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.975372773556258e-11,
+              "carbon_share_after": 3.183196303601518e-11,
+              "maximum_absolute_carbon_share_change": 2.0782353004526035e-12,
+              "x_before": 1.7475414391836587e-14,
+              "x_after": 1.869604954189584e-14
+            },
+            {
+              "species": "C1N2_cnn",
+              "case_index": 74,
+              "carbon_share_before": 4.5958636879647426e-10,
+              "carbon_share_after": 4.616392744070409e-10,
+              "maximum_absolute_carbon_share_change": 2.0529056105666433e-12,
+              "x_before": 5.398625889796236e-13,
+              "x_after": 5.422744890118042e-13
+            },
+            {
+              "species": "C1H3F1",
+              "case_index": 69,
+              "carbon_share_before": 6.320913906465655e-11,
+              "carbon_share_after": 6.46813168922055e-11,
+              "maximum_absolute_carbon_share_change": 1.472177827548946e-12,
+              "x_before": 7.912341470010053e-14,
+              "x_after": 8.096657348994033e-14
+            },
+            {
+              "species": "C4N2",
+              "case_index": 68,
+              "carbon_share_before": 1.0006749830269892e-11,
+              "carbon_share_after": 1.1283285131245586e-11,
+              "maximum_absolute_carbon_share_change": 1.2765353009756945e-12,
+              "x_before": 2.9402769941273205e-15,
+              "x_after": 3.3153595176937194e-15
+            },
+            {
+              "species": "C1O2-",
+              "case_index": 49,
+              "carbon_share_before": 8.768834156732945e-11,
+              "carbon_share_after": 8.714196310822839e-11,
+              "maximum_absolute_carbon_share_change": 5.463784591010634e-13,
+              "x_before": 6.867038351136194e-14,
+              "x_after": 6.824248199855467e-14
+            },
+            {
+              "species": "C4Ti1",
+              "case_index": 51,
+              "carbon_share_before": 1.0854814659036862e-12,
+              "carbon_share_after": 1.3892275638369718e-12,
+              "maximum_absolute_carbon_share_change": 3.0374609793328557e-13,
+              "x_before": 3.4182119143725347e-16,
+              "x_after": 4.374715785012273e-16
+            },
+            {
+              "species": "C2H4O1",
+              "case_index": 69,
+              "carbon_share_before": 6.764798972710723e-12,
+              "carbon_share_after": 6.927439823602353e-12,
+              "maximum_absolute_carbon_share_change": 1.626408508916299e-13,
+              "x_before": 4.233992128362103e-15,
+              "x_after": 4.335804313551571e-15
+            },
+            {
+              "species": "C1Cl1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.5582646950856756e-10,
+              "carbon_share_after": 1.5590851372048108e-10,
+              "maximum_absolute_carbon_share_change": 8.204421191351918e-14,
+              "x_before": 1.2203062837217223e-13,
+              "x_after": 1.2209483882956846e-13
+            },
+            {
+              "species": "C1F1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.682235824070204e-12,
+              "carbon_share_after": 2.7339810013167946e-12,
+              "maximum_absolute_carbon_share_change": 5.1745177246590735e-14,
+              "x_before": 3.1507435262460793e-15,
+              "x_after": 3.211529505069398e-15
+            },
+            {
+              "species": "C1N1+",
+              "case_index": 73,
+              "carbon_share_before": 4.9856473519739526e-12,
+              "carbon_share_after": 4.990998069059692e-12,
+              "maximum_absolute_carbon_share_change": 5.350717085739248e-15,
+              "x_before": 4.051585043538663e-15,
+              "x_after": 4.055931685830664e-15
+            },
+            {
+              "species": "C4V1",
+              "case_index": 57,
+              "carbon_share_before": 1.187659285385095e-14,
+              "carbon_share_after": 1.4400267015479098e-14,
+              "maximum_absolute_carbon_share_change": 2.5236741616281484e-15,
+              "x_before": 3.714988934348461e-18,
+              "x_after": 4.504391969055709e-18
+            },
+            {
+              "species": "C1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.0466463142748962e-12,
+              "carbon_share_after": 1.047197199002664e-12,
+              "maximum_absolute_carbon_share_change": 5.508847277677302e-16,
+              "x_before": 8.196483422693551e-16,
+              "x_after": 8.200794824087253e-16
+            },
+            {
+              "species": "C2H2O2",
+              "case_index": 69,
+              "carbon_share_before": 3.3822195904568343e-13,
+              "carbon_share_after": 3.387181513654217e-13,
+              "maximum_absolute_carbon_share_change": 4.961923197382515e-16,
+              "x_before": 2.1168834698790828e-16,
+              "x_after": 2.119997660267962e-16
+            },
+            {
+              "species": "C1H1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 6.868508907030257e-13,
+              "carbon_share_after": 6.872124437153234e-13,
+              "maximum_absolute_carbon_share_change": 3.6155301229764966e-16,
+              "x_before": 5.378858037072325e-16,
+              "x_after": 5.381687667648776e-16
+            },
+            {
+              "species": "C1F1+",
+              "case_index": 73,
+              "carbon_share_before": 2.9830454569082583e-13,
+              "carbon_share_after": 2.9866412032472804e-13,
+              "maximum_absolute_carbon_share_change": 3.595746339022176e-16,
+              "x_before": 2.424171126467711e-16,
+              "x_after": 2.4270922414402537e-16
+            },
+            {
+              "species": "C2N2Na2",
+              "case_index": 64,
+              "carbon_share_before": 6.6906455315956195e-15,
+              "carbon_share_after": 6.7583388576740415e-15,
+              "maximum_absolute_carbon_share_change": 6.769332607842208e-17,
+              "x_before": 4.214399241669474e-18,
+              "x_after": 4.25704822606336e-18
+            },
+            {
+              "species": "C3N2O1",
+              "case_index": 74,
+              "carbon_share_before": 5.095456244374614e-16,
+              "carbon_share_after": 5.296843613067032e-16,
+              "maximum_absolute_carbon_share_change": 2.0138736869241807e-17,
+              "x_before": 1.9951608568694432e-19,
+              "x_after": 2.0740170394880829e-19
+            },
+            {
+              "species": "C1Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.0447097477142993e-16,
+              "carbon_share_after": 1.0805814494770276e-16,
+              "maximum_absolute_carbon_share_change": 3.587170176272835e-18,
+              "x_before": 1.227189811156161e-19,
+              "x_after": 1.269328208921235e-19
+            },
+            {
+              "species": "C2Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.2019033968770615e-17,
+              "carbon_share_after": 1.2858574230939212e-17,
+              "maximum_absolute_carbon_share_change": 8.39540262168597e-19,
+              "x_before": 7.059202835373915e-21,
+              "x_after": 7.552300201774751e-21
+            },
+            {
+              "species": "C1H2Cl2",
+              "case_index": 74,
+              "carbon_share_before": 8.533953242383971e-18,
+              "carbon_share_after": 8.826954513004934e-18,
+              "maximum_absolute_carbon_share_change": 2.930012706209624e-19,
+              "x_before": 1.0024583852931297e-20,
+              "x_after": 1.0368771708642921e-20
+            },
+            {
+              "species": "C2K2N2",
+              "case_index": 64,
+              "carbon_share_before": 2.5487738616109575e-17,
+              "carbon_share_after": 2.5745222304679103e-17,
+              "maximum_absolute_carbon_share_change": 2.5748368856952797e-19,
+              "x_before": 1.6054580352276554e-20,
+              "x_after": 1.6216803455673518e-20
+            },
+            {
+              "species": "C1H4O2",
+              "case_index": 49,
+              "carbon_share_before": 3.289260104026554e-17,
+              "carbon_share_after": 3.268785993634955e-17,
+              "maximum_absolute_carbon_share_change": 2.0474110391599393e-19,
+              "x_before": 2.5758812263394566e-20,
+              "x_after": 2.5598467302224188e-20
+            },
+            {
+              "species": "C1F2",
+              "case_index": 74,
+              "carbon_share_before": 5.47972785783574e-18,
+              "carbon_share_after": 5.6678773936436e-18,
+              "maximum_absolute_carbon_share_change": 1.8814953580786047e-19,
+              "x_before": 6.436875131831943e-21,
+              "x_after": 6.657893918075943e-21
+            },
+            {
+              "species": "C1H2Cl1F1",
+              "case_index": 74,
+              "carbon_share_before": 1.3651114904313673e-18,
+              "carbon_share_after": 1.4119800147967711e-18,
+              "maximum_absolute_carbon_share_change": 4.6868524365403766e-20,
+              "x_before": 1.6035563139090307e-21,
+              "x_after": 1.6586126516256345e-21
+            },
+            {
+              "species": "C1H2F2",
+              "case_index": 74,
+              "carbon_share_before": 9.763648095088037e-20,
+              "carbon_share_after": 1.0098859811002614e-19,
+              "maximum_absolute_carbon_share_change": 3.3521171591457657e-21,
+              "x_before": 1.146907022569777e-22,
+              "x_after": 1.1862842585582537e-22
+            },
+            {
+              "species": "C2H4O3",
+              "case_index": 64,
+              "carbon_share_before": 5.274435073528954e-20,
+              "carbon_share_after": 5.2491118051289656e-20,
+              "maximum_absolute_carbon_share_change": 2.5323268399988344e-22,
+              "x_before": 3.322336397757738e-23,
+              "x_after": 3.306392675629028e-23
+            },
+            {
+              "species": "C2F2",
+              "case_index": 74,
+              "carbon_share_before": 7.469397697018334e-22,
+              "carbon_share_after": 7.991134365108743e-22,
+              "maximum_absolute_carbon_share_change": 5.2173666809040864e-23,
+              "x_before": 4.3870408835129165e-25,
+              "x_after": 4.693478809867377e-25
+            },
+            {
+              "species": "C1Cl2O1",
+              "case_index": 49,
+              "carbon_share_before": 3.8431981604379935e-20,
+              "carbon_share_after": 3.845219840206723e-20,
+              "maximum_absolute_carbon_share_change": 2.0216797687294808e-23,
+              "x_before": 3.009680498801515e-23,
+              "x_after": 3.011262729987945e-23
+            },
+            {
+              "species": "C1Cl1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.8104169024041302e-20,
+              "carbon_share_after": 1.8113689356627164e-20,
+              "maximum_absolute_carbon_share_change": 9.520332585862623e-24,
+              "x_before": 1.4177714024627297e-23,
+              "x_after": 1.4185164939557344e-23
+            },
+            {
+              "species": "C4Ni1O4",
+              "case_index": 59,
+              "carbon_share_before": 3.055978208806731e-20,
+              "carbon_share_after": 3.0563491253305063e-20,
+              "maximum_absolute_carbon_share_change": 3.70916523775488e-24,
+              "x_before": 9.639884441556162e-24,
+              "x_after": 9.641055002460685e-24
+            },
+            {
+              "species": "C1F2O1",
+              "case_index": 49,
+              "carbon_share_before": 2.498107521482074e-21,
+              "carbon_share_after": 2.4994207446626224e-21,
+              "maximum_absolute_carbon_share_change": 1.3132231805482928e-24,
+              "x_before": 1.956314813196396e-24,
+              "x_after": 1.9573425831893767e-24
+            },
+            {
+              "species": "C2H2O4",
+              "case_index": 44,
+              "carbon_share_before": 2.809809479088389e-23,
+              "carbon_share_after": 2.7824565087780017e-23,
+              "maximum_absolute_carbon_share_change": 2.7352970310387455e-25,
+              "x_before": 1.1723023113744086e-26,
+              "x_after": 1.1608901122525109e-26
+            },
+            {
+              "species": "C2H3Cl1O2",
+              "case_index": 64,
+              "carbon_share_before": 2.1648810967820534e-22,
+              "carbon_share_after": 2.166342882893875e-22,
+              "maximum_absolute_carbon_share_change": 1.4617861118213365e-25,
+              "x_before": 1.3636461847362288e-25,
+              "x_after": 1.3645699514158852e-25
+            },
+            {
+              "species": "C2H6O2",
+              "case_index": 69,
+              "carbon_share_before": 6.02152855503806e-24,
+              "carbon_share_after": 6.030318650830823e-24,
+              "maximum_absolute_carbon_share_change": 8.790095792763216e-27,
+              "x_before": 3.768789672181881e-27,
+              "x_after": 3.774306566948478e-27
+            },
+            {
+              "species": "C1F2+",
+              "case_index": 74,
+              "carbon_share_before": 1.0719502314816082e-25,
+              "carbon_share_after": 1.1088715673686908e-25,
+              "maximum_absolute_carbon_share_change": 3.69213358870826e-27,
+              "x_before": 1.259188406175826e-28,
+              "x_after": 1.3025598035326127e-28
+            },
+            {
+              "species": "C1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 1.047584649098961e-25,
+              "carbon_share_after": 1.0835560602864888e-25,
+              "maximum_absolute_carbon_share_change": 3.597141118752779e-27,
+              "x_before": 1.2305668732492971e-28,
+              "x_after": 1.272822399398814e-28
+            },
+            {
+              "species": "C1H1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 4.031150857373126e-26,
+              "carbon_share_after": 4.1695644871082094e-26,
+              "maximum_absolute_carbon_share_change": 1.3841362973508366e-27,
+              "x_before": 4.735274338374982e-29,
+              "x_after": 4.897868480866575e-29
+            },
+            {
+              "species": "C1H1Cl2F1",
+              "case_index": 74,
+              "carbon_share_before": 1.5123044571314276e-26,
+              "carbon_share_after": 1.564230227981099e-26,
+              "maximum_absolute_carbon_share_change": 5.192577084967156e-28,
+              "x_before": 1.7764595623025364e-29,
+              "x_after": 1.8374566346522443e-29
+            },
+            {
+              "species": "C1H1Cl1F2",
+              "case_index": 74,
+              "carbon_share_before": 3.310296493803181e-27,
+              "carbon_share_after": 3.4239556762821774e-27,
+              "maximum_absolute_carbon_share_change": 1.1365918247899627e-28,
+              "x_before": 3.888507920969621e-30,
+              "x_after": 4.0220230766541096e-30
+            },
+            {
+              "species": "C1F3",
+              "case_index": 74,
+              "carbon_share_before": 3.800393249290649e-28,
+              "carbon_share_after": 3.9308836694759904e-28,
+              "maximum_absolute_carbon_share_change": 1.304904201853416e-29,
+              "x_before": 4.464210163751213e-31,
+              "x_after": 4.617496931923563e-31
+            },
+            {
+              "species": "C1H1F3",
+              "case_index": 74,
+              "carbon_share_before": 2.8745524925006717e-28,
+              "carbon_share_after": 2.973249001432028e-28,
+              "maximum_absolute_carbon_share_change": 9.869650893135636e-30,
+              "x_before": 3.3766522597768306e-31,
+              "x_after": 3.4925908005278967e-31
+            },
+            {
+              "species": "C5Fe1O5",
+              "case_index": 59,
+              "carbon_share_before": 8.789782600674624e-29,
+              "carbon_share_after": 8.79111613373717e-29,
+              "maximum_absolute_carbon_share_change": 1.3335330625469172e-32,
+              "x_before": 2.2181437889241993e-32,
+              "x_after": 2.2184804340823284e-32
+            },
+            {
+              "species": "C2F3N1",
+              "case_index": 74,
+              "carbon_share_before": 9.161420039237626e-34,
+              "carbon_share_after": 9.658798718580599e-34,
+              "maximum_absolute_carbon_share_change": 4.973786793429732e-35,
+              "x_before": 5.380825321325949e-37,
+              "x_after": 5.672957685753458e-37
+            },
+            {
+              "species": "C1F3+",
+              "case_index": 74,
+              "carbon_share_before": 1.1098156581337575e-33,
+              "carbon_share_after": 1.1480417188015539e-33,
+              "maximum_absolute_carbon_share_change": 3.822606066779632e-35,
+              "x_before": 1.3036678090762633e-36,
+              "x_after": 1.3485718632302065e-36
+            },
+            {
+              "species": "C1Cl4",
+              "case_index": 74,
+              "carbon_share_before": 4.1538102350070544e-35,
+              "carbon_share_after": 4.2964455345900725e-35,
+              "maximum_absolute_carbon_share_change": 1.4263529958301812e-36,
+              "x_before": 4.87935870133268e-38,
+              "x_after": 5.046912028508587e-38
+            },
+            {
+              "species": "C1Cl3F1",
+              "case_index": 74,
+              "carbon_share_before": 2.894616037583059e-35,
+              "carbon_share_after": 2.99401119928794e-35,
+              "maximum_absolute_carbon_share_change": 9.939516170488078e-37,
+              "x_before": 3.400220316028481e-38,
+              "x_after": 3.5169795621806786e-38
+            },
+            {
+              "species": "C1Cl2F2",
+              "case_index": 74,
+              "carbon_share_before": 9.256504541905424e-36,
+              "carbon_share_after": 9.574349416926861e-36,
+              "maximum_absolute_carbon_share_change": 3.17844875021437e-37,
+              "x_before": 1.0873343611084585e-38,
+              "x_after": 1.124671518547312e-38
+            },
+            {
+              "species": "C2Cl4",
+              "case_index": 74,
+              "carbon_share_before": 2.8735680750746097e-36,
+              "carbon_share_after": 3.074295020558223e-36,
+              "maximum_absolute_carbon_share_change": 2.0072694548361344e-37,
+              "x_before": 1.6877479467912294e-39,
+              "x_after": 1.8056433386068416e-39
+            },
+            {
+              "species": "C1Cl1F3",
+              "case_index": 74,
+              "carbon_share_before": 1.9544967482273862e-36,
+              "carbon_share_after": 2.0216082659968358e-36,
+              "maximum_absolute_carbon_share_change": 6.711151776944955e-38,
+              "x_before": 2.2958898398432808e-39,
+              "x_after": 2.3747255708119393e-39
+            },
+            {
+              "species": "C1F4",
+              "case_index": 74,
+              "carbon_share_before": 1.8883777629919587e-37,
+              "carbon_share_after": 1.953218045749016e-37,
+              "maximum_absolute_carbon_share_change": 6.484028275705724e-39,
+              "x_before": 2.2182218127358214e-40,
+              "x_after": 2.294389529676949e-40
+            },
+            {
+              "species": "C4H6O4",
+              "case_index": 69,
+              "carbon_share_before": 5.527014305063095e-39,
+              "carbon_share_after": 5.543245448791678e-39,
+              "maximum_absolute_carbon_share_change": 1.6231143728582488e-41,
+              "x_before": 1.729640093917299e-42,
+              "x_after": 1.734726546888131e-42
+            },
+            {
+              "species": "C2F4",
+              "case_index": 74,
+              "carbon_share_before": 1.2663470139479449e-40,
+              "carbon_share_after": 1.354802452206311e-40,
+              "maximum_absolute_carbon_share_change": 8.845543825836614e-42,
+              "x_before": 7.437702942396293e-44,
+              "x_after": 7.957238998195911e-44
+            },
+            {
+              "species": "C1F4O1",
+              "case_index": 49,
+              "carbon_share_before": 1.6241651908007563e-46,
+              "carbon_share_after": 1.6250168952214668e-46,
+              "maximum_absolute_carbon_share_change": 8.517044207104116e-50,
+              "x_before": 1.2719141968542557e-49,
+              "x_after": 1.2725807666482058e-49
+            },
+            {
+              "species": "C2Cl6",
+              "case_index": 74,
+              "carbon_share_before": 2.567547124204221e-56,
+              "carbon_share_after": 2.746902677711779e-56,
+              "maximum_absolute_carbon_share_change": 1.7935555350755794e-57,
+              "x_before": 1.5080110420049424e-59,
+              "x_after": 1.6133541148926423e-59
+            },
+            {
+              "species": "C2F6",
+              "case_index": 74,
+              "carbon_share_before": 3.4651589065107803e-60,
+              "carbon_share_after": 3.707206625502942e-60,
+              "maximum_absolute_carbon_share_change": 2.4204771899216193e-61,
+              "x_before": 2.0352101209981127e-63,
+              "x_after": 2.177374943984092e-63
+            },
+            {
+              "species": "C1F8S1",
+              "case_index": 74,
+              "carbon_share_before": 1.0569203707799484e-89,
+              "carbon_share_after": 1.0910051857591244e-89,
+              "maximum_absolute_carbon_share_change": 3.408481497917608e-91,
+              "x_before": 1.2415332709035386e-92,
+              "x_after": 1.2815726746314549e-92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "network": "neutral",
+      "species": 421,
+      "cases": 75,
+      "C2H2_ratio_min": 0.9130121579583224,
+      "C2H2_ratio_max": 0.9956797054949115,
+      "highlighted_case": {
+        "case_index": 55,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1e-06,
+        "C_over_O": 1.5,
+        "species": "C2H2",
+        "x_before": 4.6863353775380534e-05,
+        "x_after": 4.4726407490166696e-05,
+        "delta_x": -2.1369462852138376e-06,
+        "ratio": 0.954400483254861,
+        "carbon_share_before": 0.11578624451550207,
+        "carbon_share_after": 0.11050664920465769
+      },
+      "largest_absolute_response": {
+        "case_index": 58,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 1.5,
+        "species": "C1H4",
+        "x_before": 0.0001186539575861599,
+        "x_after": 0.00012176525773813339,
+        "delta_x": 3.1113001519734844e-06,
+        "ratio": 1.0262216298155433,
+        "carbon_share_before": 0.09417993405611273,
+        "carbon_share_after": 0.0966491834248143
+      },
+      "species_extrema": [
+        {
+          "case_index": 52,
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "C_over_O": 1.5,
+          "species": "C2H2",
+          "x_before": 0.00016595419258120264,
+          "x_after": 0.00016370712526338888,
+          "delta_x": -2.2470673178137657e-06,
+          "ratio": 0.9864597134735582,
+          "carbon_share_before": 0.26328188121501495,
+          "carbon_share_after": 0.25971619326833095
+        },
+        {
+          "case_index": 51,
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.0001,
+          "C_over_O": 1.5,
+          "species": "C1O1",
+          "x_before": 0.0008308109734808208,
+          "x_after": 0.0008311642613215652,
+          "delta_x": 3.532878407444323e-07,
+          "ratio": 1.0004252325162055,
+          "carbon_share_before": 0.6595772329205212,
+          "carbon_share_after": 0.6598578336482477
+        },
+        {
+          "case_index": 69,
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "C1O2",
+          "x_before": 2.0351550875176174e-09,
+          "x_after": 2.0125334940424824e-09,
+          "delta_x": -2.2621593475134977e-11,
+          "ratio": 0.9888845849567524,
+          "carbon_share_before": 1.625819384440539e-06,
+          "carbon_share_after": 1.6077443704834956e-06
+        },
+        {
+          "case_index": 58,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.5,
+          "species": "C1H4",
+          "x_before": 0.0001186539575861599,
+          "x_after": 0.00012176525773813339,
+          "delta_x": 3.1113001519734844e-06,
+          "ratio": 1.0262216298155433,
+          "carbon_share_before": 0.09417993405611273,
+          "carbon_share_after": 0.0966491834248143
+        },
+        {
+          "case_index": 67,
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "C_over_O": 1.5,
+          "species": "C2",
+          "x_before": 2.795649846104572e-06,
+          "x_after": 2.8193163017327377e-06,
+          "delta_x": 2.3666455628165832e-08,
+          "ratio": 1.0084654577400465,
+          "carbon_share_before": 0.006866651793138038,
+          "carbon_share_after": 0.006924789140579909
+        },
+        {
+          "case_index": 74,
+          "temperature_K": 4000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "C1H2",
+          "x_before": 3.058651833491831e-05,
+          "x_after": 3.091189961800487e-05,
+          "delta_x": 3.253812830865594e-07,
+          "ratio": 1.0106380621528634,
+          "carbon_share_before": 0.026038330854111367,
+          "carbon_share_after": 0.026315322090913373
+        },
+        {
+          "case_index": 74,
+          "temperature_K": 4000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "C1H1",
+          "x_before": 1.154082839805047e-05,
+          "x_after": 1.1663605560777273e-05,
+          "delta_x": 1.2277716272680326e-07,
+          "ratio": 1.0106385051828293,
+          "carbon_share_before": 0.009824717703024724,
+          "carbon_share_after": 0.009929235694542956
+        },
+        {
+          "case_index": 69,
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.5,
+          "species": "H2O1",
+          "x_before": 1.5610208891989523e-05,
+          "x_after": 1.5430744196211453e-05,
+          "delta_x": -1.794646957780693e-07,
+          "ratio": 0.9885033764109228,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        },
+        {
+          "case_index": 55,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 1.5,
+          "species": "H1",
+          "x_before": 0.715635402629036,
+          "x_after": 0.7156358633668864,
+          "delta_x": 4.607378504273285e-07,
+          "ratio": 1.0000006438164584,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        },
+        {
+          "case_index": 58,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.5,
+          "species": "H2",
+          "x_before": 0.8562731947043719,
+          "x_after": 0.8562710716824181,
+          "delta_x": -2.1230219537926587e-06,
+          "ratio": 0.9999975206254652,
+          "carbon_share_before": 0.0,
+          "carbon_share_after": 0.0
+        }
+      ],
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.3961448377084816e-06,
+        "mass_action_max_abs_ln": 1.3642420526593924e-12,
+        "carbon_relative_residual": 2.2883484412346146e-13,
+        "major_element_relative_residual": 2.637415314858087e-13
+      },
+      "tight_case_indices": [
+        1,
+        51,
+        74
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 8.82513512578953e-06,
+        "C2H2_delta_ln_x": 3.055333763768431e-13,
+        "visible_delta_ln_x": 8.825137207679745e-07,
+        "absolute_delta_x": 3.4861002973229915e-14
+      },
+      "nasa_control_C2H2_ratio_min": 0.9270155447227337,
+      "nasa_over_current_ratio_min": 0.8767490951309155,
+      "nasa_over_current_ratio_max": 0.9934573870695969,
+      "nasa_control_C2H2_ratio_max": 0.9977680388451726,
+      "nasa_control_max_absolute_delta_x": 2.6331284035538215e-06,
+      "gibbs_corrected_current_min": -3.0800854305779874e-18,
+      "gibbs_corrected_candidate_max": 2.680064116417255e-18,
+      "candidate_responses": [
+        {
+          "variant": 1,
+          "model": "retained",
+          "target_ratio_min": 0.9130121579583224,
+          "target_ratio_max": 0.9956797054949115,
+          "maximum_absolute_target_delta_x": 2.2470673178137657e-06,
+          "maximum_absolute_all_species_delta_x": 3.1113001519734844e-06,
+          "highlight": {
+            "case_index": 55,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.5,
+            "carbon_share_before": 0.11578624451550207,
+            "carbon_share_after": 0.11050664920465769,
+            "x_before": 4.6863353775380534e-05,
+            "x_after": 4.4726407490166696e-05
+          },
+          "all_carbon_species_effects": [
+            {
+              "species": "C2H2",
+              "case_index": 55,
+              "carbon_share_before": 0.11578624451550207,
+              "carbon_share_after": 0.11050664920465769,
+              "maximum_absolute_carbon_share_change": 0.005279595310844376,
+              "x_before": 4.6863353775380534e-05,
+              "x_after": 4.4726407490166696e-05
+            },
+            {
+              "species": "C3H1",
+              "case_index": 55,
+              "carbon_share_before": 0.11666935394231355,
+              "carbon_share_after": 0.12050827520115506,
+              "maximum_absolute_carbon_share_change": 0.003838921258841513,
+              "x_before": 3.148052247151406e-05,
+              "x_after": 3.2516307156636604e-05
+            },
+            {
+              "species": "C1H4",
+              "case_index": 58,
+              "carbon_share_before": 0.09417993405611273,
+              "carbon_share_after": 0.0966491834248143,
+              "maximum_absolute_carbon_share_change": 0.002469249368701562,
+              "x_before": 0.0001186539575861599,
+              "x_after": 0.00012176525773813339
+            },
+            {
+              "species": "C1H1N1_hcn",
+              "case_index": 51,
+              "carbon_share_before": 0.03429408173085697,
+              "carbon_share_after": 0.03542912197112542,
+              "maximum_absolute_carbon_share_change": 0.0011350402402684479,
+              "x_before": 4.3197214829999107e-05,
+              "x_after": 4.462691581547505e-05
+            },
+            {
+              "species": "C1",
+              "case_index": 67,
+              "carbon_share_before": 0.2095136700428206,
+              "carbon_share_after": 0.21039885865457306,
+              "maximum_absolute_carbon_share_change": 0.0008851886117524632,
+              "x_before": 0.00017060042566810864,
+              "x_after": 0.0001713210092115887
+            },
+            {
+              "species": "C3",
+              "case_index": 55,
+              "carbon_share_before": 0.022587187523138774,
+              "carbon_share_after": 0.02333038767809595,
+              "maximum_absolute_carbon_share_change": 0.000743200154957175,
+              "x_before": 6.094629312356093e-06,
+              "x_after": 6.295153179796787e-06
+            },
+            {
+              "species": "C1H3",
+              "case_index": 74,
+              "carbon_share_before": 0.059432766039745386,
+              "carbon_share_after": 0.06006497514187344,
+              "maximum_absolute_carbon_share_change": 0.0006322091021280576,
+              "x_before": 6.98140521508333e-05,
+              "x_after": 7.055670744705316e-05
+            },
+            {
+              "species": "C1O1",
+              "case_index": 51,
+              "carbon_share_before": 0.6595772329205212,
+              "carbon_share_after": 0.6598578336482477,
+              "maximum_absolute_carbon_share_change": 0.0002806007277265099,
+              "x_before": 0.0008308109734808208,
+              "x_after": 0.0008311642613215652
+            },
+            {
+              "species": "C2H1",
+              "case_index": 68,
+              "carbon_share_before": 0.0068931351901896235,
+              "carbon_share_after": 0.007170551935803724,
+              "maximum_absolute_carbon_share_change": 0.0002774167456141008,
+              "x_before": 4.050815421207403e-06,
+              "x_after": 4.213841299454374e-06
+            },
+            {
+              "species": "C1H2",
+              "case_index": 74,
+              "carbon_share_before": 0.026038330854111367,
+              "carbon_share_after": 0.026315322090913373,
+              "maximum_absolute_carbon_share_change": 0.0002769912368020058,
+              "x_before": 3.058651833491831e-05,
+              "x_after": 3.091189961800487e-05
+            },
+            {
+              "species": "C2Si1",
+              "case_index": 50,
+              "carbon_share_before": 0.0018138674961385157,
+              "carbon_share_after": 0.0019696910297379803,
+              "maximum_absolute_carbon_share_change": 0.00015582353359946456,
+              "x_before": 1.134053080527837e-06,
+              "x_after": 1.23147584766692e-06
+            },
+            {
+              "species": "C1S1",
+              "case_index": 56,
+              "carbon_share_before": 0.006374949644972453,
+              "carbon_share_after": 0.006487183166755795,
+              "maximum_absolute_carbon_share_change": 0.000112233521783342,
+              "x_before": 7.477639134520999e-06,
+              "x_after": 7.609282658780596e-06
+            },
+            {
+              "species": "C1H1",
+              "case_index": 74,
+              "carbon_share_before": 0.009824717703024724,
+              "carbon_share_after": 0.009929235694542956,
+              "maximum_absolute_carbon_share_change": 0.00010451799151823225,
+              "x_before": 1.154082839805047e-05,
+              "x_after": 1.1663605560777273e-05
+            },
+            {
+              "species": "C1Si2",
+              "case_index": 51,
+              "carbon_share_before": 0.0021761802736116674,
+              "carbon_share_after": 0.0022796499442260107,
+              "maximum_absolute_carbon_share_change": 0.00010346967061434327,
+              "x_before": 2.741141387769718e-06,
+              "x_after": 2.8714724071524874e-06
+            },
+            {
+              "species": "C1H1N1_hnc",
+              "case_index": 68,
+              "carbon_share_before": 0.0075124740905607714,
+              "carbon_share_after": 0.007597890551443781,
+              "maximum_absolute_carbon_share_change": 8.541646088300932e-05,
+              "x_before": 8.829551447293605e-06,
+              "x_after": 8.929941594745417e-06
+            },
+            {
+              "species": "C2H4",
+              "case_index": 58,
+              "carbon_share_before": 0.0011109383647421114,
+              "carbon_share_after": 0.0011699655918332226,
+              "maximum_absolute_carbon_share_change": 5.902722709111123e-05,
+              "x_before": 6.998159158425997e-07,
+              "x_after": 7.370013733491294e-07
+            },
+            {
+              "species": "C2",
+              "case_index": 67,
+              "carbon_share_before": 0.006866651793138038,
+              "carbon_share_after": 0.006924789140579909,
+              "maximum_absolute_carbon_share_change": 5.8137347441870185e-05,
+              "x_before": 2.795649846104572e-06,
+              "x_after": 2.8193163017327377e-06
+            },
+            {
+              "species": "C1N1",
+              "case_index": 67,
+              "carbon_share_before": 0.00670998225390274,
+              "carbon_share_after": 0.0067319925112577315,
+              "maximum_absolute_carbon_share_change": 2.2010257354991743e-05,
+              "x_before": 5.4637285887231246e-06,
+              "x_after": 5.481644522259694e-06
+            },
+            {
+              "species": "C1H1P1",
+              "case_index": 62,
+              "carbon_share_before": 0.00020765159373604204,
+              "carbon_share_after": 0.00020961145632558808,
+              "maximum_absolute_carbon_share_change": 1.9598625895460417e-06,
+              "x_before": 2.3484916876342536e-07,
+              "x_after": 2.3706563096113048e-07
+            },
+            {
+              "species": "C2N1",
+              "case_index": 67,
+              "carbon_share_before": 0.00015978780707373685,
+              "carbon_share_after": 0.000160989074151331,
+              "maximum_absolute_carbon_share_change": 1.201267077594135e-06,
+              "x_before": 6.505510570690157e-08,
+              "x_after": 6.554410711164245e-08
+            },
+            {
+              "species": "C2Si2",
+              "case_index": 51,
+              "carbon_share_before": 8.839437220413252e-06,
+              "carbon_share_after": 9.663579749167415e-06,
+              "maximum_absolute_carbon_share_change": 8.241425287541638e-07,
+              "x_before": 5.567127756666432e-09,
+              "x_after": 6.08617622945463e-09
+            },
+            {
+              "species": "C1Si1",
+              "case_index": 74,
+              "carbon_share_before": 1.8797415183702908e-05,
+              "carbon_share_after": 1.9003020030380892e-05,
+              "maximum_absolute_carbon_share_change": 2.05604846677984e-07,
+              "x_before": 2.2080811838006872e-08,
+              "x_after": 2.2322335466336693e-08
+            },
+            {
+              "species": "C1N1Na1",
+              "case_index": 52,
+              "carbon_share_before": 5.280795912898866e-06,
+              "carbon_share_after": 5.441735131871546e-06,
+              "maximum_absolute_carbon_share_change": 1.6093921897267946e-07,
+              "x_before": 6.657277119617211e-09,
+              "x_after": 6.860186911511358e-09
+            },
+            {
+              "species": "C2O1",
+              "case_index": 74,
+              "carbon_share_before": 8.565243184199984e-06,
+              "carbon_share_after": 8.657864511504496e-06,
+              "maximum_absolute_carbon_share_change": 9.26213273045123e-08,
+              "x_before": 5.030678985615575e-09,
+              "x_after": 5.085080048826873e-09
+            },
+            {
+              "species": "C1H1O1",
+              "case_index": 49,
+              "carbon_share_before": 0.0004460062897124327,
+              "carbon_share_after": 0.00044608152635929044,
+              "maximum_absolute_carbon_share_change": 7.523664685775118e-08,
+              "x_before": 3.492765332741819e-07,
+              "x_after": 3.4933541603931527e-07
+            },
+            {
+              "species": "C5",
+              "case_index": 55,
+              "carbon_share_before": 1.2043325541593625e-06,
+              "carbon_share_after": 1.2710975880734673e-06,
+              "maximum_absolute_carbon_share_change": 6.676503391410487e-08,
+              "x_before": 1.9497674455179855e-10,
+              "x_after": 2.0578536800497118e-10
+            },
+            {
+              "species": "C4",
+              "case_index": 55,
+              "carbon_share_before": 1.017162902016151e-06,
+              "carbon_share_after": 1.0620296596068047e-06,
+              "maximum_absolute_carbon_share_change": 4.486675759065364e-08,
+              "x_before": 2.0584338460858193e-10,
+              "x_after": 2.1492268412847148e-10
+            },
+            {
+              "species": "C1O2",
+              "case_index": 44,
+              "carbon_share_before": 8.118863739835715e-06,
+              "carbon_share_after": 8.098107585632204e-06,
+              "maximum_absolute_carbon_share_change": 2.0756154203511372e-08,
+              "x_before": 6.7746687017799534e-09,
+              "x_after": 6.757348857652641e-09
+            },
+            {
+              "species": "C1K1N1",
+              "case_index": 52,
+              "carbon_share_before": 4.2137972287843053e-07,
+              "carbon_share_after": 4.3421790286431845e-07,
+              "maximum_absolute_carbon_share_change": 1.2838179985887918e-08,
+              "x_before": 5.312156792382616e-10,
+              "x_after": 5.474018675637416e-10
+            },
+            {
+              "species": "C1H2O1",
+              "case_index": 69,
+              "carbon_share_before": 2.9986142600660003e-05,
+              "carbon_share_after": 2.9997531446497894e-05,
+              "maximum_absolute_carbon_share_change": 1.1388845837890594e-08,
+              "x_before": 3.753581194368757e-08,
+              "x_after": 3.7550146579903315e-08
+            },
+            {
+              "species": "C1P1",
+              "case_index": 74,
+              "carbon_share_before": 4.382953021963606e-07,
+              "carbon_share_after": 4.4192994737126217e-07,
+              "maximum_absolute_carbon_share_change": 3.6346451749015587e-09,
+              "x_before": 5.148535584653583e-10,
+              "x_after": 5.191231984216408e-10
+            },
+            {
+              "species": "C1Al1",
+              "case_index": 74,
+              "carbon_share_before": 2.477801240174691e-07,
+              "carbon_share_after": 2.5041636543293314e-07,
+              "maximum_absolute_carbon_share_change": 2.6362414154640477e-09,
+              "x_before": 2.910605656234684e-10,
+              "x_after": 2.94157355331833e-10
+            },
+            {
+              "species": "C2N2",
+              "case_index": 68,
+              "carbon_share_before": 8.577824241731764e-08,
+              "carbon_share_after": 8.773991364613245e-08,
+              "maximum_absolute_carbon_share_change": 1.961671228814806e-09,
+              "x_before": 5.040838712733541e-11,
+              "x_after": 5.1561173399574906e-11
+            },
+            {
+              "species": "C2Ti1",
+              "case_index": 57,
+              "carbon_share_before": 7.048099367363416e-09,
+              "carbon_share_after": 7.513363822903765e-09,
+              "maximum_absolute_carbon_share_change": 4.652644555403493e-10,
+              "x_before": 4.409280358214209e-12,
+              "x_after": 4.700348917752151e-12
+            },
+            {
+              "species": "C1S2",
+              "case_index": 68,
+              "carbon_share_before": 5.2445367018700163e-08,
+              "carbon_share_after": 5.2838167443951974e-08,
+              "maximum_absolute_carbon_share_change": 3.928004252518106e-10,
+              "x_before": 6.164002174006066e-11,
+              "x_after": 6.210167757131072e-11
+            },
+            {
+              "species": "C1H1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 8.672164923204899e-08,
+              "carbon_share_after": 8.63428872695626e-08,
+              "maximum_absolute_carbon_share_change": 3.78761962486383e-10,
+              "x_before": 1.0186956026989735e-10,
+              "x_after": 1.0142466258951978e-10
+            },
+            {
+              "species": "C1O1S1",
+              "case_index": 69,
+              "carbon_share_before": 3.880348300978812e-07,
+              "carbon_share_after": 3.8765914963068697e-07,
+              "maximum_absolute_carbon_share_change": 3.756804671942107e-10,
+              "x_before": 4.857311126718327e-10,
+              "x_after": 4.852618595511935e-10
+            },
+            {
+              "species": "C2H1Cl1",
+              "case_index": 68,
+              "carbon_share_before": 1.906313159821227e-09,
+              "carbon_share_after": 1.9830327353981086e-09,
+              "maximum_absolute_carbon_share_change": 7.671957557688154e-11,
+              "x_before": 1.1202627733813549e-12,
+              "x_after": 1.165347565069119e-12
+            },
+            {
+              "species": "C1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 1.2220761551249208e-08,
+              "carbon_share_after": 1.2167391981881712e-08,
+              "maximum_absolute_carbon_share_change": 5.3369569367496076e-11,
+              "x_before": 1.4355395871887424e-11,
+              "x_after": 1.4292707429437722e-11
+            },
+            {
+              "species": "C1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 3.440131350353036e-09,
+              "carbon_share_after": 3.476730877717455e-09,
+              "maximum_absolute_carbon_share_change": 3.6599527364419175e-11,
+              "x_before": 4.041028636268613e-12,
+              "x_after": 4.08402205830989e-12
+            },
+            {
+              "species": "C2Cr1",
+              "case_index": 68,
+              "carbon_share_before": 8.105424814855338e-10,
+              "carbon_share_after": 8.431629490421073e-10,
+              "maximum_absolute_carbon_share_change": 3.262046755657347e-11,
+              "x_before": 4.763228767394876e-13,
+              "x_after": 4.954925211688235e-13
+            },
+            {
+              "species": "C2N1O1",
+              "case_index": 74,
+              "carbon_share_before": 4.985862412754517e-09,
+              "carbon_share_after": 5.016901219006427e-09,
+              "maximum_absolute_carbon_share_change": 3.103880625191002e-11,
+              "x_before": 2.9283784156044912e-12,
+              "x_after": 2.9466093240204373e-12
+            },
+            {
+              "species": "C1H3Cl1",
+              "case_index": 69,
+              "carbon_share_before": 1.9381743230691175e-09,
+              "carbon_share_after": 1.9614596483227716e-09,
+              "maximum_absolute_carbon_share_change": 2.3285325253654095e-11,
+              "x_before": 2.4261522355064465e-12,
+              "x_after": 2.455305278584329e-12
+            },
+            {
+              "species": "C1H1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 1.636256626730182e-09,
+              "carbon_share_after": 1.6536640217675063e-09,
+              "maximum_absolute_carbon_share_change": 1.740739503732417e-11,
+              "x_before": 1.9220661107089386e-12,
+              "x_after": 1.942514557343541e-12
+            },
+            {
+              "species": "C2V1",
+              "case_index": 57,
+              "carbon_share_before": 2.5023851283680215e-10,
+              "carbon_share_after": 2.6675718735154817e-10,
+              "maximum_absolute_carbon_share_change": 1.6518674514746025e-11,
+              "x_before": 1.5654883707078044e-13,
+              "x_after": 1.668828884671085e-13
+            },
+            {
+              "species": "C1N2_ncn",
+              "case_index": 74,
+              "carbon_share_before": 1.0469571477930634e-08,
+              "carbon_share_after": 1.0485114611308118e-08,
+              "maximum_absolute_carbon_share_change": 1.5543133377483715e-11,
+              "x_before": 1.2298320570648283e-11,
+              "x_after": 1.2316581542429548e-11
+            },
+            {
+              "species": "C1F1",
+              "case_index": 74,
+              "carbon_share_before": 1.134518392765209e-09,
+              "carbon_share_after": 1.1465883603682763e-09,
+              "maximum_absolute_carbon_share_change": 1.2069967603067377e-11,
+              "x_before": 1.3326878675917897e-12,
+              "x_after": 1.3468664444398105e-12
+            },
+            {
+              "species": "C1H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.711327534945418e-10,
+              "carbon_share_after": 2.7401717325658935e-10,
+              "maximum_absolute_carbon_share_change": 2.8844197620475247e-12,
+              "x_before": 3.1849226367166563e-13,
+              "x_after": 3.21880588200816e-13
+            },
+            {
+              "species": "C1Cl1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.263957458339805e-10,
+              "carbon_share_after": 2.277657848035448e-10,
+              "maximum_absolute_carbon_share_change": 1.3700389695642972e-12,
+              "x_before": 2.6594091878224914e-13,
+              "x_after": 2.6755032873773545e-13
+            },
+            {
+              "species": "C1H3F1",
+              "case_index": 69,
+              "carbon_share_before": 6.320901022638478e-11,
+              "carbon_share_after": 6.396828144990099e-11,
+              "maximum_absolute_carbon_share_change": 7.592712235162005e-13,
+              "x_before": 7.912326545635724e-14,
+              "x_after": 8.007386705110762e-14
+            },
+            {
+              "species": "C3O2",
+              "case_index": 74,
+              "carbon_share_before": 6.494628438656215e-11,
+              "carbon_share_after": 6.565995104516463e-11,
+              "maximum_absolute_carbon_share_change": 7.136666586024831e-13,
+              "x_before": 2.543021068060957e-14,
+              "x_after": 2.570965828221273e-14
+            },
+            {
+              "species": "C1N2_cnn",
+              "case_index": 74,
+              "carbon_share_before": 4.5965399460642904e-10,
+              "carbon_share_after": 4.6033639725879694e-10,
+              "maximum_absolute_carbon_share_change": 6.824026523679018e-13,
+              "x_before": 5.399430329278616e-13,
+              "x_after": 5.407447590197449e-13
+            },
+            {
+              "species": "C4N2",
+              "case_index": 68,
+              "carbon_share_before": 1.0007298997256401e-11,
+              "carbon_share_after": 1.0648113552079967e-11,
+              "maximum_absolute_carbon_share_change": 6.408145548235654e-13,
+              "x_before": 2.940441467070985e-15,
+              "x_after": 3.1287313060933336e-15
+            },
+            {
+              "species": "C2H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.9753938915395934e-11,
+              "carbon_share_after": 3.039039154594683e-11,
+              "maximum_absolute_carbon_share_change": 6.364526305508929e-13,
+              "x_before": 1.7475570981695657e-14,
+              "x_after": 1.784938693842839e-14
+            },
+            {
+              "species": "C4Ti1",
+              "case_index": 51,
+              "carbon_share_before": 1.0854815548253826e-12,
+              "carbon_share_after": 1.2876056797079244e-12,
+              "maximum_absolute_carbon_share_change": 2.0212412488254188e-13,
+              "x_before": 3.418212235990791e-16,
+              "x_after": 4.0547060634669517e-16
+            },
+            {
+              "species": "C2H4O1",
+              "case_index": 69,
+              "carbon_share_before": 6.7648286382192e-12,
+              "carbon_share_after": 6.84870667597478e-12,
+              "maximum_absolute_carbon_share_change": 8.387803775557975e-14,
+              "x_before": 4.2340113394558454e-15,
+              "x_after": 4.286518376091895e-15
+            },
+            {
+              "species": "C1Cl1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.5584670338945638e-10,
+              "carbon_share_after": 1.558729666773034e-10,
+              "maximum_absolute_carbon_share_change": 2.626328784700773e-14,
+              "x_before": 1.2204670099422963e-13,
+              "x_after": 1.2206725552593407e-13
+            },
+            {
+              "species": "C1F1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.6823884741080123e-12,
+              "carbon_share_after": 2.6986206233547337e-12,
+              "maximum_absolute_carbon_share_change": 1.6232149246721444e-14,
+              "x_before": 3.1509287098456155e-15,
+              "x_after": 3.1699969138901023e-15
+            },
+            {
+              "species": "C4V1",
+              "case_index": 57,
+              "carbon_share_before": 1.1876618681661045e-14,
+              "carbon_share_after": 1.3496371739811733e-14,
+              "maximum_absolute_carbon_share_change": 1.6197530581506882e-15,
+              "x_before": 3.714997387631738e-18,
+              "x_after": 4.221654760509629e-18
+            },
+            {
+              "species": "C2H2O2",
+              "case_index": 69,
+              "carbon_share_before": 3.382221495857187e-13,
+              "carbon_share_after": 3.3848045544965833e-13,
+              "maximum_absolute_carbon_share_change": 2.583058639396242e-16,
+              "x_before": 2.116884984359395e-16,
+              "x_after": 2.1185061076168903e-16
+            },
+            {
+              "species": "C1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.046623269020401e-12,
+              "carbon_share_after": 1.0467995940351242e-12,
+              "maximum_absolute_carbon_share_change": 1.7632501472325375e-16,
+              "x_before": 8.196318201773294e-16,
+              "x_after": 8.197698180343615e-16
+            },
+            {
+              "species": "C1H1F1O1",
+              "case_index": 69,
+              "carbon_share_before": 3.931496791491555e-13,
+              "carbon_share_after": 3.9329950874292867e-13,
+              "maximum_absolute_carbon_share_change": 1.4982959377318362e-16,
+              "x_before": 4.921337371996306e-16,
+              "x_after": 4.923223175694046e-16
+            },
+            {
+              "species": "C2N2Na2",
+              "case_index": 64,
+              "carbon_share_before": 6.718772510466592e-15,
+              "carbon_share_after": 6.76103785009679e-15,
+              "maximum_absolute_carbon_share_change": 4.226533963019842e-17,
+              "x_before": 4.232116358691802e-18,
+              "x_after": 4.2587448701280796e-18
+            },
+            {
+              "species": "C3N2O1",
+              "case_index": 74,
+              "carbon_share_before": 5.096296044792408e-16,
+              "carbon_share_after": 5.159054463840133e-16,
+              "maximum_absolute_carbon_share_change": 6.275841904772532e-18,
+              "x_before": 1.9954934040328771e-19,
+              "x_after": 2.0200674111593365e-19
+            },
+            {
+              "species": "C1Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.0449917178620702e-16,
+              "carbon_share_after": 1.0561096672195095e-16,
+              "maximum_absolute_carbon_share_change": 1.1117949357439311e-18,
+              "x_before": 1.2275233200356715e-19,
+              "x_after": 1.2405835621509187e-19
+            },
+            {
+              "species": "C2Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.2022468048503508e-17,
+              "carbon_share_after": 1.2279645581741386e-17,
+              "maximum_absolute_carbon_share_change": 2.571775332378776e-19,
+              "x_before": 7.061232946474757e-21,
+              "x_after": 7.212284353884805e-21
+            },
+            {
+              "species": "C2K2N2",
+              "case_index": 64,
+              "carbon_share_before": 3.002352423239858e-17,
+              "carbon_share_after": 3.021233820779495e-17,
+              "maximum_absolute_carbon_share_change": 1.8881397539637073e-19,
+              "x_before": 1.891164611565182e-20,
+              "x_after": 1.9030604947017024e-20
+            },
+            {
+              "species": "C1H2Cl2",
+              "case_index": 69,
+              "carbon_share_before": 1.0994622911769482e-17,
+              "carbon_share_after": 1.1126749050311737e-17,
+              "maximum_absolute_carbon_share_change": 1.32126138542255e-19,
+              "x_before": 1.3762760469192723e-20,
+              "x_after": 1.3928181341927844e-20
+            },
+            {
+              "species": "C1H4O2",
+              "case_index": 49,
+              "carbon_share_before": 3.2891789936580946e-17,
+              "carbon_share_after": 3.282628025544881e-17,
+              "maximum_absolute_carbon_share_change": 6.550968113213754e-20,
+              "x_before": 2.5758225000904992e-20,
+              "x_after": 2.5706920355235917e-20
+            },
+            {
+              "species": "C1F2",
+              "case_index": 74,
+              "carbon_share_before": 5.479545307159671e-18,
+              "carbon_share_after": 5.537842089949652e-18,
+              "maximum_absolute_carbon_share_change": 5.829678278998147e-20,
+              "x_before": 6.4366726862598274e-21,
+              "x_after": 6.505153848905241e-21
+            },
+            {
+              "species": "C1H2Cl1F1",
+              "case_index": 69,
+              "carbon_share_before": 1.3494768418356596e-18,
+              "carbon_share_after": 1.3656912961361472e-18,
+              "maximum_absolute_carbon_share_change": 1.6214454300487544e-20,
+              "x_before": 1.6892372464202854e-21,
+              "x_after": 1.7095376145958657e-21
+            },
+            {
+              "species": "C1H2F2",
+              "case_index": 69,
+              "carbon_share_before": 9.28631125799381e-20,
+              "carbon_share_after": 9.397871288020948e-20,
+              "maximum_absolute_carbon_share_change": 1.1156003002713854e-21,
+              "x_before": 1.1624343873524218e-22,
+              "x_after": 1.1764016150250596e-22
+            },
+            {
+              "species": "C2H4O3",
+              "case_index": 64,
+              "carbon_share_before": 5.274431726357108e-20,
+              "carbon_share_after": 5.258648461922043e-20,
+              "maximum_absolute_carbon_share_change": 1.5783264435065006e-22,
+              "x_before": 3.3223343634786626e-23,
+              "x_after": 3.312397099018874e-23
+            },
+            {
+              "species": "C2F2",
+              "case_index": 74,
+              "carbon_share_before": 7.469266972375641e-22,
+              "carbon_share_after": 7.629042940481804e-22,
+              "maximum_absolute_carbon_share_change": 1.5977596810616324e-23,
+              "x_before": 4.386972277120728e-25,
+              "x_after": 4.480815563322587e-25
+            },
+            {
+              "species": "C1Cl2O1",
+              "case_index": 49,
+              "carbon_share_before": 3.844191234490145e-20,
+              "carbon_share_after": 3.844838478521888e-20,
+              "maximum_absolute_carbon_share_change": 6.47244031743078e-24,
+              "x_before": 3.010463795233541e-23,
+              "x_after": 3.010970349883076e-23
+            },
+            {
+              "species": "C1Cl1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.8106097322880138e-20,
+              "carbon_share_after": 1.8109144936289375e-20,
+              "maximum_absolute_carbon_share_change": 3.0476134092375025e-24,
+              "x_before": 1.4179250494736368e-23,
+              "x_after": 1.4181635657647858e-23
+            },
+            {
+              "species": "C4Ni1O4",
+              "case_index": 59,
+              "carbon_share_before": 3.0559796728551787e-20,
+              "carbon_share_after": 3.056229919501359e-20,
+              "maximum_absolute_carbon_share_change": 2.5024664618049775e-24,
+              "x_before": 9.639889071410569e-24,
+              "x_after": 9.640678814964016e-24
+            },
+            {
+              "species": "C1F2O1",
+              "case_index": 49,
+              "carbon_share_before": 2.497994226974315e-21,
+              "carbon_share_after": 2.4984145647024446e-21,
+              "maximum_absolute_carbon_share_change": 4.203377281296052e-25,
+              "x_before": 1.9562297300763616e-24,
+              "x_after": 1.9565587002050356e-24
+            },
+            {
+              "species": "C2H2O4",
+              "case_index": 44,
+              "carbon_share_before": 2.8097798064781614e-23,
+              "carbon_share_after": 2.795431442329444e-23,
+              "maximum_absolute_carbon_share_change": 1.4348364148717714e-25,
+              "x_before": 1.1722901088019807e-26,
+              "x_after": 1.1663036866159634e-26
+            },
+            {
+              "species": "C2H3Cl1O2",
+              "case_index": 64,
+              "carbon_share_before": 2.164957629032069e-22,
+              "carbon_share_after": 2.16586862270073e-22,
+              "maximum_absolute_carbon_share_change": 9.109936686608994e-26,
+              "x_before": 1.3636944223707534e-25,
+              "x_after": 1.3642701151519295e-25
+            },
+            {
+              "species": "C2H6O2",
+              "case_index": 69,
+              "carbon_share_before": 6.02153372513242e-24,
+              "carbon_share_after": 6.0261098818201995e-24,
+              "maximum_absolute_carbon_share_change": 4.5761566877796756e-27,
+              "x_before": 3.768793481195693e-27,
+              "x_after": 3.7716655080858316e-27
+            },
+            {
+              "species": "C1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 1.04800148707672e-25,
+              "carbon_share_after": 1.059151750628155e-25,
+              "maximum_absolute_carbon_share_change": 1.1150263551434883e-27,
+              "x_before": 1.2310588139881574e-28,
+              "x_after": 1.244157015541781e-28
+            },
+            {
+              "species": "C1H1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 4.03275876735005e-26,
+              "carbon_share_after": 4.075663716678742e-26,
+              "maximum_absolute_carbon_share_change": 4.290494932869197e-28,
+              "x_before": 4.7371719281452315e-29,
+              "x_after": 4.7875723219903184e-29
+            },
+            {
+              "species": "C1H1Cl2F1",
+              "case_index": 74,
+              "carbon_share_before": 1.5126783469131024e-26,
+              "carbon_share_after": 1.528771674477262e-26,
+              "maximum_absolute_carbon_share_change": 1.6093327564159603e-28,
+              "x_before": 1.776902069949149e-29,
+              "x_after": 1.795806883040505e-29
+            },
+            {
+              "species": "C1H1Cl1F2",
+              "case_index": 74,
+              "carbon_share_before": 3.310613009205391e-27,
+              "carbon_share_after": 3.345834017881725e-27,
+              "maximum_absolute_carbon_share_change": 3.522100867633396e-29,
+              "x_before": 3.88888696718786e-30,
+              "x_after": 3.930261044951377e-30
+            },
+            {
+              "species": "C1F3",
+              "case_index": 74,
+              "carbon_share_before": 3.800176836327103e-28,
+              "carbon_share_after": 3.84060736076993e-28,
+              "maximum_absolute_carbon_share_change": 4.0430524442827035e-30,
+              "x_before": 4.463964266046538e-31,
+              "x_after": 4.511457955868381e-31
+            },
+            {
+              "species": "C1H1F3",
+              "case_index": 74,
+              "carbon_share_before": 2.8743915808319313e-28,
+              "carbon_share_after": 2.904971294557231e-28,
+              "maximum_absolute_carbon_share_change": 3.0579713725299777e-30,
+              "x_before": 3.3764695318389937e-31,
+              "x_after": 3.4123914858539944e-31
+            },
+            {
+              "species": "C5Fe1O5",
+              "case_index": 59,
+              "carbon_share_before": 8.789785474463299e-29,
+              "carbon_share_after": 8.790685166062629e-29,
+              "maximum_absolute_carbon_share_change": 8.996915993303661e-33,
+              "x_before": 2.218144516809735e-32,
+              "x_after": 2.2183716403981954e-32
+            },
+            {
+              "species": "C2F3N1",
+              "case_index": 74,
+              "carbon_share_before": 9.161653277920278e-34,
+              "carbon_share_after": 9.315156583728077e-34,
+              "maximum_absolute_carbon_share_change": 1.5350330580779932e-35,
+              "x_before": 5.380972335233717e-37,
+              "x_after": 5.471131689883938e-37
+            },
+            {
+              "species": "C1Cl4",
+              "case_index": 74,
+              "carbon_share_before": 4.15599481205668e-35,
+              "carbon_share_after": 4.200213883735868e-35,
+              "maximum_absolute_carbon_share_change": 4.421907167918808e-37,
+              "x_before": 4.881933954638453e-38,
+              "x_after": 4.933878046395836e-38
+            },
+            {
+              "species": "C1Cl3F1",
+              "case_index": 74,
+              "carbon_share_before": 2.8956993841259175e-35,
+              "carbon_share_after": 2.9265087109844246e-35,
+              "maximum_absolute_carbon_share_change": 3.0809326858507102e-37,
+              "x_before": 3.401499228242342e-38,
+              "x_after": 3.4376909084614206e-38
+            },
+            {
+              "species": "C1Cl2F2",
+              "case_index": 74,
+              "carbon_share_before": 9.258565289336243e-36,
+              "carbon_share_after": 9.357072164158079e-36,
+              "maximum_absolute_carbon_share_change": 9.85068748218355e-38,
+              "x_before": 1.0875784571752049e-38,
+              "x_after": 1.0991500482403608e-38
+            },
+            {
+              "species": "C2Cl4",
+              "case_index": 74,
+              "carbon_share_before": 2.8751248091604592e-36,
+              "carbon_share_after": 2.9366294020475395e-36,
+              "maximum_absolute_carbon_share_change": 6.150459288708024e-38,
+              "x_before": 1.6886654175968228e-39,
+              "x_after": 1.7247897057418078e-39
+            },
+            {
+              "species": "C1Cl1F3",
+              "case_index": 74,
+              "carbon_share_before": 1.954635545427587e-36,
+              "carbon_share_after": 1.97543168633876e-36,
+              "maximum_absolute_carbon_share_change": 2.0796140911172827e-38,
+              "x_before": 2.2960571583206413e-39,
+              "x_after": 2.3204863607356304e-39
+            },
+            {
+              "species": "C1F4",
+              "case_index": 74,
+              "carbon_share_before": 1.888225606210637e-37,
+              "carbon_share_after": 1.908314913117435e-37,
+              "maximum_absolute_carbon_share_change": 2.0089306906798e-39,
+              "x_before": 2.218047210799012e-40,
+              "x_after": 2.241646096142465e-40
+            },
+            {
+              "species": "C4H6O4",
+              "case_index": 69,
+              "carbon_share_before": 5.5270221888495434e-39,
+              "carbon_share_after": 5.5354687520609837e-39,
+              "maximum_absolute_carbon_share_change": 8.44656321144022e-42,
+              "x_before": 1.7296428241213485e-42,
+              "x_after": 1.732289733565985e-42
+            },
+            {
+              "species": "C2F4",
+              "case_index": 74,
+              "carbon_share_before": 1.266265000651967e-40,
+              "carbon_share_after": 1.2933521691853114e-40,
+              "maximum_absolute_carbon_share_change": 2.708716853334441e-42,
+              "x_before": 7.437235104720833e-44,
+              "x_after": 7.596329675628405e-44
+            },
+            {
+              "species": "C1F4O1",
+              "case_index": 49,
+              "carbon_share_before": 1.6240157377266678e-46,
+              "carbon_share_after": 1.6242883604976254e-46,
+              "maximum_absolute_carbon_share_change": 2.7262277095763273e-50,
+              "x_before": 1.2717995237726659e-49,
+              "x_after": 1.2720128870013691e-49
+            },
+            {
+              "species": "C2Cl6",
+              "case_index": 74,
+              "carbon_share_before": 2.569595591634238e-56,
+              "carbon_share_after": 2.6245657610406633e-56,
+              "maximum_absolute_carbon_share_change": 5.497016940642514e-58,
+              "x_before": 1.5092169908509458e-59,
+              "x_after": 1.541503331516418e-59
+            },
+            {
+              "species": "C2F6",
+              "case_index": 74,
+              "carbon_share_before": 3.464770726353024e-60,
+              "carbon_share_after": 3.538887932399043e-60,
+              "maximum_absolute_carbon_share_change": 7.4117206046019004e-62,
+              "x_before": 2.0349859202121783e-63,
+              "x_after": 2.0785181376035846e-63
+            },
+            {
+              "species": "C1F8S1",
+              "case_index": 74,
+              "carbon_share_before": 1.0567622788910195e-89,
+              "carbon_share_after": 1.0673364556102315e-89,
+              "maximum_absolute_carbon_share_change": 1.0574176719212019e-91,
+              "x_before": 1.2413498776111783e-92,
+              "x_after": 1.253771367892661e-92
+            }
+          ]
+        },
+        {
+          "variant": 2,
+          "model": "nasa",
+          "target_ratio_min": 0.8767490951309155,
+          "target_ratio_max": 0.9934573870695969,
+          "maximum_absolute_target_delta_x": 3.817596823098342e-06,
+          "maximum_absolute_all_species_delta_x": 4.710150706038429e-06,
+          "highlight": {
+            "case_index": 55,
+            "temperature_K": 2000.0,
+            "pressure_bar": 1e-06,
+            "C_over_O": 1.5,
+            "carbon_share_before": 0.11578624451550207,
+            "carbon_share_after": 0.10787339679446759,
+            "x_before": 4.6863353775380534e-05,
+            "x_after": 4.36605865062953e-05
+          },
+          "all_carbon_species_effects": [
+            {
+              "species": "C2H2",
+              "case_index": 55,
+              "carbon_share_before": 0.11578624451550207,
+              "carbon_share_after": 0.10787339679446759,
+              "maximum_absolute_carbon_share_change": 0.007912847721034483,
+              "x_before": 4.6863353775380534e-05,
+              "x_after": 4.36605865062953e-05
+            },
+            {
+              "species": "C3H1",
+              "case_index": 55,
+              "carbon_share_before": 0.11666935394231355,
+              "carbon_share_after": 0.12242690759928881,
+              "maximum_absolute_carbon_share_change": 0.0057575536569752644,
+              "x_before": 3.148052247151406e-05,
+              "x_after": 3.3033974694868775e-05
+            },
+            {
+              "species": "C1H4",
+              "case_index": 58,
+              "carbon_share_before": 0.09417993405611273,
+              "carbon_share_after": 0.09791808761783966,
+              "maximum_absolute_carbon_share_change": 0.003738153561726923,
+              "x_before": 0.0001186539575861599,
+              "x_after": 0.00012336410829219834
+            },
+            {
+              "species": "C1H3",
+              "case_index": 74,
+              "carbon_share_before": 0.059432766039745386,
+              "carbon_share_after": 0.061473140305193644,
+              "maximum_absolute_carbon_share_change": 0.002040374265448258,
+              "x_before": 6.98140521508333e-05,
+              "x_after": 7.221087914433788e-05
+            },
+            {
+              "species": "C1",
+              "case_index": 67,
+              "carbon_share_before": 0.2095136700428206,
+              "carbon_share_after": 0.21120792309481706,
+              "maximum_absolute_carbon_share_change": 0.0016942530519964694,
+              "x_before": 0.00017060042566810864,
+              "x_after": 0.00017197962266668436
+            },
+            {
+              "species": "C1H1N1_hcn",
+              "case_index": 51,
+              "carbon_share_before": 0.03429408173085697,
+              "carbon_share_after": 0.03594128281487671,
+              "maximum_absolute_carbon_share_change": 0.0016472010840197435,
+              "x_before": 4.3197214829999107e-05,
+              "x_after": 4.527203556000925e-05
+            },
+            {
+              "species": "C3",
+              "case_index": 55,
+              "carbon_share_before": 0.022587187523138774,
+              "carbon_share_after": 0.023701827046025248,
+              "maximum_absolute_carbon_share_change": 0.0011146395228864743,
+              "x_before": 6.094629312356093e-06,
+              "x_after": 6.395371493195361e-06
+            },
+            {
+              "species": "C1H2",
+              "case_index": 74,
+              "carbon_share_before": 0.026038330854111367,
+              "carbon_share_after": 0.026932285701372127,
+              "maximum_absolute_carbon_share_change": 0.0008939548472607604,
+              "x_before": 3.058651833491831e-05,
+              "x_after": 3.1636646805535855e-05
+            },
+            {
+              "species": "C2H1",
+              "case_index": 74,
+              "carbon_share_before": 0.012474897811825309,
+              "carbon_share_after": 0.013346251901274146,
+              "maximum_absolute_carbon_share_change": 0.0008713540894488368,
+              "x_before": 7.326961409037082e-06,
+              "x_after": 7.838745330791028e-06
+            },
+            {
+              "species": "C1O1",
+              "case_index": 49,
+              "carbon_share_before": 0.926221374264837,
+              "carbon_share_after": 0.9267095010182558,
+              "maximum_absolute_carbon_share_change": 0.00048812675341880496,
+              "x_before": 0.0007253426646881048,
+              "x_after": 0.0007257246894206871
+            },
+            {
+              "species": "C1H1",
+              "case_index": 74,
+              "carbon_share_before": 0.009824717703024724,
+              "carbon_share_after": 0.01016203690998588,
+              "maximum_absolute_carbon_share_change": 0.00033731920696115567,
+              "x_before": 1.154082839805047e-05,
+              "x_after": 1.1937077161247512e-05
+            },
+            {
+              "species": "C1H1N1_hnc",
+              "case_index": 74,
+              "carbon_share_before": 0.012251772985517615,
+              "carbon_share_after": 0.01248813474334962,
+              "maximum_absolute_carbon_share_change": 0.00023636175783200465,
+              "x_before": 1.4391824159405413e-05,
+              "x_after": 1.466948303296681e-05
+            },
+            {
+              "species": "C2Si1",
+              "case_index": 50,
+              "carbon_share_before": 0.0018138674961385157,
+              "carbon_share_after": 0.002042969624081054,
+              "maximum_absolute_carbon_share_change": 0.00022910212794253842,
+              "x_before": 1.134053080527837e-06,
+              "x_after": 1.2772905092848936e-06
+            },
+            {
+              "species": "C1S1",
+              "case_index": 56,
+              "carbon_share_before": 0.006374949644972453,
+              "carbon_share_after": 0.006544161449807191,
+              "maximum_absolute_carbon_share_change": 0.00016921180483473863,
+              "x_before": 7.477639134520999e-06,
+              "x_after": 7.676114823539026e-06
+            },
+            {
+              "species": "C1Si2",
+              "case_index": 51,
+              "carbon_share_before": 0.0021761802736116674,
+              "carbon_share_after": 0.0023260239542362707,
+              "maximum_absolute_carbon_share_change": 0.00014984368062460332,
+              "x_before": 2.741141387769718e-06,
+              "x_after": 2.929885383112444e-06
+            },
+            {
+              "species": "C2",
+              "case_index": 67,
+              "carbon_share_before": 0.006866651793138038,
+              "carbon_share_after": 0.006978141116186572,
+              "maximum_absolute_carbon_share_change": 0.00011148932304853344,
+              "x_before": 2.795649846104572e-06,
+              "x_after": 2.8410346981582815e-06
+            },
+            {
+              "species": "C2H4",
+              "case_index": 58,
+              "carbon_share_before": 0.0011109383647421114,
+              "carbon_share_after": 0.0012008931329500888,
+              "maximum_absolute_carbon_share_change": 8.995476820797743e-05,
+              "x_before": 6.998159158425997e-07,
+              "x_after": 7.564849054181345e-07
+            },
+            {
+              "species": "C1N1",
+              "case_index": 67,
+              "carbon_share_before": 0.00670998225390274,
+              "carbon_share_after": 0.006752069606165617,
+              "maximum_absolute_carbon_share_change": 4.20873522628774e-05,
+              "x_before": 5.4637285887231246e-06,
+              "x_after": 5.497986846668853e-06
+            },
+            {
+              "species": "C1H1P1",
+              "case_index": 68,
+              "carbon_share_before": 0.0001928291371286341,
+              "carbon_share_after": 0.0001961301039824937,
+              "maximum_absolute_carbon_share_change": 3.300966853859614e-06,
+              "x_before": 2.2663569501740772e-07,
+              "x_after": 2.3051531091035365e-07
+            },
+            {
+              "species": "C2N1",
+              "case_index": 74,
+              "carbon_share_before": 4.380202005379921e-05,
+              "carbon_share_after": 4.618011642916487e-05,
+              "maximum_absolute_carbon_share_change": 2.3780963753656584e-06,
+              "x_before": 2.5726520201859425e-08,
+              "x_after": 2.71232833541785e-08
+            },
+            {
+              "species": "C2Si2",
+              "case_index": 51,
+              "carbon_share_before": 8.839437220413252e-06,
+              "carbon_share_after": 1.0049204960665483e-05,
+              "maximum_absolute_carbon_share_change": 1.2097677402522313e-06,
+              "x_before": 5.567127756666432e-09,
+              "x_after": 6.329044606899205e-09
+            },
+            {
+              "species": "C1Si1",
+              "case_index": 74,
+              "carbon_share_before": 1.8797415183702908e-05,
+              "carbon_share_after": 1.9460984144165023e-05,
+              "maximum_absolute_carbon_share_change": 6.635689604621149e-07,
+              "x_before": 2.2080811838006872e-08,
+              "x_after": 2.2860305608064858e-08
+            },
+            {
+              "species": "C2O1",
+              "case_index": 74,
+              "carbon_share_before": 8.565243184199984e-06,
+              "carbon_share_after": 8.864169984554995e-06,
+              "maximum_absolute_carbon_share_change": 2.989268003550106e-07,
+              "x_before": 5.030678985615575e-09,
+              "x_after": 5.206253530336478e-09
+            },
+            {
+              "species": "C1H1O1",
+              "case_index": 49,
+              "carbon_share_before": 0.0004460062897124327,
+              "carbon_share_after": 0.0004462413652616607,
+              "maximum_absolute_carbon_share_change": 2.3507554922802022e-07,
+              "x_before": 3.492765332741819e-07,
+              "x_after": 3.4946051147133186e-07
+            },
+            {
+              "species": "C1N1Na1",
+              "case_index": 52,
+              "carbon_share_before": 5.280795912898866e-06,
+              "carbon_share_after": 5.5140158629900115e-06,
+              "maximum_absolute_carbon_share_change": 2.332199500911453e-07,
+              "x_before": 6.657277119617211e-09,
+              "x_after": 6.9513179142220414e-09
+            },
+            {
+              "species": "C5",
+              "case_index": 55,
+              "carbon_share_before": 1.2043325541593625e-06,
+              "carbon_share_after": 1.3050037117131503e-06,
+              "maximum_absolute_carbon_share_change": 1.0067115755378784e-07,
+              "x_before": 1.9497674455179855e-10,
+              "x_after": 2.1127443517829673e-10
+            },
+            {
+              "species": "C4",
+              "case_index": 55,
+              "carbon_share_before": 1.017162902016151e-06,
+              "carbon_share_after": 1.0846334810380311e-06,
+              "maximum_absolute_carbon_share_change": 6.747057902188002e-08,
+              "x_before": 2.0584338460858193e-10,
+              "x_after": 2.1949681447740383e-10
+            },
+            {
+              "species": "C1O2",
+              "case_index": 49,
+              "carbon_share_before": 6.628836282865943e-06,
+              "carbon_share_after": 6.587570102733757e-06,
+              "maximum_absolute_carbon_share_change": 4.126618013218591e-08,
+              "x_before": 5.191175572914775e-09,
+              "x_after": 5.158857507763132e-09
+            },
+            {
+              "species": "C1H2O1",
+              "case_index": 69,
+              "carbon_share_before": 2.9986142600660003e-05,
+              "carbon_share_after": 3.000801492537555e-05,
+              "maximum_absolute_carbon_share_change": 2.1872324715546047e-08,
+              "x_before": 3.753581194368757e-08,
+              "x_after": 3.756334335858588e-08
+            },
+            {
+              "species": "C1K1N1",
+              "case_index": 52,
+              "carbon_share_before": 4.2137972287843053e-07,
+              "carbon_share_after": 4.3998368720482816e-07,
+              "maximum_absolute_carbon_share_change": 1.8603964326397635e-08,
+              "x_before": 5.312156792382616e-10,
+              "x_after": 5.54671325369368e-10
+            },
+            {
+              "species": "C1P1",
+              "case_index": 74,
+              "carbon_share_before": 4.382953021963606e-07,
+              "carbon_share_after": 4.4996518409573865e-07,
+              "maximum_absolute_carbon_share_change": 1.1669881899378038e-08,
+              "x_before": 5.148535584653583e-10,
+              "x_after": 5.285622528242951e-10
+            },
+            {
+              "species": "C1Al1",
+              "case_index": 74,
+              "carbon_share_before": 2.477801240174691e-07,
+              "carbon_share_after": 2.5628828092339856e-07,
+              "maximum_absolute_carbon_share_change": 8.508156905929473e-09,
+              "x_before": 2.910605656234684e-10,
+              "x_after": 3.010550947615422e-10
+            },
+            {
+              "species": "C2N2",
+              "case_index": 74,
+              "carbon_share_before": 1.2245336773179115e-07,
+              "carbon_share_after": 1.2722415201914607e-07,
+              "maximum_absolute_carbon_share_change": 4.770784287354916e-09,
+              "x_before": 7.192131858001837e-11,
+              "x_after": 7.47234305916795e-11
+            },
+            {
+              "species": "C1H1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 8.672164923204899e-08,
+              "carbon_share_after": 8.550698722881303e-08,
+              "maximum_absolute_carbon_share_change": 1.214662003235963e-09,
+              "x_before": 1.0186956026989735e-10,
+              "x_after": 1.0044280624223447e-10
+            },
+            {
+              "species": "C2Ti1",
+              "case_index": 68,
+              "carbon_share_before": 9.693069621269328e-09,
+              "carbon_share_after": 1.046359827860395e-08,
+              "maximum_absolute_carbon_share_change": 7.705286573346223e-10,
+              "x_before": 5.6962230998395176e-12,
+              "x_after": 6.149029550937077e-12
+            },
+            {
+              "species": "C1S2",
+              "case_index": 68,
+              "carbon_share_before": 5.2445367018700163e-08,
+              "carbon_share_after": 5.32016256750886e-08,
+              "maximum_absolute_carbon_share_change": 7.562586563884358e-10,
+              "x_before": 6.164002174006066e-11,
+              "x_after": 6.252884709898461e-11
+            },
+            {
+              "species": "C1O1S1",
+              "case_index": 69,
+              "carbon_share_before": 3.880348300978812e-07,
+              "carbon_share_after": 3.873112819893695e-07,
+              "maximum_absolute_carbon_share_change": 7.235481085116722e-10,
+              "x_before": 4.857311126718327e-10,
+              "x_after": 4.848273605635275e-10
+            },
+            {
+              "species": "C2H1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 2.7582152838330773e-09,
+              "carbon_share_after": 2.950875396779458e-09,
+              "maximum_absolute_carbon_share_change": 1.9266011294638085e-10,
+              "x_before": 1.6200001993847397e-12,
+              "x_after": 1.7331578115982366e-12
+            },
+            {
+              "species": "C1N1O1",
+              "case_index": 74,
+              "carbon_share_before": 1.2220761551249208e-08,
+              "carbon_share_after": 1.2049609209252773e-08,
+              "maximum_absolute_carbon_share_change": 1.7115234199643541e-10,
+              "x_before": 1.4355395871887424e-11,
+              "x_after": 1.4154358635755916e-11
+            },
+            {
+              "species": "C1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 3.440131350353036e-09,
+              "carbon_share_after": 3.55825213122567e-09,
+              "maximum_absolute_carbon_share_change": 1.1812078087263394e-10,
+              "x_before": 4.041028636268613e-12,
+              "x_after": 4.179785079099192e-12
+            },
+            {
+              "species": "C2Cr1",
+              "case_index": 74,
+              "carbon_share_before": 1.4700603342240549e-09,
+              "carbon_share_after": 1.5727467707244204e-09,
+              "maximum_absolute_carbon_share_change": 1.0268643650036555e-10,
+              "x_before": 8.634199253805203e-13,
+              "x_after": 9.237321082150224e-13
+            },
+            {
+              "species": "C2N1O1",
+              "case_index": 74,
+              "carbon_share_before": 4.985862412754517e-09,
+              "carbon_share_after": 5.084832073608015e-09,
+              "maximum_absolute_carbon_share_change": 9.896966085349804e-11,
+              "x_before": 2.9283784156044912e-12,
+              "x_after": 2.9865091689934347e-12
+            },
+            {
+              "species": "C1H1Cl1",
+              "case_index": 74,
+              "carbon_share_before": 1.636256626730182e-09,
+              "carbon_share_after": 1.6924369399796156e-09,
+              "maximum_absolute_carbon_share_change": 5.6180313249433496e-11,
+              "x_before": 1.9220661107089386e-12,
+              "x_after": 1.9880611064529553e-12
+            },
+            {
+              "species": "C1N2_ncn",
+              "case_index": 74,
+              "carbon_share_before": 1.0469571477930634e-08,
+              "carbon_share_after": 1.0516375970771282e-08,
+              "maximum_absolute_carbon_share_change": 4.6804492840648474e-11,
+              "x_before": 1.2298320570648283e-11,
+              "x_after": 1.2353309925141815e-11
+            },
+            {
+              "species": "C1H3Cl1",
+              "case_index": 69,
+              "carbon_share_before": 1.9381743230691175e-09,
+              "carbon_share_after": 1.9833231295180947e-09,
+              "maximum_absolute_carbon_share_change": 4.5148806448977186e-11,
+              "x_before": 2.4261522355064465e-12,
+              "x_after": 2.482678307458251e-12
+            },
+            {
+              "species": "C1F1",
+              "case_index": 74,
+              "carbon_share_before": 1.134518392765209e-09,
+              "carbon_share_after": 1.1734728279408371e-09,
+              "maximum_absolute_carbon_share_change": 3.895443517562819e-11,
+              "x_before": 1.3326878675917897e-12,
+              "x_after": 1.3784476299227066e-12
+            },
+            {
+              "species": "C2V1",
+              "case_index": 68,
+              "carbon_share_before": 3.2974119015312873e-10,
+              "carbon_share_after": 3.559498724883083e-10,
+              "maximum_absolute_carbon_share_change": 2.620868233517959e-11,
+              "x_before": 1.9377549710334815e-13,
+              "x_after": 2.091772090542178e-13
+            },
+            {
+              "species": "C1H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.711327534945418e-10,
+              "carbon_share_after": 2.8044187735153065e-10,
+              "maximum_absolute_carbon_share_change": 9.309123856988824e-12,
+              "x_before": 3.1849226367166563e-13,
+              "x_after": 3.294276884490262e-13
+            },
+            {
+              "species": "C1Cl1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.263957458339805e-10,
+              "carbon_share_after": 2.3076391712797016e-10,
+              "maximum_absolute_carbon_share_change": 4.368171293989649e-12,
+              "x_before": 2.6594091878224914e-13,
+              "x_after": 2.7107229674411153e-13
+            },
+            {
+              "species": "C3O2",
+              "case_index": 74,
+              "carbon_share_before": 6.494628438656215e-11,
+              "carbon_share_after": 6.724960879801505e-11,
+              "maximum_absolute_carbon_share_change": 2.303324411452898e-12,
+              "x_before": 2.543021068060957e-14,
+              "x_after": 2.633211485703774e-14
+            },
+            {
+              "species": "C2H1F1",
+              "case_index": 74,
+              "carbon_share_before": 2.9753938915395934e-11,
+              "carbon_share_after": 3.183222394908512e-11,
+              "maximum_absolute_carbon_share_change": 2.0782850336891854e-12,
+              "x_before": 1.7475570981695657e-14,
+              "x_after": 1.869623761752643e-14
+            },
+            {
+              "species": "C1N2_cnn",
+              "case_index": 74,
+              "carbon_share_before": 4.5965399460642904e-10,
+              "carbon_share_after": 4.617088897991471e-10,
+              "maximum_absolute_carbon_share_change": 2.0548951927180872e-12,
+              "x_before": 5.399430329278616e-13,
+              "x_after": 5.423572746670926e-13
+            },
+            {
+              "species": "C1H3F1",
+              "case_index": 69,
+              "carbon_share_before": 6.320901022638478e-11,
+              "carbon_share_after": 6.46811894772406e-11,
+              "maximum_absolute_carbon_share_change": 1.472179250855814e-12,
+              "x_before": 7.912326545635724e-14,
+              "x_after": 8.096642631035128e-14
+            },
+            {
+              "species": "C4N2",
+              "case_index": 68,
+              "carbon_share_before": 1.0007298997256401e-11,
+              "carbon_share_after": 1.1283922074758058e-11,
+              "maximum_absolute_carbon_share_change": 1.2766230775016567e-12,
+              "x_before": 2.940441467070985e-15,
+              "x_after": 3.315550178853751e-15
+            },
+            {
+              "species": "C4Ti1",
+              "case_index": 51,
+              "carbon_share_before": 1.0854815548253826e-12,
+              "carbon_share_after": 1.3892276813793047e-12,
+              "maximum_absolute_carbon_share_change": 3.0374612655392217e-13,
+              "x_before": 3.418212235990791e-16,
+              "x_after": 4.374716208398713e-16
+            },
+            {
+              "species": "C2H4O1",
+              "case_index": 69,
+              "carbon_share_before": 6.7648286382192e-12,
+              "carbon_share_after": 6.927470754236263e-12,
+              "maximum_absolute_carbon_share_change": 1.6264211601706272e-13,
+              "x_before": 4.2340113394558454e-15,
+              "x_after": 4.335824332183514e-15
+            },
+            {
+              "species": "C1Cl1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.5584670338945638e-10,
+              "carbon_share_after": 1.5592876264081482e-10,
+              "maximum_absolute_carbon_share_change": 8.205925135844314e-14,
+              "x_before": 1.2204670099422963e-13,
+              "x_after": 1.22110923342123e-13
+            },
+            {
+              "species": "C1F1N1",
+              "case_index": 74,
+              "carbon_share_before": 2.6823884741080123e-12,
+              "carbon_share_after": 2.7341423287812934e-12,
+              "maximum_absolute_carbon_share_change": 5.175385467328113e-14,
+              "x_before": 3.1509287098456155e-15,
+              "x_after": 3.2117249954507894e-15
+            },
+            {
+              "species": "C4V1",
+              "case_index": 57,
+              "carbon_share_before": 1.1876618681661045e-14,
+              "carbon_share_after": 1.440029861448762e-14,
+              "maximum_absolute_carbon_share_change": 2.5236799328265754e-15,
+              "x_before": 3.714997387631738e-18,
+              "x_after": 4.5044023071099186e-18
+            },
+            {
+              "species": "C1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.046623269020401e-12,
+              "carbon_share_after": 1.0471741942366226e-12,
+              "maximum_absolute_carbon_share_change": 5.509252162216613e-16,
+              "x_before": 8.196318201773294e-16,
+              "x_after": 8.200629928221266e-16
+            },
+            {
+              "species": "C2H2O2",
+              "case_index": 69,
+              "carbon_share_before": 3.382221495857187e-13,
+              "carbon_share_after": 3.3871834232701256e-13,
+              "maximum_absolute_carbon_share_change": 4.961927412938567e-16,
+              "x_before": 2.116884984359395e-16,
+              "x_after": 2.1199991779398542e-16
+            },
+            {
+              "species": "C1H1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 6.868364345743368e-13,
+              "carbon_share_after": 6.871980145002539e-13,
+              "maximum_absolute_carbon_share_change": 3.615799259171043e-16,
+              "x_before": 5.378754836601073e-16,
+              "x_after": 5.381584683179855e-16
+            },
+            {
+              "species": "C2N2Na2",
+              "case_index": 64,
+              "carbon_share_before": 6.718772510466592e-15,
+              "carbon_share_after": 6.786753148475434e-15,
+              "maximum_absolute_carbon_share_change": 6.798063800884236e-17,
+              "x_before": 4.232116358691802e-18,
+              "x_after": 4.2749463595039805e-18
+            },
+            {
+              "species": "C3N2O1",
+              "case_index": 74,
+              "carbon_share_before": 5.096296044792408e-16,
+              "carbon_share_after": 5.297738948172368e-16,
+              "maximum_absolute_carbon_share_change": 2.014429033799602e-17,
+              "x_before": 1.9954934040328771e-19,
+              "x_after": 2.0743714790203382e-19
+            },
+            {
+              "species": "C1Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.0449917178620702e-16,
+              "carbon_share_after": 1.0808736548994899e-16,
+              "maximum_absolute_carbon_share_change": 3.5881937037419656e-18,
+              "x_before": 1.2275233200356715e-19,
+              "x_after": 1.2696738197650182e-19
+            },
+            {
+              "species": "C2Cl2",
+              "case_index": 74,
+              "carbon_share_before": 1.2022468048503508e-17,
+              "carbon_share_after": 1.2862261886670677e-17,
+              "maximum_absolute_carbon_share_change": 8.397938381671688e-19,
+              "x_before": 7.061232946474757e-21,
+              "x_after": 7.554480168168061e-21
+            },
+            {
+              "species": "C2K2N2",
+              "case_index": 64,
+              "carbon_share_before": 3.002352423239858e-17,
+              "carbon_share_after": 3.0327217069929847e-17,
+              "maximum_absolute_carbon_share_change": 3.0369283753126595e-19,
+              "x_before": 1.891164611565182e-20,
+              "x_after": 1.9102982438090788e-20
+            },
+            {
+              "species": "C1H2Cl2",
+              "case_index": 74,
+              "carbon_share_before": 8.536273089079032e-18,
+              "carbon_share_after": 8.829358525962826e-18,
+              "maximum_absolute_carbon_share_change": 2.930854368837942e-19,
+              "x_before": 1.0027327589232164e-20,
+              "x_after": 1.0371614956954895e-20
+            },
+            {
+              "species": "C1H4O2",
+              "case_index": 49,
+              "carbon_share_before": 3.2891789936580946e-17,
+              "carbon_share_after": 3.268703795400355e-17,
+              "maximum_absolute_carbon_share_change": 2.047519825773962e-19,
+              "x_before": 2.5758225000904992e-20,
+              "x_after": 2.559787122198082e-20
+            },
+            {
+              "species": "C1F2",
+              "case_index": 74,
+              "carbon_share_before": 5.479545307159671e-18,
+              "carbon_share_after": 5.66769162633229e-18,
+              "maximum_absolute_carbon_share_change": 1.8814631917261888e-19,
+              "x_before": 6.4366726862598274e-21,
+              "x_after": 6.6576881061317385e-21
+            },
+            {
+              "species": "C1H2Cl1F1",
+              "case_index": 74,
+              "carbon_share_before": 1.365275600260708e-18,
+              "carbon_share_after": 1.4121505001898466e-18,
+              "maximum_absolute_carbon_share_change": 4.6874899929138645e-20,
+              "x_before": 1.603752076642701e-21,
+              "x_after": 1.6588160064145875e-21
+            },
+            {
+              "species": "C1H2F2",
+              "case_index": 74,
+              "carbon_share_before": 9.763341712004603e-20,
+              "carbon_share_after": 1.0098548342384214e-19,
+              "maximum_absolute_carbon_share_change": 3.3520663037961113e-21,
+              "x_before": 1.146873169242144e-22,
+              "x_after": 1.1862498812730213e-22
+            },
+            {
+              "species": "C2H4O3",
+              "case_index": 64,
+              "carbon_share_before": 5.274431726357108e-20,
+              "carbon_share_after": 5.2491084218261234e-20,
+              "maximum_absolute_carbon_share_change": 2.5323304530984796e-22,
+              "x_before": 3.3223343634786626e-23,
+              "x_after": 3.306390618254339e-23
+            },
+            {
+              "species": "C2F2",
+              "case_index": 74,
+              "carbon_share_before": 7.469266972375641e-22,
+              "carbon_share_after": 7.991003233180832e-22,
+              "maximum_absolute_carbon_share_change": 5.2173626080519086e-23,
+              "x_before": 4.386972277120728e-25,
+              "x_after": 4.693410535466661e-25
+            },
+            {
+              "species": "C1Cl2O1",
+              "case_index": 49,
+              "carbon_share_before": 3.844191234490145e-20,
+              "carbon_share_after": 3.846213539631268e-20,
+              "maximum_absolute_carbon_share_change": 2.0223051411232582e-23,
+              "x_before": 3.010463795233541e-23,
+              "x_after": 3.0120465188146955e-23
+            },
+            {
+              "species": "C1Cl1F1O1",
+              "case_index": 49,
+              "carbon_share_before": 1.8106097322880138e-20,
+              "carbon_share_after": 1.8115619555189713e-20,
+              "maximum_absolute_carbon_share_change": 9.522232309575942e-24,
+              "x_before": 1.4179250494736368e-23,
+              "x_after": 1.418670291057519e-23
+            },
+            {
+              "species": "C4Ni1O4",
+              "case_index": 59,
+              "carbon_share_before": 3.0559796728551787e-20,
+              "carbon_share_after": 3.0563505895509186e-20,
+              "maximum_absolute_carbon_share_change": 3.709166957399672e-24,
+              "x_before": 9.639889071410569e-24,
+              "x_after": 9.641059632859206e-24
+            },
+            {
+              "species": "C1F2O1",
+              "case_index": 49,
+              "carbon_share_before": 2.497994226974315e-21,
+              "carbon_share_after": 2.4993075680736918e-21,
+              "maximum_absolute_carbon_share_change": 1.3133410993767384e-24,
+              "x_before": 1.9562297300763616e-24,
+              "x_after": 1.9572575943314084e-24
+            },
+            {
+              "species": "C2H2O4",
+              "case_index": 44,
+              "carbon_share_before": 2.8097798064781614e-23,
+              "carbon_share_after": 2.7824266649350206e-23,
+              "maximum_absolute_carbon_share_change": 2.735314154314079e-25,
+              "x_before": 1.1722901088019807e-26,
+              "x_after": 1.1608778365160674e-26
+            },
+            {
+              "species": "C2H3Cl1O2",
+              "case_index": 64,
+              "carbon_share_before": 2.164957629032069e-22,
+              "carbon_share_after": 2.16641945044593e-22,
+              "maximum_absolute_carbon_share_change": 1.4618214138609593e-25,
+              "x_before": 1.3636944223707534e-25,
+              "x_after": 1.3646182114230713e-25
+            },
+            {
+              "species": "C2H6O2",
+              "case_index": 69,
+              "carbon_share_before": 6.02153372513242e-24,
+              "carbon_share_after": 6.030323830217016e-24,
+              "maximum_absolute_carbon_share_change": 8.790105084596432e-27,
+              "x_before": 3.768793481195693e-27,
+              "x_after": 3.774310382763009e-27
+            },
+            {
+              "species": "C1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 1.04800148707672e-25,
+              "carbon_share_after": 1.0839877440610225e-25,
+              "maximum_absolute_carbon_share_change": 3.598625698430246e-27,
+              "x_before": 1.2310588139881574e-28,
+              "x_after": 1.273331858299753e-28
+            },
+            {
+              "species": "C1H1Cl3",
+              "case_index": 74,
+              "carbon_share_before": 4.03275876735005e-26,
+              "carbon_share_after": 4.171229655187467e-26,
+              "maximum_absolute_carbon_share_change": 1.3847088783741732e-27,
+              "x_before": 4.7371719281452315e-29,
+              "x_after": 4.899833634960264e-29
+            },
+            {
+              "species": "C1H1Cl2F1",
+              "case_index": 74,
+              "carbon_share_before": 1.5126783469131024e-26,
+              "carbon_share_after": 1.564617744638628e-26,
+              "maximum_absolute_carbon_share_change": 5.1939397725525555e-28,
+              "x_before": 1.776902069949149e-29,
+              "x_after": 1.8379152635486981e-29
+            },
+            {
+              "species": "C1H1Cl1F2",
+              "case_index": 74,
+              "carbon_share_before": 3.310613009205391e-27,
+              "carbon_share_after": 3.424284831590792e-27,
+              "maximum_absolute_carbon_share_change": 1.1367182238540095e-28,
+              "x_before": 3.88888696718786e-30,
+              "x_after": 4.0224172199789214e-30
+            },
+            {
+              "species": "C1F3",
+              "case_index": 74,
+              "carbon_share_before": 3.800176836327103e-28,
+              "carbon_share_after": 3.930661912688443e-28,
+              "maximum_absolute_carbon_share_change": 1.304850763613398e-29,
+              "x_before": 4.463964266046538e-31,
+              "x_after": 4.617245042716904e-31
+            },
+            {
+              "species": "C1H1F3",
+              "case_index": 74,
+              "carbon_share_before": 2.8743915808319313e-28,
+              "carbon_share_after": 2.9730841429532077e-28,
+              "maximum_absolute_carbon_share_change": 9.86925621212764e-30,
+              "x_before": 3.3764695318389937e-31,
+              "x_after": 3.492403652503862e-31
+            },
+            {
+              "species": "C5Fe1O5",
+              "case_index": 59,
+              "carbon_share_before": 8.789785474463299e-29,
+              "carbon_share_after": 8.791119007941101e-29,
+              "maximum_absolute_carbon_share_change": 1.333533477802099e-32,
+              "x_before": 2.218144516809735e-32,
+              "x_after": 2.2184811620731012e-32
+            },
+            {
+              "species": "C2F3N1",
+              "case_index": 74,
+              "carbon_share_before": 9.161653277920278e-34,
+              "carbon_share_after": 9.659070072555217e-34,
+              "maximum_absolute_carbon_share_change": 4.974167946349388e-35,
+              "x_before": 5.380972335233717e-37,
+              "x_after": 5.673127630971578e-37
+            },
+            {
+              "species": "C1Cl4",
+              "case_index": 74,
+              "carbon_share_before": 4.15599481205668e-35,
+              "carbon_share_after": 4.2987071501325457e-35,
+              "maximum_absolute_carbon_share_change": 1.427123380758658e-36,
+              "x_before": 4.881933954638453e-38,
+              "x_after": 5.049578091407436e-38
+            },
+            {
+              "species": "C1Cl3F1",
+              "case_index": 74,
+              "carbon_share_before": 2.8956993841259175e-35,
+              "carbon_share_after": 2.99513319515029e-35,
+              "maximum_absolute_carbon_share_change": 9.943381102437242e-37,
+              "x_before": 3.401499228242342e-38,
+              "x_after": 3.5183040935020946e-38
+            },
+            {
+              "species": "C1Cl2F2",
+              "case_index": 74,
+              "carbon_share_before": 9.258565289336243e-36,
+              "carbon_share_after": 9.576485685845486e-36,
+              "maximum_absolute_carbon_share_change": 3.1792039650924295e-37,
+              "x_before": 1.0875784571752049e-38,
+              "x_after": 1.124924555756985e-38
+            },
+            {
+              "species": "C2Cl4",
+              "case_index": 74,
+              "carbon_share_before": 2.8751248091604592e-36,
+              "carbon_share_after": 3.0759636469611844e-36,
+              "maximum_absolute_carbon_share_change": 2.008388378007252e-37,
+              "x_before": 1.6886654175968228e-39,
+              "x_after": 1.8066267483680524e-39
+            },
+            {
+              "species": "C1Cl1F3",
+              "case_index": 74,
+              "carbon_share_before": 1.954635545427587e-36,
+              "carbon_share_after": 2.021752860794196e-36,
+              "maximum_absolute_carbon_share_change": 6.711731536660873e-38,
+              "x_before": 2.2960571583206413e-39,
+              "x_after": 2.3748998467578553e-39
+            },
+            {
+              "species": "C1F4",
+              "case_index": 74,
+              "carbon_share_before": 1.888225606210637e-37,
+              "carbon_share_after": 1.953061686865821e-37,
+              "maximum_absolute_carbon_share_change": 6.483608065518418e-39,
+              "x_before": 2.218047210799012e-40,
+              "x_after": 2.2942101335888425e-40
+            },
+            {
+              "species": "C4H6O4",
+              "case_index": 69,
+              "carbon_share_before": 5.5270221888495434e-39,
+              "carbon_share_after": 5.543253360212884e-39,
+              "maximum_absolute_carbon_share_change": 1.6231171363340874e-41,
+              "x_before": 1.7296428241213485e-42,
+              "x_after": 1.7347292865849586e-42
+            },
+            {
+              "species": "C2F4",
+              "case_index": 74,
+              "carbon_share_before": 1.266265000651967e-40,
+              "carbon_share_after": 1.354716169010164e-40,
+              "maximum_absolute_carbon_share_change": 8.845116835819706e-42,
+              "x_before": 7.437235104720833e-44,
+              "x_after": 7.956747049980145e-44
+            },
+            {
+              "species": "C1F4O1",
+              "case_index": 49,
+              "carbon_share_before": 1.6240157377266678e-46,
+              "carbon_share_after": 1.6248675466305035e-46,
+              "maximum_absolute_carbon_share_change": 8.518089038357332e-50,
+              "x_before": 1.2717995237726659e-49,
+              "x_after": 1.2724661766524325e-49
+            },
+            {
+              "species": "C2Cl6",
+              "case_index": 74,
+              "carbon_share_before": 2.569595591634238e-56,
+              "carbon_share_after": 2.749096942313934e-56,
+              "maximum_absolute_carbon_share_change": 1.7950135067969582e-57,
+              "x_before": 1.5092169908509458e-59,
+              "x_after": 1.6146458930838757e-59
+            },
+            {
+              "species": "C2F6",
+              "case_index": 74,
+              "carbon_share_before": 3.464770726353024e-60,
+              "carbon_share_after": 3.7067952667020795e-60,
+              "maximum_absolute_carbon_share_change": 2.4202454034905553e-61,
+              "x_before": 2.0349859202121783e-63,
+              "x_after": 2.1771373943785012e-63
+            },
+            {
+              "species": "C1F8S1",
+              "case_index": 74,
+              "carbon_share_before": 1.0567622788910195e-89,
+              "carbon_share_after": 1.0908424013876578e-89,
+              "maximum_absolute_carbon_share_change": 3.408012249663828e-91,
+              "x_before": 1.2413498776111783e-92,
+              "x_after": 1.2813838437576637e-92
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "case_index": 1,
+      "comparisons": [
+        {
+          "dataset": "curated-tio2-v1",
+          "max_abs_delta_log10_x": 1.3857846720045944e-07,
+          "element_relative_residual": 3.930234457810892e-11,
+          "charge_relative_residual": 6.572246774548069e-13,
+          "mass_action_max_abs_ln": 2.305000634805765e-10
+        },
+        {
+          "dataset": "review-c2h2-retained-atct",
+          "max_abs_delta_log10_x": 1.385553109978706e-07,
+          "element_relative_residual": 3.930234457810892e-11,
+          "charge_relative_residual": 6.572246774548069e-13,
+          "mass_action_max_abs_ln": 2.305000634805765e-10
+        },
+        {
+          "dataset": "review-c2h2-nasa-atct",
+          "max_abs_delta_log10_x": 1.385453375374805e-07,
+          "element_relative_residual": 3.930234457810892e-11,
+          "charge_relative_residual": 6.572246774548069e-13,
+          "mass_action_max_abs_ln": 2.305000634805765e-10
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "case_index": 55,
+      "comparisons": [
+        {
+          "dataset": "curated-tio2-v1",
+          "max_abs_delta_log10_x": 7.836967429686791e-09,
+          "element_relative_residual": 3.047116235252659e-11,
+          "charge_relative_residual": 1.241148350793041e-11,
+          "mass_action_max_abs_ln": 1.5501200323342346e-10
+        },
+        {
+          "dataset": "review-c2h2-retained-atct",
+          "max_abs_delta_log10_x": 8.909805651548494e-09,
+          "element_relative_residual": 4.411405667970784e-11,
+          "charge_relative_residual": 9.782749260389336e-13,
+          "mass_action_max_abs_ln": 1.8846435523300897e-10
+        },
+        {
+          "dataset": "review-c2h2-nasa-atct",
+          "max_abs_delta_log10_x": 9.78821076936991e-09,
+          "element_relative_residual": 3.4200998362791086e-11,
+          "charge_relative_residual": 1.1760892122797238e-12,
+          "mass_action_max_abs_ln": 9.823253321883385e-11
+        }
+      ]
+    }
+  ],
+  "scope": "Fixed element-aggregated ideal gas, 1500-4000 K; no condensation, transport, opacity or full physical uncertainty validation.",
+  "thermal_control_scope": "NASA molecular and atomic thermal functions on the full 75-case grid per network with the identical balanced ATcT D0; the primary model retains inherited atomic/thermal conventions, so this is a reference-model sensitivity, not a physical uncertainty interval."
+}
