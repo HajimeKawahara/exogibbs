@@ -35,6 +35,7 @@ HCN differences with optional MCEG tooling.
    so3_source_review
    so3_candidate
    s2_source_review
+   o2_source_review
    s4_source_review
    tio2_source_review
    tio2_candidate
@@ -47,7 +48,9 @@ HCN differences with optional MCEG tooling.
    oh_candidate
    volatile_sources
    ch4_source_review
+   c2h4_source_review
    ch2o_source_review
+   hco_source_review
    ch2o_candidate
    new_fastchem_logk
    vo_source_review
@@ -56,6 +59,7 @@ HCN differences with optional MCEG tooling.
    c3_source_review
    c4_source_review
    ho2_source_review
+   o3_source_review
    ho2_candidate
    gas_source_comparison
    cs_source_review
@@ -68,25 +72,31 @@ HCN differences with optional MCEG tooling.
    co_source_review
    alh_source_review
    c2h_source_review
+   c2_source_review
    h2s_source_review
    sh_source_investigation
    s2o_source_investigation
    s8_source_review
    s8_candidate
    ohno_p3
+   no2_source_review
    ph2_source_review
    ph_source_review
    ph3_source_review
    ph3_thermal_supplement_review
    p2_source_review
+   pn_source_review
    phosphorus_provenance
    naoh_dimer_source_review
    naoh_source_review
+   nacn_source_review
    naoh_candidate
    koh_dimer_source_review
    koh_source_review
+   kcn_source_review
    koh_candidate
    ps_source_review
+   cp_source_review
    ps_candidate
    ps_curated_adoption
    phosphorus_cold_validation
@@ -100,7 +110,9 @@ HCN differences with optional MCEG tooling.
    h2o2_source_review
    h2o2_candidate
    nh_source_review
+   nh2_source_review
    ns_source_review
+   no_source_review
    nah_source_review
    nao_source_review
    ko_source_review
@@ -110,3 +122,4 @@ HCN differences with optional MCEG tooling.
    kh_source_review
    kh_candidate
    n2_source_review
+   n2o_source_review
