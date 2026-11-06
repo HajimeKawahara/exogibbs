@@ -45,6 +45,7 @@ HCN differences with optional MCEG tooling.
    s6_state_followup
    oh_source_review
    hno_source_review
+   hno_candidate
    oh_candidate
    volatile_sources
    ch4_source_review
