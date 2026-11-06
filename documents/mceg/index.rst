@@ -121,6 +121,8 @@ HCN differences with optional MCEG tooling.
    trans_hno2_source_review
    h2o2_candidate
    nh_source_review
+   nh2_source_review
+   nh2_candidate
    ns_source_review
    nah_source_review
    na2_source_review
