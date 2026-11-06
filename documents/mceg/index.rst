@@ -175,6 +175,7 @@ HCN differences with optional MCEG tooling.
    na2_source_review
    na2_candidate
    nao_source_review
+   na2c2n2_source_review
    ko_source_review
    build
    ch_source_review

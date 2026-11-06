@@ -1,0 +1,385 @@
+{
+  "molecule": "Na2C2N2",
+  "species_id": "C2N2Na2",
+  "composition": {
+    "C": 2,
+    "N": 2,
+    "Na": 2
+  },
+  "standard_pressure_Pa": 100000,
+  "JANAF_R_J_mol_K": 8.31446261815324,
+  "NASA_R_J_mol_K": 8.31451,
+  "source_samples": [
+    {
+      "temperature_K": 1500.0,
+      "source": {
+        "native_janaf_D0_J_mol": 2587410.0,
+        "native_nasa_D0_J_mol": null,
+        "nasa_comparison_status": "unavailable: no neutral Na2C2N2 dimer in the inspected official NASA file; no Na2CN or monomer surrogate.",
+        "janaf_formation_ln_K_components": {
+          "energy": 207.4625961073999,
+          "molecular_thermal": 51.204992980600274,
+          "atomic_thermal": -121.05324335323347
+        },
+        "closure_ln_K": 0.0,
+        "janaf_raw_formation_minus_HS_ln_K": -0.0002405447100670699,
+        "molecular": {
+          "H_J_mol": 136297.0,
+          "S_J_mol_K": 537.916,
+          "Cp_J_mol_K": 127.74,
+          "G_J_mol": -670577.0000000001
+        },
+        "atoms": {
+          "C": {
+            "H_J_mol": 741668.0,
+            "S_J_mol_K": 191.71,
+            "Cp_J_mol_K": 20.814,
+            "G_J_mol": 454103.0
+          },
+          "N": {
+            "H_J_mol": 497664.99999999994,
+            "S_J_mol_K": 186.882,
+            "Cp_J_mol_K": 20.786,
+            "G_J_mol": 217341.99999999994
+          },
+          "Na": {
+            "H_J_mol": 132281.99999999997,
+            "S_J_mol_K": 187.249,
+            "Cp_J_mol_K": 20.787,
+            "G_J_mol": -148591.50000000003
+          }
+        },
+        "reaction": {
+          "janaf": {
+            "H_J_mol": -2606933.0,
+            "S_J_mol_K": -593.766,
+            "Cp_J_mol_K": 2.965999999999994,
+            "G_J_mol": -1716284.0,
+            "ln_K": 137.6143457347667
+          }
+        },
+        "source_H0_J_mol": {
+          "Na2C2N2": -31964.0,
+          "C": 710134.0,
+          "N": 466486.0,
+          "Na": 101103.0
+        },
+        "janaf_Hf0_J_mol": -8299.0,
+        "janaf_Hf298_J_mol": -8786.0
+      },
+      "curated": {
+        "ln_K": 137.62726393355746,
+        "G_J_mol": -1716445.1118214095,
+        "H_J_mol": -2607414.600726287,
+        "S_J_mol_K": -593.9796592699181,
+        "Cp_J_mol_K": 2.3244718863892295
+      },
+      "curated_over_nasa": null,
+      "curated_over_janaf": 1.0130019991820127,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": -481.6007262868807,
+        "S_J_mol_K": -0.21365926991813922,
+        "Cp_J_mol_K": -0.6415281136107644,
+        "G_J_mol": -161.1118214095477,
+        "ln_K": 0.012918198790771385
+      },
+      "modern": {
+        "printed_RRHO_minus_JANAF_H_increment_J_mol": 0.7582886216114275,
+        "printed_RRHO_minus_JANAF_S_J_mol_K": 0.004466480786959437,
+        "printed_RRHO_minus_JANAF_Cp_J_mol_K": 0.0012943402670799742,
+        "source_dimer_dissociation_H298_J_mol": 197318.0,
+        "source_dimer_dissociation_H1000_J_mol": 191646.00000000003,
+        "source_dimer_dissociation_D0_J_mol": 196246.0,
+        "source_minus_primary_dimer_dissociation_H1000_J_mol": 20102.00000000003
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "source": {
+        "native_janaf_D0_J_mol": 2587410.0,
+        "native_nasa_D0_J_mol": null,
+        "nasa_comparison_status": "unavailable: no neutral Na2C2N2 dimer in the inspected official NASA file; no Na2CN or monomer surrogate.",
+        "janaf_formation_ln_K_components": {
+          "energy": 155.59694708054988,
+          "molecular_thermal": 55.160329784712886,
+          "atomic_thermal": -125.38368958733182
+        },
+        "closure_ln_K": 0.0,
+        "janaf_raw_formation_minus_HS_ln_K": 0.0003006808876193645,
+        "molecular": {
+          "H_J_mol": 200743.0,
+          "S_J_mol_K": 574.982,
+          "Cp_J_mol_K": 129.805,
+          "G_J_mol": -949221.0
+        },
+        "atoms": {
+          "C": {
+            "H_J_mol": 752103.0,
+            "S_J_mol_K": 197.713,
+            "Cp_J_mol_K": 20.952,
+            "G_J_mol": 356677.0
+          },
+          "N": {
+            "H_J_mol": 508058.0,
+            "S_J_mol_K": 192.863,
+            "Cp_J_mol_K": 20.79,
+            "G_J_mol": 122332.0
+          },
+          "Na": {
+            "H_J_mol": 142678.0,
+            "S_J_mol_K": 193.231,
+            "Cp_J_mol_K": 20.805,
+            "G_J_mol": -243784.0
+          }
+        },
+        "reaction": {
+          "janaf": {
+            "H_J_mol": -2604935.0,
+            "S_J_mol_K": -592.6320000000001,
+            "Cp_J_mol_K": 4.711000000000013,
+            "G_J_mol": -1419671.0,
+            "ln_K": 85.37358727793095
+          }
+        },
+        "source_H0_J_mol": {
+          "Na2C2N2": -31964.0,
+          "C": 710134.0,
+          "N": 466486.0,
+          "Na": 101103.0
+        },
+        "janaf_Hf0_J_mol": -8299.0,
+        "janaf_Hf298_J_mol": -8786.0
+      },
+      "curated": {
+        "ln_K": 85.37574739288942,
+        "G_J_mol": -1419706.920390146,
+        "H_J_mol": -2605495.736240482,
+        "S_J_mol_K": -592.894407925168,
+        "Cp_J_mol_K": 5.035210534999809
+      },
+      "curated_over_nasa": null,
+      "curated_over_janaf": 1.0021624496875798,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": -560.7362404819578,
+        "S_J_mol_K": -0.2624079251679632,
+        "Cp_J_mol_K": 0.32421053499979635,
+        "G_J_mol": -35.92039014608599,
+        "ln_K": 0.0021601149584711266
+      },
+      "modern": {
+        "printed_RRHO_minus_JANAF_H_increment_J_mol": 1.1853424341534264,
+        "printed_RRHO_minus_JANAF_S_J_mol_K": 0.004460722734961564,
+        "printed_RRHO_minus_JANAF_Cp_J_mol_K": 0.00040857582015974003,
+        "source_dimer_dissociation_H298_J_mol": 197318.0,
+        "source_dimer_dissociation_H1000_J_mol": 191646.00000000003,
+        "source_dimer_dissociation_D0_J_mol": 196246.0,
+        "source_minus_primary_dimer_dissociation_H1000_J_mol": 20102.00000000003
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "source": {
+        "native_janaf_D0_J_mol": 2587410.0,
+        "native_nasa_D0_J_mol": null,
+        "nasa_comparison_status": "unavailable: no neutral Na2C2N2 dimer in the inspected official NASA file; no Na2CN or monomer surrogate.",
+        "janaf_formation_ln_K_components": {
+          "energy": 103.73129805369994,
+          "molecular_thermal": 60.957156616884674,
+          "atomic_thermal": -131.4892756002908
+        },
+        "closure_ln_K": -7.105427357601002e-15,
+        "janaf_raw_formation_minus_HS_ln_K": -0.00020045392506062853,
+        "molecular": {
+          "H_J_mol": 331552.0,
+          "S_J_mol_K": 627.998,
+          "Cp_J_mol_K": 131.507,
+          "G_J_mol": -1552442.0000000002
+        },
+        "atoms": {
+          "C": {
+            "H_J_mol": 773358.9999999999,
+            "S_J_mol_K": 206.322,
+            "Cp_J_mol_K": 21.621,
+            "G_J_mol": 154392.99999999988
+          },
+          "N": {
+            "H_J_mol": 528901.0,
+            "S_J_mol_K": 201.311,
+            "Cp_J_mol_K": 20.963,
+            "G_J_mol": -75032.0
+          },
+          "Na": {
+            "H_J_mol": 163643.0,
+            "S_J_mol_K": 201.725,
+            "Cp_J_mol_K": 21.289,
+            "G_J_mol": -441532.0
+          }
+        },
+        "reaction": {
+          "janaf": {
+            "H_J_mol": -2600254.0,
+            "S_J_mol_K": -590.7179999999998,
+            "Cp_J_mol_K": 3.7609999999999957,
+            "G_J_mol": -828100.0,
+            "ln_K": 33.199179070293816
+          }
+        },
+        "source_H0_J_mol": {
+          "Na2C2N2": -31964.0,
+          "C": 710134.0,
+          "N": 466486.0,
+          "Na": 101103.0
+        },
+        "janaf_Hf0_J_mol": -8299.0,
+        "janaf_Hf298_J_mol": -8786.0
+      },
+      "curated": {
+        "ln_K": 33.19584939567276,
+        "G_J_mol": -828016.9466344978,
+        "H_J_mol": -2599960.2157096774,
+        "S_J_mol_K": -590.6477563583932,
+        "Cp_J_mol_K": 4.772728439292692
+      },
+      "curated_over_nasa": null,
+      "curated_over_janaf": 0.9966758625980668,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": 293.78429032256827,
+        "S_J_mol_K": 0.07024364160668028,
+        "Cp_J_mol_K": 1.0117284392926962,
+        "G_J_mol": 83.05336550215725,
+        "ln_K": -0.0033296746210567107
+      },
+      "modern": {
+        "printed_RRHO_minus_JANAF_H_increment_J_mol": 2.3291186785208993,
+        "printed_RRHO_minus_JANAF_S_J_mol_K": 0.004400043831424227,
+        "printed_RRHO_minus_JANAF_Cp_J_mol_K": 0.0009457390942770871,
+        "source_dimer_dissociation_H298_J_mol": 197318.0,
+        "source_dimer_dissociation_H1000_J_mol": 191646.00000000003,
+        "source_dimer_dissociation_D0_J_mol": 196246.0,
+        "source_minus_primary_dimer_dissociation_H1000_J_mol": 20102.00000000003
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "source": {
+        "native_janaf_D0_J_mol": 2587410.0,
+        "native_nasa_D0_J_mol": null,
+        "nasa_comparison_status": "unavailable: no neutral Na2C2N2 dimer in the inspected official NASA file; no Na2CN or monomer surrogate.",
+        "janaf_formation_ln_K_components": {
+          "energy": 77.79847354027494,
+          "molecular_thermal": 65.19762910671483,
+          "atomic_thermal": -135.84870747195447
+        },
+        "closure_ln_K": 1.9539925233402755e-14,
+        "janaf_raw_formation_minus_HS_ln_K": -0.00012027235504152856,
+        "molecular": {
+          "H_J_mol": 463427.0,
+          "S_J_mol_K": 665.931,
+          "Cp_J_mol_K": 132.155,
+          "G_J_mol": -2200297.0
+        },
+        "atoms": {
+          "C": {
+            "H_J_mol": 795365.0,
+            "S_J_mol_K": 212.648,
+            "Cp_J_mol_K": 22.363,
+            "G_J_mol": -55227.0
+          },
+          "N": {
+            "H_J_mol": 550215.0,
+            "S_J_mol_K": 207.437,
+            "Cp_J_mol_K": 21.809,
+            "G_J_mol": -279533.0
+          },
+          "Na": {
+            "H_J_mol": 185757.0,
+            "S_J_mol_K": 208.073,
+            "Cp_J_mol_K": 23.278,
+            "G_J_mol": -646535.0
+          }
+        },
+        "reaction": {
+          "janaf": {
+            "H_J_mol": -2599247.0,
+            "S_J_mol_K": -590.385,
+            "Cp_J_mol_K": -2.7450000000000045,
+            "G_J_mol": -237707.0,
+            "ln_K": 7.147395175035319
+          }
+        },
+        "source_H0_J_mol": {
+          "Na2C2N2": -31964.0,
+          "C": 710134.0,
+          "N": 466486.0,
+          "Na": 101103.0
+        },
+        "janaf_Hf0_J_mol": -8299.0,
+        "janaf_Hf298_J_mol": -8786.0
+      },
+      "curated": {
+        "ln_K": 7.150397358223629,
+        "G_J_mol": -237806.8461595682,
+        "H_J_mol": -2598476.4835365317,
+        "S_J_mol_K": -590.1674093442409,
+        "Cp_J_mol_K": -3.0683661803187965
+      },
+      "curated_over_nasa": null,
+      "curated_over_janaf": 1.0030066942534768,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": 770.5164634683169,
+        "S_J_mol_K": 0.21759065575906789,
+        "Cp_J_mol_K": -0.32336618031879194,
+        "G_J_mol": -99.84615956820198,
+        "ln_K": 0.003002183188310248
+      },
+      "modern": {
+        "printed_RRHO_minus_JANAF_H_increment_J_mol": 2.9913526923046447,
+        "printed_RRHO_minus_JANAF_S_J_mol_K": 0.0052341270182978406,
+        "printed_RRHO_minus_JANAF_Cp_J_mol_K": 0.0005219557546070064,
+        "source_dimer_dissociation_H298_J_mol": 197318.0,
+        "source_dimer_dissociation_H1000_J_mol": 191646.00000000003,
+        "source_dimer_dissociation_D0_J_mol": 196246.0,
+        "source_minus_primary_dimer_dissociation_H1000_J_mol": 20102.00000000003
+      }
+    }
+  ],
+  "footprint": {
+    "dataset": "curated-tio2-v1",
+    "cases": 75,
+    "species": 537,
+    "all_converged": true,
+    "element_shares": {
+      "C": {
+        "maximum_share": 1.5314756443185585e-13,
+        "case_index": 54,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5,
+        "mole_fraction": 9.673139983674365e-17
+      },
+      "N": {
+        "maximum_share": 1.6641840430850663e-12,
+        "case_index": 54,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5,
+        "mole_fraction": 9.673139983674365e-17
+      },
+      "Na": {
+        "maximum_share": 6.779557577891664e-11,
+        "case_index": 54,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5,
+        "mole_fraction": 9.673139983674365e-17
+      }
+    },
+    "maximum_mole_fraction": 9.673139983674365e-17,
+    "maximum_abs_h_error": 7.105427357601002e-15,
+    "scope": "Archived hot H-rich ideal-gas equilibrium; not an abundance error or a cold/oxidizing/photochemical validation."
+  },
+  "decision": "Retain Na2C2N2 pending a focused dimer thermal/energy follow-up; the exact gas identity is resolved, but monomer evidence or a different stoichiometry is not a replacement dimer model.",
+  "curated_change": "none",
+  "new_equilibrium_substitution": "not_run",
+  "physical_accuracy": "unknown"
+}
