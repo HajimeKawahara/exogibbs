@@ -104,6 +104,7 @@ HCN differences with optional MCEG tooling.
    hno3_source_review
    ch3_source_review
    h2o2_source_review
+   trans_hno2_source_review
    h2o2_candidate
    nh_source_review
    ns_source_review
