@@ -66,6 +66,7 @@ HCN differences with optional MCEG tooling.
    cos_source_review
    cos_candidate
    co_source_review
+   c2o_source_review
    alh_source_review
    c2h_source_review
    h2s_source_review
