@@ -160,7 +160,7 @@ substitutions. The frozen packets under
 ``tests/data/validation/tio2_candidate/20261106`` and
 ``tests/data/validation/tio2_equilibrium_impact/20261106`` replay offline with
 ``pytest tests/model_evidence/tio2_candidate_test.py
- tests/model_evidence/tio2_equilibrium_impact_test.py``.
+tests/model_evidence/tio2_equilibrium_impact_test.py``.
 
 The 2501-temperature independent reconstruction agrees within 4.3e-14 in
 G/(RT); dense scalar/JAX comparison and independent analytic/automatic G/H/S/Cp

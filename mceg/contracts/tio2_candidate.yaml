@@ -102,7 +102,7 @@ evidence:
   - source: tests/data/validation/tio2_candidate/20261106/sources.json
     sha256: e3bf48ed8e7adfdacb923e23ecd02c304adefa99fa7a214d0dc97b8f758c5e41
   - source: documents/mceg/tio2_candidate.rst
-    sha256: 5bab7622294fe6e4bb64c8d02cf7d20e5d76b477cf94db5444401c84a0ffa6f0
+    sha256: 2d461581f597223c79a8172999acc89c032c0d8a3eda493d322a1d04c8dd1e5a
   provenance:
     role: primary
     location: documents/mceg/tio2_candidate.rst
@@ -185,7 +185,7 @@ evidence:
   context: fixed_cos_network
   artifacts:
   - source: documents/mceg/tio2_candidate.rst
-    sha256: 5bab7622294fe6e4bb64c8d02cf7d20e5d76b477cf94db5444401c84a0ffa6f0
+    sha256: 2d461581f597223c79a8172999acc89c032c0d8a3eda493d322a1d04c8dd1e5a
   - source: tests/data/validation/tio2_candidate/20261106/validation.json
     sha256: 7bb69e2b1311903ecfd6d58f12c00049950429a06dc04f9cff0b73b26a2953b8
   - source: tests/data/validation/tio2_equilibrium_impact/20261106/summary.json
@@ -299,7 +299,7 @@ subjects:
     tests/data/validation/tio2_equilibrium_impact/20261106/README.rst: 3a13ae3a0375de9c70bacfab784e9becaaee992c02c288ee6f66a34754c47dc5
     tests/data/validation/tio2_equilibrium_impact/20261106/receipt.json: d5fba6205404b120a793bb3be950f7c37081ce5526cdeb9436e1a6bbf5adf720
     tests/data/validation/tio2_equilibrium_impact/20261106/summary.json: 596e070ef3747828886aceb83c64f8f9ca9a467e79ef0553bb6bc808376ccccd
-    documents/mceg/tio2_candidate.rst: 5bab7622294fe6e4bb64c8d02cf7d20e5d76b477cf94db5444401c84a0ffa6f0
+    documents/mceg/tio2_candidate.rst: 2d461581f597223c79a8172999acc89c032c0d8a3eda493d322a1d04c8dd1e5a
     tests/model_evidence/tio2_candidate_test.py: 95c27912271701729206af2299c1a06455dbc42f9b9b680d87c55eada0411526
     tests/model_evidence/tio2_equilibrium_impact_test.py: 4d7a4af4fe52c4daa5b9f65c2737d56de4dd7cc2728eb5ff3d06b5a1610e2ae6
     tests/data/validation/tio2_source_review/20261106/sources.json: 00c3f9c06f04828c583f944d0cc9ffc392dcca85bfa2de6fdeb16b3d3aaa8ad5
