@@ -1,0 +1,1877 @@
+{
+  "temperature_count": 2501,
+  "current_h_maximum_error": 7.105427357601002e-15,
+  "jax_float64_derivative_errors": {
+    "current": {
+      "G_J_mol": 1.1641532182693481e-10,
+      "H_J_mol": 3.4924596548080444e-10,
+      "S_J_mol_K": 1.7053025658242404e-13,
+      "Cp_J_mol_K": 3.5349501104064984e-13
+    },
+    "energy_only": {
+      "G_J_mol": 1.1641532182693481e-10,
+      "H_J_mol": 3.4924596548080444e-10,
+      "S_J_mol_K": 1.7053025658242404e-13,
+      "Cp_J_mol_K": 3.339550858072471e-13
+    },
+    "reconstructed_rrho": {
+      "G_J_mol": 9.89530235528946e-10,
+      "H_J_mol": 1.0477378964424133e-09,
+      "S_J_mol_K": 4.263256414560601e-13,
+      "Cp_J_mol_K": 3.304023721284466e-13
+    },
+    "triplet_only": {
+      "G_J_mol": 1.0477378964424133e-09,
+      "H_J_mol": 1.0477378964424133e-09,
+      "S_J_mol_K": 3.979039320256561e-13,
+      "Cp_J_mol_K": 3.2152058793144533e-13
+    },
+    "nasa_thermal": {
+      "G_J_mol": 1.1641532182693481e-10,
+      "H_J_mol": 3.4924596548080444e-10,
+      "S_J_mol_K": 1.7053025658242404e-13,
+      "Cp_J_mol_K": 3.339550858072471e-13
+    }
+  },
+  "table_audit": {
+    "equilibrated": {
+      "rows": [
+        {
+          "temperature_K": 150.0,
+          "printed": {
+            "Cp_J_mol_K": 33.327,
+            "S_J_mol_K": 171.125,
+            "H_minus_H0_J_mol": 4990.0,
+            "G_minus_H0_J_mol": -20678.75
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -20678.987461265937,
+            "H_minus_H0_J_mol": 4989.798477300762,
+            "S_J_mol_K": 171.12523959044466,
+            "Cp_J_mol_K": 33.326889382875464,
+            "state_fractions": [
+              0.9999999999999565,
+              4.344294583047772e-14,
+              4.243912516633285e-49
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00011061712453397377,
+            "S_J_mol_K": 0.00023959044466437263,
+            "H_minus_H0_J_mol": -0.20152269923801214,
+            "G_minus_H0_J_mol": -0.23746126593687222
+          }
+        },
+        {
+          "temperature_K": 200.0,
+          "printed": {
+            "Cp_J_mol_K": 33.657,
+            "S_J_mol_K": 180.75,
+            "H_minus_H0_J_mol": 6663.0,
+            "G_minus_H0_J_mol": -29487.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -29486.988640528096,
+            "H_minus_H0_J_mol": 6662.866660507881,
+            "S_J_mol_K": 180.7492765051799,
+            "Cp_J_mol_K": 33.649573001544745,
+            "state_fractions": [
+              0.999999999917792,
+              8.220797596163096e-11,
+              4.036654416402433e-37
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.007426998455251521,
+            "S_J_mol_K": -0.0007234948201073621,
+            "H_minus_H0_J_mol": -0.1333394921193758,
+            "G_minus_H0_J_mol": 0.011359471904142993
+          }
+        },
+        {
+          "temperature_K": 250.0,
+          "printed": {
+            "Cp_J_mol_K": 34.305,
+            "S_J_mol_K": 188.325,
+            "H_minus_H0_J_mol": 8361.0,
+            "G_minus_H0_J_mol": -38720.25
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -38720.172881099585,
+            "H_minus_H0_J_mol": 8359.756095498615,
+            "S_J_mol_K": 188.31971590639282,
+            "Cp_J_mol_K": 34.26607959310564,
+            "state_fractions": [
+              0.9999999924106845,
+              7.58931547246133e-09,
+              6.2816359423665525e-30
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.038920406894362714,
+            "S_J_mol_K": -0.00528409360717319,
+            "H_minus_H0_J_mol": -1.2439045013852592,
+            "G_minus_H0_J_mol": 0.07711890041537117
+          }
+        },
+        {
+          "temperature_K": 298.15,
+          "printed": {
+            "Cp_J_mol_K": 35.13,
+            "S_J_mol_K": 194.436,
+            "H_minus_H0_J_mol": 10032.0,
+            "G_minus_H0_J_mol": -47939.0934
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -47938.36027542483,
+            "H_minus_H0_J_mol": 10027.350646210023,
+            "S_J_mol_K": 194.417947079104,
+            "Cp_J_mol_K": 35.01411069633015,
+            "state_fractions": [
+              0.9999998592496517,
+              1.4075034829335708e-07,
+              2.807493123971861e-25
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.11588930366985295,
+            "S_J_mol_K": -0.01805292089599675,
+            "H_minus_H0_J_mol": -4.649353789976885,
+            "G_minus_H0_J_mol": 0.7331245751702227
+          }
+        },
+        {
+          "temperature_K": 300.0,
+          "printed": {
+            "Cp_J_mol_K": 35.164,
+            "S_J_mol_K": 194.653,
+            "H_minus_H0_J_mol": 10097.0,
+            "G_minus_H0_J_mol": -48298.899999999994
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -48298.23408585085,
+            "H_minus_H0_J_mol": 10092.154443051375,
+            "S_J_mol_K": 194.63462842967408,
+            "Cp_J_mol_K": 35.04405389614545,
+            "state_fractions": [
+              0.9999998454656766,
+              1.5453432346357918e-07,
+              3.9563058134846666e-25
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.11994610385455218,
+            "S_J_mol_K": -0.01837157032591108,
+            "H_minus_H0_J_mol": -4.845556948625017,
+            "G_minus_H0_J_mol": 0.6659141491472838
+          }
+        },
+        {
+          "temperature_K": 350.0,
+          "printed": {
+            "Cp_J_mol_K": 36.107,
+            "S_J_mol_K": 200.144,
+            "H_minus_H0_J_mol": 11879.0,
+            "G_minus_H0_J_mol": -58171.40000000001
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -58169.52677534905,
+            "H_minus_H0_J_mol": 11864.618704743356,
+            "S_J_mol_K": 200.09755851454972,
+            "Cp_J_mol_K": 35.851877687679426,
+            "state_fractions": [
+              0.9999986745423046,
+              1.3254576954333954e-06,
+              1.0685961482898204e-21
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.25512231232057303,
+            "S_J_mol_K": -0.0464414854502877,
+            "H_minus_H0_J_mol": -14.38129525664408,
+            "G_minus_H0_J_mol": 1.8732246509607648
+          }
+        },
+        {
+          "temperature_K": 400.0,
+          "printed": {
+            "Cp_J_mol_K": 37.061,
+            "S_J_mol_K": 205.028,
+            "H_minus_H0_J_mol": 13708.0,
+            "G_minus_H0_J_mol": -68303.2
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -68297.62254011979,
+            "H_minus_H0_J_mol": 13676.688878211786,
+            "S_J_mol_K": 204.93577854582892,
+            "Cp_J_mol_K": 36.62230490013156,
+            "state_fractions": [
+              0.9999933791682935,
+              6.6208317064700895e-06,
+              4.0276579928838883e-19
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.4386950998684398,
+            "S_J_mol_K": -0.09222145417106731,
+            "H_minus_H0_J_mol": -31.311121788214223,
+            "G_minus_H0_J_mol": 5.577459880209062
+          }
+        },
+        {
+          "temperature_K": 500.0,
+          "printed": {
+            "Cp_J_mol_K": 38.902,
+            "S_J_mol_K": 213.497,
+            "H_minus_H0_J_mol": 17507.0,
+            "G_minus_H0_J_mol": -89241.5
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -89220.33255852172,
+            "H_minus_H0_J_mol": 17410.17670693361,
+            "S_J_mol_K": 213.2610185309107,
+            "Cp_J_mol_K": 38.02213395919486,
+            "state_fractions": [
+              0.9999375483514712,
+              6.245164852719025e-05,
+              1.6465464405416954e-15
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.8798660408051404,
+            "S_J_mol_K": -0.2359814690893245,
+            "H_minus_H0_J_mol": -96.82329306639076,
+            "G_minus_H0_J_mol": 21.167441478275578
+          }
+        },
+        {
+          "temperature_K": 600.0,
+          "printed": {
+            "Cp_J_mol_K": 40.667,
+            "S_J_mol_K": 220.747,
+            "H_minus_H0_J_mol": 21486.0,
+            "G_minus_H0_J_mol": -110962.20000000001
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -110907.60900284273,
+            "H_minus_H0_J_mol": 21278.834135475638,
+            "S_J_mol_K": 220.31073856386394,
+            "Cp_J_mol_K": 39.352168407272764,
+            "state_fractions": [
+              0.9997231630728541,
+              0.00027683692672128476,
+              4.24645233339248e-13
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -1.3148315927272378,
+            "S_J_mol_K": -0.4362614361360784,
+            "H_minus_H0_J_mol": -207.1658645243624,
+            "G_minus_H0_J_mol": 54.59099715728371
+          }
+        },
+        {
+          "temperature_K": 800.0,
+          "printed": {
+            "Cp_J_mol_K": 44.088,
+            "S_J_mol_K": 232.918,
+            "H_minus_H0_J_mol": 29964.0,
+            "G_minus_H0_J_mol": -156370.4
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -156182.38939290936,
+            "H_minus_H0_J_mol": 29427.258169853278,
+            "S_J_mol_K": 232.0120594534533,
+            "Cp_J_mol_K": 42.1773764535187,
+            "state_fractions": [
+              0.9982380064127835,
+              0.0017619931433250583,
+              4.4389140589441184e-10
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -1.910623546481304,
+            "S_J_mol_K": -0.9059405465467023,
+            "H_minus_H0_J_mol": -536.7418301467224,
+            "G_minus_H0_J_mol": 188.01060709063313
+          }
+        },
+        {
+          "temperature_K": 1000.0,
+          "printed": {
+            "Cp_J_mol_K": 47.209,
+            "S_J_mol_K": 243.1,
+            "H_minus_H0_J_mol": 39101.0,
+            "G_minus_H0_J_mol": -203999.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -203582.8473744187,
+            "H_minus_H0_J_mol": 38157.368262033306,
+            "S_J_mol_K": 241.740215636452,
+            "Cp_J_mol_K": 45.10827778045669,
+            "state_fractions": [
+              0.9946865829263336,
+              0.005313388143097041,
+              2.8930569495910333e-08
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -2.1007222195433144,
+            "S_J_mol_K": -1.3597843635479876,
+            "H_minus_H0_J_mol": -943.6317379666943,
+            "G_minus_H0_J_mol": 416.1526255813078
+          }
+        },
+        {
+          "temperature_K": 1200.0,
+          "printed": {
+            "Cp_J_mol_K": 49.802,
+            "S_J_mol_K": 251.945,
+            "H_minus_H0_J_mol": 48812.0,
+            "G_minus_H0_J_mol": -253522.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -252795.11400972828,
+            "H_minus_H0_J_mol": 47452.93445259143,
+            "S_J_mol_K": 250.2067070519331,
+            "Cp_J_mol_K": 47.782827810862045,
+            "state_fractions": [
+              0.9889495376992667,
+              0.011049993213724253,
+              4.6908700912007023e-07
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -2.0191721891379544,
+            "S_J_mol_K": -1.738292948066885,
+            "H_minus_H0_J_mol": -1359.0655474085725,
+            "G_minus_H0_J_mol": 726.8859902717231
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "printed": {
+            "Cp_J_mol_K": 52.639,
+            "S_J_mol_K": 263.384,
+            "H_minus_H0_J_mol": 64206.99999999999,
+            "G_minus_H0_J_mol": -330869.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -329554.34885866573,
+            "H_minus_H0_J_mol": 62291.446495053286,
+            "S_J_mol_K": 261.2305302358127,
+            "Cp_J_mol_K": 50.969467654413116,
+            "state_fractions": [
+              0.9771218987010823,
+              0.022870508022272324,
+              7.593276645451729e-06
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -1.6695323455868873,
+            "S_J_mol_K": -2.153469764187321,
+            "H_minus_H0_J_mol": -1915.553504946707,
+            "G_minus_H0_J_mol": 1314.6511413342669
+          }
+        },
+        {
+          "temperature_K": 2000.0,
+          "printed": {
+            "Cp_J_mol_K": 55.318,
+            "S_J_mol_K": 278.942,
+            "H_minus_H0_J_mol": 91278.0,
+            "G_minus_H0_J_mol": -466606.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -464103.9230417459,
+            "H_minus_H0_J_mol": 88700.61023640072,
+            "S_J_mol_K": 276.4022666390733,
+            "Cp_J_mol_K": 54.332227649121656,
+            "state_fractions": [
+              0.9529862578789301,
+              0.04689172529209312,
+              0.00012201682897671767
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.9857723508783423,
+            "S_J_mol_K": -2.539733360926732,
+            "H_minus_H0_J_mol": -2577.389763599276,
+            "G_minus_H0_J_mol": 2502.076958254096
+          }
+        },
+        {
+          "temperature_K": 2500.0,
+          "printed": {
+            "Cp_J_mol_K": 56.609,
+            "S_J_mol_K": 291.441,
+            "H_minus_H0_J_mol": 119298.0,
+            "G_minus_H0_J_mol": -609304.4999999999
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -605488.6927868066,
+            "H_minus_H0_J_mol": 116381.93991933012,
+            "S_J_mol_K": 288.7482530824547,
+            "Cp_J_mol_K": 56.226462865994456,
+            "state_fractions": [
+              0.927861495412166,
+              0.07149829004772114,
+              0.0006402145401129333
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.38253713400554545,
+            "S_J_mol_K": -2.6927469175452643,
+            "H_minus_H0_J_mol": -2916.0600806698785,
+            "G_minus_H0_J_mol": 3815.8072131932713
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "printed": {
+            "Cp_J_mol_K": 57.266,
+            "S_J_mol_K": 301.827,
+            "H_minus_H0_J_mol": 147784.0,
+            "G_minus_H0_J_mol": -757697.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -752523.2393525199,
+            "H_minus_H0_J_mol": 144809.03993865414,
+            "S_J_mol_K": 299.1107597637247,
+            "Cp_J_mol_K": 57.39887708164726,
+            "state_fractions": [
+              0.9039993901501828,
+              0.09408044167092673,
+              0.0019201681788904618
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.13287708164725842,
+            "S_J_mol_K": -2.7162402362753255,
+            "H_minus_H0_J_mol": -2974.9600613458606,
+            "G_minus_H0_J_mol": 5173.760647480143
+          }
+        }
+      ],
+      "maximum_absolute_difference": {
+        "Cp_J_mol_K": 2.1007222195433144,
+        "S_J_mol_K": 2.7162402362753255,
+        "H_minus_H0_J_mol": 2974.9600613458606,
+        "G_minus_H0_J_mol": 5173.760647480143
+      }
+    },
+    "triplet_only": {
+      "rows": [
+        {
+          "temperature_K": 150.0,
+          "printed": {
+            "Cp_J_mol_K": 33.327,
+            "S_J_mol_K": 171.125,
+            "H_minus_H0_J_mol": 4990.0,
+            "G_minus_H0_J_mol": -20678.75
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -20678.987461265882,
+            "H_minus_H0_J_mol": 4989.7984772991285,
+            "S_J_mol_K": 171.1252395904334,
+            "Cp_J_mol_K": 33.32688938254637,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00011061745362894726,
+            "S_J_mol_K": 0.0002395904334093757,
+            "H_minus_H0_J_mol": -0.20152270087146462,
+            "G_minus_H0_J_mol": -0.23746126588230254
+          }
+        },
+        {
+          "temperature_K": 200.0,
+          "printed": {
+            "Cp_J_mol_K": 33.65,
+            "S_J_mol_K": 180.75,
+            "H_minus_H0_J_mol": 6663.0,
+            "G_minus_H0_J_mol": -29487.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -29486.988640391402,
+            "H_minus_H0_J_mol": 6662.86665741389,
+            "S_J_mol_K": 180.74927648902644,
+            "Cp_J_mol_K": 33.649572651442504,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.000427348557494156,
+            "S_J_mol_K": -0.0007235109735574952,
+            "H_minus_H0_J_mol": -0.13334258611030236,
+            "G_minus_H0_J_mol": 0.01135960859755869
+          }
+        },
+        {
+          "temperature_K": 250.0,
+          "printed": {
+            "Cp_J_mol_K": 34.266,
+            "S_J_mol_K": 188.32,
+            "H_minus_H0_J_mol": 8360.0,
+            "G_minus_H0_J_mol": -38720.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -38720.172865324326,
+            "H_minus_H0_J_mol": 8359.755810080167,
+            "S_J_mol_K": 188.31971470161795,
+            "Cp_J_mol_K": 34.266058943112796,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 5.894311279774911e-05,
+            "S_J_mol_K": -0.0002852983820389454,
+            "H_minus_H0_J_mol": -0.2441899198329338,
+            "G_minus_H0_J_mol": -0.172865324326267
+          }
+        },
+        {
+          "temperature_K": 298.15,
+          "printed": {
+            "Cp_J_mol_K": 35.014,
+            "S_J_mol_K": 194.418,
+            "H_minus_H0_J_mol": 10027.0,
+            "G_minus_H0_J_mol": -47938.7267
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -47938.35992651075,
+            "H_minus_H0_J_mol": 10027.34535980298,
+            "S_J_mol_K": 194.41792817814434,
+            "Cp_J_mol_K": 35.01384223157314,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.0001577684268596613,
+            "S_J_mol_K": -7.182185566989574e-05,
+            "H_minus_H0_J_mol": 0.3453598029791465,
+            "G_minus_H0_J_mol": 0.3667734892515
+          }
+        },
+        {
+          "temperature_K": 300.0,
+          "printed": {
+            "Cp_J_mol_K": 35.044,
+            "S_J_mol_K": 194.635,
+            "H_minus_H0_J_mol": 10092.0,
+            "G_minus_H0_J_mol": -48298.5
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -48298.23370038987,
+            "H_minus_H0_J_mol": 10092.148639289993,
+            "S_J_mol_K": 194.63460779893288,
+            "Cp_J_mol_K": 35.04376280442609,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00023719557390933232,
+            "S_J_mol_K": -0.0003922010671146836,
+            "H_minus_H0_J_mol": 0.148639289993298,
+            "G_minus_H0_J_mol": 0.26629961012804415
+          }
+        },
+        {
+          "temperature_K": 350.0,
+          "printed": {
+            "Cp_J_mol_K": 35.85,
+            "S_J_mol_K": 200.098,
+            "H_minus_H0_J_mol": 11865.0,
+            "G_minus_H0_J_mol": -58169.3
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -58169.52291818254,
+            "H_minus_H0_J_mol": 11864.56901962932,
+            "S_J_mol_K": 200.0974055366053,
+            "Cp_J_mol_K": 35.850051188326795,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 5.1188326793294436e-05,
+            "S_J_mol_K": -0.0005944633947194689,
+            "H_minus_H0_J_mol": -0.43098037068011763,
+            "G_minus_H0_J_mol": -0.22291818253870588
+          }
+        },
+        {
+          "temperature_K": 400.0,
+          "printed": {
+            "Cp_J_mol_K": 36.615,
+            "S_J_mol_K": 204.935,
+            "H_minus_H0_J_mol": 13676.0,
+            "G_minus_H0_J_mol": -68298.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -68297.60052058382,
+            "H_minus_H0_J_mol": 13676.441249581212,
+            "S_J_mol_K": 204.9351044254126,
+            "Cp_J_mol_K": 36.61535452926447,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0003545292644702158,
+            "S_J_mol_K": 0.00010442541258726123,
+            "H_minus_H0_J_mol": 0.4412495812121051,
+            "G_minus_H0_J_mol": 0.3994794161844766
+          }
+        },
+        {
+          "temperature_K": 500.0,
+          "printed": {
+            "Cp_J_mol_K": 37.981,
+            "S_J_mol_K": 213.256,
+            "H_minus_H0_J_mol": 17408.0,
+            "G_minus_H0_J_mol": -89220.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -89220.07292446579,
+            "H_minus_H0_J_mol": 17407.852007234014,
+            "S_J_mol_K": 213.2558498633996,
+            "Cp_J_mol_K": 37.98061356300516,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.0003864369948445301,
+            "S_J_mol_K": -0.00015013660041063304,
+            "H_minus_H0_J_mol": -0.14799276598569122,
+            "G_minus_H0_J_mol": -0.07292446578503586
+          }
+        },
+        {
+          "temperature_K": 600.0,
+          "printed": {
+            "Cp_J_mol_K": 39.225,
+            "S_J_mol_K": 220.292,
+            "H_minus_H0_J_mol": 21269.0,
+            "G_minus_H0_J_mol": -110906.20000000001
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -110906.22776147535,
+            "H_minus_H0_J_mol": 21268.573013833757,
+            "S_J_mol_K": 220.2913346255152,
+            "Cp_J_mol_K": 39.22552841473024,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0005284147302404563,
+            "S_J_mol_K": -0.0006653744848108545,
+            "H_minus_H0_J_mol": -0.4269861662432959,
+            "G_minus_H0_J_mol": -0.027761475343140773
+          }
+        },
+        {
+          "temperature_K": 800.0,
+          "printed": {
+            "Cp_J_mol_K": 41.729,
+            "S_J_mol_K": 231.916,
+            "H_minus_H0_J_mol": 29362.0,
+            "G_minus_H0_J_mol": -156170.8
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -156170.65903160963,
+            "H_minus_H0_J_mol": 29362.302774177166,
+            "S_J_mol_K": 231.9162022572335,
+            "Cp_J_mol_K": 41.72924039144186,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.00024039144186360772,
+            "S_J_mol_K": 0.0002022572334965389,
+            "H_minus_H0_J_mol": 0.302774177165702,
+            "G_minus_H0_J_mol": 0.1409683903621044
+          }
+        },
+        {
+          "temperature_K": 1000.0,
+          "printed": {
+            "Cp_J_mol_K": 44.247,
+            "S_J_mol_K": 241.5,
+            "H_minus_H0_J_mol": 37962.0,
+            "G_minus_H0_J_mol": -203538.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -203538.5513807475,
+            "H_minus_H0_J_mol": 37961.79712908054,
+            "S_J_mol_K": 241.50034850982806,
+            "Cp_J_mol_K": 44.24719883691999,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.00019883691999211806,
+            "S_J_mol_K": 0.00034850982805778585,
+            "H_minus_H0_J_mol": -0.20287091945647262,
+            "G_minus_H0_J_mol": -0.551380747492658
+          }
+        },
+        {
+          "temperature_K": 1200.0,
+          "printed": {
+            "Cp_J_mol_K": 46.54,
+            "S_J_mol_K": 249.775,
+            "H_minus_H0_J_mol": 47046.0,
+            "G_minus_H0_J_mol": -252684.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -252684.24591655307,
+            "H_minus_H0_J_mol": 47045.817568044076,
+            "S_J_mol_K": 249.77505290383095,
+            "Cp_J_mol_K": 46.54026956304426,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0002695630442630659,
+            "S_J_mol_K": 5.290383094802564e-05,
+            "H_minus_H0_J_mol": -0.18243195592367556,
+            "G_minus_H0_J_mol": -0.245916553074494
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "printed": {
+            "Cp_J_mol_K": 49.319,
+            "S_J_mol_K": 260.474,
+            "H_minus_H0_J_mol": 61445.0,
+            "G_minus_H0_J_mol": -329266.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -329265.7056412732,
+            "H_minus_H0_J_mol": 61445.14267250354,
+            "S_J_mol_K": 260.47389887585115,
+            "Cp_J_mol_K": 49.319316291172115,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0003162911721119599,
+            "S_J_mol_K": -0.00010112414884133614,
+            "H_minus_H0_J_mol": 0.14267250354168937,
+            "G_minus_H0_J_mol": 0.29435872682370245
+          }
+        },
+        {
+          "temperature_K": 2000.0,
+          "printed": {
+            "Cp_J_mol_K": 52.381,
+            "S_J_mol_K": 275.121,
+            "H_minus_H0_J_mol": 86939.0,
+            "G_minus_H0_J_mol": -463303.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -463303.1605511633,
+            "H_minus_H0_J_mol": 86939.36591054747,
+            "S_J_mol_K": 275.1212632308554,
+            "Cp_J_mol_K": 52.381596808346586,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0005968083465859308,
+            "S_J_mol_K": 0.00026323085540980173,
+            "H_minus_H0_J_mol": 0.3659105474653188,
+            "G_minus_H0_J_mol": -0.1605511633097194
+          }
+        },
+        {
+          "temperature_K": 2500.0,
+          "printed": {
+            "Cp_J_mol_K": 54.18,
+            "S_J_mol_K": 287.02,
+            "H_minus_H0_J_mol": 113617.0,
+            "G_minus_H0_J_mol": -603933.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -603932.3748793838,
+            "H_minus_H0_J_mol": 113618.07584167816,
+            "S_J_mol_K": 287.0201802884248,
+            "Cp_J_mol_K": 54.18030488745669,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.00030488745669288164,
+            "S_J_mol_K": 0.0001802884248149894,
+            "H_minus_H0_J_mol": 1.0758416781609412,
+            "G_minus_H0_J_mol": 0.6251206161687151
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "printed": {
+            "Cp_J_mol_K": 55.285,
+            "S_J_mol_K": 297.003,
+            "H_minus_H0_J_mol": 141005.0,
+            "G_minus_H0_J_mol": -750004.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -750005.7881934327,
+            "H_minus_H0_J_mol": 141005.53518854344,
+            "S_J_mol_K": 297.00377446065875,
+            "Cp_J_mol_K": 55.2852728448557,
+            "state_fractions": [
+              1.0
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0002728448557007823,
+            "S_J_mol_K": 0.000774460658760745,
+            "H_minus_H0_J_mol": 0.5351885434356518,
+            "G_minus_H0_J_mol": -1.7881934327306226
+          }
+        }
+      ],
+      "maximum_absolute_difference": {
+        "Cp_J_mol_K": 0.0005968083465859308,
+        "S_J_mol_K": 0.000774460658760745,
+        "H_minus_H0_J_mol": 1.0758416781609412,
+        "G_minus_H0_J_mol": 1.7881934327306226
+      }
+    },
+    "singlet_only": {
+      "rows": [
+        {
+          "temperature_K": 150.0,
+          "printed": {
+            "Cp_J_mol_K": 33.261,
+            "S_J_mol_K": 166.281,
+            "H_minus_H0_J_mol": 4989.0,
+            "G_minus_H0_J_mol": -19953.15
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -19953.398005275074,
+            "H_minus_H0_J_mol": 4988.715110762511,
+            "S_J_mol_K": 166.28075410691724,
+            "Cp_J_mol_K": 33.261097421578235,
+            "state_fractions": [
+              1.0,
+              9.768933564482029e-36
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 9.742157823211528e-05,
+            "S_J_mol_K": -0.00024589308276290467,
+            "H_minus_H0_J_mol": -0.2848892374886418,
+            "G_minus_H0_J_mol": -0.2480052750725008
+          }
+        },
+        {
+          "temperature_K": 200.0,
+          "printed": {
+            "Cp_J_mol_K": 33.305,
+            "S_J_mol_K": 175.854,
+            "H_minus_H0_J_mol": 6653.0,
+            "G_minus_H0_J_mol": -28517.800000000003
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -28518.16314496202,
+            "H_minus_H0_J_mol": 6652.5321191855,
+            "S_J_mol_K": 175.85347632073763,
+            "Cp_J_mol_K": 33.30466299974162,
+            "state_fractions": [
+              1.0,
+              4.910295344440278e-27
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.0003370002583764631,
+            "S_J_mol_K": -0.0005236792623861675,
+            "H_minus_H0_J_mol": -0.46788081449994934,
+            "G_minus_H0_J_mol": -0.3631449620188505
+          }
+        },
+        {
+          "temperature_K": 250.0,
+          "printed": {
+            "Cp_J_mol_K": 33.468,
+            "S_J_mol_K": 183.3,
+            "H_minus_H0_J_mol": 8321.0,
+            "G_minus_H0_J_mol": -37504.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -37503.76470596208,
+            "H_minus_H0_J_mol": 8321.205354009058,
+            "S_J_mol_K": 183.29988023988454,
+            "Cp_J_mol_K": 33.46808061502122,
+            "state_fractions": [
+              1.0,
+              8.276946669512226e-22
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 8.061502121847752e-05,
+            "S_J_mol_K": -0.00011976011546721566,
+            "H_minus_H0_J_mol": 0.20535400905828283,
+            "G_minus_H0_J_mol": 0.23529403792053927
+          }
+        },
+        {
+          "temperature_K": 298.15,
+          "printed": {
+            "Cp_J_mol_K": 33.781,
+            "S_J_mol_K": 189.22,
+            "H_minus_H0_J_mol": 9940.0,
+            "G_minus_H0_J_mol": -46475.94299999999
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -46476.124996426995,
+            "H_minus_H0_J_mol": 9939.614435349728,
+            "S_J_mol_K": 189.21931722883357,
+            "Cp_J_mol_K": 33.78122010011673,
+            "state_fractions": [
+              1.0,
+              1.9946615820235053e-18
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.00022010011672790597,
+            "S_J_mol_K": -0.0006827711664243452,
+            "H_minus_H0_J_mol": -0.3855646502724994,
+            "G_minus_H0_J_mol": -0.18199642700346885
+          }
+        },
+        {
+          "temperature_K": 300.0,
+          "printed": {
+            "Cp_J_mol_K": 33.796,
+            "S_J_mol_K": 189.429,
+            "H_minus_H0_J_mol": 10002.0,
+            "G_minus_H0_J_mol": -46826.7
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -46826.37425143774,
+            "H_minus_H0_J_mol": 10002.123560060694,
+            "S_J_mol_K": 189.4283260383281,
+            "Cp_J_mol_K": 33.79624676828188,
+            "state_fractions": [
+              1.0,
+              2.5601469788794804e-18
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.0002467682818831918,
+            "S_J_mol_K": -0.0006739616719073638,
+            "H_minus_H0_J_mol": 0.1235600606942171,
+            "G_minus_H0_J_mol": 0.3257485622598324
+          }
+        },
+        {
+          "temperature_K": 350.0,
+          "printed": {
+            "Cp_J_mol_K": 34.274,
+            "S_J_mol_K": 194.673,
+            "H_minus_H0_J_mol": 11703.0,
+            "G_minus_H0_J_mol": -56432.55
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -56431.948583743215,
+            "H_minus_H0_J_mol": 11703.339534176692,
+            "S_J_mol_K": 194.6722517654854,
+            "Cp_J_mol_K": 34.274270311974995,
+            "state_fractions": [
+              0.9999999999999991,
+              8.062091698373007e-16
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.00027031197499383097,
+            "S_J_mol_K": -0.0007482345145888303,
+            "H_minus_H0_J_mol": 0.3395341766918136,
+            "G_minus_H0_J_mol": 0.6014162567880703
+          }
+        },
+        {
+          "temperature_K": 400.0,
+          "printed": {
+            "Cp_J_mol_K": 34.864,
+            "S_J_mol_K": 199.287,
+            "H_minus_H0_J_mol": 13431.0,
+            "G_minus_H0_J_mol": -66283.8
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -66283.15304208444,
+            "H_minus_H0_J_mol": 13431.399645193438,
+            "S_J_mol_K": 199.2863817181947,
+            "Cp_J_mol_K": 34.863506505878384,
+            "state_fractions": [
+              0.9999999999999392,
+              6.083311238598232e-14
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.0004934941216134803,
+            "S_J_mol_K": -0.0006182818053162009,
+            "H_minus_H0_J_mol": 0.39964519343811844,
+            "G_minus_H0_J_mol": 0.6469579155673273
+          }
+        },
+        {
+          "temperature_K": 500.0,
+          "printed": {
+            "Cp_J_mol_K": 36.253,
+            "S_J_mol_K": 207.211,
+            "H_minus_H0_J_mol": 16985.0,
+            "G_minus_H0_J_mol": -86620.5
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -86620.16622383204,
+            "H_minus_H0_J_mol": 16985.364351250937,
+            "S_J_mol_K": 207.21106115016593,
+            "Cp_J_mol_K": 36.25309310323323,
+            "state_fractions": [
+              0.9999999999736349,
+              2.6365139741369924e-11
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 9.31032332331938e-05,
+            "S_J_mol_K": 6.115016591934364e-05,
+            "H_minus_H0_J_mol": 0.3643512509370339,
+            "G_minus_H0_J_mol": 0.33377616795769427
+          }
+        },
+        {
+          "temperature_K": 600.0,
+          "printed": {
+            "Cp_J_mol_K": 37.814,
+            "S_J_mol_K": 213.957,
+            "H_minus_H0_J_mol": 20688.0,
+            "G_minus_H0_J_mol": -107686.2
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -107686.43379730811,
+            "H_minus_H0_J_mol": 20687.674150385497,
+            "S_J_mol_K": 213.95684657948934,
+            "Cp_J_mol_K": 37.814170024719765,
+            "state_fractions": [
+              0.9999999984660817,
+              1.5339183168848028e-09
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": 0.00017002471976468314,
+            "S_J_mol_K": -0.0001534205106565878,
+            "H_minus_H0_J_mol": -0.32584961450265837,
+            "G_minus_H0_J_mol": -0.23379730811575428
+          }
+        },
+        {
+          "temperature_K": 800.0,
+          "printed": {
+            "Cp_J_mol_K": 41.122,
+            "S_J_mol_K": 225.287,
+            "H_minus_H0_J_mol": 28581.0,
+            "G_minus_H0_J_mol": -151648.6
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -151649.2056943426,
+            "H_minus_H0_J_mol": 28580.539980618632,
+            "S_J_mol_K": 225.28718209370155,
+            "Cp_J_mol_K": 41.121694743325,
+            "state_fractions": [
+              0.9999997480743352,
+              2.519256648349421e-07
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00030525667499858855,
+            "S_J_mol_K": 0.00018209370153954296,
+            "H_minus_H0_J_mol": -0.46001938136760145,
+            "G_minus_H0_J_mol": -0.6056943426083308
+          }
+        },
+        {
+          "temperature_K": 1000.0,
+          "printed": {
+            "Cp_J_mol_K": 44.231,
+            "S_J_mol_K": 234.805,
+            "H_minus_H0_J_mol": 37122.0,
+            "G_minus_H0_J_mol": -197683.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -197682.16221496247,
+            "H_minus_H0_J_mol": 37122.35281705721,
+            "S_J_mol_K": 234.80451503201968,
+            "Cp_J_mol_K": 44.23051741873488,
+            "state_fractions": [
+              0.9999945551856565,
+              5.444814343540059e-06
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00048258126512479294,
+            "S_J_mol_K": -0.0004849679803271556,
+            "H_minus_H0_J_mol": 0.3528170572099043,
+            "G_minus_H0_J_mol": 0.8377850375254638
+          }
+        },
+        {
+          "temperature_K": 1200.0,
+          "printed": {
+            "Cp_J_mol_K": 46.872,
+            "S_J_mol_K": 243.11,
+            "H_minus_H0_J_mol": 46241.0,
+            "G_minus_H0_J_mol": -245491.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -245490.78556408721,
+            "H_minus_H0_J_mol": 46240.95298520729,
+            "S_J_mol_K": 243.10978212441208,
+            "Cp_J_mol_K": 46.87158132860351,
+            "state_fractions": [
+              0.999957550462926,
+              4.2449537074022625e-05
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00041867139648843477,
+            "S_J_mol_K": -0.00021787558793562312,
+            "H_minus_H0_J_mol": -0.04701479271170683,
+            "G_minus_H0_J_mol": 0.2144359127851203
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "printed": {
+            "Cp_J_mol_K": 49.974,
+            "S_J_mol_K": 253.919,
+            "H_minus_H0_J_mol": 60791.0,
+            "G_minus_H0_J_mol": -320087.5
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -320088.06861710554,
+            "H_minus_H0_J_mol": 60790.53567664765,
+            "S_J_mol_K": 253.9190695291688,
+            "Cp_J_mol_K": 49.97386099716492,
+            "state_fractions": [
+              0.9996680984778309,
+              0.00033190152216919016
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00013900283507695121,
+            "S_J_mol_K": 6.952916879754412e-05,
+            "H_minus_H0_J_mol": -0.46432335235294886,
+            "G_minus_H0_J_mol": -0.5686171055422164
+          }
+        },
+        {
+          "temperature_K": 2000.0,
+          "printed": {
+            "Cp_J_mol_K": 53.658,
+            "S_J_mol_K": 268.833,
+            "H_minus_H0_J_mol": 86755.0,
+            "G_minus_H0_J_mol": -450911.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -450910.53512779955,
+            "H_minus_H0_J_mol": 86755.21578868052,
+            "S_J_mol_K": 268.83287545824004,
+            "Cp_J_mol_K": 53.657808583882215,
+            "state_fractions": [
+              0.9974046560968811,
+              0.00259534390311879
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00019141611778650258,
+            "S_J_mol_K": -0.0001245417599875509,
+            "H_minus_H0_J_mol": 0.2157886805216549,
+            "G_minus_H0_J_mol": 0.464872200449463
+          }
+        },
+        {
+          "temperature_K": 2500.0,
+          "printed": {
+            "Cp_J_mol_K": 56.335,
+            "S_J_mol_K": 281.108,
+            "H_minus_H0_J_mol": 114285.0,
+            "G_minus_H0_J_mol": -588485.0
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -588484.8892249765,
+            "H_minus_H0_J_mol": 114284.89438518112,
+            "S_J_mol_K": 281.10791344406306,
+            "Cp_J_mol_K": 56.334540371908055,
+            "state_fractions": [
+              0.9911252036097667,
+              0.008874796390233239
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.00045962809194577403,
+            "S_J_mol_K": -8.65559369458424e-05,
+            "H_minus_H0_J_mol": -0.10561481887998525,
+            "G_minus_H0_J_mol": 0.11077502346597612
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "printed": {
+            "Cp_J_mol_K": 58.339,
+            "S_J_mol_K": 291.566,
+            "H_minus_H0_J_mol": 142979.0,
+            "G_minus_H0_J_mol": -731718.9999999999
+          },
+          "calculated": {
+            "G_minus_H0_J_mol": -731717.3661291775,
+            "H_minus_H0_J_mol": 142978.6444415376,
+            "S_J_mol_K": 291.56533685690505,
+            "Cp_J_mol_K": 58.33865427872499,
+            "state_fractions": [
+              0.9799983751989246,
+              0.02000162480107533
+            ]
+          },
+          "calculated_minus_printed": {
+            "Cp_J_mol_K": -0.0003457212750106464,
+            "S_J_mol_K": -0.0006631430949255446,
+            "H_minus_H0_J_mol": -0.35555846241186373,
+            "G_minus_H0_J_mol": 1.633870822377503
+          }
+        }
+      ],
+      "maximum_absolute_difference": {
+        "Cp_J_mol_K": 0.0004934941216134803,
+        "S_J_mol_K": 0.0007482345145888303,
+        "H_minus_H0_J_mol": 0.46788081449994934,
+        "G_minus_H0_J_mol": 1.633870822377503
+      }
+    }
+  },
+  "printed_component_recombination": [
+    {
+      "temperature_K": 150.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -20678.75000000005,
+        "H_minus_H0_J_mol": 4990.000000001635,
+        "S_J_mol_K": 171.12500000001125,
+        "Cp_J_mol_K": 33.327000000329086
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.23746126588594052,
+        "H_J_mol": 0.2015227008732836,
+        "S_J_mol_K": -0.0002395904334093757,
+        "Cp_J_mol_K": 0.00011061745362184183
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": -5.093170329928398e-11,
+        "H_J_mol": 1.635271473787725e-09,
+        "S_J_mol_K": 1.1254996934439987e-11,
+        "Cp_J_mol_K": 3.290878680672904e-10
+      }
+    },
+    {
+      "temperature_K": 200.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -29487.00000013667,
+        "H_minus_H0_J_mol": 6663.000003093322,
+        "S_J_mol_K": 180.75000001614998,
+        "Cp_J_mol_K": 33.65000035002962
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.011359608575730817,
+        "H_J_mol": 0.13334258544182376,
+        "S_J_mol_K": 0.0007235109700900466,
+        "Cp_J_mol_K": 0.0004273484848766884
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": -1.3667158782482147e-07,
+        "H_J_mol": 3.0933224479667842e-06,
+        "S_J_mol_K": 1.6149982684510178e-08,
+        "Cp_J_mol_K": -0.006999649970374833
+      }
+    },
+    {
+      "temperature_K": 250.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -38720.000015778365,
+        "H_minus_H0_J_mol": 8360.00028547108,
+        "S_J_mol_K": 188.32000120499777,
+        "Cp_J_mol_K": 34.266020653554015
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.1728653212194331,
+        "H_J_mol": 0.2441899724653922,
+        "S_J_mol_K": 0.0002852986049504125,
+        "Cp_J_mol_K": -5.8939551621506325e-05
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 0.24998422163480427,
+        "H_J_mol": -0.999714528919867,
+        "S_J_mol_K": -0.004998795002222778,
+        "Cp_J_mol_K": -0.03897934644598422
+      }
+    },
+    {
+      "temperature_K": 298.15,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -47938.72704883686,
+        "H_minus_H0_J_mol": 10027.005285339768,
+        "S_J_mol_K": 194.41801889712104,
+        "Cp_J_mol_K": 35.014268415733675
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.36677341203176184,
+        "H_J_mol": -0.3453608702548081,
+        "S_J_mol_K": 7.181801703382007e-05,
+        "Cp_J_mol_K": 0.0001577194035249363
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 0.36635116313846083,
+        "H_J_mol": -4.994714660231693,
+        "S_J_mol_K": -0.01798110287896293,
+        "Cp_J_mol_K": -0.11573158426632801
+      }
+    },
+    {
+      "temperature_K": 300.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -48298.50038547017,
+        "H_minus_H0_J_mol": 10092.005803903585,
+        "S_J_mol_K": 194.63502063124585,
+        "Cp_J_mol_K": 35.04429109897142
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.2662996193248546,
+        "H_J_mol": -0.1486391477901634,
+        "S_J_mol_K": 0.00039220157177055626,
+        "Cp_J_mol_K": 0.0002372028259713943
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 0.3996145298224292,
+        "H_J_mol": -4.99419609641518,
+        "S_J_mol_K": -0.017979368754140523,
+        "Cp_J_mol_K": -0.11970890102858078
+      }
+    },
+    {
+      "temperature_K": 350.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -58169.3038582593,
+        "H_minus_H0_J_mol": 11865.049698168757,
+        "S_J_mol_K": 200.09815301836588,
+        "Cp_J_mol_K": 35.85182694133296
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.2229170897480799,
+        "H_J_mol": 0.43099342540153884,
+        "S_J_mol_K": 0.0005945038161598859,
+        "Cp_J_mol_K": -5.074634646717868e-05
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 2.0961417407088447,
+        "H_J_mol": -13.950301831242541,
+        "S_J_mol_K": -0.045846981634127815,
+        "Cp_J_mol_K": -0.2551730586670402
+      }
+    },
+    {
+      "temperature_K": 400.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -68298.02202117456,
+        "H_minus_H0_J_mol": 13676.247647333159,
+        "S_J_mol_K": 204.9356741712693,
+        "Cp_J_mol_K": 36.621950909175695
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.39948105477378704,
+        "H_J_mol": -0.4412308786268113,
+        "S_J_mol_K": -0.00010437455961209707,
+        "Cp_J_mol_K": -0.00035399095586541307
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 5.177978825435275,
+        "H_J_mol": -31.752352666841034,
+        "S_J_mol_K": -0.0923258287306794,
+        "Cp_J_mol_K": -0.4390490908243052
+      }
+    },
+    {
+      "temperature_K": 500.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -89220.2596594563,
+        "H_minus_H0_J_mol": 17410.32489512131,
+        "S_J_mol_K": 213.2611691091552,
+        "Cp_J_mol_K": 38.02252328182476
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.07289906543155666,
+        "H_J_mol": 0.1481881877007254,
+        "S_J_mol_K": 0.0001505782445008208,
+        "Cp_J_mol_K": 0.00038932262989987976
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 21.240340543707134,
+        "H_J_mol": -96.67510487869004,
+        "S_J_mol_K": -0.23583089084482367,
+        "Cp_J_mol_K": -0.8794767181752405
+      }
+    },
+    {
+      "temperature_K": 600.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -110907.58118433022,
+        "H_minus_H0_J_mol": 21279.26066997936,
+        "S_J_mol_K": 220.31140309051597,
+        "Cp_J_mol_K": 39.35163417124461
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.027818512506200932,
+        "H_J_mol": 0.42653450372381485,
+        "S_J_mol_K": 0.0006645266520308724,
+        "Cp_J_mol_K": -0.0005342360281517244
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 54.61881566978991,
+        "H_J_mol": -206.7393300206386,
+        "S_J_mol_K": -0.4355969094840475,
+        "Cp_J_mol_K": -1.3153658287553895
+      }
+    },
+    {
+      "temperature_K": 800.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -156182.52904575845,
+        "H_minus_H0_J_mol": 29426.949461340082,
+        "S_J_mol_K": 232.01184813387317,
+        "Cp_J_mol_K": 42.177105486592104
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.13965284908772446,
+        "H_J_mol": -0.30870851319559733,
+        "S_J_mol_K": -0.00021131958013143048,
+        "Cp_J_mol_K": -0.00027096692659256405
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 187.8709542415454,
+        "H_J_mol": -537.050538659918,
+        "S_J_mol_K": -0.9061518661268337,
+        "Cp_J_mol_K": -1.9108945134078965
+      }
+    },
+    {
+      "temperature_K": 1000.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -203582.30337550177,
+        "H_minus_H0_J_mol": 38157.6006846078,
+        "S_J_mol_K": 241.73990406010958,
+        "Cp_J_mol_K": 45.10819890828998
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.5439989169244654,
+        "H_J_mol": 0.2324225744960131,
+        "S_J_mol_K": -0.0003115763424261786,
+        "Cp_J_mol_K": -7.887216671065289e-05
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 416.69662449823227,
+        "H_J_mol": -943.3993153921983,
+        "S_J_mol_K": -1.3600959398904138,
+        "Cp_J_mol_K": -2.100801091710025
+      }
+    },
+    {
+      "temperature_K": 1200.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -252794.87318039883,
+        "H_minus_H0_J_mol": 47453.13396516401,
+        "S_J_mol_K": 250.20667262130237,
+        "Cp_J_mol_K": 47.782612812885596
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.24082932944293134,
+        "H_J_mol": 0.19951257258071564,
+        "S_J_mol_K": -3.443063073405028e-05,
+        "Cp_J_mol_K": -0.00021499797644963792
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 727.1268196011661,
+        "H_J_mol": -1358.8660348359917,
+        "S_J_mol_K": -1.738327378697619,
+        "Cp_J_mol_K": -2.019387187114404
+      }
+    },
+    {
+      "temperature_K": 1500.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -329554.6234748114,
+        "H_minus_H0_J_mol": 62291.260490361914,
+        "S_J_mol_K": 261.23058931011553,
+        "Cp_J_mol_K": 50.96910646100844
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.27461614564526826,
+        "H_J_mol": -0.186004691371636,
+        "S_J_mol_K": 5.907430283969006e-05,
+        "Cp_J_mol_K": -0.00036119340467877237
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 1314.3765251886216,
+        "H_J_mol": -1915.7395096380787,
+        "S_J_mol_K": -2.153410689884481,
+        "Cp_J_mol_K": -1.6698935389915661
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -464103.79189460224,
+        "H_minus_H0_J_mol": 88700.31451211996,
+        "S_J_mol_K": 276.4020532033611,
+        "Cp_J_mol_K": 54.33174962577275
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 0.1311471436638385,
+        "H_J_mol": -0.2957242807606235,
+        "S_J_mol_K": -0.00021343571216903,
+        "Cp_J_mol_K": -0.00047802334890434395
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 2502.20810539776,
+        "H_J_mol": -2577.685487880037,
+        "S_J_mol_K": -2.539946796638901,
+        "Cp_J_mol_K": -0.9862503742272466
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -605489.2808037269,
+        "H_minus_H0_J_mol": 116380.88584770735,
+        "S_J_mol_K": 288.7480666605737,
+        "Cp_J_mol_K": 56.22628613347991
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": -0.5880169202573597,
+        "H_J_mol": -1.0540716227696976,
+        "S_J_mol_K": -0.0001864218809828344,
+        "Cp_J_mol_K": -0.00017673251454652927
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 3815.219196273014,
+        "H_J_mol": -2917.114152292648,
+        "S_J_mol_K": -2.692933339426247,
+        "Cp_J_mol_K": -0.382713866520092
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "from_printed_components": {
+        "G_minus_H0_J_mol": -752521.7796997153,
+        "H_minus_H0_J_mol": 144809.0620196952,
+        "S_J_mol_K": 299.11028057313683,
+        "Cp_J_mol_K": 57.39898366270862
+      },
+      "minus_reconstructed_RRHO": {
+        "G_J_mol": 1.459652804536745,
+        "H_J_mol": 0.02208104106830433,
+        "S_J_mol_K": -0.00047919058783918445,
+        "Cp_J_mol_K": 0.0001065810613667395
+      },
+      "minus_printed_equilibrated": {
+        "G_J_mol": 5175.22030028468,
+        "H_J_mol": -2974.9379803047923,
+        "S_J_mol_K": -2.7167194268631647,
+        "Cp_J_mol_K": 0.13298366270862516
+      }
+    }
+  ],
+  "samples": [
+    {
+      "temperature_K": 1500.0,
+      "thermal": {
+        "G_minus_H0_J_mol": -329554.34885866573,
+        "H_minus_H0_J_mol": 62291.446495053286,
+        "S_J_mol_K": 261.2305302358127,
+        "Cp_J_mol_K": 50.969467654413116,
+        "state_fractions": [
+          0.9771218987010823,
+          0.022870508022272324,
+          7.593276645451729e-06
+        ]
+      },
+      "K_over_current": {
+        "current": 1.0,
+        "energy_only": 0.6725099255042459,
+        "reconstructed_rrho": 0.6694613762455504,
+        "triplet_only": 0.6541453710640865,
+        "nasa_thermal": 0.6725099255042459
+      },
+      "reaction": {
+        "current": {
+          "G_J_mol": -447563.8740121349,
+          "H_J_mol": -789069.0479483467,
+          "S_J_mol_K": -227.6701159574745,
+          "Cp_J_mol_K": -12.18514710774214
+        },
+        "energy_only": {
+          "G_J_mol": -442615.8740121349,
+          "H_J_mol": -784121.0479483467,
+          "S_J_mol_K": -227.6701159574745,
+          "Cp_J_mol_K": -12.18514710774214
+        },
+        "reconstructed_rrho": {
+          "G_J_mol": -442559.2101496065,
+          "H_J_mol": -784232.6292834653,
+          "S_J_mol_K": -227.7822794225725,
+          "Cp_J_mol_K": -12.305869995187876
+        },
+        "triplet_only": {
+          "G_J_mol": -442270.56693221396,
+          "H_J_mol": -785078.933106015,
+          "S_J_mol_K": -228.53891078253403,
+          "Cp_J_mol_K": -13.956021358428877
+        },
+        "nasa_thermal": {
+          "G_J_mol": -442615.8740121349,
+          "H_J_mol": -784121.0479483467,
+          "S_J_mol_K": -227.6701159574745,
+          "Cp_J_mol_K": -12.18514710774214
+        }
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "thermal": {
+        "G_minus_H0_J_mol": -464103.9230417459,
+        "H_minus_H0_J_mol": 88700.61023640072,
+        "S_J_mol_K": 276.4022666390733,
+        "Cp_J_mol_K": 54.332227649121656,
+        "state_fractions": [
+          0.9529862578789301,
+          0.04689172529209312,
+          0.00012201682897671767
+        ]
+      },
+      "K_over_current": {
+        "current": 1.0,
+        "energy_only": 0.7426326237757914,
+        "reconstructed_rrho": 0.737316129917103,
+        "triplet_only": 0.7026521395234728,
+        "nasa_thermal": 0.7426326237757914
+      },
+      "reaction": {
+        "current": {
+          "G_J_mol": -332909.4579515602,
+          "H_J_mol": -794154.668152337,
+          "S_J_mol_K": -230.62260510038843,
+          "Cp_J_mol_K": -8.362975992110544
+        },
+        "energy_only": {
+          "G_J_mol": -327961.4579515602,
+          "H_J_mol": -789206.668152337,
+          "S_J_mol_K": -230.62260510038843,
+          "Cp_J_mol_K": -8.362975992110544
+        },
+        "reconstructed_rrho": {
+          "G_J_mol": -327841.98359952326,
+          "H_J_mol": -789352.0880745505,
+          "S_J_mol_K": -230.75505223751367,
+          "Cp_J_mol_K": -8.36528886901833
+        },
+        "triplet_only": {
+          "G_J_mol": -327041.2211089407,
+          "H_J_mol": -791113.3324004037,
+          "S_J_mol_K": -232.03605564573155,
+          "Cp_J_mol_K": -10.315919709793402
+        },
+        "nasa_thermal": {
+          "G_J_mol": -327961.4579515602,
+          "H_J_mol": -789206.668152337,
+          "S_J_mol_K": -230.62260510038843,
+          "Cp_J_mol_K": -8.362975992110544
+        }
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "thermal": {
+        "G_minus_H0_J_mol": -605488.6927868066,
+        "H_minus_H0_J_mol": 116381.93991933012,
+        "S_J_mol_K": 288.7482530824547,
+        "Cp_J_mol_K": 56.226462865994456,
+        "state_fractions": [
+          0.927861495412166,
+          0.07149829004772114,
+          0.0006402145401129333
+        ]
+      },
+      "K_over_current": {
+        "current": 1.0,
+        "energy_only": 0.7881687635598809,
+        "reconstructed_rrho": 0.7812749397440871,
+        "triplet_only": 0.7249149339189992,
+        "nasa_thermal": 0.7881687635598809
+      },
+      "reaction": {
+        "current": {
+          "G_J_mol": -217168.18785709623,
+          "H_J_mol": -797637.666224349,
+          "S_J_mol_K": -232.18779134690115,
+          "Cp_J_mol_K": -5.774658579829632
+        },
+        "energy_only": {
+          "G_J_mol": -212220.18785709626,
+          "H_J_mol": -792689.666224349,
+          "S_J_mol_K": -232.18779134690115,
+          "Cp_J_mol_K": -5.774658579829632
+        },
+        "reconstructed_rrho": {
+          "G_J_mol": -212037.57917563876,
+          "H_J_mol": -792791.0467870408,
+          "S_J_mol_K": -232.30138704456084,
+          "Cp_J_mol_K": -5.58274983713819
+        },
+        "triplet_only": {
+          "G_J_mol": -210481.26126821598,
+          "H_J_mol": -795554.9108646928,
+          "S_J_mol_K": -234.02945983859075,
+          "Cp_J_mol_K": -7.628907815675959
+        },
+        "nasa_thermal": {
+          "G_J_mol": -212220.18785709626,
+          "H_J_mol": -792689.666224349,
+          "S_J_mol_K": -232.18779134690115,
+          "Cp_J_mol_K": -5.774658579829632
+        }
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "thermal": {
+        "G_minus_H0_J_mol": -752523.2393525199,
+        "H_minus_H0_J_mol": 144809.03993865414,
+        "S_J_mol_K": 299.1107597637247,
+        "Cp_J_mol_K": 57.39887708164726,
+        "state_fractions": [
+          0.9039993901501828,
+          0.09408044167092673,
+          0.0019201681788904618
+        ]
+      },
+      "K_over_current": {
+        "current": 1.0,
+        "energy_only": 0.8200670250072519,
+        "reconstructed_rrho": 0.8126509297528441,
+        "triplet_only": 0.7346359449015514,
+        "nasa_thermal": 0.8200670250072519
+      },
+      "reaction": {
+        "current": {
+          "G_J_mol": -100828.41018531867,
+          "H_J_mol": -800134.9690160584,
+          "S_J_mol_K": -233.10218627691316,
+          "Cp_J_mol_K": -4.420194870899394
+        },
+        "energy_only": {
+          "G_J_mol": -95880.41018531867,
+          "H_J_mol": -795186.9690160584,
+          "S_J_mol_K": -233.10218627691316,
+          "Cp_J_mol_K": -4.420194870899394
+        },
+        "reconstructed_rrho": {
+          "G_J_mol": -95653.81402163827,
+          "H_J_mol": -795128.5820207138,
+          "S_J_mol_K": -233.15825599969176,
+          "Cp_J_mol_K": -3.9643270290391035
+        },
+        "triplet_only": {
+          "G_J_mol": -93136.36286255115,
+          "H_J_mol": -798932.0867708244,
+          "S_J_mol_K": -235.2652413027577,
+          "Cp_J_mol_K": -6.077931265830662
+        },
+        "nasa_thermal": {
+          "G_J_mol": -95880.41018531867,
+          "H_J_mol": -795186.9690160584,
+          "S_J_mol_K": -233.10218627691316,
+          "Cp_J_mol_K": -4.420194870899394
+        }
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "thermal": {
+        "G_minus_H0_J_mol": -1060362.2631702735,
+        "H_minus_H0_J_mol": 202963.63588934948,
+        "S_J_mol_K": 315.83147476490575,
+        "Cp_J_mol_K": 58.75618355717361,
+        "state_fractions": [
+          0.8616985114850182,
+          0.1308243780377301,
+          0.007477110477251723
+        ]
+      },
+      "K_over_current": {
+        "current": 1.0,
+        "energy_only": 0.8617613496646219,
+        "reconstructed_rrho": 0.8569475701943746,
+        "triplet_only": 0.7384304456572003,
+        "nasa_thermal": 0.8617613496646219
+      },
+      "reaction": {
+        "current": {
+          "G_J_mol": 132926.79697496683,
+          "H_J_mol": -804640.1961652699,
+          "S_J_mol_K": -234.39174828505918,
+          "Cp_J_mol_K": -5.412828563090969
+        },
+        "energy_only": {
+          "G_J_mol": 137874.7969749668,
+          "H_J_mol": -799692.1961652699,
+          "S_J_mol_K": -234.39174828505918,
+          "Cp_J_mol_K": -5.412828563090969
+        },
+        "reconstructed_rrho": {
+          "G_J_mol": 138061.0953930507,
+          "H_J_mol": -798890.645616397,
+          "S_J_mol_K": -234.23793525236192,
+          "Cp_J_mol_K": -4.394538452259116
+        },
+        "triplet_only": {
+          "G_J_mol": 143011.52058765962,
+          "H_J_mol": -804885.8479181426,
+          "S_J_mol_K": -236.97434212645055,
+          "Cp_J_mol_K": -6.664133757770797
+        },
+        "nasa_thermal": {
+          "G_J_mol": 137874.7969749668,
+          "H_J_mol": -799692.1961652699,
+          "S_J_mol_K": -234.39174828505918,
+          "Cp_J_mol_K": -5.412828563090969
+        }
+      }
+    }
+  ],
+  "NASA_control_identity": "With the unchanged residual defined against the NASA thermal proxy, nasa_thermal equals energy_only exactly; no duplicate solves are counted.",
+  "decision": "Prefer the evaluated energy-only candidate; do not recommend reconstructed RRHO adoption because the published equilibrium table is not reproduced and high-temperature nonrigidity is unresolved.",
+  "curated_change": "none",
+  "physical_accuracy": "unknown"
+}
