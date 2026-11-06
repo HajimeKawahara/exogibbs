@@ -1,0 +1,36 @@
+{
+  "created_utc": "2026-11-06T05:59:00.204645+00:00",
+  "result": "passed",
+  "command": [
+    "/home/kawahara/miniconda3/bin/python",
+    "/tmp/exogibbs-adoption-and-pending-candidates-20261106/prepare_a_packets.py"
+  ],
+  "python": "3.12.7",
+  "numpy": "2.1.0",
+  "jax": "0.6.2",
+  "dtype": "float64",
+  "temperature_count": 2752,
+  "scope": "Candidate/source expressions and scalar/JAX derivatives; no equilibrium solves in this receipt.",
+  "selected_file_sha256": {
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "mceg/reviews/pending_molecule_inputs.py": "131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/p4s3_source_review/20261106/P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+    "tests/data/validation/p4s3_source_review/20261106/P-017.txt": "38f5bc02c00d6b915defe5edb04b00b45aa361817b34c025688813ebe305fde6",
+    "tests/data/validation/p4s3_source_review/20261106/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+    "tests/data/validation/p4s3_source_review/20261106/comparison.json": "73c40772eaab737d606f8f162de5c59a98c9105f479d696a0c341a45ce4ea411",
+    "tests/data/validation/p4s3_source_review/20261106/inputs.json": "20d6e65d05d5d9c3306b4a6bbf07ec6691e8747f02866ec4b76e0ca0f4ad84df",
+    "tests/data/validation/p4s3_source_review/20261106/literature.json": "bc672678611666038a9d1e8a056711ea8f1d9e408022cdc25ad405e1f1e3e5f9",
+    "tests/data/validation/p4s3_source_review/20261106/sources.json": "1922d6e744835730e2b58482c39336824df4e82ad5a9a0b44cc352e686f9721c"
+  },
+  "output_sha256": {
+    "candidate.json": "92e74fae09f0edf54d1f1129758fb0427558de5f33d1c17a572a02058505ac7f",
+    "validation.json": "65e8f4bacf65a6d62dd9a0d6f662c9b40c5172bf4c2e06fd1191546032925167"
+  }
+}
