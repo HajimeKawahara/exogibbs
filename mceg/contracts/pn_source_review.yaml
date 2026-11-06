@@ -79,7 +79,7 @@ evidence:
   - source: tests/data/validation/pn_source_review/20261106/sources.json
     sha256: ca343fb6b8c2cfbfe0c24316999e2d29ec5c48aa0a60b0c7ae9980fa63f3bd98
   - source: documents/mceg/pn_source_review.rst
-    sha256: f4b033ff009b5644b3105fa34d1e63feb20445203c7f9bbbeea1243555bf2dd7
+    sha256: 70ce1b13f4bc7f584be6fdf08de39f53172d1627bd3b38df1f702c406aa95f80
   provenance:
     role: primary
     location: documents/mceg/pn_source_review.rst
@@ -103,7 +103,7 @@ evidence:
   - source: tests/data/validation/pn_source_review/20261106/comparison.json
     sha256: 54045cdf3e21c80163aa1f5e24f53ef60cfb94744212b76d5956760a23f7c2fd
   - source: tests/data/validation/pn_source_review/20261106/receipt.json
-    sha256: cbeb0f625e41fb69a257006cd1f1f8af7478832dbda4247ad6240191ba2d9ce5
+    sha256: dcd871b46667c5bdf2990a0d985fa3db323ce455a1df91ee167354e78fbea2d9
   provenance:
     role: primary
     location: documents/mceg/pn_source_review.rst
@@ -126,7 +126,7 @@ evidence:
   - source: tests/data/validation/pn_source_review/20261106/sources.json
     sha256: ca343fb6b8c2cfbfe0c24316999e2d29ec5c48aa0a60b0c7ae9980fa63f3bd98
   - source: documents/mceg/pn_source_review.rst
-    sha256: f4b033ff009b5644b3105fa34d1e63feb20445203c7f9bbbeea1243555bf2dd7
+    sha256: 70ce1b13f4bc7f584be6fdf08de39f53172d1627bd3b38df1f702c406aa95f80
   provenance:
     role: primary
     location: documents/mceg/pn_source_review.rst
@@ -137,7 +137,7 @@ subjects:
 - id: pn_sources_20261106
   implementation: *id001
   selected_files:
-    documents/mceg/pn_source_review.rst: f4b033ff009b5644b3105fa34d1e63feb20445203c7f9bbbeea1243555bf2dd7
+    documents/mceg/pn_source_review.rst: 70ce1b13f4bc7f584be6fdf08de39f53172d1627bd3b38df1f702c406aa95f80
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf

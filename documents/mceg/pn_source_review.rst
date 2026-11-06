@@ -100,7 +100,7 @@ a labelled diagnostic, not a new bound-state definition or proof of complete
 high-temperature thermodynamics.
 
 Importance, decision and finite follow-up
-----------------------------------------
+-----------------------------------------
 
 In the final ``curated-tio2-v1`` 75-case ion-inclusive archive (537 species), PN
 reaches mole fraction 5.311372e-9 and 1.204730 percent of phosphorus, both at
