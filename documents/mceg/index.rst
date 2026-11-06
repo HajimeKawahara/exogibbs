@@ -92,6 +92,8 @@ HCN differences with optional MCEG tooling.
    ho2_candidate
    gas_source_comparison
    cs_source_review
+   cnc_source_review
+   cnc_candidate
    cn_source_review
    cnn_source_review
    cnn_candidate
