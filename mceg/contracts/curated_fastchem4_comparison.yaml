@@ -108,7 +108,7 @@ evidence:
   - source: tests/data/validation/curated_fastchem4_comparison/20261106/source/issue308-before.md
     sha256: 20340fa4295cc1cc661e81ed9b18506fd25844c82ea51d18916dc38cd201db4a
   - source: documents/mceg/curated_fastchem4_comparison.rst
-    sha256: 3000d0bce779234eeb968818b8451dff7bf83e22e315b69ed83ff005266c764b
+    sha256: ba2c300d90e39bbab4d1533131ebcafc6539eb09924d874b89585427fa7f9e44
   provenance:
     role: primary
     location: tests/data/validation/curated_fastchem4_comparison/20261106/sources.json
@@ -162,7 +162,7 @@ subjects:
 - id: curated_v2_fastchem404_20261106
   implementation: *id001
   selected_files:
-    documents/mceg/curated_fastchem4_comparison.rst: 3000d0bce779234eeb968818b8451dff7bf83e22e315b69ed83ff005266c764b
+    documents/mceg/curated_fastchem4_comparison.rst: ba2c300d90e39bbab4d1533131ebcafc6539eb09924d874b89585427fa7f9e44
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     mceg/reviews/curated_fastchem4_comparison.py: 275dd19ba2630ab411aa714042d4d61b38ab4f823fbfefab7c785539f0fc0424
     src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef

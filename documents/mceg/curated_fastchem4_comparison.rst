@@ -1,5 +1,5 @@
 Curated gas v2 compared with updated FastChem 4
-==============================================
+===============================================
 
 The comparison for Issue #308 uses ``curated-gas-v2`` and the full standard
 gas table in `FastChem 4.0.4
