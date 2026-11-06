@@ -1,0 +1,41 @@
+{
+  "molecule": "C2N2",
+  "canonical": "C2N2",
+  "max_mole_fraction": 7.19094662077293e-11,
+  "max_mole_fraction_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 1.330427538447461e-06,
+  "max_element": "N",
+  "max_element_share_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 1.2243341595114848e-07,
+      "maximum_share_percent": 1.2243341595114848e-05,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "N": {
+      "maximum_share": 1.330427538447461e-06,
+      "maximum_share_percent": 0.0001330427538447461,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}
