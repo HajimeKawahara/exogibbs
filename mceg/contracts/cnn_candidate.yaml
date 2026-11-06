@@ -130,7 +130,7 @@ evidence:
   - source: mceg/reviews/pending_candidate.py
     sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
   - source: tests/model_evidence/cnn_candidate_test.py
-    sha256: 6fb2ce8d510b1f33cd8e1098d37a5bb5fc45410785ab87c634aae93452e6a8c9
+    sha256: 64fed80d34699ff52a43e1ff4dcd22467be3478568ad257df83ca3059d9b14ac
   provenance:
     role: primary
     location: documents/mceg/cnn_candidate.rst
@@ -174,7 +174,7 @@ evidence:
   - source: mceg/reviews/pending_equilibrium_impact.py
     sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
   - source: tests/model_evidence/cnn_candidate_test.py
-    sha256: 6fb2ce8d510b1f33cd8e1098d37a5bb5fc45410785ab87c634aae93452e6a8c9
+    sha256: 64fed80d34699ff52a43e1ff4dcd22467be3478568ad257df83ca3059d9b14ac
   provenance:
     role: primary
     location: documents/mceg/cnn_candidate.rst
@@ -322,7 +322,7 @@ subjects:
     tests/data/validation/curated_ch2_adoption/20261106/ions.npz: 2b8b5cf2275e5177c90a11dbd604989362f04a39efcf80f5a45294c5a0832b84
     tests/data/validation/curated_ch2_adoption/20261106/neutral.npz: c93f8ed204949b0921e19c8bf2ab60abe80120101ccc4b9df9ce9dc9b612d320
     tests/data/validation/curated_ch2_adoption/20261106/receipt.json: 693d76930fa681883e25f91c494ab6cd87e0db6f78fae1f8f305797ab80239b2
-    tests/model_evidence/cnn_candidate_test.py: 6fb2ce8d510b1f33cd8e1098d37a5bb5fc45410785ab87c634aae93452e6a8c9
+    tests/model_evidence/cnn_candidate_test.py: 64fed80d34699ff52a43e1ff4dcd22467be3478568ad257df83ca3059d9b14ac
 contexts:
 - id: candidate_evaluation
   scope: Neutral linear triplet C-N-N diazomethylene, C1N2_cnn, symmetry1; distinct from NCN. 1 bar standard
