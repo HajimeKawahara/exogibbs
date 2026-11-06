@@ -1,0 +1,73 @@
+{
+  "molecule": "cis-H2N2",
+  "species_id": "H2N2",
+  "composition": {
+    "H": 2,
+    "N": 2
+  },
+  "cas": "15626-42-3",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "tables": {
+    "cis-H2N2": "H-061.txt",
+    "H": "H-001.txt",
+    "N": "N-002.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "cis-H2N2": {
+      "hf0_kJ_mol": 228.92,
+      "hf298_kJ_mol": 221.78,
+      "uncertainty_95pct_kJ_mol": 0.56,
+      "atct_id": "15626-42-3*0",
+      "preferred_formula": "HNNH  (g, cis)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=1040"
+    },
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "uncertainty_95pct_kJ_mol": 0.0,
+      "atct_id": "12385-13-6*0",
+      "preferred_formula": "H  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0",
+      "preferred_formula": "N  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    }
+  },
+  "inherited_source": "Chase 1998 JANAF (FastChem fit) [U]",
+  "fastchem_record": {
+    "species": "H2N2",
+    "record_name": "Diazene_Cis",
+    "source_file": "FastChem4/logK/logK.dat",
+    "record_line_number": 967,
+    "coefficient_line_number": 968,
+    "record_line": "H2N2 Diazene_Cis : H 2 N 2 # Chase, M. et al., JANAF thermochemical tables, 1998. ",
+    "coefficient_line": "   1.3910515212403657e+05  -5.6913877867968381e+00  -1.4372696399755114e+00   1.7460196933139216e-03  -9.2116611057592042e-08 ",
+    "coefficients": [
+      139105.15212403657,
+      -5.691387786796838,
+      -1.4372696399755114,
+      0.0017460196933139216,
+      -9.211661105759204e-08
+    ],
+    "selected_temperature_segment_index": null,
+    "selected_temperature_segment_upper_bound": null,
+    "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+    "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+    "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+  },
+  "current_model": "curated-tio2-v1",
+  "nasa_record_key": "N2H2",
+  "nasa_same_identity": false,
+  "exact_atct_id": "15626-42-3*0"
+}
