@@ -1,0 +1,156 @@
+{
+  "dataset": "curated-ps-v1",
+  "base_dataset": "curated-cn-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate_on_cn": 2.842170943040401e-14,
+      "tighter_case_indices": [
+        1,
+        4,
+        45
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3671797319148027e-05,
+        "max_ps_abs_delta_ln_x": 9.592326932761353e-14,
+        "max_absolute_delta_x": 3.169628216577823e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3685355978959618e-06,
+        "mass_action_max_abs_ln": 9.663381206337363e-13,
+        "HCOPS_element_relative_residual": 1.4124474027433478e-10,
+        "charge_relative_residual": 1.2553552622917863e-14
+      },
+      "ps_incremental_response": {
+        "min_x_ratio": 0.9993140960466456,
+        "max_x_ratio": 1.0144929638096567,
+        "highlighted_case_index": 1,
+        "temperature_K": 1500.0,
+        "pressure_bar": 0.0001,
+        "C_over_O": 0.5888436553555908,
+        "x_before": 9.265100540748883e-08,
+        "x_after": 9.260203365021841e-08,
+        "phosphorus_share_before": 0.2101655151803696,
+        "phosphorus_share_after": 0.21005442977323024
+      },
+      "cumulative_response_from_curated_cos": {
+        "C1N1": {
+          "production_over_old_cos_min": 0.6804834860884889,
+          "production_over_old_cos_max": 0.8721351488370153,
+          "max_absolute_delta_x": 1.171228160131006e-06
+        },
+        "P1S1": {
+          "production_over_old_cos_min": 0.9973421018094377,
+          "production_over_old_cos_max": 1.0144929648063992,
+          "max_absolute_delta_x": 4.8971757276998424e-11
+        },
+        "P2": {
+          "production_over_old_cos_min": 0.9997118964454208,
+          "production_over_old_cos_max": 1.0002162373515848,
+          "max_absolute_delta_x": 1.1333425896751524e-11
+        },
+        "O1P1": {
+          "production_over_old_cos_min": 0.9965325525654579,
+          "production_over_old_cos_max": 1.0001080727727456,
+          "max_absolute_delta_x": 1.836203175021954e-11
+        }
+      },
+      "background_effect_relative_to_old_ps_only_candidate": {
+        "PS_ratio_min": 0.9976334562695655,
+        "PS_ratio_max": 1.0000000347755609,
+        "max_absolute_delta_x_all_species": 1.1712281601293584e-06,
+        "scope": "CN background adoption changes equilibrium composition; this is a physical model difference, not a numerical reproduction error."
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate_on_cn": 2.842170943040401e-14,
+      "tighter_case_indices": [
+        1,
+        21,
+        45
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3760840090526472e-05,
+        "max_ps_abs_delta_ln_x": 4.973799150320701e-14,
+        "max_absolute_delta_x": 3.241851231905457e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3772411277362499e-06,
+        "mass_action_max_abs_ln": 1.1652900866465643e-12,
+        "HCOPS_element_relative_residual": 1.4124061163909248e-10
+      },
+      "ps_incremental_response": {
+        "min_x_ratio": 0.9993140960466136,
+        "max_x_ratio": 1.0144929638095992,
+        "highlighted_case_index": 1,
+        "temperature_K": 1500.0,
+        "pressure_bar": 0.0001,
+        "C_over_O": 0.5888436553555908,
+        "x_before": 9.265101176127845e-08,
+        "x_after": 9.26020400012721e-08,
+        "phosphorus_share_before": 0.21016552703504396,
+        "phosphorus_share_after": 0.2100544416230484
+      },
+      "cumulative_response_from_curated_cos": {
+        "C1N1": {
+          "production_over_old_cos_min": 0.6804834860883486,
+          "production_over_old_cos_max": 0.8721352756049874,
+          "max_absolute_delta_x": 1.17123415427519e-06
+        },
+        "P1S1": {
+          "production_over_old_cos_min": 0.9973420944705937,
+          "production_over_old_cos_max": 1.0144929637980007,
+          "max_absolute_delta_x": 4.8971760001413724e-11
+        },
+        "P2": {
+          "production_over_old_cos_min": 0.9997118961423054,
+          "production_over_old_cos_max": 1.000216237364992,
+          "max_absolute_delta_x": 1.1333426396984037e-11
+        },
+        "O1P1": {
+          "production_over_old_cos_min": 0.9965325468809009,
+          "production_over_old_cos_max": 1.000108072779461,
+          "max_absolute_delta_x": 1.8362033050362173e-11
+        }
+      },
+      "background_effect_relative_to_old_ps_only_candidate": "not_available: prior PS candidate solved the ion-inclusive network only"
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 1,
+      "comparisons": [
+        {
+          "dataset": "curated-ps-v1",
+          "max_abs_delta_log10_x": 1.386289763587716e-07,
+          "element_relative_residual": 3.869877110722819e-11,
+          "charge_relative_residual": 5.228207700861344e-12,
+          "mass_action_max_abs_ln": 1.6186163520615082e-10
+        }
+      ]
+    },
+    {
+      "case_index": 45,
+      "comparisons": [
+        {
+          "dataset": "curated-ps-v1",
+          "max_abs_delta_log10_x": 5.943465537679178e-06,
+          "element_relative_residual": 5.724512001249249e-11,
+          "charge_relative_residual": 3.206352636490116e-13,
+          "mass_action_max_abs_ln": 2.0835777547745238e-10
+        }
+      ]
+    }
+  ],
+  "scope": "Compact reviewed PS retained-energy POPS thermal update on cumulative CN base; fixed1500-4000K ideal-gas networks. Old single-candidate abundance differences include CN background changes. Full physical accuracy remains unknown."
+}
