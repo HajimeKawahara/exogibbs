@@ -1,0 +1,36 @@
+{
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "electronic_index"
+  ],
+  "electronic_labels": [
+    "A(2SIGMA+)",
+    "B(2PI)",
+    "C(2PI)",
+    "X(2PI)"
+  ],
+  "counts": {
+    "A(2SIGMA+)": 1209,
+    "B(2PI)": 6873,
+    "C(2PI)": 1041,
+    "X(2PI)": 21688
+  },
+  "nuclear_spin_divisor": 3,
+  "symmetry_number": 1,
+  "representative_isotope": "14N16O",
+  "isotope_mass_u": 29.997988624,
+  "natural_mass_proxy_u": 30.0061,
+  "raw_states_url": "https://www.exomol.com/db/NO/14N-16O/XABC/14N-16O__XABC.states.bz2",
+  "raw_states_sha256": "188bb68bc4592960b4e070a7bccd60c31e296fb120420c9e5cdf5e695f4143c0",
+  "published_pf_url": "https://www.exomol.com/db/NO/14N-16O/XABC/14N-16O__XABC.pf",
+  "published_pf_sha256": "783269e107b2b0e2a87c2746530e2ced8102f758bdeb014ea152b7afa4809eed",
+  "table_raw_Q": {
+    "1500": 8424.3251,
+    "2000": 12887.0105,
+    "3000": 24725.9353,
+    "4000": 40622.0192
+  },
+  "scope": "Compact numerical state columns only, no transitions or full paper. All distributed XABC states including above-D0 levels are evaluated; cutoff populations are diagnostics, not an adopted bound-state treatment."
+}
