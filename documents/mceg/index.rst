@@ -27,6 +27,7 @@ HCN differences with optional MCEG tooling.
    sio_source_review
    n2o5_source_review
    co2_source_review
+   c3o2_source_review
    co2_candidate
    n3_source_review
    no3_source_review
@@ -62,6 +63,7 @@ HCN differences with optional MCEG tooling.
    vn_source_review
    c3h_source_review
    fastchem_hcn_followup
+   c2n2_source_review
    c3_source_review
    c4_source_review
    ho2_source_review
@@ -76,6 +78,7 @@ HCN differences with optional MCEG tooling.
    cos_source_review
    cos_candidate
    co_source_review
+   c2o_source_review
    alh_source_review
    c2h_source_review
    c2_source_review
@@ -93,6 +96,7 @@ HCN differences with optional MCEG tooling.
    p2_source_review
    pn_source_review
    phosphorus_provenance
+   p4_source_review
    naoh_dimer_source_review
    naoh_source_review
    nacn_source_review
