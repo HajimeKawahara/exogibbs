@@ -1,0 +1,43 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "K2C2N2",
+      "file": "C-130.txt",
+      "url": "https://janaf.nist.gov/tables/C-130.txt",
+      "sha256": "7a4d35ec93bc3b6e90ff67bb0bc14e882881ae1abbd8c0aa885cdf7794bd9c87",
+      "bytes": 3972,
+      "header": "Potassium Cyanide ((KCN)2)\tC2K2N2(g)"
+    },
+    {
+      "molecule": "K",
+      "file": "K-005.txt",
+      "url": "https://janaf.nist.gov/tables/K-005.txt",
+      "sha256": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+      "bytes": 3163,
+      "header": "Potassium (K)\tK1(g)"
+    },
+    {
+      "molecule": "C",
+      "file": "C-003.txt",
+      "url": "https://janaf.nist.gov/tables/C-003.txt",
+      "sha256": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+      "bytes": 3841,
+      "header": "Carbon (C)\tC1(g)"
+    },
+    {
+      "molecule": "N",
+      "file": "N-002.txt",
+      "url": "https://janaf.nist.gov/tables/N-002.txt",
+      "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+      "bytes": 3847,
+      "header": "Nitrogen (N)\tN1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}

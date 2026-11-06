@@ -1,0 +1,275 @@
+{
+  "molecule": "K2C2N2",
+  "species_id": "C2K2N2",
+  "composition": {
+    "K": 2,
+    "C": 2,
+    "N": 2
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "K2C2N2": "C-130.txt",
+    "K": "K-005.txt",
+    "C": "C-003.txt",
+    "N": "N-002.txt"
+  },
+  "nasa9": {
+    "K2C2N2": {
+      "composition": {
+        "K": 2,
+        "C": 2,
+        "N": 2
+      },
+      "reference": "Chase,1998 p678.",
+      "source_line_1based": 6365,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            4627.78948,
+            -972.981062,
+            19.9666591,
+            -0.01953015081,
+            3.27533046e-05,
+            -2.39398512e-08,
+            6.59654824e-12,
+            -777.441126,
+            -67.55613632
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            726959.95,
+            -3492.10868,
+            18.35676822,
+            -0.000878547514,
+            1.845532919e-07,
+            -2.038717568e-11,
+            9.18542099e-16,
+            15826.00773,
+            -67.28484052
+          ]
+        }
+      ],
+      "source_name": "K2C2N2",
+      "hf298_J_mol": -8368.0,
+      "h298_minus_h0_J_mol": 24786.242,
+      "mass_u": 130.2314
+    },
+    "K": {
+      "composition": {
+        "K": 1
+      },
+      "reference": "Hf:Cox,1989. Sugar,1985. Gordon 1999.",
+      "source_line_1based": 6188,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            9.66514393,
+            -0.1458059455,
+            2.500865861,
+            -2.601219276e-06,
+            4.18730658e-09,
+            -3.43972211e-12,
+            1.131569009e-15,
+            9959.49349,
+            5.03582226
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -3566422.36,
+            10852.89825,
+            -10.54134898,
+            0.00800980135,
+            -2.696681041e-06,
+            4.71529415e-10,
+            -2.97689735e-14,
+            -58753.3701,
+            97.3855124
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            920578659.0,
+            -693530.028,
+            191.1270788,
+            -0.02305931672,
+            1.430294866e-06,
+            -4.40933502e-11,
+            5.366769166e-16,
+            5395082.19,
+            -1622.158805
+          ]
+        }
+      ],
+      "source_name": "K",
+      "hf298_J_mol": 89000.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 39.0983
+    },
+    "C": {
+      "composition": {
+        "C": 1
+      },
+      "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+      "source_line_1based": 1936,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            649.503147,
+            -0.964901086,
+            2.504675479,
+            -1.281448025e-05,
+            1.980133654e-08,
+            -1.606144025e-11,
+            5.314483411e-15,
+            85457.6311,
+            4.747924288
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -128913.6472,
+            171.9528572,
+            2.646044387,
+            -0.000335306895,
+            1.74209274e-07,
+            -2.902817829e-11,
+            1.642182385e-15,
+            84105.9785,
+            4.130047418
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            443252801.0,
+            -288601.8412,
+            77.3710832,
+            -0.00971528189,
+            6.64959533e-07,
+            -2.230078776e-11,
+            2.899388702e-16,
+            2355273.444,
+            -640.512316
+          ]
+        }
+      ],
+      "source_name": "C",
+      "hf298_J_mol": 716680.0,
+      "h298_minus_h0_J_mol": 6535.895,
+      "mass_u": 12.0107
+    },
+    "N": {
+      "composition": {
+        "N": 1
+      },
+      "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+      "source_line_1based": 7051,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            56104.6378,
+            4.193905036
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            88765.0138,
+            -107.12315,
+            2.362188287,
+            0.0002916720081,
+            -1.7295151e-07,
+            4.01265788e-11,
+            -2.677227571e-15,
+            56973.5133,
+            4.865231506
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            547518105.0,
+            -310757.498,
+            69.1678274,
+            -0.00684798813,
+            3.8275724e-07,
+            -1.098367709e-11,
+            1.277986024e-16,
+            2550585.618,
+            -584.8769753
+          ]
+        }
+      ],
+      "source_name": "N",
+      "hf298_J_mol": 472680.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 14.0067
+    }
+  },
+  "decision": "Retain K2C2N2 pending a focused dimer thermal/energy follow-up; the exact gas identity is resolved, but monomer evidence or a different stoichiometry is not a replacement dimer model.",
+  "monomer_table": "C-072.txt",
+  "follow_ups": [
+    "Resolve the printed four-CN-stretch inconsistency using original source constants, and obtain the 1977 full article to reconcile its second/third-law disagreement before selecting a dimer energy.",
+    "Keep dimer dissociation into two monomers distinct from total atomization into six neutral atoms; compute a finite-network candidate only after assembling both thermal and balanced energy inputs."
+  ],
+  "limitations": [
+    "A six-atom neutral dimer is not the three-atom monomer or four-atom hypervalent M2CN; condensed crystal geometry alone is not a measured gas dimer structure.",
+    "Source RRHO reconstruction or near-identical JANAF/NASA ancestry does not establish modern physical accuracy.",
+    "No curated change, new equilibrium solve or complete physical uncertainty."
+  ]
+}
