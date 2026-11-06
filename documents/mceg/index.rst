@@ -111,6 +111,7 @@ HCN differences with optional MCEG tooling.
    build
    ch_source_review
    ch2_source_review
+   ch2_candidate
 
    kh_source_review
    kh_candidate
