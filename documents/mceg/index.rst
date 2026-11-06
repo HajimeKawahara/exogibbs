@@ -65,6 +65,8 @@ HCN differences with optional MCEG tooling.
    ch4_source_review
    c2h4_source_review
    ch2o_source_review
+   hco_source_review
+   hco_candidate
    ch2o_candidate
    oxirane_source_review
    new_fastchem_logk
