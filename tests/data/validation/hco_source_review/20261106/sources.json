@@ -1,0 +1,49 @@
+{
+  "molecule": "HCO",
+  "decision": "Prioritize an ATcT energy candidate for formyl, with retained-thermal and NASA-thermal controls kept separate; leave curated unchanged until substitution is assessed.",
+  "follow_up": "Build the +2.004 kJ/mol retained-thermal physical D0 control preserving the inherited fit residual; compare a separately normalized NASA-thermal/ATcT control and perform fixed-network substitution before adoption.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-054.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Hf:Terentis,1996. Jacox,1998 p146. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "inspection": "Versioned official numerical rows inspected and archived with same-version neutral atoms.",
+      "scope": "Ground energy cycle only; no full thermal source or reaction covariance is inferred."
+    },
+    {
+      "id": "reference0",
+      "title": "Terentis and Kable (1996)",
+      "doi": "10.1016/0009-2614(96)00705-1",
+      "url": "https://doi.org/10.1016/0009-2614(96)00705-1",
+      "inspection": "Publisher abstract and ATcT provenance connection inspected; full experimental reanalysis was not performed."
+    },
+    {
+      "id": "reference1",
+      "title": "Ruscic (2015)",
+      "doi": "10.1021/acs.jpca.5b01346",
+      "url": "https://doi.org/10.1021/acs.jpca.5b01346",
+      "inspection": "Primary ATcT thermochemistry article/provenance discussion inspected; used as context for correlated network evaluation."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}
