@@ -43,6 +43,15 @@ The full official `CCCBDB HCP entry
 and Hf0=213.50 +/-20.00 kJ/mol, explicitly adjusted from JANAF using modern CP
 formation energy. Its entropy/heat-content values retain JANAF ancestry.
 This is an evaluated correction, not a new independent HCP calorimetric result.
+The official `CCCBDB elemental reference table
+<https://cccbdb.nist.gov/refstatex.asp>`_ specifies white crystalline phosphorus,
+with H298-H0=5.360 +/-0.002 kJ/mol. The pinned JANAF P-008 atom independently
+implies the same elemental heat: 6.197-(316.390-315.553)=5.360 kJ/mol.
+Thus the CCCBDB/selected-JANAF formation comparison uses compatible white-P
+references; no extra red/white phase shift is applied. The old JANAF narrative's
+40 kcal/mol differs from its selected 149.900 kJ/mol table by 17.460 kJ/mol,
+consistent with the historical phosphorus reference conversion. The selected
+numerical table, rather than that unrevised narrative number, is used here.
 
 The complete author-hosted 2001 paper,
 `DOI 10.1039/B106927F <https://doi.org/10.1039/B106927F>`_, independently obtains

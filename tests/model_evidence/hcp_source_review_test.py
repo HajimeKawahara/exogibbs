@@ -81,6 +81,12 @@ def test_actual_named_factory_and_analytic_calorics():
 
 
 def test_molecule_specific_source_diagnostic():
+    literature = json.loads((study.DATA / "literature.json").read_text())
+    reference = literature["elemental_reference_verification"]
+    p_atom = study.read_table(study.DATA / "P-008.txt")
+    implied_elemental_heat = -1000*p_atom[0.][3]-1000*(p_atom[298.15][4]-p_atom[0.][4])
+    assert reference["phosphorus_reference"] == "P, cr white"
+    assert implied_elemental_heat == pytest.approx(reference["P_H298_minus_H0_J_mol"],abs=1e-8)
     for row in study.review()["source_samples"]:
         source,modern,t = row["source"],row["modern"],row["temperature_K"]
         assert row["curated_over_nasa"] is None and source["native_nasa_D0_J_mol"] is None

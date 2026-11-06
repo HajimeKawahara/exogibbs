@@ -96,5 +96,16 @@
     ],
     "scope": "PES/DMS Fortran routines do not supply a finished partition function or its moments."
   },
-  "atct_check": "No HCP/phosphaethyne entry found in inspected full ATcT1.228 index; no value inferred."
+  "atct_check": "No HCP/phosphaethyne entry found in inspected full ATcT1.228 index; no value inferred.",
+  "elemental_reference_verification": {
+    "url": "https://cccbdb.nist.gov/refstatex.asp",
+    "access": "Official reference-state table inspected.",
+    "phosphorus_reference": "P, cr white",
+    "P_H298_minus_H0_J_mol": 5360.0,
+    "P_reported_heat_uncertainty_J_mol": 2.0,
+    "page_sha256": "b856b93bebe5b35253864acd60b09f2b900d3a91f584f2ceaeff0a75fa5a2ce1",
+    "check": "JANAF P gas heat 6197 minus (Hf298316390-Hf0315553) =5360 J/mol, matching the CCCBDB white-P reference.",
+    "old_printed_narrative_Hf298_J_mol": 167360.0,
+    "old_narrative_minus_table_J_mol": 17460.0
+  }
 }
