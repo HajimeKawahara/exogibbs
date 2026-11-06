@@ -66,6 +66,7 @@ HCN differences with optional MCEG tooling.
    cs_source_review
    cn_source_review
    cnn_source_review
+   cnn_candidate
    cn_candidate
    curated_cn_adoption
    cs_candidate
