@@ -82,6 +82,7 @@ HCN differences with optional MCEG tooling.
    p2_source_review
    pn_source_review
    phosphorus_provenance
+   p4_source_review
    naoh_dimer_source_review
    naoh_source_review
    naoh_candidate
