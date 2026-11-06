@@ -121,7 +121,7 @@ evidence:
   - source: mceg/reviews/pending_nitrogen_inputs.py
     sha256: a3f19aec5e64b281ca7e1ddb58e8c9ef7db49fe773f5e7b423866935aadf79d3
   - source: tests/model_evidence/c2n2_candidate_test.py
-    sha256: 23ae74555ba5c937888051b06e5bfa5ab8126ba86d47ee1b69096f2624ebbcf3
+    sha256: 45a21a4b0c21655b1567091c83f249be0c5751300409d3113ef85a0c9532a551
   result: passed
 - id: finite_execution
   kind: numerical_test
@@ -290,7 +290,7 @@ subjects:
     tests/data/validation/curated_ch2_adoption/20261106/ions.npz: 2b8b5cf2275e5177c90a11dbd604989362f04a39efcf80f5a45294c5a0832b84
     tests/data/validation/curated_ch2_adoption/20261106/neutral.npz: c93f8ed204949b0921e19c8bf2ab60abe80120101ccc4b9df9ce9dc9b612d320
     tests/data/validation/curated_ch2_adoption/20261106/receipt.json: 693d76930fa681883e25f91c494ab6cd87e0db6f78fae1f8f305797ab80239b2
-    tests/model_evidence/c2n2_candidate_test.py: 23ae74555ba5c937888051b06e5bfa5ab8126ba86d47ee1b69096f2624ebbcf3
+    tests/model_evidence/c2n2_candidate_test.py: 45a21a4b0c21655b1567091c83f249be0c5751300409d3113ef85a0c9532a551
 contexts:
 - id: fixed_ch2_network
   scope: C2N2 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
