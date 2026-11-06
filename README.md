@@ -31,8 +31,9 @@ Enable JAX float64 before constructing a chemical setup. This gas-only example
 uses the [curated preset](documents/presets/curated.rst), evaluated on
 1500–4000 K with ions included by default. Temperature is in K, pressure in bar,
 and `result.x` contains mole fractions in `chem.species` order. The current
-`curated-tio2-v1` includes the reviewed CN energy and PS/TiO2 thermal updates;
-named earlier presets remain available for reproducing previous models.
+`curated-gas-v2` includes the cumulative reviewed molecular updates recorded in
+[Gas curation v0.1](documents/mceg/gas_curation_release_0_1.rst). Named earlier
+presets remain available for reproducing previous models.
 
 ```python
 import jax
@@ -70,7 +71,10 @@ The bundled HCN comparison belongs to the original `curated_v1` dataset.
 - [Multiphase guide](documents/multiphase.rst) and the illustrated
   [plagioclase exsolution tutorial](documents/plagioclase_exsolution.rst).
 - [Model assumptions and evidence (MCEG)](documents/mceg/index.rst).
-- **[v0.7.0 release notes and upgrade guidance](documents/release_notes.rst).**
+- **[v0.8.0 release notes and upgrade guidance](documents/release_notes.rst).**
+
+Source distributions contain the runtime package and its required data.
+Use a Git checkout for tests, examples, documentation and archived model evidence.
 
 To build the HTML manual from a checkout, follow the
 [documentation build guide](documents/mceg/build.rst), then run

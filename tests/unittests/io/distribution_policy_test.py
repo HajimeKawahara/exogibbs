@@ -21,7 +21,7 @@ def test_documentation_submodule_is_excluded_from_distributions():
     assert "prune doc_ExoGibbs" in manifest_lines
 
 
-def test_source_manifest_keeps_fixtures_and_prunes_generated_results():
+def test_source_manifest_keeps_runtime_files_and_prunes_development_material():
     file_list = pytest.importorskip("setuptools._distutils.filelist").FileList()
     fixtures = [
         str(path.relative_to(REPOSITORY_ROOT))
@@ -29,16 +29,28 @@ def test_source_manifest_keeps_fixtures_and_prunes_generated_results():
         if path.is_file()
     ]
     generated = ["results/run.json", "results/nested/plot.png"]
+    development = [
+        "tests/unittests/io/load_data_test.py",
+        "mceg/contracts/curated_gas.yaml",
+        "documents/index.rst",
+    ]
+    runtime = [
+        "README.md",
+        "src/exogibbs/api/gas.py",
+        "src/exogibbs/data/curated/gas_v2.json",
+        "src/exogibbs/data/mceg/index.json",
+        "src/exogibbs/data/grids/fastchem/grid_exogibbs.nc",
+    ]
     # Simulate tracked or stale generated files discovered by the build backend.
-    file_list.allfiles = fixtures + generated
+    file_list.allfiles = fixtures + generated + development + runtime
     file_list.extend(file_list.allfiles)
     for line in (REPOSITORY_ROOT / "MANIFEST.in").read_text().splitlines():
         if line.strip() and not line.lstrip().startswith("#"):
             file_list.process_template_line(line)
 
     assert fixtures
-    assert set(fixtures) <= set(file_list.files)
-    assert not set(generated) & set(file_list.files)
+    assert set(runtime) <= set(file_list.files)
+    assert not set(fixtures + generated + development) & set(file_list.files)
 
 
 def test_documentation_validation_assets_exist():

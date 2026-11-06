@@ -41,8 +41,8 @@ copyright = "2025-2026, ExoGibbs contributors"
 author = "ExoGibbs contributors"
 
 # The short and full versions, including alpha/beta/rc tags.
-version = "0.7"
-release = "0.7.0"
+version = "0.8"
+release = "0.8.0"
 
 
 # -- General configuration ---------------------------------------------------

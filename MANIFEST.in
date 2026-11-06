@@ -84,11 +84,19 @@ include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
 # Unvalidated transcription retained in the repository but not distributed
 recursive-exclude src/exogibbs/data/sharp_huebner *
 
-# Documentation submodule is published separately
+# Runtime code and required data ship in distributions. Development material
+# and archived scientific evidence remain available in the Git repository.
+prune .github
+prune benchmarks
 prune doc_ExoGibbs
-
-# Generated runs stay local; offline regression fixtures ship with the source.
+prune docs
+prune documents
+prune examples
+prune external_data
+prune logs
+prune mceg
+prune ref
+prune reports
 prune results
-recursive-include tests/data/validation *
-# Keep source-only GGChem fixtures, but exclude regenerated restricted tables.
-exclude tests/data/validation/phosphorus_cold/thermo.json
+prune tests
+exclude .gitignore .gitmodules AGENTS.md run_examples.sh update_doc.sh
