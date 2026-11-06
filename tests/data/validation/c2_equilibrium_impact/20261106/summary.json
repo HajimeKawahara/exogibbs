@@ -1,0 +1,4071 @@
+{
+  "definition": "c2_bounded_candidates_20261106",
+  "baseline_dataset": "curated-ch2-v1",
+  "curated_update": "none",
+  "new_endpoint_solves": 150,
+  "reused_baseline_cases": 150,
+  "tighter_control_solves": 12,
+  "path_control_solves": 10,
+  "selected_variant_solves": 0,
+  "independent_fastchem_runs": 4,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "species": 537,
+      "cases": 75,
+      "max_constraint_residuals": {
+        "all_element_relative_residual": 1.4654958379400698e-06,
+        "major_HCO_relative_residual": 2.2313433199227202e-13,
+        "mass_action_max_abs_ln": 1.0302869668521453e-12,
+        "C_relative_residual": 2.2313433199227202e-13,
+        "charge_relative_residual": 4.299037708189691e-14
+      },
+      "tight_case_indices": [
+        53,
+        61,
+        73
+      ],
+      "highlighted_case_index": 61,
+      "tolerance_stability": {
+        "all_max_abs_delta_ln_x": 1.5347723092418164e-12,
+        "targets_max_abs_delta_ln_x": 8.526512829121202e-14,
+        "visible_max_abs_delta_ln_x": 2.877698079828406e-13,
+        "max_absolute_delta_x": 1.9984014443252818e-15
+      },
+      "responses": [
+        {
+          "variant": "retained",
+          "targets": {
+            "C2": {
+              "x_ratio_min": 1.3309675396093468,
+              "x_ratio_max": 2.175023774197503,
+              "largest_absolute_response": {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2",
+                "x_before": 2.893401805776772e-06,
+                "x_after": 4.519134256211596e-06,
+                "ratio": 1.5618757986495324,
+                "delta_x": 1.6257324504348237e-06,
+                "element_shares": {
+                  "C": [
+                    0.007727623644374226,
+                    0.01206958914275693
+                  ]
+                }
+              },
+              "maximum_element_share_before_after": {
+                "C": [
+                  0.007727623644374226,
+                  0.01206958914275693
+                ]
+              }
+            }
+          },
+          "element_redistribution": {
+            "C": [
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2",
+                "x_before": 2.893401805776772e-06,
+                "x_after": 4.519134256211596e-06,
+                "ratio": 1.5618757986495324,
+                "delta_x": 1.6257324504348237e-06,
+                "element_shares": {
+                  "C": [
+                    0.007727623644374226,
+                    0.01206958914275693
+                  ]
+                },
+                "absolute_share_change": 0.004341965498382704
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1",
+                "x_before": 0.00015324050339535686,
+                "x_after": 0.00015169023188353332,
+                "ratio": 0.9898834089064308,
+                "delta_x": -1.5502715118235328e-06,
+                "element_shares": {
+                  "C": [
+                    0.20463541132612553,
+                    0.20256521183092407
+                  ]
+                },
+                "absolute_share_change": 0.002070199495201458
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C3H1",
+                "x_before": 5.733989942186009e-06,
+                "x_after": 5.561722648348526e-06,
+                "ratio": 0.9699568196710494,
+                "delta_x": -1.7226729383748336e-07,
+                "element_shares": {
+                  "C": [
+                    0.022971290834221843,
+                    0.02228116166252362
+                  ]
+                },
+                "absolute_share_change": 0.0006901291716982227
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H2",
+                "x_before": 1.5151446537759872e-05,
+                "x_after": 1.4911854582262784e-05,
+                "ratio": 0.9841868593272605,
+                "delta_x": -2.3959195549708884e-07,
+                "element_shares": {
+                  "C": [
+                    0.03721504595934197,
+                    0.03662655766001635
+                  ]
+                },
+                "absolute_share_change": 0.000588488299325618
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C3",
+                "x_before": 4.0545613324011845e-06,
+                "x_after": 3.932747014461225e-06,
+                "ratio": 0.9699562275784298,
+                "delta_x": -1.2181431793995965e-07,
+                "element_shares": {
+                  "C": [
+                    0.016243228277493246,
+                    0.01575522145697737
+                  ]
+                },
+                "absolute_share_change": 0.0004880068205158766
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H1",
+                "x_before": 8.394139254667537e-06,
+                "x_after": 8.261396749555578e-06,
+                "ratio": 0.9841862874697787,
+                "delta_x": -1.327425051119582e-07,
+                "element_shares": {
+                  "C": [
+                    0.020617719725509142,
+                    0.020291676178212394
+                  ]
+                },
+                "absolute_share_change": 0.00032604354729674767
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1H1N1_hcn",
+                "x_before": 1.3824069109444511e-05,
+                "x_after": 1.370792107586143e-05,
+                "ratio": 0.9915981298513815,
+                "delta_x": -1.1614803358308107e-07,
+                "element_shares": {
+                  "C": [
+                    0.018460485352971494,
+                    0.018305383952642553
+                  ]
+                },
+                "absolute_share_change": 0.00015510140032894137
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1N1",
+                "x_before": 4.825815322011644e-06,
+                "x_after": 4.785266527233891e-06,
+                "ratio": 0.9915975245482767,
+                "delta_x": -4.05487947777529e-08,
+                "element_shares": {
+                  "C": [
+                    0.006444332154508531,
+                    0.006390184230852828
+                  ]
+                },
+                "absolute_share_change": 5.414792365570232e-05
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1",
+                "x_before": 1.5363716962752834e-05,
+                "x_after": 1.5321653935616335e-05,
+                "ratio": 0.9972621841941975,
+                "delta_x": -4.2063027136499164e-08,
+                "element_shares": {
+                  "C": [
+                    0.018905716233611647,
+                    0.01885395056215009
+                  ]
+                },
+                "absolute_share_change": 5.176567146155525e-05
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1S1",
+                "x_before": 9.841652461444088e-06,
+                "x_after": 9.814811522755819e-06,
+                "ratio": 0.9972727203288857,
+                "delta_x": -2.684093868826886e-08,
+                "element_shares": {
+                  "C": [
+                    0.013142417017388948,
+                    0.013106574830171703
+                  ]
+                },
+                "absolute_share_change": 3.584218721724465e-05
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1H1N1_hnc",
+                "x_before": 3.0146950906875636e-06,
+                "x_after": 2.9960800265191513e-06,
+                "ratio": 0.9938252249038669,
+                "delta_x": -1.861506416841231e-08,
+                "element_shares": {
+                  "C": [
+                    0.0037023533057962323,
+                    0.003679491951854698
+                  ]
+                },
+                "absolute_share_change": 2.286135394153439e-05
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H3",
+                "x_before": 7.107976135532591e-05,
+                "x_after": 7.106500033078684e-05,
+                "ratio": 0.9997923315405453,
+                "delta_x": -1.4761024539071584e-08,
+                "element_shares": {
+                  "C": [
+                    0.06051036032129155,
+                    0.060497798515201
+                  ]
+                },
+                "absolute_share_change": 1.2561806090549688e-05
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H2",
+                "x_before": 1.8261656627529548e-06,
+                "x_after": 1.8211664638944444e-06,
+                "ratio": 0.9972624614729783,
+                "delta_x": -4.999198858510463e-09,
+                "element_shares": {
+                  "C": [
+                    0.002247175595545898,
+                    0.0022410232354807677
+                  ]
+                },
+                "absolute_share_change": 6.152360065130209e-06
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2Si1",
+                "x_before": 7.182553672992814e-08,
+                "x_after": 7.038200713044809e-08,
+                "ratio": 0.9799022789776305,
+                "delta_x": -1.443529599480046e-09,
+                "element_shares": {
+                  "C": [
+                    0.0001918298090489561,
+                    0.00018797447939048812
+                  ]
+                },
+                "absolute_share_change": 3.8553296584679865e-06
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H4",
+                "x_before": 1.8758905549584044e-05,
+                "x_after": 1.8755010178107183e-05,
+                "ratio": 0.9997923454827061,
+                "delta_x": -3.895371476861251e-09,
+                "element_shares": {
+                  "C": [
+                    0.015969498383147766,
+                    0.015966183376124238
+                  ]
+                },
+                "absolute_share_change": 3.315007023527855e-06
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1O1",
+                "x_before": 0.000725872696444795,
+                "x_after": 0.0007258703078459243,
+                "ratio": 0.9999967093418966,
+                "delta_x": -2.3885988706699376e-09,
+                "element_shares": {
+                  "C": [
+                    0.9269003617769662,
+                    0.926897312429817
+                  ]
+                },
+                "absolute_share_change": 3.0493471492309965e-06
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2N1",
+                "x_before": 5.993233387497491e-08,
+                "x_after": 5.8827537508311755e-08,
+                "ratio": 0.9815659378630595,
+                "delta_x": -1.1047963666631558e-09,
+                "element_shares": {
+                  "C": [
+                    0.00016006574662050875,
+                    0.0001571150950050906
+                  ]
+                },
+                "absolute_share_change": 2.9506516154181623e-06
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2H4",
+                "x_before": 1.7146479232847127e-07,
+                "x_after": 1.713935792843638e-07,
+                "ratio": 0.9995846783287671,
+                "delta_x": -7.121304410747338e-11,
+                "element_shares": {
+                  "C": [
+                    0.00029193672483915307,
+                    0.0002918154978704061
+                  ]
+                },
+                "absolute_share_change": 1.2122696874697315e-07
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Si1",
+                "x_before": 4.501110014346088e-09,
+                "x_after": 4.4654162064160025e-09,
+                "ratio": 0.9920699987744531,
+                "delta_x": -3.5693807930085696e-11,
+                "element_shares": {
+                  "C": [
+                    5.527822562502014e-06,
+                    5.48398669186354e-06
+                  ]
+                },
+                "absolute_share_change": 4.383587063847332e-08
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4",
+                "x_before": 1.8059462643070838e-10,
+                "x_after": 1.7339677061639822e-10,
+                "ratio": 0.9601435770456223,
+                "delta_x": -7.197855814310168e-12,
+                "element_shares": {
+                  "C": [
+                    9.646550316423933e-07,
+                    9.26207393437881e-07
+                  ]
+                },
+                "absolute_share_change": 3.8447638204512226e-08
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2-",
+                "x_before": 5.137895072214938e-10,
+                "x_after": 5.056657027826367e-10,
+                "ratio": 0.9841884578710266,
+                "delta_x": -8.123804438857177e-12,
+                "element_shares": {
+                  "C": [
+                    1.2619719230783449e-06,
+                    1.2420181485467842e-06
+                  ]
+                },
+                "absolute_share_change": 1.9953774531560657e-08
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1H1P1",
+                "x_before": 1.1874681754061439e-09,
+                "x_after": 1.1780935225166463e-09,
+                "ratio": 0.9921053438873921,
+                "delta_x": -9.374652889497569e-12,
+                "element_shares": {
+                  "C": [
+                    1.4583321339273688e-06,
+                    1.4468190423031864e-06
+                  ]
+                },
+                "absolute_share_change": 1.1513091624182355e-08
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C5",
+                "x_before": 3.273192680520681e-11,
+                "x_after": 3.110941164446173e-11,
+                "ratio": 0.9504301970855263,
+                "delta_x": -1.6225151607450788e-12,
+                "element_shares": {
+                  "C": [
+                    2.1854898531621154e-07,
+                    2.0771556880914336e-07
+                  ]
+                },
+                "absolute_share_change": 1.0833416507068176e-08
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C2O1",
+                "x_before": 9.045870046942904e-10,
+                "x_after": 9.021076250466263e-10,
+                "ratio": 0.9972591031765906,
+                "delta_x": -2.479379647664077e-12,
+                "element_shares": {
+                  "C": [
+                    2.2262666333705584e-06,
+                    2.2201640417984694e-06
+                  ]
+                },
+                "absolute_share_change": 6.1025915720890276e-09
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1N1-",
+                "x_before": 7.465073735355669e-10,
+                "x_after": 7.418994944850495e-10,
+                "ratio": 0.9938274165616156,
+                "delta_x": -4.60787905051744e-12,
+                "element_shares": {
+                  "C": [
+                    9.167872567770427e-07,
+                    9.111282725696427e-07
+                  ]
+                },
+                "absolute_share_change": 5.65898420740002e-09
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1P1",
+                "x_before": 4.0292207233087033e-10,
+                "x_after": 3.9974090886176394e-10,
+                "ratio": 0.9921047674288389,
+                "delta_x": -3.1811634691063924e-12,
+                "element_shares": {
+                  "C": [
+                    4.948294343532565e-07,
+                    4.909226202121068e-07
+                  ]
+                },
+                "absolute_share_change": 3.9068141411496995e-09
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H1O1",
+                "x_before": 3.4953154674311485e-07,
+                "x_after": 3.4953039650576934e-07,
+                "ratio": 0.9999967092030569,
+                "delta_x": -1.150237345503356e-12,
+                "element_shares": {
+                  "C": [
+                    0.0004463329709403049,
+                    0.0004463315025175196
+                  ]
+                },
+                "absolute_share_change": 1.4684227853307454e-09
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2N2",
+                "x_before": 2.1480427186842116e-11,
+                "x_after": 2.1215947920713002e-11,
+                "ratio": 0.9876874298714542,
+                "delta_x": -2.6447926612911406e-13,
+                "element_shares": {
+                  "C": [
+                    5.276031453448391e-08,
+                    5.211069726727326e-08
+                  ]
+                },
+                "absolute_share_change": 6.496172672106478e-10
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1+",
+                "x_before": 9.389039764812205e-11,
+                "x_after": 9.36332543939404e-11,
+                "ratio": 0.997261240120152,
+                "delta_x": -2.571432541816481e-13,
+                "element_shares": {
+                  "C": [
+                    1.1553618302782757e-07,
+                    1.1521972475914417e-07
+                  ]
+                },
+                "absolute_share_change": 3.1645826868339844e-10
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1O2",
+                "x_before": 5.146264781097295e-09,
+                "x_after": 5.146466819814869e-09,
+                "ratio": 1.0000392592931315,
+                "delta_x": 2.0203871757396978e-13,
+                "element_shares": {
+                  "C": [
+                    6.571503117230032e-06,
+                    6.571761115221384e-06
+                  ]
+                },
+                "absolute_share_change": 2.579979913519201e-10
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Al1",
+                "x_before": 1.7461925931135163e-11,
+                "x_after": 1.7323309302773707e-11,
+                "ratio": 0.9920617789293048,
+                "delta_x": -1.3861662836145616e-13,
+                "element_shares": {
+                  "C": [
+                    2.1445027524147525e-08,
+                    2.1274791258863565e-08
+                  ]
+                },
+                "absolute_share_change": 1.7023626528395935e-10
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1-",
+                "x_before": 4.367287059584059e-11,
+                "x_after": 4.355331933177021e-11,
+                "ratio": 0.9972625737113382,
+                "delta_x": -1.1955126407038074e-13,
+                "element_shares": {
+                  "C": [
+                    5.374135052044475e-08,
+                    5.359422246118614e-08
+                  ]
+                },
+                "absolute_share_change": 1.47128059258606e-10
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H2O1",
+                "x_before": 2.949873458280185e-08,
+                "x_after": 2.949863750435962e-08,
+                "ratio": 0.9999967090641818,
+                "delta_x": -9.707844223015371e-14,
+                "element_shares": {
+                  "C": [
+                    3.766829623249398e-05,
+                    3.7668172299639006e-05
+                  ]
+                },
+                "absolute_share_change": 1.2393285497239864e-10
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2Ti1",
+                "x_before": 1.670238652176558e-12,
+                "x_after": 1.6366158429791306e-12,
+                "ratio": 0.9798694580839618,
+                "delta_x": -3.36228091974273e-14,
+                "element_shares": {
+                  "C": [
+                    4.460830733753648e-09,
+                    4.371032080344543e-09
+                  ]
+                },
+                "absolute_share_change": 8.97986534091056e-11
+              },
+              {
+                "case_index": 68,
+                "temperature_K": 3000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1Si2",
+                "x_before": 5.78295319621383e-10,
+                "x_after": 5.782310099800859e-10,
+                "ratio": 0.99988879446346,
+                "delta_x": -6.43096412971253e-14,
+                "element_shares": {
+                  "C": [
+                    4.920334088366996e-07,
+                    4.919787102770343e-07
+                  ]
+                },
+                "absolute_share_change": 5.469855966537238e-11
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1+",
+                "x_before": 1.2421591267244346e-11,
+                "x_after": 1.2387574955678014e-11,
+                "ratio": 0.9972615173986579,
+                "delta_x": -3.4016311566331377e-14,
+                "element_shares": {
+                  "C": [
+                    1.5285303695568195e-08,
+                    1.5243440870072516e-08
+                  ]
+                },
+                "absolute_share_change": 4.186282549567906e-11
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1N1Na1",
+                "x_before": 3.9638241266822287e-10,
+                "x_after": 3.963358872327595e-10,
+                "ratio": 0.9998826248744233,
+                "delta_x": -4.6525435463384797e-14,
+                "element_shares": {
+                  "C": [
+                    3.374412372556434e-07,
+                    3.374016539582478e-07
+                  ]
+                },
+                "absolute_share_change": 3.958329739561212e-11
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1-",
+                "x_before": 8.070434096992738e-12,
+                "x_after": 8.04834411629556e-12,
+                "ratio": 0.9972628509902077,
+                "delta_x": -2.208998069717814e-14,
+                "element_shares": {
+                  "C": [
+                    9.931017167896968e-09,
+                    9.903831708603573e-09
+                  ]
+                },
+                "absolute_share_change": 2.7185459293395258e-11
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Cl1",
+                "x_before": 2.2667690221517816e-12,
+                "x_after": 2.2487738361251726e-12,
+                "ratio": 0.9920613058274783,
+                "delta_x": -1.7995186026608942e-14,
+                "element_shares": {
+                  "C": [
+                    2.7838237467411954e-09,
+                    2.76172370508311e-09
+                  ]
+                },
+                "absolute_share_change": 2.2100041658085532e-11
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1F1",
+                "x_before": 2.2491336851931773e-12,
+                "x_after": 2.2312788446811332e-12,
+                "ratio": 0.9920614587609492,
+                "delta_x": -1.785484051204404e-14,
+                "element_shares": {
+                  "C": [
+                    2.762165752773843e-09,
+                    2.74023807063866e-09
+                  ]
+                },
+                "absolute_share_change": 2.1927682135183273e-11
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1N2_ncn",
+                "x_before": 3.970174598071509e-12,
+                "x_after": 3.9616893761841005e-12,
+                "ratio": 0.9978627585065073,
+                "delta_x": -8.485221887408785e-15,
+                "element_shares": {
+                  "C": [
+                    4.885471043953943e-09,
+                    4.87502824140542e-09
+                  ]
+                },
+                "absolute_share_change": 1.0442802548523078e-11
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1N1O1",
+                "x_before": 1.0110502514800849e-10,
+                "x_after": 1.0111379778010114e-10,
+                "ratio": 1.0000867675180318,
+                "delta_x": 8.772632092647311e-15,
+                "element_shares": {
+                  "C": [
+                    8.607093475477505e-08,
+                    8.607840901616451e-08
+                  ]
+                },
+                "absolute_share_change": 7.474261389464212e-12
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2Cr1",
+                "x_before": 1.2727170628399309e-13,
+                "x_after": 1.252590120408477e-13,
+                "ratio": 0.9841858469418627,
+                "delta_x": -2.0126942431453746e-15,
+                "element_shares": {
+                  "C": [
+                    3.1260529394858365e-10,
+                    3.0766169302695897e-10
+                  ]
+                },
+                "absolute_share_change": 4.943600921624678e-12
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H1Cl1",
+                "x_before": 1.0194905469373894e-13,
+                "x_after": 1.0033685751642568e-13,
+                "ratio": 0.984186246923462,
+                "delta_x": -1.6121971773132575e-15,
+                "element_shares": {
+                  "C": [
+                    2.5040769186516946e-10,
+                    2.464477960790673e-10
+                  ]
+                },
+                "absolute_share_change": 3.959895786102154e-12
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1O1S1",
+                "x_before": 8.164273926278399e-13,
+                "x_after": 8.194144990044153e-13,
+                "ratio": 1.0036587532505012,
+                "delta_x": 2.9871063765754116e-15,
+                "element_shares": {
+                  "C": [
+                    1.0026561775270253e-09,
+                    1.006324606697056e-09
+                  ]
+                },
+                "absolute_share_change": 3.668429170030636e-12
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2V1",
+                "x_before": 5.769213603111468e-14,
+                "x_after": 5.653075058380386e-14,
+                "ratio": 0.9798692590150511,
+                "delta_x": -1.1613854473108171e-15,
+                "element_shares": {
+                  "C": [
+                    1.5408268343456347e-10,
+                    1.5098089474556892e-10
+                  ]
+                },
+                "absolute_share_change": 3.101788688994552e-12
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1S2",
+                "x_before": 1.3853104047512131e-11,
+                "x_after": 1.3850569623970794e-11,
+                "ratio": 0.9998170501331222,
+                "delta_x": -2.5344235413365813e-15,
+                "element_shares": {
+                  "C": [
+                    1.1793178557436054e-08,
+                    1.1791021832567838e-08
+                  ]
+                },
+                "absolute_share_change": 2.156724868216595e-12
+              },
+              {
+                "case_index": 68,
+                "temperature_K": 3000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C2Si2",
+                "x_before": 4.191286089585004e-12,
+                "x_after": 4.1903809005274e-12,
+                "ratio": 0.9997840307155713,
+                "delta_x": -9.051890576040064e-16,
+                "element_shares": {
+                  "C": [
+                    7.132178705573936e-09,
+                    7.130638638982673e-09
+                  ]
+                },
+                "absolute_share_change": 1.540066591263223e-12
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1N1O1",
+                "x_before": 1.4247663506076633e-11,
+                "x_after": 1.424889954177507e-11,
+                "ratio": 1.0000867535717637,
+                "delta_x": 1.2360356984376202e-15,
+                "element_shares": {
+                  "C": [
+                    1.2129067909773093e-08,
+                    1.2130121009345861e-08
+                  ]
+                },
+                "absolute_share_change": 1.0530995727676938e-12
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1K1N1",
+                "x_before": 8.389780019043948e-12,
+                "x_after": 8.388797561260083e-12,
+                "ratio": 0.9998828982665058,
+                "delta_x": -9.824577838649469e-16,
+                "element_shares": {
+                  "C": [
+                    7.142238554106832e-09,
+                    7.141402691671569e-09
+                  ]
+                },
+                "absolute_share_change": 8.358624352634945e-13
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2N1O1",
+                "x_before": 2.9590975820387573e-12,
+                "x_after": 2.9587396059964945e-12,
+                "ratio": 0.9998790252662042,
+                "delta_x": -3.5797604226277126e-16,
+                "element_shares": {
+                  "C": [
+                    5.038172821654003e-09,
+                    5.037563687028529e-09
+                  ]
+                },
+                "absolute_share_change": 6.091346254741608e-13
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1N2_cnn",
+                "x_before": 1.7430575999555188e-13,
+                "x_after": 1.739332264927476e-13,
+                "ratio": 0.9978627585065818,
+                "delta_x": -3.725335028042845e-16,
+                "element_shares": {
+                  "C": [
+                    2.1449075405053917e-10,
+                    2.140322753137288e-10
+                  ]
+                },
+                "absolute_share_change": 4.584787368103595e-13
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl1",
+                "x_before": 1.1506642742139672e-13,
+                "x_after": 1.1475142610566217e-13,
+                "ratio": 0.9972624394204841,
+                "delta_x": -3.1500131573454976e-16,
+                "element_shares": {
+                  "C": [
+                    1.4159420081210653e-10,
+                    1.412065383948603e-10
+                  ]
+                },
+                "absolute_share_change": 3.8766241724623045e-13
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Cl1N1",
+                "x_before": 2.7174165616290092e-14,
+                "x_after": 2.7006354450649455e-14,
+                "ratio": 0.9938246065027277,
+                "delta_x": -1.6781116564063675e-16,
+                "element_shares": {
+                  "C": [
+                    3.337264926476532e-11,
+                    3.3166558626789276e-11
+                  ]
+                },
+                "absolute_share_change": 2.0609063797604643e-13
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1F1",
+                "x_before": 5.2249184095338025e-14,
+                "x_after": 5.210615860972908e-14,
+                "ratio": 0.9972626273867173,
+                "delta_x": -1.4302548560894412e-16,
+                "element_shares": {
+                  "C": [
+                    6.429487410754803e-11,
+                    6.411885704634687e-11
+                  ]
+                },
+                "absolute_share_change": 1.7601706120116873e-13
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H3Cl1",
+                "x_before": 7.266626819299175e-13,
+                "x_after": 7.265117214742085e-13,
+                "ratio": 0.9997922551144252,
+                "delta_x": -1.5096045570904979e-16,
+                "element_shares": {
+                  "C": [
+                    6.186095715179371e-10,
+                    6.184811023723786e-10
+                  ]
+                },
+                "absolute_share_change": 1.2846914555849941e-13
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4N2",
+                "x_before": 3.9707928621049194e-16,
+                "x_after": 3.8257465109739266e-16,
+                "ratio": 0.9634716903731655,
+                "delta_x": -1.4504635113099277e-17,
+                "element_shares": {
+                  "C": [
+                    2.1210184321341837e-12,
+                    2.0435413481386586e-12
+                  ]
+                },
+                "absolute_share_change": 7.747708399552506e-14
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H1F1",
+                "x_before": 1.2664768979203538e-15,
+                "x_after": 1.24644933712886e-15,
+                "ratio": 0.9841863986430541,
+                "delta_x": -2.0027560791493825e-17,
+                "element_shares": {
+                  "C": [
+                    3.1107258204746464e-12,
+                    3.0615339134907152e-12
+                  ]
+                },
+                "absolute_share_change": 4.919190698393115e-14
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H1O1+",
+                "x_before": 1.1015938642643242e-11,
+                "x_after": 1.1015901979169043e-11,
+                "ratio": 0.9999966717793746,
+                "delta_x": -3.6663474198799194e-17,
+                "element_shares": {
+                  "C": [
+                    1.4066760691219126e-08,
+                    1.4066713885546355e-08
+                  ]
+                },
+                "absolute_share_change": 4.680567277158291e-14
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C3O2",
+                "x_before": 2.5906356823447748e-14,
+                "x_after": 2.590079855392909e-14,
+                "ratio": 0.9997854476584053,
+                "delta_x": -5.558269518657144e-18,
+                "element_shares": {
+                  "C": [
+                    6.61624190673221e-11,
+                    6.614822845302569e-11
+                  ]
+                },
+                "absolute_share_change": 1.419061429641204e-14
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1N1+",
+                "x_before": 4.0567674144523376e-15,
+                "x_after": 4.0468754758581355e-15,
+                "ratio": 0.9975616204766974,
+                "delta_x": -9.891938594202037e-18,
+                "element_shares": {
+                  "C": [
+                    4.992027238547631e-12,
+                    4.979853380948819e-12
+                  ]
+                },
+                "absolute_share_change": 1.2173857598812038e-14
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4Ti1",
+                "x_before": 4.86650352096679e-17,
+                "x_after": 4.6725435043559925e-17,
+                "ratio": 0.9601438659655455,
+                "delta_x": -1.939600166107974e-18,
+                "element_shares": {
+                  "C": [
+                    2.599466662319121e-13,
+                    2.4958621342890256e-13
+                  ]
+                },
+                "absolute_share_change": 1.0360452803009523e-14
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H3F1",
+                "x_before": 3.6145559886172824e-14,
+                "x_after": 3.613805091754223e-14,
+                "ratio": 0.9997922575095188,
+                "delta_x": -7.508968630591294e-18,
+                "element_shares": {
+                  "C": [
+                    3.077079622979428e-11,
+                    3.076440600809236e-11
+                  ]
+                },
+                "absolute_share_change": 6.3902217019158525e-15
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1F1N1",
+                "x_before": 4.540812105433355e-16,
+                "x_after": 4.512771499561463e-16,
+                "ratio": 0.993824759707996,
+                "delta_x": -2.804060587189231e-18,
+                "element_shares": {
+                  "C": [
+                    5.576580783072319e-13,
+                    5.54214382333674e-13
+                  ]
+                },
+                "absolute_share_change": 3.4436959735579625e-15
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1O2-",
+                "x_before": 6.807388239730906e-14,
+                "x_after": 6.807655747749705e-14,
+                "ratio": 1.0000392967184148,
+                "delta_x": 2.675080187980401e-18,
+                "element_shares": {
+                  "C": [
+                    8.692668360536296e-11,
+                    8.693009961052117e-11
+                  ]
+                },
+                "absolute_share_change": 3.4160051582022863e-15
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2H4O1",
+                "x_before": 2.5450181320479153e-15,
+                "x_after": 2.5444809409429725e-15,
+                "ratio": 0.9997889244488365,
+                "delta_x": -5.371911049427951e-19,
+                "element_shares": {
+                  "C": [
+                    4.3331592919846e-12,
+                    4.3322449750063385e-12
+                  ]
+                },
+                "absolute_share_change": 9.143169782612322e-16
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1F1+",
+                "x_before": 2.427653649351088e-16,
+                "x_after": 2.421005964851119e-16,
+                "ratio": 0.9972616833123019,
+                "delta_x": -6.647684499969118e-19,
+                "element_shares": {
+                  "C": [
+                    2.987332500292291e-13,
+                    2.979151399958652e-13
+                  ]
+                },
+                "absolute_share_change": 8.181100333638837e-16
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1Cl1O1",
+                "x_before": 1.221200750495465e-13,
+                "x_after": 1.2211967317732567e-13,
+                "ratio": 0.9999967092042755,
+                "delta_x": -4.018722208314191e-19,
+                "element_shares": {
+                  "C": [
+                    1.5594076247537097e-10,
+                    1.559402494348855e-10
+                  ]
+                },
+                "absolute_share_change": 5.130404854815334e-16
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4V1",
+                "x_before": 6.185679772991264e-19,
+                "x_after": 5.939141284277723e-19,
+                "ratio": 0.9601436709042052,
+                "delta_x": -2.4653848871354042e-20,
+                "element_shares": {
+                  "C": [
+                    3.3041111106559143e-15,
+                    3.1724215789114466e-15
+                  ]
+                },
+                "absolute_share_change": 1.3168953174446774e-16
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1F1O1",
+                "x_before": 8.202489198095361e-16,
+                "x_after": 8.202462216324046e-16,
+                "ratio": 0.9999967105386348,
+                "delta_x": -2.6981771314857553e-21,
+                "element_shares": {
+                  "C": [
+                    1.0474137190204214e-12,
+                    1.0474102744579639e-12
+                  ]
+                },
+                "absolute_share_change": 3.4445624575335266e-18
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H1F1O1",
+                "x_before": 5.382801191872372e-16,
+                "x_after": 5.382783484608392e-16,
+                "ratio": 0.9999967103997811,
+                "delta_x": -1.770726397988427e-21,
+                "element_shares": {
+                  "C": [
+                    6.873547381733536e-13,
+                    6.873524776183789e-13
+                  ]
+                },
+                "absolute_share_change": 2.260554974650014e-18
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H2O2",
+                "x_before": 5.711407520416614e-17,
+                "x_after": 5.711369930313769e-17,
+                "ratio": 0.9999934184169645,
+                "delta_x": -3.7590102845212895e-22,
+                "element_shares": {
+                  "C": [
+                    1.4586319950753125e-13,
+                    1.458622396171627e-13
+                  ]
+                },
+                "absolute_share_change": 9.598903685581222e-19
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C3N2O1",
+                "x_before": 2.0369862197925625e-19,
+                "x_after": 2.0365003702560993e-19,
+                "ratio": 0.999761486095614,
+                "delta_x": -4.8584953646325286e-23,
+                "element_shares": {
+                  "C": [
+                    5.202272817700625e-16,
+                    5.201032371873994e-16
+                  ]
+                },
+                "absolute_share_change": 1.2404458266314817e-19
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl2",
+                "x_before": 1.2494575412605065e-19,
+                "x_after": 1.2491978250950616e-19,
+                "ratio": 0.9997921368619035,
+                "delta_x": -2.597161654448488e-23,
+                "element_shares": {
+                  "C": [
+                    1.0636660082450178e-16,
+                    1.0634449866524308e-16
+                  ]
+                },
+                "absolute_share_change": 2.2102159258695288e-20
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1F2",
+                "x_before": 2.5003428260610733e-21,
+                "x_after": 2.49349887092655e-21,
+                "ratio": 0.9972627933005072,
+                "delta_x": -6.843955134523458e-24,
+                "element_shares": {
+                  "C": [
+                    3.0767796667211883e-18,
+                    3.0683570218188083e-18
+                  ]
+                },
+                "absolute_share_change": 8.42264490237999e-21
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2Cl2",
+                "x_before": 1.388067426522263e-22,
+                "x_after": 1.3661160209286226e-22,
+                "ratio": 0.9841856345201914,
+                "delta_x": -2.1951405593640507e-24,
+                "element_shares": {
+                  "C": [
+                    3.4093769821880644e-19,
+                    3.355459707227222e-19
+                  ]
+                },
+                "absolute_share_change": 5.39172749608423e-21
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H2Cl2",
+                "x_before": 1.0206494881615526e-20,
+                "x_after": 1.0204373612161638e-20,
+                "ratio": 0.9997921647462235,
+                "delta_x": -2.1212694538885197e-24,
+                "element_shares": {
+                  "C": [
+                    8.688811992721968e-18,
+                    8.68700676688726e-18
+                  ]
+                },
+                "absolute_share_change": 1.8052258347071795e-21
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H4O2",
+                "x_before": 2.5535318360801993e-20,
+                "x_after": 2.5536320845167782e-20,
+                "ratio": 1.000039258737707,
+                "delta_x": 1.0024843657894326e-24,
+                "element_shares": {
+                  "C": [
+                    3.2607227055987545e-17,
+                    3.260850720147609e-17
+                  ]
+                },
+                "absolute_share_change": 1.2801454885419694e-21
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2N2Na2",
+                "x_before": 1.5377867470149357e-21,
+                "x_after": 1.5374257723758621e-21,
+                "ratio": 0.999765263525795,
+                "delta_x": -3.609746390736115e-25,
+                "element_shares": {
+                  "C": [
+                    2.6182426160384957e-18,
+                    2.6176282044982487e-18
+                  ]
+                },
+                "absolute_share_change": 6.144115402469917e-22
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H2Cl1F1",
+                "x_before": 1.6326545957786397e-21,
+                "x_after": 1.6323152765066931e-21,
+                "ratio": 0.9997921671412778,
+                "delta_x": -3.393192719465805e-25,
+                "element_shares": {
+                  "C": [
+                    1.3898825205239008e-18,
+                    1.3895937557409068e-18
+                  ]
+                },
+                "absolute_share_change": 2.8876478299395428e-22
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H2F2",
+                "x_before": 1.1677184464867737e-22,
+                "x_after": 1.1674757590205653e-22,
+                "ratio": 0.9997921695362966,
+                "delta_x": -2.426874662084011e-26,
+                "element_shares": {
+                  "C": [
+                    9.940813334686139e-20,
+                    9.938748035157539e-20
+                  ]
+                },
+                "absolute_share_change": 2.0652995285996167e-23
+              },
+              {
+                "case_index": 69,
+                "temperature_K": 3000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2K2N2",
+                "x_before": 9.65465628458845e-22,
+                "x_after": 9.654649136014832e-22,
+                "ratio": 0.9999992595724377,
+                "delta_x": -7.148573617642601e-28,
+                "element_shares": {
+                  "C": [
+                    1.5425549968011971e-18,
+                    1.5425538550638544e-18
+                  ]
+                },
+                "absolute_share_change": 1.141737342743697e-24
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C2F2",
+                "x_before": 4.3591171061336064e-26,
+                "x_after": 4.3352823035753665e-26,
+                "ratio": 0.9945321949427093,
+                "delta_x": -2.383480255823996e-28,
+                "element_shares": {
+                  "C": [
+                    1.0728163144041422e-22,
+                    1.0669500638513931e-22
+                  ]
+                },
+                "absolute_share_change": 5.8662505527490785e-25
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1Cl2O1",
+                "x_before": 3.011883761621619e-23,
+                "x_after": 3.011873849712862e-23,
+                "ratio": 0.9999967090666367,
+                "delta_x": -9.911908757187088e-29,
+                "element_shares": {
+                  "C": [
+                    3.846013442784958e-20,
+                    3.8460007889853907e-20
+                  ]
+                },
+                "absolute_share_change": 1.265379956706963e-25
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H4O3",
+                "x_before": 1.3237691507902464e-24,
+                "x_after": 1.3238167640534203e-24,
+                "ratio": 1.000035967950413,
+                "delta_x": 4.761326317384344e-29,
+                "element_shares": {
+                  "C": [
+                    3.3807639019522853e-21,
+                    3.3808855038911615e-21
+                  ]
+                },
+                "absolute_share_change": 1.2160193887622169e-25
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1Cl1F1O1",
+                "x_before": 1.4188089263056055e-23,
+                "x_after": 1.418804258993215e-23,
+                "ratio": 0.9999967104010246,
+                "delta_x": -4.667312390503634e-29,
+                "element_shares": {
+                  "C": [
+                    1.811742628598885e-20,
+                    1.81173667018755e-20
+                  ]
+                },
+                "absolute_share_change": 5.958411334936674e-26
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1F2O1",
+                "x_before": 1.957745934757396e-24,
+                "x_after": 1.9577394971706972e-24,
+                "ratio": 0.9999967117353767,
+                "delta_x": -6.437586698795843e-30,
+                "element_shares": {
+                  "C": [
+                    2.4999361790046646e-21,
+                    2.4999279606163413e-21
+                  ]
+                },
+                "absolute_share_change": 8.218388323253195e-27
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1F2+",
+                "x_before": 1.1511381150685476e-27,
+                "x_after": 1.147986444533609e-27,
+                "ratio": 0.9972621265044717,
+                "delta_x": -3.1516705349384913e-30,
+                "element_shares": {
+                  "C": [
+                    1.4165250897254967e-24,
+                    1.4126464259150115e-24
+                  ]
+                },
+                "absolute_share_change": 3.878663810485229e-27
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H2O4",
+                "x_before": 3.545730494825738e-27,
+                "x_after": 3.5460089050518376e-27,
+                "ratio": 1.0000785198498605,
+                "delta_x": 2.784102260995785e-31,
+                "element_shares": {
+                  "C": [
+                    9.055413971387881e-24,
+                    9.056125008608024e-24
+                  ]
+                },
+                "absolute_share_change": 7.110372201425756e-28
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H3Cl1O2",
+                "x_before": 5.778646846539639e-27,
+                "x_after": 5.778608812297756e-27,
+                "ratio": 0.9999934181404587,
+                "delta_x": -3.8034241882459006e-32,
+                "element_shares": {
+                  "C": [
+                    1.475804195108273e-23,
+                    1.4757944827904317e-23
+                  ]
+                },
+                "absolute_share_change": 9.712317841223524e-29
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H6O2",
+                "x_before": 2.1498612684749062e-27,
+                "x_after": 2.149847117790254e-27,
+                "ratio": 0.9999934178614872,
+                "delta_x": -1.4150684652313443e-32,
+                "element_shares": {
+                  "C": [
+                    5.4905142383220315e-24,
+                    5.490478103528505e-24
+                  ]
+                },
+                "absolute_share_change": 3.6134793526803204e-29
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl3",
+                "x_before": 1.2528948435358808e-28,
+                "x_after": 1.2526343171282122e-28,
+                "ratio": 0.9997920604358675,
+                "delta_x": -2.605264076685568e-32,
+                "element_shares": {
+                  "C": [
+                    1.066592191384222e-25,
+                    1.0663704802379216e-25
+                  ]
+                },
+                "absolute_share_change": 2.217111463004141e-29
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl3",
+                "x_before": 4.8211961461757303e-29,
+                "x_after": 4.820193695967883e-29,
+                "ratio": 0.9997920743779234,
+                "delta_x": -1.0024502078471116e-32,
+                "element_shares": {
+                  "C": [
+                    4.1042950964108373e-26,
+                    4.103441999092991e-26
+                  ]
+                },
+                "absolute_share_change": 8.530973178463615e-30
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl2F1",
+                "x_before": 1.8086928081004223e-29,
+                "x_after": 1.8083167388550697e-29,
+                "ratio": 0.9997920767729774,
+                "delta_x": -3.760692453526211e-33,
+                "element_shares": {
+                  "C": [
+                    1.5397442456450373e-26,
+                    1.539424206145057e-26
+                  ]
+                },
+                "absolute_share_change": 3.200394999803979e-30
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl1F2",
+                "x_before": 3.959062004424724e-30,
+                "x_after": 3.958238832959118e-30,
+                "ratio": 0.9997920791680742,
+                "delta_x": -8.231714656056168e-34,
+                "element_shares": {
+                  "C": [
+                    3.3703583671940035e-27,
+                    3.369657838271546e-27
+                  ]
+                },
+                "absolute_share_change": 7.005289224572343e-31
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C4Ni1O4",
+                "x_before": 5.7883065376583344e-30,
+                "x_after": 5.7882303438336004e-30,
+                "ratio": 0.9999868365947383,
+                "delta_x": -7.619382473396931e-35,
+                "element_shares": {
+                  "C": [
+                    2.956542352458941e-26,
+                    2.956503436733981e-26
+                  ]
+                },
+                "absolute_share_change": 3.891572495991667e-31
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1F3",
+                "x_before": 4.545205500345989e-31,
+                "x_after": 4.5442604049535876e-31,
+                "ratio": 0.9997920676210724,
+                "delta_x": -9.45095392401798e-35,
+                "element_shares": {
+                  "C": [
+                    3.8693436403841453e-28,
+                    3.868539352702834e-28
+                  ]
+                },
+                "absolute_share_change": 8.042876813112865e-32
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1F3",
+                "x_before": 3.4379177561570747e-31,
+                "x_after": 3.437202949671268e-31,
+                "ratio": 0.999792081563171,
+                "delta_x": -7.148064858066173e-35,
+                "element_shares": {
+                  "C": [
+                    2.926707099368224e-28,
+                    2.926098790363086e-28
+                  ]
+                },
+                "absolute_share_change": 6.083090051382604e-32
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1F3+",
+                "x_before": 1.4686378182018661e-36,
+                "x_after": 1.4646175245342111e-36,
+                "ratio": 0.9972625696970154,
+                "delta_x": -4.0202936676550096e-39,
+                "element_shares": {
+                  "C": [
+                    1.8072221655858908e-33,
+                    1.8022745139698267e-33
+                  ]
+                },
+                "absolute_share_change": 4.947651616064052e-36
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2F3N1",
+                "x_before": 5.5347661707496025e-37,
+                "x_after": 5.532964818404558e-37,
+                "ratio": 0.9996745386725524,
+                "delta_x": -1.8013523450441553e-40,
+                "element_shares": {
+                  "C": [
+                    9.423517718691955e-34,
+                    9.420451395692821e-34
+                  ]
+                },
+                "absolute_share_change": 3.066322999134174e-37
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl4",
+                "x_before": 4.967887911327068e-38,
+                "x_after": 4.966854511203295e-38,
+                "ratio": 0.9997919840096599,
+                "delta_x": -1.033400123773274e-41,
+                "element_shares": {
+                  "C": [
+                    4.229174125212032e-35,
+                    4.2282946890090885e-35
+                  ]
+                },
+                "absolute_share_change": 8.794362029432879e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl3F1",
+                "x_before": 3.4619112510470445e-38,
+                "x_after": 3.461191126441546e-38,
+                "ratio": 0.9997919864048274,
+                "delta_x": -7.201246054985923e-42,
+                "element_shares": {
+                  "C": [
+                    2.947132815401531e-35,
+                    2.9465199805163286e-35
+                  ]
+                },
+                "absolute_share_change": 6.12834885202342e-39
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C5Fe1O5",
+                "x_before": 3.1708692360828224e-38,
+                "x_after": 3.1708170610119294e-38,
+                "ratio": 0.9999835454990389,
+                "delta_x": -5.217507089307561e-43,
+                "element_shares": {
+                  "C": [
+                    2.0245146679767457e-34,
+                    2.0244813572691345e-34
+                  ]
+                },
+                "absolute_share_change": 3.331070761116937e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl2F2",
+                "x_before": 1.1070616706484131e-38,
+                "x_after": 1.1068313894217119e-38,
+                "ratio": 0.9997919887998955,
+                "delta_x": -2.302812267012549e-42,
+                "element_shares": {
+                  "C": [
+                    9.424440841036579e-36,
+                    9.422481119517576e-36
+                  ]
+                },
+                "absolute_share_change": 1.959721519002238e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2Cl4",
+                "x_before": 1.749553034576122e-39,
+                "x_after": 1.7488257750011656e-39,
+                "ratio": 0.9995843169309054,
+                "delta_x": -7.272595749562665e-43,
+                "element_shares": {
+                  "C": [
+                    2.9787968475073714e-36,
+                    2.9775588230983598e-36
+                  ]
+                },
+                "absolute_share_change": 1.238024409011665e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl1F3",
+                "x_before": 2.3375428358233804e-39,
+                "x_after": 2.3370566063312466e-39,
+                "ratio": 0.9997919911949068,
+                "delta_x": -4.862294921337776e-43,
+                "element_shares": {
+                  "C": [
+                    1.989955460810345e-36,
+                    1.9895416735430023e-36
+                  ]
+                },
+                "absolute_share_change": 4.13787267342694e-40
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1F4",
+                "x_before": 2.258464837999831e-40,
+                "x_after": 2.257995062837032e-40,
+                "ratio": 0.999791993590117,
+                "delta_x": -4.697751627992352e-44,
+                "element_shares": {
+                  "C": [
+                    1.922636183838254e-37,
+                    1.9222363994087574e-37
+                  ]
+                },
+                "absolute_share_change": 3.997844294965264e-41
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2F4",
+                "x_before": 7.710058475159872e-44,
+                "x_after": 7.706853608238152e-44,
+                "ratio": 0.9995843265090602,
+                "delta_x": -3.2048669217200826e-47,
+                "element_shares": {
+                  "C": [
+                    1.3127180157455498e-40,
+                    1.312172446653335e-40
+                  ]
+                },
+                "absolute_share_change": 5.455690922148036e-44
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C4H6O4",
+                "x_before": 1.0233388805807266e-43,
+                "x_after": 1.0233254099611932e-43,
+                "ratio": 0.9999868365994988,
+                "delta_x": -1.3470619533425671e-48,
+                "element_shares": {
+                  "C": [
+                    5.226994668770304e-40,
+                    5.226925868060191e-40
+                  ]
+                },
+                "absolute_share_change": 6.880071011360087e-45
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1F4O1",
+                "x_before": 1.2728416344289657e-49,
+                "x_after": 1.2728374520353106e-49,
+                "ratio": 0.9999967141288107,
+                "delta_x": -4.182393655113159e-55,
+                "element_shares": {
+                  "C": [
+                    1.6253502538605654e-46,
+                    1.625344914510499e-46
+                  ]
+                },
+                "absolute_share_change": 5.339350066476278e-52
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2Cl6",
+                "x_before": 1.5632316008160696e-59,
+                "x_after": 1.562581553013091e-59,
+                "ratio": 0.9995841641106543,
+                "delta_x": -6.500478029785017e-63,
+                "element_shares": {
+                  "C": [
+                    2.661565138299979e-56,
+                    2.660458552528882e-56
+                  ]
+                },
+                "absolute_share_change": 1.106585771097306e-59
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2F6",
+                "x_before": 2.1097307700364298e-63,
+                "x_after": 2.1088534985764237e-63,
+                "ratio": 0.9995841784779055,
+                "delta_x": -8.772714600060828e-67,
+                "element_shares": {
+                  "C": [
+                    3.5920370761417433e-60,
+                    3.5905436842636887e-60
+                  ]
+                },
+                "absolute_share_change": 1.4933918780546219e-63
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1F8S1",
+                "x_before": 1.2626972415757473e-92,
+                "x_after": 1.2624498508908589e-92,
+                "ratio": 0.9998040775914109,
+                "delta_x": -2.4739068488840407e-96,
+                "element_shares": {
+                  "C": [
+                    1.0749369948288881e-89,
+                    1.0747264667450156e-89
+                  ]
+                },
+                "absolute_share_change": 2.105280838725783e-93
+              }
+            ]
+          },
+          "largest_any_species_response": {
+            "case_index": 61,
+            "temperature_K": 2500.0,
+            "pressure_bar": 0.0001,
+            "C_over_O": 1.5,
+            "species": "C2",
+            "x_before": 2.893401805776772e-06,
+            "x_after": 4.519134256211596e-06,
+            "ratio": 1.5618757986495324,
+            "delta_x": 1.6257324504348237e-06,
+            "element_shares": {
+              "C": [
+                0.007727623644374226,
+                0.01206958914275693
+              ]
+            }
+          },
+          "resolved_Gibbs_cases": 50
+        }
+      ],
+      "selected_variant_controls": []
+    },
+    {
+      "network": "neutral",
+      "species": 421,
+      "cases": 75,
+      "max_constraint_residuals": {
+        "all_element_relative_residual": 1.4530811669106286e-06,
+        "major_HCO_relative_residual": 2.3904573353759205e-13,
+        "mass_action_max_abs_ln": 1.1652900866465643e-12,
+        "C_relative_residual": 2.1478715351445892e-13
+      },
+      "tight_case_indices": [
+        3,
+        61,
+        73
+      ],
+      "highlighted_case_index": 61,
+      "tolerance_stability": {
+        "all_max_abs_delta_ln_x": 1.0373923942097463e-12,
+        "targets_max_abs_delta_ln_x": 2.4158453015843406e-13,
+        "visible_max_abs_delta_ln_x": 3.659295089164516e-13,
+        "max_absolute_delta_x": 1.6653345369377348e-15
+      },
+      "responses": [
+        {
+          "variant": "retained",
+          "targets": {
+            "C2": {
+              "x_ratio_min": 1.3309673863978948,
+              "x_ratio_max": 2.1750237741973946,
+              "largest_absolute_response": {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2",
+                "x_before": 2.8934182325136833e-06,
+                "x_after": 4.5191597656356384e-06,
+                "ratio": 1.5618757478104288,
+                "delta_x": 1.6257415331219551e-06,
+                "element_shares": {
+                  "C": [
+                    0.007727643877309804,
+                    0.012069620351256848
+                  ]
+                }
+              },
+              "maximum_element_share_before_after": {
+                "C": [
+                  0.007727643877309804,
+                  0.012069620351256848
+                ]
+              }
+            }
+          },
+          "element_redistribution": {
+            "C": [
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2",
+                "x_before": 2.8934182325136833e-06,
+                "x_after": 4.5191597656356384e-06,
+                "ratio": 1.5618757478104288,
+                "delta_x": 1.6257415331219551e-06,
+                "element_shares": {
+                  "C": [
+                    0.007727643877309804,
+                    0.012069620351256848
+                  ]
+                },
+                "absolute_share_change": 0.004341976473947044
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1",
+                "x_before": 0.00015324093839160513,
+                "x_after": 0.0001516906600103252,
+                "ratio": 0.9898833927960019,
+                "delta_x": -1.5502783812799254e-06,
+                "element_shares": {
+                  "C": [
+                    0.20463536622673442,
+                    0.20256516389155454
+                  ]
+                },
+                "absolute_share_change": 0.002070202335179877
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C3H1",
+                "x_before": 5.734053342303215e-06,
+                "x_after": 5.561783872190189e-06,
+                "ratio": 0.969956772316347,
+                "delta_x": -1.72269470113026e-07,
+                "element_shares": {
+                  "C": [
+                    0.02297147455467677,
+                    0.022281338775695034
+                  ]
+                },
+                "absolute_share_change": 0.0006901357789817347
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H2",
+                "x_before": 1.5151735963146594e-05,
+                "x_after": 1.4912137312879355e-05,
+                "ratio": 0.9841867195382752,
+                "delta_x": -2.395986502672391e-07,
+                "element_shares": {
+                  "C": [
+                    0.03721561444214882,
+                    0.036627111950867694
+                  ]
+                },
+                "absolute_share_change": 0.0005885024912811246
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C3",
+                "x_before": 4.054595860947522e-06,
+                "x_after": 3.9327803136221515e-06,
+                "ratio": 0.9699561802204121,
+                "delta_x": -1.2181554732537077e-07,
+                "element_shares": {
+                  "C": [
+                    0.016243316915472202,
+                    0.015755306662733056
+                  ]
+                },
+                "absolute_share_change": 0.0004880102527391461
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H1",
+                "x_before": 8.394276019957393e-06,
+                "x_after": 8.26153017852936e-06,
+                "ratio": 0.9841861476662871,
+                "delta_x": -1.3274584142803303e-07,
+                "element_shares": {
+                  "C": [
+                    0.020617976754581293,
+                    0.02029192626016929
+                  ]
+                },
+                "absolute_share_change": 0.00032605049441200226
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1H1N1_hcn",
+                "x_before": 1.3824176938779751e-05,
+                "x_after": 1.3708027694500149e-05,
+                "ratio": 0.9915981078082283,
+                "delta_x": -1.1614924427960214e-07,
+                "element_shares": {
+                  "C": [
+                    0.018460572875252927,
+                    0.018305470332698026
+                  ]
+                },
+                "absolute_share_change": 0.00015510254255490102
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1N1",
+                "x_before": 4.8258407019677485e-06,
+                "x_after": 4.785291587542621e-06,
+                "ratio": 0.9915975025017727,
+                "delta_x": -4.054911442512747e-08,
+                "element_shares": {
+                  "C": [
+                    0.006444346333062854,
+                    0.006390198148214716
+                  ]
+                },
+                "absolute_share_change": 5.4148184848138055e-05
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1",
+                "x_before": 1.53640264296823e-05,
+                "x_after": 1.53219616735848e-05,
+                "ratio": 0.997262126807057,
+                "delta_x": -4.206475609749819e-08,
+                "element_shares": {
+                  "C": [
+                    0.018905950612715078,
+                    0.018854183214315985
+                  ]
+                },
+                "absolute_share_change": 5.176739839909267e-05
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C1S1",
+                "x_before": 9.841689299833154e-06,
+                "x_after": 9.814848267661828e-06,
+                "ratio": 0.9972727210386757,
+                "delta_x": -2.684103217132605e-08,
+                "element_shares": {
+                  "C": [
+                    0.01314242600769286,
+                    0.013106583805320182
+                  ]
+                },
+                "absolute_share_change": 3.584220237267885e-05
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1H1N1_hnc",
+                "x_before": 3.0147429987724344e-06,
+                "x_after": 2.9961273736786823e-06,
+                "ratio": 0.9938251369681157,
+                "delta_x": -1.8615625093752097e-08,
+                "element_shares": {
+                  "C": [
+                    0.0037023979746404765,
+                    0.0036795360192937677
+                  ]
+                },
+                "absolute_share_change": 2.2861955346708748e-05
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H3",
+                "x_before": 7.10811036728208e-05,
+                "x_after": 7.10663421601886e-05,
+                "ratio": 0.9997923285955133,
+                "delta_x": -1.4761512632198697e-08,
+                "element_shares": {
+                  "C": [
+                    0.060511390305700796,
+                    0.060498828107734264
+                  ]
+                },
+                "absolute_share_change": 1.256219796653274e-05
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H2",
+                "x_before": 1.8262128552346518e-06,
+                "x_after": 1.8212134224050317e-06,
+                "ratio": 0.9972624040974799,
+                "delta_x": -4.999432829620077e-09,
+                "element_shares": {
+                  "C": [
+                    0.0022472162624420622,
+                    0.0022410636620762508
+                  ]
+                },
+                "absolute_share_change": 6.1526003658114725e-06
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2Si1",
+                "x_before": 7.18274024397391e-08,
+                "x_after": 7.038383311239236e-08,
+                "ratio": 0.9799022479121692,
+                "delta_x": -1.4435693273467428e-09,
+                "element_shares": {
+                  "C": [
+                    0.00019183420511050962,
+                    0.00018797878114258513
+                  ]
+                },
+                "absolute_share_change": 3.855423967924498e-06
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H4",
+                "x_before": 1.875927794337219e-05,
+                "x_after": 1.8755382439340625e-05,
+                "ratio": 0.9997923425388053,
+                "delta_x": -3.8955040315645484e-09,
+                "element_shares": {
+                  "C": [
+                    0.015969785650902388,
+                    0.015966470537274027
+                  ]
+                },
+                "absolute_share_change": 3.3151136283604554e-06
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1O1",
+                "x_before": 0.0007258750185823365,
+                "x_after": 0.0007258726298463568,
+                "ratio": 0.9999967091635358,
+                "delta_x": -2.3887359796356117e-09,
+                "element_shares": {
+                  "C": [
+                    0.9269016023497693,
+                    0.9268985528333287
+                  ]
+                },
+                "absolute_share_change": 3.0495164405897057e-06
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2N1",
+                "x_before": 5.99328191993097e-08,
+                "x_after": 5.8828011620777466e-08,
+                "ratio": 0.9815659000645682,
+                "delta_x": -1.104807578532235e-09,
+                "element_shares": {
+                  "C": [
+                    0.00016006655316231464,
+                    0.00015711588062924844
+                  ]
+                },
+                "absolute_share_change": 2.9506725330662013e-06
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2H4",
+                "x_before": 1.7147093691284647e-07,
+                "x_after": 1.7139972030660338e-07,
+                "ratio": 0.9995846724376429,
+                "delta_x": -7.12166062430967e-11,
+                "element_shares": {
+                  "C": [
+                    0.0002919466427357933,
+                    0.00029182540992948186
+                  ]
+                },
+                "absolute_share_change": 1.2123280631145443e-07
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Si1",
+                "x_before": 4.5017043525812705e-09,
+                "x_after": 4.466005518724246e-09,
+                "ratio": 0.9920699292843265,
+                "delta_x": -3.569883385702465e-11,
+                "element_shares": {
+                  "C": [
+                    5.528531315675582e-06,
+                    5.484689440400576e-06
+                  ]
+                },
+                "absolute_share_change": 4.3841875275006054e-08
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4",
+                "x_before": 1.8059667701964028e-10,
+                "x_after": 1.733987281878804e-10,
+                "ratio": 0.9601435145399874,
+                "delta_x": -7.1979488317598744e-12,
+                "element_shares": {
+                  "C": [
+                    9.646630340204177e-07,
+                    9.262150165758218e-07
+                  ]
+                },
+                "absolute_share_change": 3.8448017444595984e-08
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1H1P1",
+                "x_before": 1.1874840173326637e-09,
+                "x_after": 1.1781091566377802e-09,
+                "ratio": 0.9921052742116552,
+                "delta_x": -9.374860694883494e-12,
+                "element_shares": {
+                  "C": [
+                    1.458346009089533e-06,
+                    1.4468327063098355e-06
+                  ]
+                },
+                "absolute_share_change": 1.1513302779697629e-08
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C5",
+                "x_before": 3.273239138036262e-11,
+                "x_after": 3.1109850659153896e-11,
+                "ratio": 0.9504301197442561,
+                "delta_x": -1.6225407212087232e-12,
+                "element_shares": {
+                  "C": [
+                    2.1855141869727232e-07,
+                    2.0771786466564126e-07
+                  ]
+                },
+                "absolute_share_change": 1.0833554031631069e-08
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C2O1",
+                "x_before": 9.046068587214084e-10,
+                "x_after": 9.021273720460289e-10,
+                "ratio": 0.9972590450188671,
+                "delta_x": -2.4794866753795298e-12,
+                "element_shares": {
+                  "C": [
+                    2.226298252373408e-06,
+                    2.220195444624916e-06
+                  ]
+                },
+                "absolute_share_change": 6.102807748492046e-09
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1P1",
+                "x_before": 4.029263157978634e-10,
+                "x_after": 3.9974509074550577e-10,
+                "ratio": 0.9921046977384481,
+                "delta_x": -3.181225052357649e-12,
+                "element_shares": {
+                  "C": [
+                    4.948327522932463e-07,
+                    4.909258774696155e-07
+                  ]
+                },
+                "absolute_share_change": 3.9068748236308325e-09
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H1O1",
+                "x_before": 3.495330044066357e-07,
+                "x_after": 3.4953185410216184e-07,
+                "ratio": 0.999996709024729,
+                "delta_x": -1.1503044738702775e-12,
+                "element_shares": {
+                  "C": [
+                    0.0004463340018112085,
+                    0.00044633253330549175
+                  ]
+                },
+                "absolute_share_change": 1.4685057167680704e-09
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2N2",
+                "x_before": 2.148098921799909e-11,
+                "x_after": 2.1216499276621828e-11,
+                "ratio": 0.9876872550564085,
+                "delta_x": -2.644899413772623e-13,
+                "element_shares": {
+                  "C": [
+                    5.276149310662822e-08,
+                    5.2111852104470816e-08
+                  ]
+                },
+                "absolute_share_change": 6.496410021574034e-10
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1O2",
+                "x_before": 5.146125122999777e-09,
+                "x_after": 5.1463271716788854e-09,
+                "ratio": 1.0000392622943048,
+                "delta_x": 2.0204867910825469e-13,
+                "element_shares": {
+                  "C": [
+                    6.5713125542146454e-06,
+                    6.5715705644469355e-06
+                  ]
+                },
+                "absolute_share_change": 2.5801023229006195e-10
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1Al1",
+                "x_before": 6.435933281478178e-11,
+                "x_after": 6.418312851973794e-11,
+                "ratio": 0.9972621795886085,
+                "delta_x": -1.7620429504384644e-13,
+                "element_shares": {
+                  "C": [
+                    7.919632091447256e-08,
+                    7.897947339637257e-08
+                  ]
+                },
+                "absolute_share_change": 2.1684751809999286e-10
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H2O1",
+                "x_before": 2.949888625268969e-08,
+                "x_after": 2.9498789168489842e-08,
+                "ratio": 0.9999967088859214,
+                "delta_x": -9.708419984727716e-14,
+                "element_shares": {
+                  "C": [
+                    3.766841981771572e-05,
+                    3.766829587774405e-05
+                  ]
+                },
+                "absolute_share_change": 1.2393997166868257e-10
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1N1Na1",
+                "x_before": 1.4855072322914405e-11,
+                "x_after": 1.4763337063367825e-11,
+                "ratio": 0.9938246507622129,
+                "delta_x": -9.173525954658016e-14,
+                "element_shares": {
+                  "C": [
+                    1.82434753821109e-08,
+                    1.813081478673551e-08
+                  ]
+                },
+                "absolute_share_change": 1.126605953753888e-10
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2Ti1",
+                "x_before": 1.714342988996464e-12,
+                "x_after": 1.6798322432675869e-12,
+                "ratio": 0.9798694042263509,
+                "delta_x": -3.451074572887719e-14,
+                "element_shares": {
+                  "C": [
+                    4.578609463941328e-09,
+                    4.486439621854837e-09
+                  ]
+                },
+                "absolute_share_change": 9.216984208649094e-11
+              },
+              {
+                "case_index": 68,
+                "temperature_K": 3000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1Si2",
+                "x_before": 5.783032692896763e-10,
+                "x_after": 5.782389586346533e-10,
+                "ratio": 0.9998887942392198,
+                "delta_x": -6.43106550229926e-14,
+                "element_shares": {
+                  "C": [
+                    4.920396520113836e-07,
+                    4.919849526474863e-07
+                  ]
+                },
+                "absolute_share_change": 5.469936389721541e-11
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Cl1",
+                "x_before": 2.266813303065622e-12,
+                "x_after": 2.2488176058878643e-12,
+                "ratio": 0.9920612354121001,
+                "delta_x": -1.799569717775756e-14,
+                "element_shares": {
+                  "C": [
+                    2.7838674757933355e-09,
+                    2.7617668909471943e-09
+                  ]
+                },
+                "absolute_share_change": 2.210058484614128e-11
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1F1",
+                "x_before": 2.2490718702621297e-12,
+                "x_after": 2.2312173732022534e-12,
+                "ratio": 0.9920613932814004,
+                "delta_x": -1.785449705987632e-14,
+                "element_shares": {
+                  "C": [
+                    2.7620792686706665e-09,
+                    2.740152092229494e-09
+                  ]
+                },
+                "absolute_share_change": 2.1927176441172457e-11
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1N2_ncn",
+                "x_before": 3.970334844221187e-12,
+                "x_after": 3.961848909772179e-12,
+                "ratio": 0.9978626652960116,
+                "delta_x": -8.485934449007899e-15,
+                "element_shares": {
+                  "C": [
+                    4.885630392809715e-09,
+                    4.875186794198934e-09
+                  ]
+                },
+                "absolute_share_change": 1.0443598610780485e-11
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1K1N1",
+                "x_before": 1.3756953255391439e-12,
+                "x_after": 1.3671999474761084e-12,
+                "ratio": 0.9938246660395491,
+                "delta_x": -8.49537806303544e-15,
+                "element_shares": {
+                  "C": [
+                    1.6894878233641985e-09,
+                    1.6790546011193678e-09
+                  ]
+                },
+                "absolute_share_change": 1.043322224483067e-11
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1N1O1",
+                "x_before": 1.0111213241632057e-10,
+                "x_after": 1.0112090467350224e-10,
+                "ratio": 1.000086757711187,
+                "delta_x": 8.772257181668369e-15,
+                "element_shares": {
+                  "C": [
+                    8.607682482602159e-08,
+                    8.60842987549728e-08
+                  ]
+                },
+                "absolute_share_change": 7.47392895121409e-12
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2Cr1",
+                "x_before": 1.3138957962191963e-13,
+                "x_after": 1.2931173505998733e-13,
+                "ratio": 0.984185621356645,
+                "delta_x": -2.0778445619322917e-15,
+                "element_shares": {
+                  "C": [
+                    3.227183966786807e-10,
+                    3.1761479238206974e-10
+                  ]
+                },
+                "absolute_share_change": 5.103604296610941e-12
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H1Cl1",
+                "x_before": 1.0195201998772242e-13,
+                "x_after": 1.0033976167010328e-13,
+                "ratio": 0.9841861071726357,
+                "delta_x": -1.6122583176191446e-15,
+                "element_shares": {
+                  "C": [
+                    2.5041401702682366e-10,
+                    2.464539862196736e-10
+                  ]
+                },
+                "absolute_share_change": 3.960030807150056e-12
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1O1S1",
+                "x_before": 8.164306673079443e-13,
+                "x_after": 8.194178215658873e-13,
+                "ratio": 1.0036587972225404,
+                "delta_x": 2.9871542579430417e-15,
+                "element_shares": {
+                  "C": [
+                    1.0026563625178437e-09,
+                    1.0063248364507818e-09
+                  ]
+                },
+                "absolute_share_change": 3.668473932938022e-12
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C2V1",
+                "x_before": 5.866169555976539e-14,
+                "x_after": 5.74807892736753e-14,
+                "ratio": 0.9798692097999968,
+                "delta_x": -1.1809062860900902e-15,
+                "element_shares": {
+                  "C": [
+                    1.5667167899581894e-10,
+                    1.5351776436394192e-10
+                  ]
+                },
+                "absolute_share_change": 3.1539146318770218e-12
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1S2",
+                "x_before": 1.3854030936451888e-11,
+                "x_after": 1.3851496322369415e-11,
+                "ratio": 0.9998170486197051,
+                "delta_x": -2.5346140824730778e-15,
+                "element_shares": {
+                  "C": [
+                    1.1793945647800116e-08,
+                    1.1791788764828088e-08
+                  ]
+                },
+                "absolute_share_change": 2.156882972028176e-12
+              },
+              {
+                "case_index": 68,
+                "temperature_K": 3000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C2Si2",
+                "x_before": 4.191360189885467e-12,
+                "x_after": 4.1904549831638355e-12,
+                "ratio": 0.9997840303193659,
+                "delta_x": -9.052067216315893e-16,
+                "element_shares": {
+                  "C": [
+                    7.132297252335204e-09,
+                    7.130757157322159e-09
+                  ]
+                },
+                "absolute_share_change": 1.540095013045141e-12
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1N1O1",
+                "x_before": 1.4248651281469995e-11,
+                "x_after": 1.4249887263110761e-11,
+                "ratio": 1.0000867437637675,
+                "delta_x": 1.2359816407661044e-15,
+                "element_shares": {
+                  "C": [
+                    1.2129886207050206e-08,
+                    1.2130939258732237e-08
+                  ]
+                },
+                "absolute_share_change": 1.0530516820310905e-12
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2N1O1",
+                "x_before": 2.9593500344711828e-12,
+                "x_after": 2.958991990143219e-12,
+                "ratio": 0.999879012511601,
+                "delta_x": -3.5804432796386935e-16,
+                "element_shares": {
+                  "C": [
+                    5.038593261335286e-09,
+                    5.037984011624612e-09
+                  ]
+                },
+                "absolute_share_change": 6.092497106735524e-13
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1N2_cnn",
+                "x_before": 1.743127954108126e-13,
+                "x_after": 1.7394023062382937e-13,
+                "ratio": 0.9978626652959974,
+                "delta_x": -3.725647869832348e-16,
+                "element_shares": {
+                  "C": [
+                    2.1449775007118865e-10,
+                    2.1403923638419943e-10
+                  ]
+                },
+                "absolute_share_change": 4.585136869892204e-13
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl1",
+                "x_before": 1.1507356047629346e-13,
+                "x_after": 1.147585330342098e-13,
+                "ratio": 0.9972623820729997,
+                "delta_x": -3.1502744208366996e-16,
+                "element_shares": {
+                  "C": [
+                    1.4160188158691373e-10,
+                    1.4121419001871866e-10
+                  ]
+                },
+                "absolute_share_change": 3.876915681950703e-13
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1Cl1N1",
+                "x_before": 2.717486875767121e-14,
+                "x_after": 2.7007050861254302e-14,
+                "ratio": 0.9938245186052818,
+                "delta_x": -1.678178964169078e-16,
+                "element_shares": {
+                  "C": [
+                    3.3373385091362906e-11,
+                    3.316728697581101e-11
+                  ]
+                },
+                "absolute_share_change": 2.0609811555189844e-13
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1H1F1",
+                "x_before": 5.2248232468765454e-14,
+                "x_after": 5.2105206582321554e-14,
+                "ratio": 0.9972625698576617,
+                "delta_x": -1.4302588644389967e-16,
+                "element_shares": {
+                  "C": [
+                    6.429320511632067e-11,
+                    6.411718892474088e-11
+                  ]
+                },
+                "absolute_share_change": 1.7601619157979303e-13
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H3Cl1",
+                "x_before": 7.267693868257857e-13,
+                "x_after": 7.266184021489683e-13,
+                "ratio": 0.9997922522886155,
+                "delta_x": -1.5098467681744233e-16,
+                "element_shares": {
+                  "C": [
+                    6.186992569906552e-10,
+                    6.185707674730041e-10
+                  ]
+                },
+                "absolute_share_change": 1.284895176511046e-13
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4N2",
+                "x_before": 3.970857172305895e-16,
+                "x_after": 3.8258081773798015e-16,
+                "ratio": 0.9634716161694975,
+                "delta_x": -1.4504899492609344e-17,
+                "element_shares": {
+                  "C": [
+                    2.121046295376602e-12,
+                    2.043568036201667e-12
+                  ]
+                },
+                "absolute_share_change": 7.747825917493507e-14
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2H1F1",
+                "x_before": 1.266454186048432e-15,
+                "x_after": 1.2464268136267523e-15,
+                "ratio": 0.9841862637888475,
+                "delta_x": -2.0027372421679653e-17,
+                "element_shares": {
+                  "C": [
+                    3.1106581325903645e-12,
+                    3.0614668765047224e-12
+                  ]
+                },
+                "absolute_share_change": 4.9191256085642114e-14
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C3O2",
+                "x_before": 2.590686707734681e-14,
+                "x_after": 2.5901308619272904e-14,
+                "ratio": 0.9997854446059683,
+                "delta_x": -5.558458073907271e-18,
+                "element_shares": {
+                  "C": [
+                    6.616359894456735e-11,
+                    6.614940787541761e-11
+                  ]
+                },
+                "absolute_share_change": 1.4191069149744295e-14
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4Ti1",
+                "x_before": 4.99503681476763e-17,
+                "x_after": 4.7959535382585143e-17,
+                "ratio": 0.9601437819395977,
+                "delta_x": -1.990832765091155e-18,
+                "element_shares": {
+                  "C": [
+                    2.668115188106912e-13,
+                    2.5617743753702114e-13
+                  ]
+                },
+                "absolute_share_change": 1.0634081273670078e-14
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H3F1",
+                "x_before": 3.6145388262728105e-14,
+                "x_after": 3.61378792240435e-14,
+                "ratio": 0.9997922545850103,
+                "delta_x": -7.509038684607743e-18,
+                "element_shares": {
+                  "C": [
+                    3.077059280036695e-11,
+                    3.076420253100117e-11
+                  ]
+                },
+                "absolute_share_change": 6.3902693657817325e-15
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C1F1N1",
+                "x_before": 4.540716096156291e-16,
+                "x_after": 4.512675706499912e-16,
+                "ratio": 0.9938246767552555,
+                "delta_x": -2.8040389656379178e-18,
+                "element_shares": {
+                  "C": [
+                    5.576441535703677e-13,
+                    5.54200497326356e-13
+                  ]
+                },
+                "absolute_share_change": 3.4436562440117493e-15
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2H4O1",
+                "x_before": 2.545073378410222e-15,
+                "x_after": 2.544536168019255e-15,
+                "ratio": 0.9997889214529042,
+                "delta_x": -5.372103909668743e-19,
+                "element_shares": {
+                  "C": [
+                    4.333245281798194e-12,
+                    4.332330933704587e-12
+                  ]
+                },
+                "absolute_share_change": 9.143480936067075e-16
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1Cl1O1",
+                "x_before": 1.2213616191667132e-13,
+                "x_after": 1.2213575997071484e-13,
+                "ratio": 0.9999967090339981,
+                "delta_x": -4.0194595648064547e-19,
+                "element_shares": {
+                  "C": [
+                    1.559610143444718e-10,
+                    1.55960501210821e-10
+                  ]
+                },
+                "absolute_share_change": 5.131336507822264e-16
+              },
+              {
+                "case_index": 61,
+                "temperature_K": 2500.0,
+                "pressure_bar": 0.0001,
+                "C_over_O": 1.5,
+                "species": "C4V1",
+                "x_before": 6.289670459768663e-19,
+                "x_after": 6.038986784134317e-19,
+                "ratio": 0.9601435914269557,
+                "delta_x": -2.506836756343463e-20,
+                "element_shares": {
+                  "C": [
+                    3.359647967414798e-15,
+                    3.225744676920336e-15
+                  ]
+                },
+                "absolute_share_change": 1.3390329049446183e-16
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1F1O1",
+                "x_before": 8.202327639290713e-16,
+                "x_after": 8.202300668955303e-16,
+                "ratio": 0.9999967118680702,
+                "delta_x": -2.6970335410320933e-21,
+                "element_shares": {
+                  "C": [
+                    1.0473911399657815e-12,
+                    1.0473876968701438e-12
+                  ]
+                },
+                "absolute_share_change": 3.4430956377018907e-18
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H1F1O1",
+                "x_before": 5.382700398385631e-16,
+                "x_after": 5.382682698609442e-16,
+                "ratio": 0.9999967117292661,
+                "delta_x": -1.769977618908585e-21,
+                "element_shares": {
+                  "C": [
+                    6.873405884633638e-13,
+                    6.873383288688165e-13
+                  ]
+                },
+                "absolute_share_change": 2.2595945472769027e-18
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H2O2",
+                "x_before": 5.711455157477438e-17,
+                "x_after": 5.711417565023766e-17,
+                "ratio": 0.9999934180602602,
+                "delta_x": -3.759245367166457e-22,
+                "element_shares": {
+                  "C": [
+                    1.4586414469956564e-13,
+                    1.4586318475096428e-13
+                  ]
+                },
+                "absolute_share_change": 9.599486013613779e-19
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C3N2O1",
+                "x_before": 2.0373300201123207e-19,
+                "x_after": 2.0368440367160062e-19,
+                "ratio": 0.9997614606413704,
+                "delta_x": -4.8598339631447795e-23,
+                "element_shares": {
+                  "C": [
+                    5.203141158133576e-16,
+                    5.2019003728284e-16
+                  ]
+                },
+                "absolute_share_change": 1.2407853051764156e-19
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl2",
+                "x_before": 1.2497972875788695e-19,
+                "x_after": 1.2495374974057284e-19,
+                "ratio": 0.9997921341518956,
+                "delta_x": -2.5979017314109952e-23,
+                "element_shares": {
+                  "C": [
+                    1.0639532528897487e-16,
+                    1.0637321687293242e-16
+                  ]
+                },
+                "absolute_share_change": 2.2108416042441888e-20
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C1F2",
+                "x_before": 2.5001871374304503e-21,
+                "x_after": 2.4933434642303367e-21,
+                "ratio": 0.9972627356178037,
+                "delta_x": -6.843673200113644e-24,
+                "element_shares": {
+                  "C": [
+                    3.07656425606546e-18,
+                    3.068142023345586e-18
+                  ]
+                },
+                "absolute_share_change": 8.422232719873806e-21
+              },
+              {
+                "case_index": 67,
+                "temperature_K": 3000.0,
+                "pressure_bar": 0.01,
+                "C_over_O": 1.5,
+                "species": "C2Cl2",
+                "x_before": 1.388121658333203e-22,
+                "x_after": 1.3661692011596435e-22,
+                "ratio": 0.9841854948074803,
+                "delta_x": -2.1952457173559496e-24,
+                "element_shares": {
+                  "C": [
+                    3.4094971401941204e-19,
+                    3.355577488646379e-19
+                  ]
+                },
+                "absolute_share_change": 5.3919651547741356e-21
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H2Cl2",
+                "x_before": 1.0209289923740148e-20,
+                "x_after": 1.0207168045733704e-20,
+                "ratio": 0.9997921620384674,
+                "delta_x": -2.1218780064442626e-24,
+                "element_shares": {
+                  "C": [
+                    8.691175226584412e-18,
+                    8.689369486242353e-18
+                  ]
+                },
+                "absolute_share_change": 1.8057403420585087e-21
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2N2Na2",
+                "x_before": 4.116321296998814e-21,
+                "x_after": 4.115353102195304e-21,
+                "ratio": 0.9997647912459563,
+                "delta_x": -9.681948035100243e-25,
+                "element_shares": {
+                  "C": [
+                    7.008454054761838e-18,
+                    7.00680610157589e-18
+                  ]
+                },
+                "absolute_share_change": 1.6479531859491053e-21
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1H4O2",
+                "x_before": 2.553472458999636e-20,
+                "x_after": 2.5535727127690854e-20,
+                "ratio": 1.0000392617390863,
+                "delta_x": 1.0025376944946847e-24,
+                "element_shares": {
+                  "C": [
+                    3.2606408172377385e-17,
+                    3.2607688383585053e-17
+                  ]
+                },
+                "absolute_share_change": 1.2802112076688408e-21
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H2Cl1F1",
+                "x_before": 1.6328541708040612e-21,
+                "x_after": 1.6325148054714571e-21,
+                "ratio": 0.9997921643348976,
+                "delta_x": -3.3936533260411564e-25,
+                "element_shares": {
+                  "C": [
+                    1.3900498295104053e-18,
+                    1.3897610260694868e-18
+                  ]
+                },
+                "absolute_share_change": 2.8880344091846606e-22
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H2F2",
+                "x_before": 1.167684177211187e-22,
+                "x_after": 1.1674414934749593e-22,
+                "ratio": 0.9997921666312142,
+                "delta_x": -2.426837362277633e-26,
+                "element_shares": {
+                  "C": [
+                    9.940503080291187e-20,
+                    9.938437816368219e-20
+                  ]
+                },
+                "absolute_share_change": 2.0652639229673624e-23
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2K2N2",
+                "x_before": 3.434024053116785e-23,
+                "x_after": 3.433216392980091e-23,
+                "ratio": 0.9997648064998377,
+                "delta_x": -8.076601366942262e-27,
+                "element_shares": {
+                  "C": [
+                    5.846773869853956e-20,
+                    5.845399160896022e-20
+                  ]
+                },
+                "absolute_share_change": 1.3747089579341647e-23
+              },
+              {
+                "case_index": 73,
+                "temperature_K": 4000.0,
+                "pressure_bar": 1.0,
+                "C_over_O": 1.5,
+                "species": "C2F2",
+                "x_before": 4.358908632473932e-26,
+                "x_after": 4.335074469553233e-26,
+                "ratio": 0.9945320801764153,
+                "delta_x": -2.3834162920699124e-28,
+                "element_shares": {
+                  "C": [
+                    1.072756698357146e-22,
+                    1.0668906506608856e-22
+                  ]
+                },
+                "absolute_share_change": 5.866047696260496e-25
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1Cl2O1",
+                "x_before": 3.012667686453116e-23,
+                "x_after": 3.0126577714759606e-23,
+                "ratio": 0.9999967089044701,
+                "delta_x": -9.914977155380764e-29,
+                "element_shares": {
+                  "C": [
+                    3.847007314529887e-20,
+                    3.8469946568369825e-20
+                  ]
+                },
+                "absolute_share_change": 1.265769290426717e-25
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H4O3",
+                "x_before": 1.3237426040556458e-24,
+                "x_after": 1.3237902201009543e-24,
+                "ratio": 1.0000359707734439,
+                "delta_x": 4.761604530852637e-29,
+                "element_shares": {
+                  "C": [
+                    3.3806898140513903e-21,
+                    3.3808114228696165e-21
+                  ]
+                },
+                "absolute_share_change": 1.2160881822613682e-25
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1Cl1F1O1",
+                "x_before": 1.4189633374953194e-23,
+                "x_after": 1.418958671572922e-23,
+                "ratio": 0.9999967117385813,
+                "delta_x": -4.665922397233398e-29,
+                "element_shares": {
+                  "C": [
+                    1.8119364319338393e-20,
+                    1.811930475308915e-20
+                  ]
+                },
+                "absolute_share_change": 5.956624924172283e-26
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1F2O1",
+                "x_before": 1.9576625520053356e-24,
+                "x_after": 1.9576561202472587e-24,
+                "ratio": 0.9999967145726569,
+                "delta_x": -6.431758076913532e-30,
+                "element_shares": {
+                  "C": [
+                    2.499825052331729e-21,
+                    2.499816841401734e-21
+                  ]
+                },
+                "absolute_share_change": 8.210929994786267e-27
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H2O4",
+                "x_before": 3.545544938169931e-27,
+                "x_after": 3.545823355108852e-27,
+                "ratio": 1.0000785258525209,
+                "delta_x": 2.7841693892063748e-31,
+                "element_shares": {
+                  "C": [
+                    9.054923231305687e-24,
+                    9.055634284347312e-24
+                  ]
+                },
+                "absolute_share_change": 7.110530416250365e-28
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H3Cl1O2",
+                "x_before": 5.779443395631953e-27,
+                "x_after": 5.779405354132928e-27,
+                "ratio": 0.9999934177919184,
+                "delta_x": -3.8041499025418097e-32,
+                "element_shares": {
+                  "C": [
+                    1.4760048787912387e-23,
+                    1.4759951646384232e-23
+                  ]
+                },
+                "absolute_share_change": 9.714152815529274e-29
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C2H6O2",
+                "x_before": 2.149887551949423e-27,
+                "x_after": 2.149873400325506e-27,
+                "ratio": 0.9999934175050671,
+                "delta_x": -1.4151623916710822e-32,
+                "element_shares": {
+                  "C": [
+                    5.490571147263435e-24,
+                    5.4905350101390844e-24
+                  ]
+                },
+                "absolute_share_change": 3.6137124350633944e-29
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl3",
+                "x_before": 1.2533958826653183e-28,
+                "x_after": 1.2531352488245338e-28,
+                "ratio": 0.9997920578450997,
+                "delta_x": -2.6063384078452093e-32,
+                "element_shares": {
+                  "C": [
+                    1.0670167392535873e-25,
+                    1.0667949370953884e-25
+                  ]
+                },
+                "absolute_share_change": 2.2180215819885297e-29
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl3",
+                "x_before": 4.8231288308852077e-29,
+                "x_after": 4.822125966332976e-29,
+                "ratio": 0.9997920717883774,
+                "delta_x": -1.0028645522319176e-32,
+                "element_shares": {
+                  "C": [
+                    4.105932745835644e-26,
+                    4.105079297502491e-26
+                  ]
+                },
+                "absolute_share_change": 8.534483331529046e-30
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl2F1",
+                "x_before": 1.8091436128854332e-29,
+                "x_after": 1.8087674450438417e-29,
+                "ratio": 0.9997920740847149,
+                "delta_x": -3.761678415914654e-33,
+                "element_shares": {
+                  "C": [
+                    1.5401251474973296e-26,
+                    1.53980502468965e-26
+                  ]
+                },
+                "absolute_share_change": 3.2012280767973534e-30
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1Cl1F2",
+                "x_before": 3.959448556852501e-30,
+                "x_after": 3.958625293979468e-30,
+                "ratio": 0.9997920763810384,
+                "delta_x": -8.2326287303312e-34,
+                "element_shares": {
+                  "C": [
+                    3.370681160521398e-27,
+                    3.369980555120717e-27
+                  ]
+                },
+                "absolute_share_change": 7.006054006814738e-31
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C4Ni1O4",
+                "x_before": 5.790119643991599e-30,
+                "x_after": 5.790043422103281e-30,
+                "ratio": 0.9999868358698948,
+                "delta_x": -7.622188831831049e-35,
+                "element_shares": {
+                  "C": [
+                    2.957462945229535e-26,
+                    2.957424015243922e-26
+                  ]
+                },
+                "absolute_share_change": 3.8929985613126633e-31
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1F3",
+                "x_before": 4.5449559116264214e-31,
+                "x_after": 4.5440108550110065e-31,
+                "ratio": 0.9997920647342261,
+                "delta_x": -9.450566154149563e-35,
+                "element_shares": {
+                  "C": [
+                    3.8691239567202764e-28,
+                    3.86831970354302e-28
+                  ]
+                },
+                "absolute_share_change": 8.042531772562359e-32
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1H1F3",
+                "x_before": 3.437732295310585e-31,
+                "x_after": 3.4370175174654056e-31,
+                "ratio": 0.9997920786775181,
+                "delta_x": -7.147778451796547e-35,
+                "element_shares": {
+                  "C": [
+                    2.9265437639454185e-28,
+                    2.9259354804516062e-28
+                  ]
+                },
+                "absolute_share_change": 6.082834938122964e-32
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2F3N1",
+                "x_before": 5.5349241367915934e-37,
+                "x_after": 5.533122646764422e-37,
+                "ratio": 0.9996745230860172,
+                "delta_x": -1.801490027171831e-40,
+                "element_shares": {
+                  "C": [
+                    9.423769115782749e-34,
+                    9.420702564121437e-34
+                  ]
+                },
+                "absolute_share_change": 3.0665516613121447e-37
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl4",
+                "x_before": 4.97051051731398e-38,
+                "x_after": 4.969476559362281e-38,
+                "ratio": 0.9997919815382953,
+                "delta_x": -1.0339579516985135e-41,
+                "element_shares": {
+                  "C": [
+                    4.231398872423291e-35,
+                    4.2305189631484107e-35
+                  ]
+                },
+                "absolute_share_change": 8.799092748805867e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl3F1",
+                "x_before": 3.4632138414893606e-38,
+                "x_after": 3.4624934370260105e-38,
+                "ratio": 0.9997919838345759,
+                "delta_x": -7.204044633501575e-42,
+                "element_shares": {
+                  "C": [
+                    2.9482362209662593e-35,
+                    2.947623149065665e-35
+                  ]
+                },
+                "absolute_share_change": 6.130719005944194e-39
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C5Fe1O5",
+                "x_before": 3.173156104274583e-38,
+                "x_after": 3.173103888659319e-38,
+                "ratio": 0.9999835445803649,
+                "delta_x": -5.221561526370712e-43,
+                "element_shares": {
+                  "C": [
+                    2.025971002075765e-34,
+                    2.0259376655451862e-34
+                  ]
+                },
+                "absolute_share_change": 3.3336530578733005e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl2F2",
+                "x_before": 1.1073103588633981e-38,
+                "x_after": 1.1070800229515286e-38,
+                "ratio": 0.9997919861310554,
+                "delta_x": -2.3033591186957366e-42,
+                "element_shares": {
+                  "C": [
+                    9.426540367626466e-36,
+                    9.424580184397213e-36
+                  ]
+                },
+                "absolute_share_change": 1.9601832292527593e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2Cl4",
+                "x_before": 1.7505046235598383e-39,
+                "x_after": 1.7497769589395625e-39,
+                "ratio": 0.9995843115119595,
+                "delta_x": -7.27664620275778e-43,
+                "element_shares": {
+                  "C": [
+                    2.980411474636847e-36,
+                    2.979172763025937e-36
+                  ]
+                },
+                "absolute_share_change": 1.2387116109097436e-39
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1Cl1F3",
+                "x_before": 2.3377135600645095e-39,
+                "x_after": 2.3372272885904095e-39,
+                "ratio": 0.9997919884273218,
+                "delta_x": -4.8627147409997875e-43,
+                "element_shares": {
+                  "C": [
+                    1.9900970911637956e-36,
+                    1.9896832689434252e-36
+                  ]
+                },
+                "absolute_share_change": 4.138222203704031e-40
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1F4",
+                "x_before": 2.258287450113489e-40,
+                "x_after": 2.2578177053754143e-40,
+                "ratio": 0.9997919907237445,
+                "delta_x": -4.697447380749005e-44,
+                "element_shares": {
+                  "C": [
+                    1.922481591525072e-37,
+                    1.9220818337351545e-37
+                  ]
+                },
+                "absolute_share_change": 3.9975778991744027e-41
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2F4",
+                "x_before": 7.709576127141229e-44,
+                "x_after": 7.706371415900028e-44,
+                "ratio": 0.9995843206956712,
+                "delta_x": -3.2047112412010397e-47,
+                "element_shares": {
+                  "C": [
+                    1.3126334455027256e-40,
+                    1.3120879039306163e-40
+                  ]
+                },
+                "absolute_share_change": 5.455415721092387e-44
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C4H6O4",
+                "x_before": 1.023357939187163e-43,
+                "x_after": 1.0233444675868024e-43,
+                "ratio": 0.9999868358862086,
+                "delta_x": -1.347160036068633e-48,
+                "element_shares": {
+                  "C": [
+                    5.22708229007519e-40,
+                    5.227013484484071e-40
+                  ]
+                },
+                "absolute_share_change": 6.880559111883093e-45
+              },
+              {
+                "case_index": 49,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.0,
+                "species": "C1F4O1",
+                "x_before": 1.2727291414434967e-49,
+                "x_after": 1.2727249668686974e-49,
+                "ratio": 0.9999967199817594,
+                "delta_x": -4.174574799337126e-55,
+                "element_shares": {
+                  "C": [
+                    1.62520358238145e-46,
+                    1.6251982530256702e-46
+                  ]
+                },
+                "absolute_share_change": 5.329355779868666e-52
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2Cl6",
+                "x_before": 1.5644821396228717e-59,
+                "x_after": 1.5638315636960196e-59,
+                "ratio": 0.9995841589300539,
+                "delta_x": -6.505759268521617e-63,
+                "element_shares": {
+                  "C": [
+                    2.663689348797097e-56,
+                    2.662581866060809e-56
+                  ]
+                },
+                "absolute_share_change": 1.1074827362880078e-59
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C2F6",
+                "x_before": 2.1094990751023337e-63,
+                "x_after": 2.1086218878087612e-63,
+                "ratio": 0.9995841727052996,
+                "delta_x": -8.77187293572506e-67,
+                "element_shares": {
+                  "C": [
+                    3.591635900044165e-60,
+                    3.5901426542314313e-60
+                  ]
+                },
+                "absolute_share_change": 1.4932458127334466e-63
+              },
+              {
+                "case_index": 74,
+                "temperature_K": 4000.0,
+                "pressure_bar": 100.0,
+                "C_over_O": 1.5,
+                "species": "C1F8S1",
+                "x_before": 1.2625108610720055e-92,
+                "x_after": 1.2622635042943902e-92,
+                "ratio": 0.9998040755250175,
+                "delta_x": -2.47356777615279e-96,
+                "element_shares": {
+                  "C": [
+                    1.0747763263659915e-89,
+                    1.0745658275311254e-89
+                  ]
+                },
+                "absolute_share_change": 2.104988348660464e-93
+              }
+            ]
+          },
+          "largest_any_species_response": {
+            "case_index": 61,
+            "temperature_K": 2500.0,
+            "pressure_bar": 0.0001,
+            "C_over_O": 1.5,
+            "species": "C2",
+            "x_before": 2.8934182325136833e-06,
+            "x_after": 4.5191597656356384e-06,
+            "ratio": 1.5618757478104288,
+            "delta_x": 1.6257415331219551e-06,
+            "element_shares": {
+              "C": [
+                0.007727643877309804,
+                0.012069620351256848
+              ]
+            }
+          },
+          "resolved_Gibbs_cases": 50
+        }
+      ],
+      "selected_variant_controls": []
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "case_index": 53,
+      "comparisons": [
+        {
+          "dataset": "curated-ch2-v1",
+          "max_abs_delta_log10_x": 7.885254777515994e-09,
+          "element_relative_residual": 3.086901113041759e-11,
+          "charge_relative_residual": 1.970105728233163e-12,
+          "mass_action_max_abs_ln": 3.4162894735345617e-10
+        },
+        {
+          "dataset": "review-c2_bounded_candidates_20261106-retained",
+          "max_abs_delta_log10_x": 7.88444011367225e-09,
+          "element_relative_residual": 3.086901113041759e-11,
+          "charge_relative_residual": 1.970105728233163e-12,
+          "mass_action_max_abs_ln": 3.4162894735345617e-10
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "case_index": 67,
+      "comparisons": [
+        {
+          "dataset": "curated-ch2-v1",
+          "max_abs_delta_log10_x": 1.370131523416628e-07,
+          "element_relative_residual": 3.340255693042877e-11,
+          "charge_relative_residual": 2.642079086105274e-12,
+          "mass_action_max_abs_ln": 5.210551989875967e-10
+        },
+        {
+          "dataset": "review-c2_bounded_candidates_20261106-retained",
+          "max_abs_delta_log10_x": 1.1544351993189546e-07,
+          "element_relative_residual": 3.78579460050125e-11,
+          "charge_relative_residual": 5.611467172438174e-12,
+          "mass_action_max_abs_ln": 2.332960491457925e-10
+        }
+      ]
+    }
+  ],
+  "scope": "Fixed ideal-gas networks and budgets,1500-4000K; no production adoption or full physical uncertainty. Gibbs resolution is a floating-point diagnostic, not a rigorous bound or source ranking."
+}
