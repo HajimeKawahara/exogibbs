@@ -1,0 +1,111 @@
+{
+  "identity": "Neutral linear H-C-P gas, X 1Sigma+, methinophosphide/phosphaethyne, CAS6829-52-3; not H-P-C, cation, solid or polymer.",
+  "janaf_printed": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+    "page": 604,
+    "evaluation_date": "December 1969; later 1-bar conversion",
+    "access": "Printed page visually inspected.",
+    "Hf298_J_mol": 149900.0,
+    "reported_uncertainty_J_mol": 63000.0,
+    "Hf0_J_mol": 151192.0,
+    "mass_u": 43.9927,
+    "B_cm_inverse": 0.6676545,
+    "vibrational_frequencies_expanded_cm_inverse": [
+      3216.9,
+      674.7,
+      674.7,
+      1278.4
+    ],
+    "electronic_levels_cm_inverse_g": [
+      [
+        0,
+        1
+      ],
+      [
+        24440,
+        3
+      ],
+      [
+        30430,
+        6
+      ],
+      [
+        31024,
+        3
+      ],
+      [
+        34746,
+        1
+      ],
+      [
+        35927,
+        2
+      ],
+      [
+        35976,
+        6
+      ],
+      [
+        40248,
+        1
+      ]
+    ],
+    "construction": "HCN-like C-H bond estimate and historical CP enthalpy; measured fundamental/rotation inputs with HCN-estimated anharmonic corrections and ground-geometry excited-state approximation."
+  },
+  "cccbdb": {
+    "url": "https://cccbdb.nist.gov/exp2x.asp?casno=6829523",
+    "access": "Full official evaluated entry inspected.",
+    "Hf298_J_mol": 212200.0,
+    "Hf0_J_mol": 213500.0,
+    "reported_uncertainty_J_mol": 20000.0,
+    "construction": "JANAF HCP energy adjusted using modern Hf(CP); not an independent measurement.",
+    "S298_J_mol_K": 215.06,
+    "H298_minus_H0_J_mol": 9350.0
+  },
+  "theory_2001": {
+    "doi": "10.1039/B106927F",
+    "url": "https://quantchem.kuleuven.be/cmms/Articles/2001/PCCP-b106927f.pdf",
+    "access": "Complete author-hosted publisher PDF inspected, HCP thermochemistry paragraph.",
+    "Hf0_J_mol": 225000.0,
+    "reported_uncertainty_J_mol": 8000.0,
+    "method": "CCSD(T)/aug-cc-pVxZ atomization calculations.",
+    "atomic_Hf0_J_mol": {
+      "C": 711000.0,
+      "P": 316000.0,
+      "H": 216000.0
+    },
+    "caution": "Article labels H-CP binding energy De, while formation-enthalpy arithmetic is at 0 K; do not adopt that bond number as an independently defined total D0."
+  },
+  "line_list_2024": {
+    "doi": "10.1021/acs.jpca.4c01823",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38935921/",
+    "access": "Primary abstract and actual public SI contents inspected; main full text, state list and numerical Q not obtained.",
+    "state": "X1Sigma+",
+    "maximum_recommended_T_K": 3000,
+    "J_max": 200,
+    "levels_approx": 1210000,
+    "transitions_approx": 450000000,
+    "si_article_id": 26121739,
+    "si_file_id": 47287840,
+    "si_url": "https://ndownloader.figshare.com/files/47287840",
+    "si_sha256": "ac55ec6cc71042922d9de72d5f211a62c346a9f83aec17f7aa196baff03fb69a",
+    "si_members": [
+      "Supplement/HCP-DMSP.f90",
+      "Supplement/HCP-DMSQ.f90",
+      "Supplement/HCP-PES.f90"
+    ],
+    "scope": "PES/DMS Fortran routines do not supply a finished partition function or its moments."
+  },
+  "atct_check": "No HCP/phosphaethyne entry found in inspected full ATcT1.228 index; no value inferred.",
+  "elemental_reference_verification": {
+    "url": "https://cccbdb.nist.gov/refstatex.asp",
+    "access": "Official reference-state table inspected.",
+    "phosphorus_reference": "P, cr white",
+    "P_H298_minus_H0_J_mol": 5360.0,
+    "P_reported_heat_uncertainty_J_mol": 2.0,
+    "page_sha256": "b856b93bebe5b35253864acd60b09f2b900d3a91f584f2ceaeff0a75fa5a2ce1",
+    "check": "JANAF P gas heat 6197 minus (Hf298316390-Hf0315553) =5360 J/mol, matching the CCCBDB white-P reference.",
+    "old_printed_narrative_Hf298_J_mol": 167360.0,
+    "old_narrative_minus_table_J_mol": 17460.0
+  }
+}

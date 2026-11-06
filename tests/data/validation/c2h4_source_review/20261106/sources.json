@@ -1,0 +1,49 @@
+{
+  "molecule": "C2H4",
+  "decision": "Retain the current ethylene function; a small ATcT energy refinement is optional follow-up, while MaYTY does not cover the production temperature range completely.",
+  "follow_up": "If percent-level energy refinements become a priority, build an ATcT retained-thermal +0.470 kJ/mol D0 control preserving the fit residual and test substitution. Do not replace high-temperature thermal functions with an incomplete MaYTY sum.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-128.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "TRC(4/88) w2600. Chao,1975. Knippers,1985. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "inspection": "Versioned official numerical rows inspected and archived with same-version neutral atoms.",
+      "scope": "Ground energy cycle only; no full thermal source or reaction covariance is inferred."
+    },
+    {
+      "id": "reference0",
+      "title": "Chao and Zwolinski (1975)",
+      "doi": "10.1063/1.555518",
+      "url": "https://doi.org/10.1063/1.555518",
+      "inspection": "Primary thermodynamic paper metadata and stated scope inspected; full ancestry is not independently reconstructed."
+    },
+    {
+      "id": "reference1",
+      "title": "Mant et al., MaYTY (2018)",
+      "doi": "10.1093/mnras/sty1239",
+      "url": "https://doi.org/10.1093/mnras/sty1239",
+      "inspection": "Primary paper abstract and completeness/conclusion text inspected; full line list was not downloaded."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}

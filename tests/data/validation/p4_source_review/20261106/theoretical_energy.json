@@ -1,0 +1,13 @@
+{
+  "doi": "10.1021/acs.jpca.6c00467",
+  "table": 4,
+  "molecule": "P4",
+  "unit": "kcal/mol",
+  "quantity": "TAE0",
+  "W5_preliminary_1": 286.61,
+  "W5_preliminary_2": 286.51,
+  "W4_17": 285.96,
+  "ATcT": null,
+  "J_per_kcal": 4184,
+  "inspection": "Full article and Table 4 image inspected. Variant spread is not a statistical uncertainty."
+}
