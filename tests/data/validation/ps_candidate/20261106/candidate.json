@@ -1,0 +1,56 @@
+{
+  "id": "ps_retained_lodders_pops_candidate_v1",
+  "species": "P1S1",
+  "baseline_dataset": "curated-cos-v1",
+  "standard_pressure_Pa": 100000,
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "primary": "pops",
+  "composition": {
+    "P": 1,
+    "S": 1
+  },
+  "original_logK_coefficients": [
+    52799.63502894013,
+    -0.927001511078781,
+    -5.658192754338269,
+    0.0002069525672233888,
+    -2.053191261510817e-08
+  ],
+  "original_source_D0_J_mol": 438000.0,
+  "delta_D0_J_mol": 0.0,
+  "D0_evaluation_margin_J_mol": 10000.0,
+  "bound_cutoff_cm-1": 36613.94086350959,
+  "NASA_molecular_coefficients": [
+    -270272.9081,
+    888.354822,
+    3.16919012,
+    0.001022480817,
+    -3.80374048e-07,
+    7.01986188e-11,
+    -4.26912231e-15,
+    11215.10462,
+    11.47334049
+  ],
+  "NASA_molecular_H0_gauge_J_mol": 140815.19999999998,
+  "molecular_mass_u": 63.038761,
+  "isotope_mass_u": 62.94583263,
+  "nuclear_spin_divisor": 2,
+  "symmetry_number": 1,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "NASA_native_R_J_mol_K": 8.31451,
+  "thermal_rule": "Current Gformation plus POPS molecular (G-H0) minus NASA/Gurvich molecular (G-H0); atomic functions and current fit/source residual are retained.",
+  "energy_scope": "Retain the documented Lodders2004 D0=438 +/-10 kJ/mol source anchor. No zero-temperature extrapolation of the current finite-range fit, no energy correction, and no potential De substitution.",
+  "cutoff_scope": "Fixed central-D0 bound-level cutoff. Full-distribution, lower-D0-cutoff and ground-electronic-only sums are sensitivities, not uncertainty bounds. Varying a cutoff is not a replacement for a correlated energy uncertainty calculation.",
+  "isotope_scope": "31P32S internal levels with unchanged natural-mass translation form an element-aggregated proxy, not a natural-isotope mixture.",
+  "source_sha256": {
+    "tests/data/validation/ps_source_review/20261106/inputs.json": "62180583ebe6433f7f308678b533826fccf24cb544b88a3d12177647e5340b05",
+    "tests/data/validation/ps_source_review/20261106/states.npz": "8d6b3c12d64da9b1dc0cbb85b521dd60ad6899bbb6608eb7156679c9869ed65b",
+    "tests/data/validation/ps_source_review/20261106/state_inventory.json": "dda7153c98aba828f34ade1dc57a21171acc7db3be3d076872f51260aeb39a6b",
+    "tests/data/validation/ps_source_review/20261106/sources.json": "a5517cd537c575b8a63fdfeecead151657326982f2995b6791a0510ba331b681",
+    "tests/data/validation/ps_source_review/20261106/partition.pf": "ebe582b071deabcfdd6dc2855df31be2396ed24408c1beadc20522b5ae553fcb",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+  }
+}
