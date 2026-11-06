@@ -1,0 +1,26 @@
+{
+  "review_date": "2026-11-04",
+  "command": "PYTHONPATH=src python mceg/reviews/co2_candidate.py --extract /tmp/co2-source-preparation-20261103; PYTHONPATH=src python mceg/reviews/co2_candidate.py",
+  "selected_input_sha256": {
+    "mceg/reviews/co2_candidate.py": "522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea",
+    "documents/mceg/co2_candidate.rst": "b47cf3013a09ee87eb3e362f1ae4b3688a790eab7186ce1f99a7312dc2e425d4",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "mceg/reviews/co2_source_review.py": "cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172",
+    "tests/model_evidence/co2_candidate_test.py": "a9f011f317a0b77b269f2b0e9af978ea05b5182bfba894e75d4d84a0e8a22762",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/co2_source_review/20261103/source_nodes.json": "f8e00a305205f658bdb29ae6186bbc65a417374af0af860a8368c0ed0cac4c0f",
+    "tests/data/validation/co2_candidate/20261104/README.rst": "46c355191fcb7c958a5e61b4d8d87f1cdd1f4d48cc3bd0a22fa63d40be91626c"
+  },
+  "output_sha256": {
+    "tests/data/validation/co2_candidate/20261104/candidate.json": "9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2",
+    "tests/data/validation/co2_candidate/20261104/nist_samples.json": "21ef3eb0485972f2a72e4cf9ddbc12e012801e433c2513826f42ce4cb7600e2a",
+    "tests/data/validation/co2_candidate/20261104/nodes.json": "2fcf39062c120513b6155995ef049316b85e0df8a2e3fe79f647a4ee515f6870",
+    "tests/data/validation/co2_candidate/20261104/off_knot_reference.json": "daf37b20e90472a2e176efbf5a4aaeea32fa5545e01f45c2e2e5d40e591ce063",
+    "tests/data/validation/co2_candidate/20261104/scientific_scope.json": "ecabeb0566b55ec609d2ba095f7e705459187c736ab6a54aa97c4ee919aba6d0",
+    "tests/data/validation/co2_candidate/20261104/validation.json": "e6a70f04b63bb164b7e0855f5a24cfef451b6d8daf38f725c099df8bae34b434"
+  },
+  "scope": "NIST 626 representative-isotope candidate and a fixed-isotope thermal diagnostic; 11 knots and 90 withheld source points, with separate independent full-source-grid and formation-derivative checks. No production adoption."
+}

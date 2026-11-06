@@ -1,0 +1,291 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.cs_source_review.v1
+  name: CS thermal audit and balanced energy update candidate
+  description: Retain current thermal functions; prioritize an ATcT 1.228 energy-only candidate after source review.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:08d85d5497a81546ce0d0c17fe91665616716740463ac6b177d88726546d23ae
+    entry_points:
+    - mceg/reviews/cs_source_review.py
+assumptions:
+- statement: Balance molecule and atoms from one ATcT version; preserve native NASA R and common ground-relative
+    zeros.
+  evidence:
+  - literature
+  - source_replay
+- statement: 12 C 32 S has spin product 1 and gtot=2 J+1; natural translation is an elemental proxy. The Te-only
+    model is a sensitivity, not a correction.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved
+    gas-only endpoints. No planetary validation.
+  conditions:
+  - JnK published PF and paper range end 3000 K;3500/4000 K sums are finite-list diagnostics.
+  - 75 saved 537-species endpoints, 1e-6-100 bar, three C/O; no new solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty and planetary accuracy are unestablished.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged CS column uses NASA thermal functions and same-version balanced ATcT 1.172 D0; a separately
+    balanced 1.228 energy shift is quantified.
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+- id: normalized_thermal_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: The complete distributed JnK state sum reproduces published PF samples; caloric, boundary, convention
+    and electronic-sensitivity diagnostics retain their limits.
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+- id: scoped_retention_and_candidate_priority
+  revision: '1'
+  kind: theoretical
+  statement: Retain current CS thermal functions; prioritize a separately tested ATcT 1.228 energy-only candidate,
+    without presenting provisional production retention as preference for the older energy.
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: CS thermal functions and energy have complete quantified physical uncertainty and produce accurate
+    planetary abundances.
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary papers and official evaluated entries inspected to the separately recorded access limits.
+  sources:
+  - tests/data/validation/cs_source_review/20261105/sources.json
+  - tests/data/validation/cs_source_review/20261105/literature.json
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+  subject: cs_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/cs_source_review/20261105/sources.json
+    sha256: 04734c1b48be4ec633e98c35250ca0682311826733aefe694b995c5a04623c64
+  - source: tests/data/validation/cs_source_review/20261105/literature.json
+    sha256: 3e90477a1b032b7dc4111ae36f1ed494b228bdde3f9cc7ca329ebc1ad1568557
+  provenance:
+    role: primary
+    location: documents/mceg/cs_source_review.rst
+    inspection: inspected
+    note: Individual acquisition/inspection limits are explicit in literature.json; numerical replay is not complete
+      physical validation.
+- id: source_replay
+  kind: numerical_test
+  summary: Every compact state, balanced energies, moment calorics and saved CS potentials are replayable offline.
+  sources:
+  - tests/data/validation/cs_source_review/20261105/states.npz
+  - tests/data/validation/cs_source_review/20261105/state_inventory.json
+  - tests/data/validation/cs_source_review/20261105/comparison.json
+  - tests/data/validation/cs_source_review/20261105/receipt.json
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+  subject: cs_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/cs_source_review/20261105/states.npz
+    sha256: aac9ea0264fd81d830b648633a478c8dbe6fb8a1469b5cf1d9b051c63ff5c1b1
+  - source: tests/data/validation/cs_source_review/20261105/state_inventory.json
+    sha256: 65efcbecb9b6f24205b6a9d6a0ca00a3d454bf27149c8020646764ae4dd8ab0e
+  - source: tests/data/validation/cs_source_review/20261105/comparison.json
+    sha256: 8fd1e87c86e252c18ba704ec2d3b0b33005b77028ee75423494a12a3d55ae2ef
+  - source: tests/data/validation/cs_source_review/20261105/receipt.json
+    sha256: 81214507db1617a80434c88f9e2628021f5c204775746f1cda72b1bf57ffb84c
+  provenance:
+    role: primary
+    location: documents/mceg/cs_source_review.rst
+    inspection: inspected
+    note: Individual acquisition/inspection limits are explicit in literature.json; numerical replay is not complete
+      physical validation.
+  result: passed
+- id: retention_reasoning
+  kind: theory
+  summary: Small thermal-Q differences do not warrant a ground-state-only replacement; the newer balanced energy
+    is the next calculation.
+  sources:
+  - documents/mceg/cs_source_review.rst
+  - tests/data/validation/cs_source_review/20261105/literature.json
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+  subject: cs_sources_20261105
+  context: source_review
+  artifacts:
+  - source: documents/mceg/cs_source_review.rst
+    sha256: 0aacc8e545c0353b290f80eb1a8ceb5dc6bdd0546122b24a21e33af9ae9cd17b
+  - source: tests/data/validation/cs_source_review/20261105/literature.json
+    sha256: 3e90477a1b032b7dc4111ae36f1ed494b228bdde3f9cc7ca329ebc1ad1568557
+  provenance:
+    role: primary
+    location: documents/mceg/cs_source_review.rst
+    inspection: inspected
+    note: Individual acquisition/inspection limits are explicit in literature.json; numerical replay is not complete
+      physical validation.
+subjects:
+- id: cs_sources_20261105
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:08d85d5497a81546ce0d0c17fe91665616716740463ac6b177d88726546d23ae
+    entry_points:
+    - mceg/reviews/cs_source_review.py
+  selected_files:
+    mceg/reviews/cs_source_review.py: 08d85d5497a81546ce0d0c17fe91665616716740463ac6b177d88726546d23ae
+    documents/mceg/cs_source_review.rst: 0aacc8e545c0353b290f80eb1a8ceb5dc6bdd0546122b24a21e33af9ae9cd17b
+    tests/model_evidence/cs_source_review_test.py: cc0df0c302fc005b1511ce103f5f6dd86f0999f1035e492ca5c24d798991e59a
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/cs_source_review/20261105/README.rst: 8863d843a2e9781ee05ca2ecf8dbd20792fe8bc4de4b09673b4a37decd16a2be
+    tests/data/validation/cs_source_review/20261105/literature.json: 3e90477a1b032b7dc4111ae36f1ed494b228bdde3f9cc7ca329ebc1ad1568557
+    tests/data/validation/cs_source_review/20261105/sources.json: 04734c1b48be4ec633e98c35250ca0682311826733aefe694b995c5a04623c64
+    tests/data/validation/cs_source_review/20261105/state_inventory.json: 65efcbecb9b6f24205b6a9d6a0ca00a3d454bf27149c8020646764ae4dd8ab0e
+    tests/data/validation/cs_source_review/20261105/states.npz: aac9ea0264fd81d830b648633a478c8dbe6fb8a1469b5cf1d9b051c63ff5c1b1
+    tests/data/validation/cs_source_review/20261105/comparison.json: 8fd1e87c86e252c18ba704ec2d3b0b33005b77028ee75423494a12a3d55ae2ef
+    tests/data/validation/cs_source_review/20261105/receipt.json: 81214507db1617a80434c88f9e2628021f5c204775746f1cda72b1bf57ffb84c
+contexts:
+- id: source_review
+  scope: Neutral CS; C(g)+S(g)->CS(g), one bar; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved gas-only
+    endpoints. No planetary validation.
+  settings:
+    reaction: C(g)+S(g)->CS(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT1.172current;1.228balancedcandidate
+    atomic_thermal: NASA
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: cs_sources_20261105
+  context: source_review
+  method:
+    id: review_cs_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source reconstruction, numerical comparisons, scoped decision and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - Balanced current D0=709.311 kJ/mol, native NASA 710.814980. Native Rshift=-180.400027 K; all 75 savedCS potentials
+    reproduce. Same-version ATcT 1.228 gives 709.690 kJ/mol, a 379 J/mol change.
+  status: supported
+  origin: reviewed
+- id: normalized_thermal_comparison_review
+  kind: evidence_support
+  claim: normalized_thermal_comparison
+  claim_revision: '1'
+  subject: cs_sources_20261105
+  context: source_review
+  method:
+    id: review_cs_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source reconstruction, numerical comparisons, scoped decision and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - JnK 11497 states have spin factor 1 and ground zero 0. Q/NASA=.999926 at 1500 K and 1.000915 at 4000 K; publishedPFends
+    3000 K. Above-D0levels carry 5.62e-9 of Q at 4000 K. Metadata/paper discrepancies remain explicit.
+  status: supported
+  origin: reviewed
+- id: scoped_retention_and_candidate_priority_review
+  kind: evidence_support
+  claim: scoped_retention_and_candidate_priority
+  claim_revision: '1'
+  subject: cs_sources_20261105
+  context: source_review
+  method:
+    id: review_cs_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source reconstruction, numerical comparisons, scoped decision and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - The newer energy would multiply formationKby 1.030855 at 1500 K/1.011461 at 4000 K; no abundance substitution
+    was run. Current thermal retention is supported while complete electronic thermal replacement is unestablished;
+    current energy remains provisional.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: cs_sources_20261105
+  context: source_review
+  method:
+    id: review_cs_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source reconstruction, numerical comparisons, scoped decision and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - Missing-state bounds, complete electronic/rovibrational accuracy, isotope mixture, correlated reaction uncertainty
+    and planetary validation remain unestablished.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: balanced_energy_candidate
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Build a NASA-thermal/ATcT 1.228 balanced-energy candidate and run fixed-network sulfur redistribution
+    before production adoption.
+  requires:
+  - Official same-version C, S, CS entries are already inspected.
+  - No mandatory additional historical full text; preserve old curated data and evidence.
+  completion: Finite substitution with conservation/convergence controls and explicit adoption decision.
+- id: precision_thermal_completion
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: If higher thermal accuracy is needed, reconcile distribution/PF metadata and converge full electronic
+    Q, H, S, Cp with consistent energy zeros.
+  requires:
+  - Optional Coxon 2023 full text/supplement DOI 10.1016/j.jms.2023.111861 for improved ground potential; no unconditional
+    merger gate.
+  - Paulose 2015 and Li 2022 full texts and current JnK states are already inspected.
+  completion: Derivative-consistent thermal candidate with bounded omitted-state contributions; source-review merge
+    does not require it.
+limitations:
+- statement: Legacy Gurvich/Prinslow originals and ATcT reaction covariance were not reaudited; the version shift
+    is not a measured statistical discrepancy.
+  evidence:
+  - literature
+- statement: Finite boundary populations are not global completeness bounds; JnK 4000 K and the Te-only electronic
+    model remain diagnostics.
+  evidence:
+  - literature
+  - source_replay
+- statement: Current sulfur allocation is not a finite-substitution response and excludes photochemistry, condensation,
+    transport and observational validation.
+  evidence:
+  - source_replay

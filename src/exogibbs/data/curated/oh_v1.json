@@ -1,0 +1,60 @@
+{
+  "id": "curated-oh-v1",
+  "species": "H1O1",
+  "reaction": "H(g)+O(g)->OH(g)",
+  "base_dataset": "curated-h2o-v1",
+  "base_data_sha256": "6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "source_interval_K": [
+    1000,
+    6000
+  ],
+  "representation": "Exact OH-H-O NASA9 linear combination; only b1 receives the ATcT energy correction; no fit",
+  "formation_nasa9_coefficients": [
+    755430.5650575,
+    -1779.9031375583004,
+    -0.7008412270000002,
+    0.0005587860802864001,
+    -1.8649101076330002e-07,
+    2.950875148456e-11,
+    -1.8298385067197e-15,
+    -39181.156810283675,
+    -9.896673058
+  ],
+  "D0_J_mol": 425604.0,
+  "D0_over_k_K": 51188.39539560438,
+  "nasa_D0_J_mol": 425785.9,
+  "ATcT_minus_nasa_D0_over_k_K": -21.585709716324345,
+  "thermal_convention": "NASA dimensionless thermal functions retained; assigned H0 removed with native R, calorics expressed with modern SI R; balanced ATcT D0 inserted once",
+  "decision": {
+    "name": "OH",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "NASA CEA / Gurvich OH thermal functions",
+    "energy_source": "ATcT 1.172 balanced H+O-OH atomization",
+    "reason": "Replace the inherited JANAF electronic/caloric defect using the exact reviewed NASA9 reaction and balanced ATcT energy. Dense caloric checks and conserved finite substitutions support the bounded adoption; MYTHOS is a smaller thermal control.",
+    "condition": "1500-4000 K, 1 bar standard pressure. Shared source ancestry, isotope approximation, continuum and ATcT covariance limits remain; complete atmospheric physical accuracy is unknown."
+  },
+  "sources": {
+    "iupac_evaluation": "https://doi.org/10.1063/1.1724828",
+    "nasa": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "atct": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+    "mythos_control": "https://doi.org/10.1093/mnras/stae2803",
+    "candidate": "tests/data/validation/oh_candidate/20261105/candidate.json",
+    "review": "documents/mceg/oh_candidate.rst",
+    "substitution": "tests/data/validation/oh_equilibrium_impact/20261105/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/oh_candidate/20261105/candidate.json": "5c2eea21282fc1cee77723c0e5774e0b2b52a401e45d62a17a726f76b9c7780d",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "tests/data/validation/oh_source_review/20261105/literature.json": "fe13a72ff050b3830b4c17b9901721501e844962584049971d588986e3b6c677",
+    "tests/data/validation/oh_source_review/20261105/states.npz": "c1d1a042b137ee52100e2f63f298ac5c7cd3b22d4410362e5ecfbb684ec2e7bb",
+    "tests/data/validation/oh_source_review/20261105/state_inventory.json": "7d09a1ac26b21de19fbe8aa2530fb25869c8e1e3eb6a3cc2a6b9e6b8fa1bd927"
+  },
+  "interpretation": "OH-only adoption on curated-h2o-v1, retaining H2O, CO2, TiO and C2H updates. Exact reviewed NASA9 reaction coefficients; no fit, extra spin factor, ZPE or atomic correction. Scoped scientific and numerical support does not establish full physical accuracy."
+}

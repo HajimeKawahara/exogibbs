@@ -1,0 +1,66 @@
+{
+  "review_date": "2026-11-03",
+  "downloads": [
+    {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/24BoQuMc.pdf",
+      "file": "hyvo.pdf",
+      "bytes": 1966827,
+      "sha256": "ede22fa1284474e1eb17f2a7345a7fd7810c818ff8ea05a0dfb082a5771d01cc",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/VO/51V-16O/HyVO/51V-16O__HyVO.pf",
+      "file": "hyvo.pf",
+      "bytes": 134999,
+      "sha256": "33b052747d800f4a6d8dcba4ae651513167bf895f397fcfb8782cacec4d1d63f",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/VO/51V-16O/VOMYT/51V-16O__VOMYT.pf",
+      "file": "vomyt.pf",
+      "bytes": 208000,
+      "sha256": "a19b2687ce7e114cce4261d3de6a1beba7059aae1f063d49489933b7710ff0e2",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/VO/51V-16O/HyVO/51V-16O__HyVO.def",
+      "file": "hyvo.def",
+      "bytes": 7777,
+      "sha256": "3f45e96cd915c74906a43d9018c77fbe40f110e140da181224b713c0bc9a290d",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/O-026.txt",
+      "file": "O-026.txt",
+      "bytes": 3823,
+      "sha256": "88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "file": "O-001.txt",
+      "bytes": 3807,
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/V-005.txt",
+      "file": "V-005.txt",
+      "bytes": 3569,
+      "sha256": "4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02",
+      "archived": true
+    }
+  ],
+  "rendered_primary_text": [
+    {
+      "doi": "10.1063/5.0014006",
+      "url": "https://www.researchgate.net/publication/342901201_The_bond_dissociation_energy_of_VO_measured_by_resonant_three-photon_ionization_spectroscopy",
+      "inspection": "Accepted author manuscript uploaded by Michael D Morse, rendered full text sections II-IV and conclusions inspected. PDF request returned 403, raw data not obtained; not merely abstract access."
+    }
+  ],
+  "existing_frozen_sources": [
+    "examples/comparisons/data/major_molecule_reference.json",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json"
+  ],
+  "scope": "Compact factual excerpts only; research PDFs and full partition files not redistributed. Modern partition numbers are computation, not independent measured equilibrium constants."
+}

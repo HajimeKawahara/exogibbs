@@ -1,0 +1,74 @@
+{
+  "inherited_source": "FastChem logK [U], JANAF 1998 table, inherited unchanged by curated-cos-v1",
+  "downloads": {
+    "C-062.txt": {
+      "url": "https://janaf.nist.gov/tables/C-062.txt",
+      "status": 200,
+      "bytes": 3875,
+      "sha256": "c237a34c40ba3545c574107fc10cfa6e28dcecf95fe28330de7abc41801a61ec"
+    },
+    "ch3.pf": {
+      "url": "https://www.exomol.com/db/CH3/12C-1H3/AYYJ/12C-1H3__AYYJ.pf",
+      "status": 200,
+      "bytes": 50000,
+      "sha256": "f1cf341fa7779cb5d172b2835358c2be4e32765ed89e6992975f99d9a61213a5"
+    },
+    "ch3.def.json": {
+      "url": "https://www.exomol.com/db/CH3/12C-1H3/AYYJ/12C-1H3__AYYJ.def.json",
+      "status": 200,
+      "bytes": 6841,
+      "sha256": "545073a73d028b0cd127cf425d062b46f59649515972b8f2f886fb6cfd37032a"
+    },
+    "nasa_thermo.inp": {
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "status": 200,
+      "bytes": 1234323,
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363"
+    },
+    "atct.html": {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "status": 200,
+      "bytes": 4289738,
+      "sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf"
+    },
+    "ch3_paper.pdf": {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/19AdYaYu.pdf",
+      "status": 200,
+      "bytes": 1106051,
+      "sha256": "e0d0ef2639d95b93b65c51255cd98d6645eb3d4539511cbb85c7af0f678e3a5d"
+    }
+  },
+  "selected_extraction": "NASA exact selected text and coefficients; full public JANAF/PF; ExoMol compact numeric energy/weight/J/electronic-label arrays where present; ATcT selected entries only. Full papers and whole NASA/ATcT files are not committed.",
+  "nasa_note": "Official lower bounds for C, CN and CH are 300 K; frozen VULCAN screening bounds differ. Selected coefficient values exactly agree; no extrapolation below official limits.",
+  "atct_note": "Reported network uncertainties are marginal, not an independent error for balanced atomization; full covariance unavailable. H printed 0.000 does not mean exact. Same version 1.228 for molecule and atoms.",
+  "literature": [
+    {
+      "doi": "10.1021/acs.jpca.9b02919",
+      "access": "full author manuscript inspected",
+      "role": "modern spectroscopic partition evidence"
+    },
+    {
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/",
+      "access": "exact public molecular and reused atomic tables inspected",
+      "role": "current evaluated source"
+    },
+    {
+      "doi": "10.1021/jp047912y",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "access": "versioned public table inspected; underlying historical network inputs not all independently recovered",
+      "role": "balanced modern energy reference"
+    }
+  ],
+  "history_limit": "NASA header attribution and exact coefficients are inspected. All original Gurvich/JANAF antecedents and the original FastChem fitting weights/atomic basis are not independently recovered; this is not a merge requirement for the scoped evidence review.",
+  "isotope_masses": {
+    "basis": "NIST Atomic Weights and Isotopic Compositions: 12C = 12 exactly, 1H = 1.00782503223 u, 14N = 14.00307400443 u",
+    "urls": [
+      "https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=H",
+      "https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl?ele=N"
+    ],
+    "atomic_mass_constant_kg": 1.6605390666e-27,
+    "note": "CODATA 2018 mass constant is used consistently for this diagnostic; isotope effect is explicitly separated from internal Q."
+  },
+  "retrieved_date_JST": "2026-11-06"
+}

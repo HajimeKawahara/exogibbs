@@ -1,0 +1,53 @@
+{
+  "id": "cn_retained_fastchem_thermal_atct1228_candidate_v1",
+  "species": "C1N1",
+  "reaction": "C(g) + N(g) -> CN(g)",
+  "composition": {
+    "C": 1,
+    "N": 1
+  },
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_dataset": "curated-cos-v1",
+  "baseline_energy_source": "JANAF 1998",
+  "candidate_ATcT_version": "1.228",
+  "janaf_fixed_reference_offsets_J_mol": {
+    "C": 710134,
+    "N": 466486,
+    "CN": 426464
+  },
+  "candidate_hf0_kJ_mol": {
+    "CN": 436.67,
+    "C": 711.37,
+    "N": 470.655
+  },
+  "base_D0_J_mol": 750156,
+  "D0_J_mol": 745355,
+  "delta_D0_J_mol": -4801,
+  "delta_D0_over_R_K": -577.4275765601277,
+  "original_record": "C1N1 Cyanogen : C 1 N 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+  "original_coefficients": [
+    90232.42699401577,
+    -1.7586117933869616,
+    -1.5608772470914118,
+    0.0004208623799652894,
+    -1.597414687822362e-08
+  ],
+  "formal_fit_intercept_Ra_J_mol": 750234.1411869854,
+  "representation": "ln K = a/T + b ln(T) + c + d T + e T^2 + delta(D0)/(R T). Retain every literal coefficient and fit/source residual; no thermal refit, isotope change or second energy alignment.",
+  "anchor_scope": "The physical source D0 values set only the energy difference. R*a is a formal extrapolated fit intercept, not an independently measured D0; the fit is never evaluated at zero temperature. Ground-level atomization already includes ZPE.",
+  "uncertainty_scope": "Same-version correlated ATcT atomic and molecular central values, not independent uncertainties. Reaction covariance, historical fit weights and complete thermal uncertainty are unavailable.",
+  "source_sha256": {
+    "src/exogibbs/data/fastchem/logK/logK.dat": "dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806",
+    "tests/data/validation/cn_source_review/20261106/inputs.json": "72448b63029c849b857bb9af2de3a5ad5d16e57f918fec0623d85f39a6948fc6",
+    "tests/data/validation/cn_source_review/20261106/sources.json": "f70e01349c0278343a32c6008954c8c615281b61a72412f29a9454bc049b3e9a",
+    "tests/data/validation/cn_candidate/20261106/sources.json": "45076ea781649d19991f7ea194efd18ee2a65722d650cc1dc17d21d87e256fb4",
+    "tests/data/validation/c2h_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/n3_source_review/20261103/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/cn_source_review/20261106/C-080.txt": "7ca72c44c59a2109f1d1f763ed93b689ec604d34d8c8d09802418563a2e75f3a"
+  }
+}

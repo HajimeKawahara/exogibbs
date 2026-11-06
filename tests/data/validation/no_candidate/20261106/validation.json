@@ -1,0 +1,104 @@
+{
+  "temperature_count": 2752,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "maximum_current_h_errors": {
+    "N1O1": 7.105427357601002e-15
+  },
+  "independent_source_checks": [
+    {
+      "variant": "retained",
+      "species": "N1O1",
+      "independent_source_property_errors": {
+        "G_J_mol": 5.820766091346741e-11,
+        "H_J_mol": 3.4924596548080444e-10,
+        "S_J_mol_K": 4.263256414560601e-14,
+        "Cp_J_mol_K": 4.440892098500626e-15
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.005008477694232738,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": 0.0002130246090459309,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.0020832993552666323,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.0013421603936354387,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        }
+      ]
+    }
+  ],
+  "jax_derivative_checks": {
+    "temperature_count": 2752,
+    "offgrid_count": 251,
+    "range_K": [
+      1500,
+      4000
+    ],
+    "models": [
+      {
+        "variant": "retained",
+        "species": "N1O1",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 1.7462298274040222e-10,
+          "H_J_mol": 4.656612873077393e-10,
+          "S_J_mol_K": 1.5631940186722204e-13,
+          "Cp_J_mol_K": 2.1938006966593093e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -462002.96420084377,
+            "H_J_mol": -641288.9840527672,
+            "S_J_mol_K": -119.52401323461558,
+            "Cp_J_mol_K": -6.204535493847785
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -401809.5423702972,
+            "H_J_mol": -644026.2789134313,
+            "S_J_mol_K": -121.10836827156706,
+            "Cp_J_mol_K": -4.8433749669977315
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -340992.2085001787,
+            "H_J_mol": -646231.0900379539,
+            "S_J_mol_K": -122.09555261511014,
+            "Cp_J_mol_K": -4.074600549282401
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -279758.0354561647,
+            "H_J_mol": -648199.610480903,
+            "S_J_mol_K": -122.8138583415794,
+            "Cp_J_mol_K": -3.8982122407017945
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": -156317.63736968167,
+            "H_J_mol": -652612.5515403479,
+            "S_J_mol_K": -124.07372854266656,
+            "Cp_J_mol_K": -5.322593950944754
+          }
+        ]
+      }
+    ],
+    "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks."
+  },
+  "production_change": "none",
+  "physical_accuracy": "unknown"
+}

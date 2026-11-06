@@ -1,0 +1,474 @@
+{
+  "temperature_count": 2501,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "step_K": 1,
+  "maximum_abs_current_h_replay_error": 3.552713678800501e-15,
+  "maximum_abs_scalar_jax_h_error": 2.6645352591003757e-14,
+  "maximum_abs_independent_moment_h_error": 2.220446049250313e-14,
+  "jax_float64_derivative_errors": {
+    "current": {
+      "G_J_mol": 0.0,
+      "H_J_mol": 1.1641532182693481e-10,
+      "S_J_mol_K": 7.105427357601002e-14,
+      "Cp_J_mol_K": 5.861977570020827e-14
+    },
+    "pops": {
+      "G_J_mol": 0.0,
+      "H_J_mol": 1.7462298274040222e-10,
+      "S_J_mol_K": 8.526512829121202e-14,
+      "Cp_J_mol_K": 7.549516567451064e-14
+    },
+    "full": {
+      "G_J_mol": 0.0,
+      "H_J_mol": 3.4924596548080444e-10,
+      "S_J_mol_K": 8.526512829121202e-14,
+      "Cp_J_mol_K": 7.105427357601002e-14
+    },
+    "ground": {
+      "G_J_mol": 0.0,
+      "H_J_mol": 1.7462298274040222e-10,
+      "S_J_mol_K": 7.105427357601002e-14,
+      "Cp_J_mol_K": 5.684341886080802e-14
+    }
+  },
+  "state_counts": {
+    "pops": 223645,
+    "full": 225997,
+    "ground": 73877
+  },
+  "omitted_above_central_D0_levels": 2352,
+  "D0_plus_margin_cutoff_keeps_all_distributed_levels": true,
+  "isotope_translation_K_factor": 0.9977895953394582,
+  "samples": [
+    {
+      "temperature_K": 1500.0,
+      "K_over_current": {
+        "current": 1.0,
+        "pops": 0.9993612422628596,
+        "full": 0.9993612422628774,
+        "ground": 0.9993603615923473
+      },
+      "reaction_properties": {
+        "current": {
+          "G_J_mol": -287178.5825746247,
+          "H_J_mol": -447842.6019871575,
+          "S_J_mol_K": -107.1093462750219,
+          "Cp_J_mol_K": -4.850030827993285
+        },
+        "pops": {
+          "G_J_mol": -287170.6136382525,
+          "H_J_mol": -447847.73905198567,
+          "S_J_mol_K": -107.11808360915548,
+          "Cp_J_mol_K": -4.844868815600234
+        },
+        "full": {
+          "G_J_mol": -287170.6136382527,
+          "H_J_mol": -447847.7390519781,
+          "S_J_mol_K": -107.11808360915025,
+          "Cp_J_mol_K": -4.844868815431878
+        },
+        "ground": {
+          "G_J_mol": -287170.6026477743,
+          "H_J_mol": -447847.9094308926,
+          "S_J_mol_K": -107.1182045220789,
+          "Cp_J_mol_K": -4.846630954623448
+        }
+      },
+      "molecular_thermal": {
+        "G_J_mol": -386049.88842561125,
+        "H_J_mol": 54159.394365184344,
+        "S_J_mol_K": 293.4728551938637,
+        "Cp_J_mol_K": 37.70724857243258,
+        "Q": 24516.90223623352
+      },
+      "sensitivity": {
+        "distributed_full": {
+          "levels": 225997,
+          "Q_over_primary": 1.0000000000000182,
+          "delta_H_J_mol": 7.58154783397913e-09,
+          "delta_S_J_mol_K": 5.229594535194337e-12,
+          "delta_Cp_J_mol_K": 1.6835599581099814e-10
+        },
+        "D0_minus_margin_cutoff": {
+          "levels": 212158,
+          "Q_over_primary": 0.999999999999852,
+          "delta_H_J_mol": -6.065238267183304e-08,
+          "delta_S_J_mol_K": -4.1666226024972275e-11,
+          "delta_Cp_J_mol_K": -1.3245227137304028e-09
+        },
+        "ground_electronic_only": {
+          "levels": 73877,
+          "Q_over_primary": 0.9999991187665914,
+          "delta_H_J_mol": -0.17037890697974944,
+          "delta_S_J_mol_K": -0.00012091292342120141,
+          "delta_Cp_J_mol_K": -0.0017621390232136491
+        },
+        "E_le_30000_cm-1": {
+          "levels": 127719,
+          "Q_over_primary": 0.9999999999364143,
+          "delta_H_J_mol": -2.2174397599883378e-05,
+          "delta_S_J_mol_K": -1.531157067802269e-08,
+          "delta_Cp_J_mol_K": -4.127965240741105e-07
+        },
+        "J_le_240_5": {
+          "levels": 194310,
+          "Q_over_primary": 0.9999998593832192,
+          "delta_H_J_mol": -0.02807393101102207,
+          "delta_S_J_mol_K": -1.988510700812185e-05,
+          "delta_Cp_J_mol_K": -0.000299664041378378
+        }
+      },
+      "electronic_Q_fractions": {
+        "B2Pi": 5.950231868960576e-10,
+        "X2Pi": 0.9999991187665914,
+        "a4Pi": 8.806383856590491e-07
+      },
+      "full_state_sum_over_distributed_pf": 1.000000617379927
+    },
+    {
+      "temperature_K": 2000.0,
+      "K_over_current": {
+        "current": 1.0,
+        "pops": 0.9993140955463176,
+        "full": 0.9993140956169485,
+        "ground": 0.9992712667597466
+      },
+      "reaction_properties": {
+        "current": {
+          "G_J_mol": -233259.82389846898,
+          "H_J_mol": -450264.2221049705,
+          "S_J_mol_K": -108.50219910325075,
+          "Cp_J_mol_K": -4.921805553217383
+        },
+        "pops": {
+          "G_J_mol": -233248.41413113687,
+          "H_J_mol": -450258.9124287205,
+          "S_J_mol_K": -108.5052491487919,
+          "Cp_J_mol_K": -4.865422511724362
+        },
+        "full": {
+          "G_J_mol": -233248.4141323122,
+          "H_J_mol": -450258.9123999168,
+          "S_J_mol_K": -108.50524913380241,
+          "Cp_J_mol_K": -4.865422159989493
+        },
+        "ground": {
+          "G_J_mol": -233247.7014303402,
+          "H_J_mol": -450267.24687330174,
+          "S_J_mol_K": -108.50977272148083,
+          "Cp_J_mol_K": -4.914289332660858
+        }
+      },
+      "molecular_thermal": {
+        "G_J_mol": -535634.4981941205,
+        "H_J_mol": 73081.06731160378,
+        "S_J_mol_K": 304.35778275286214,
+        "Cp_J_mol_K": 37.99173184633644,
+        "Q": 41975.35634698634
+      },
+      "sensitivity": {
+        "distributed_full": {
+          "levels": 225997,
+          "Q_over_primary": 1.0000000000706792,
+          "delta_H_J_mol": 2.8803726308979094e-05,
+          "delta_S_J_mol_K": 1.4989495866757352e-08,
+          "delta_Cp_J_mol_K": 3.5173486878647964e-07
+        },
+        "D0_minus_margin_cutoff": {
+          "levels": 212158,
+          "Q_over_primary": 0.9999999994971911,
+          "delta_H_J_mol": -0.0002016065554926172,
+          "delta_S_J_mol_K": -1.0498382607693202e-07,
+          "delta_Cp_J_mol_K": -2.422063950291431e-06
+        },
+        "ground_electronic_only": {
+          "levels": 73877,
+          "Q_over_primary": 0.9999571418168107,
+          "delta_H_J_mol": -8.334444581225398,
+          "delta_S_J_mol_K": -0.00452357268892456,
+          "delta_Cp_J_mol_K": -0.04886682093649597
+        },
+        "E_le_30000_cm-1": {
+          "levels": 127719,
+          "Q_over_primary": 0.9999999337736206,
+          "delta_H_J_mol": -0.022779406543122604,
+          "delta_S_J_mol_K": -1.1940339959437551e-05,
+          "delta_Cp_J_mol_K": -0.00023490968671069368
+        },
+        "J_le_240_5": {
+          "levels": 194310,
+          "Q_over_primary": 0.9999922861110375,
+          "delta_H_J_mol": -1.5430371582478983,
+          "delta_S_J_mol_K": -0.0008356556679132154,
+          "delta_Cp_J_mol_K": -0.009291260348078367
+        }
+      },
+      "electronic_Q_fractions": {
+        "B2Pi": 1.4066641293048667e-07,
+        "X2Pi": 0.9999571418168107,
+        "a4Pi": 4.2717516776734514e-05
+      },
+      "full_state_sum_over_distributed_pf": 1.0000006348956234
+    },
+    {
+      "temperature_K": 2500.0,
+      "K_over_current": {
+        "current": 1.0,
+        "pops": 0.9997079538563127,
+        "full": 0.9997079629113057,
+        "ground": 0.9992591327149993
+      },
+      "reaction_properties": {
+        "current": {
+          "G_J_mol": -178715.54405798018,
+          "H_J_mol": -452849.7634503337,
+          "S_J_mol_K": -109.6536877569414,
+          "Cp_J_mol_K": -5.505715738194
+        },
+        "pops": {
+          "G_J_mol": -178709.47265451087,
+          "H_J_mol": -452760.5553674397,
+          "S_J_mol_K": -109.62043308517156,
+          "Cp_J_mol_K": -5.1679220890181705
+        },
+        "full": {
+          "G_J_mol": -178709.47284278437,
+          "H_J_mol": -452760.55175507657,
+          "S_J_mol_K": -109.62043156491688,
+          "Cp_J_mol_K": -5.167894525570412
+        },
+        "ground": {
+          "G_J_mol": -178700.13856719784,
+          "H_J_mol": -452848.78436301847,
+          "S_J_mol_K": -109.65945831832823,
+          "Cp_J_mol_K": -5.503659487671876
+        }
+      },
+      "molecular_thermal": {
+        "G_J_mol": -690019.2403826304,
+        "H_J_mol": 92188.44236366042,
+        "S_J_mol_K": 312.8830730985163,
+        "Cp_J_mol_K": 38.503418754213804,
+        "Q": 64348.14908781024
+      },
+      "sensitivity": {
+        "distributed_full": {
+          "levels": 225997,
+          "Q_over_primary": 1.0000000090576373,
+          "delta_H_J_mol": 0.0036123631289228797,
+          "delta_S_J_mol_K": 1.5202546705950226e-06,
+          "delta_Cp_J_mol_K": 2.7563447758893744e-05
+        },
+        "D0_minus_margin_cutoff": {
+          "levels": 212158,
+          "Q_over_primary": 0.9999999404253477,
+          "delta_H_J_mol": -0.023373796022497118,
+          "delta_S_J_mol_K": -9.844849728324334e-06,
+          "delta_Cp_J_mol_K": -0.00017542875277598569
+        },
+        "ground_electronic_only": {
+          "levels": 73877,
+          "Q_over_primary": 0.9995510477439185,
+          "delta_H_J_mol": -88.22899557878554,
+          "delta_S_J_mol_K": -0.039025233156678496,
+          "delta_Cp_J_mol_K": -0.33573739865370555
+        },
+        "E_le_30000_cm-1": {
+          "levels": 127719,
+          "Q_over_primary": 0.9999959767787968,
+          "delta_H_J_mol": -1.361413837701548,
+          "delta_S_J_mol_K": -0.0005780165246278557,
+          "delta_Cp_J_mol_K": -0.008816774334079014
+        },
+        "J_le_240_5": {
+          "levels": 194310,
+          "Q_over_primary": 0.9999139941548243,
+          "delta_H_J_mol": -17.30876784310385,
+          "delta_S_J_mol_K": -0.007638630274698244,
+          "delta_Cp_J_mol_K": -0.06734307857198729
+        }
+      },
+      "electronic_Q_fractions": {
+        "B2Pi": 3.7294499012049188e-06,
+        "X2Pi": 0.9995510477439185,
+        "a4Pi": 0.00044522280618024696
+      },
+      "full_state_sum_over_distributed_pf": 1.0000006475816263
+    },
+    {
+      "temperature_K": 3000.0,
+      "K_over_current": {
+        "current": 1.0,
+        "pops": 1.0014288134387583,
+        "full": 1.0014290280748714,
+        "ground": 0.9992374252585456
+      },
+      "reaction_properties": {
+        "current": {
+          "G_J_mol": -123615.47027706022,
+          "H_J_mol": -455855.2937531232,
+          "S_J_mol_K": -110.74660782535436,
+          "Cp_J_mol_K": -6.601761382923135
+        },
+        "pops": {
+          "G_J_mol": -123651.08428800065,
+          "H_J_mol": -455433.5767581505,
+          "S_J_mol_K": -110.59416415671664,
+          "Cp_J_mol_K": -5.514757301466835
+        },
+        "full": {
+          "G_J_mol": -123651.08963411329,
+          "H_J_mol": -455433.4932282965,
+          "S_J_mol_K": -110.59413453139449,
+          "Cp_J_mol_K": -5.51432629238519
+        },
+        "ground": {
+          "G_J_mol": -123596.44182328453,
+          "H_J_mol": -455869.5196528197,
+          "S_J_mol_K": -110.75769260984514,
+          "Cp_J_mol_K": -6.685019153583793
+        }
+      },
+      "molecular_thermal": {
+        "G_J_mol": -848282.6263082273,
+        "H_J_mol": 111678.35739269745,
+        "S_J_mol_K": 319.98699456697494,
+        "Cp_J_mol_K": 39.574188170098104,
+        "Q": 91902.2079674708
+      },
+      "sensitivity": {
+        "distributed_full": {
+          "levels": 225997,
+          "Q_over_primary": 1.000000214329872,
+          "delta_H_J_mol": 0.08352985396049917,
+          "delta_S_J_mol_K": 2.9625322156334732e-05,
+          "delta_Cp_J_mol_K": 0.0004310090816446177
+        },
+        "D0_minus_margin_cutoff": {
+          "levels": 212158,
+          "Q_over_primary": 0.9999986612744994,
+          "delta_H_J_mol": -0.5131526463082992,
+          "delta_S_J_mol_K": -0.00018218167269878904,
+          "delta_Cp_J_mol_K": -0.0026035980044838425
+        },
+        "ground_electronic_only": {
+          "levels": 73877,
+          "Q_over_primary": 0.9978117384373161,
+          "delta_H_J_mol": -435.94289466922055,
+          "delta_S_J_mol_K": -0.1635284531284924,
+          "delta_Cp_J_mol_K": -1.1702618521169583
+        },
+        "E_le_30000_cm-1": {
+          "levels": 127719,
+          "Q_over_primary": 0.999940771876426,
+          "delta_H_J_mol": -19.655591517977882,
+          "delta_S_J_mol_K": -0.007044328442759706,
+          "delta_Cp_J_mol_K": -0.08632864386952832
+        },
+        "J_le_240_5": {
+          "levels": 194310,
+          "Q_over_primary": 0.9995646321323636,
+          "delta_H_J_mol": -88.6866096520971,
+          "delta_S_J_mol_K": -0.033182841289942644,
+          "delta_Cp_J_mol_K": -0.24391631110340484
+        }
+      },
+      "electronic_Q_fractions": {
+        "B2Pi": 3.294697103498765e-05,
+        "X2Pi": 0.9978117384373161,
+        "a4Pi": 0.0021553145916488677
+      },
+      "full_state_sum_over_distributed_pf": 1.0000006655431704
+    },
+    {
+      "temperature_K": 4000.0,
+      "K_over_current": {
+        "current": 1.0,
+        "pops": 1.014492963809801,
+        "full": 1.0145028375425087,
+        "ground": 0.9980031101648088
+      },
+      "reaction_properties": {
+        "current": {
+          "G_J_mol": -11720.702416989976,
+          "H_J_mol": -464150.5921504868,
+          "S_J_mol_K": -113.10747243337421,
+          "Cp_J_mol_K": -10.330259051638954
+        },
+        "pops": {
+          "G_J_mol": -12199.247786153597,
+          "H_J_mol": -461227.3365850424,
+          "S_J_mol_K": -112.25702219972221,
+          "Cp_J_mol_K": -6.1252043908345115
+        },
+        "full": {
+          "G_J_mol": -12199.571472506994,
+          "H_J_mol": -461223.7453990015,
+          "S_J_mol_K": -112.25604348162365,
+          "Cp_J_mol_K": -6.1154689541501455
+        },
+        "ground": {
+          "G_J_mol": -11654.22375604699,
+          "H_J_mol": -464538.16152377974,
+          "S_J_mol_K": -113.2209844419332,
+          "Cp_J_mol_K": -11.154853679031405
+        }
+      },
+      "molecular_thermal": {
+        "G_J_mol": -1174408.982093966,
+        "H_J_mol": 153208.09561758363,
+        "S_J_mol_K": 331.90426942788747,
+        "Cp_J_mol_K": 43.93296044769365,
+        "Q": 164916.1208253362
+      },
+      "sensitivity": {
+        "distributed_full": {
+          "levels": 225997,
+          "Q_over_primary": 1.000009732677368,
+          "delta_H_J_mol": 3.591186040895991,
+          "delta_S_J_mol_K": 0.0009787180985654231,
+          "delta_Cp_J_mol_K": 0.00973543668436605
+        },
+        "D0_minus_margin_cutoff": {
+          "levels": 212158,
+          "Q_over_primary": 0.9999429700249755,
+          "delta_H_J_mol": -20.683274163719034,
+          "delta_S_J_mol_K": -0.005645005658038826,
+          "delta_Cp_J_mol_K": -0.05507070354767052
+        },
+        "ground_electronic_only": {
+          "levels": 73877,
+          "Q_over_primary": 0.9837457190604249,
+          "delta_H_J_mol": -3310.8249387373507,
+          "delta_S_J_mol_K": -0.9639622422109824,
+          "delta_Cp_J_mol_K": -5.029649288196893
+        },
+        "E_le_30000_cm-1": {
+          "levels": 127719,
+          "Q_over_primary": 0.9984666146841609,
+          "delta_H_J_mol": -483.52714359626407,
+          "delta_S_J_mol_K": -0.13364084556610578,
+          "delta_Cp_J_mol_K": -1.1152670851268098
+        },
+        "J_le_240_5": {
+          "levels": 194310,
+          "Q_over_primary": 0.9965608900995108,
+          "delta_H_J_mol": -720.7621254837723,
+          "delta_S_J_mol_K": -0.2088341646601748,
+          "delta_Cp_J_mol_K": -1.145640051660834
+        }
+      },
+      "electronic_Q_fractions": {
+        "B2Pi": 0.0004833839913968752,
+        "X2Pi": 0.9837457190604249,
+        "a4Pi": 0.015770896948178365
+      },
+      "full_state_sum_over_distributed_pf": 1.000000705811425
+    }
+  ],
+  "production_change": "none",
+  "completeness": "Finite sums and within-file sensitivity only; unlisted states and a4Pi ab initio errors have no quantified global bound."
+}

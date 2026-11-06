@@ -1,0 +1,65 @@
+{
+  "identity": {
+    "species": "VO",
+    "curated_id": "O1V1",
+    "charge": 0,
+    "state": "X4Sigma-",
+    "isotopologue": "51V16O",
+    "isotopologue_mass_u": 66.93887412,
+    "legacy_mass_u": 66.9409,
+    "nuclear_spin_degeneracy": 8
+  },
+  "merriles2020": {
+    "doi": "10.1063/5.0014006",
+    "inspection": "Author accepted manuscript rendered full text, sections II-IV; PDF unavailable",
+    "D0_eV": 6.545,
+    "quoted_uncertainty_eV": 0.002,
+    "threshold_cm-1": 52790,
+    "assigned_error_cm-1": 15,
+    "four_initial_photons_cm-1": [
+      34939,
+      34992,
+      35043,
+      37080
+    ],
+    "third_scheme_threshold_cm-1": 52781,
+    "OPO_calibration_error_upper_cm-1": 5,
+    "dye_calibration_error_upper_cm-1": 1,
+    "delay_ns": 150,
+    "D0_Vplus_O_eV": 6.053,
+    "interpretation": "Four thresholds fit assigned error including initial-state population, linewidth and calibration. A possible barrier would make threshold an upper bound; authors argue dense states and four schemes make this unlikely. Quoted error is not total thermochemical or atmospheric accuracy."
+  },
+  "hyvo": {
+    "doi": "10.1093/mnras/stae542",
+    "inspection": "Full author-hosted paper including sections3.1-3.2, Table3; official .pf and .def",
+    "definition_version": "20231218",
+    "electronic_states": 15,
+    "states": 3410598,
+    "maximum_energy_cm-1": 45000,
+    "maximum_F": 150,
+    "declared_maximum_temperature_K": 5400,
+    "zero": "X4Sigma-, v=0, J=0.5, e, F=3 lowest hyperfine component",
+    "weight": "2F+1 for resolved levels; sum recovers 8*(2J+1). Divide total molecular Q by8 for the nuclear-spin-excluded thermochemical comparison.",
+    "completeness": "5% separation from broader VOMYT near5400K; reported added outer-level contribution is diagnostic, not a rigorous uncertainty bound.",
+    "zero_alignment": "Absolute fine/hyperfine offset to the legacy JANAF/D0 convention has not been rederived; modern-Q replacement remains a conditional diagnostic."
+  },
+  "vomyt": {
+    "doi": "10.1093/mnras/stw1969",
+    "inspection": "Publisher article and downloaded official partition file; inventory cross-checked against HyVO full paper",
+    "electronic_states": 13,
+    "states": 638958,
+    "maximum_J": 197.5,
+    "maximum_energy_cm-1": 50000,
+    "version_limit": "Downloaded VOMYT Q differs from HyVO2024 Table3 high-temperature column. Report both; neither is silently substituted for the other."
+  },
+  "legacy": {
+    "janaf_VO_table": "O-026",
+    "evaluation": "December1973",
+    "nasa_reference": "Gurvich1982 pt1p62 pt2p64; full Gurvich original not inspected",
+    "atomic_reference": "Native JANAF V-005/O-001 for raw JANAF; native NASA V/O for NASA; current hybrid deliberately shares NASA atomic thermal functions."
+  },
+  "atmosphere": {
+    "primary_source_doi": "10.1093/mnras/stae542",
+    "interpretation": "VO rovibronic visible/near-infrared opacity motivates priority despite small mole fraction. Opacity/line-position accuracy does not validate gas-equilibrium abundance; condensation, cold trapping, transport and irradiation remain outside the archived gas-only grid."
+  }
+}

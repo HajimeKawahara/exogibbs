@@ -8,6 +8,11 @@ nor a complete new replacement is adopted. The current coefficients remain
 operationally available while the unresolved inputs are reconciled; this is
 not a finding that their physical accuracy has been established.
 
+The abundance diagnostics below retain the historical ``curated-c2h-v1``
+baseline of 2026-11-02. They do not describe the subsequently updated public
+``curated-gas-v2`` mixture. This review changes neither its coefficients nor
+its default selection.
+
 Why VO2 is a priority
 ---------------------
 
@@ -341,7 +346,8 @@ Finite energy and electronic-state diagnostics
 ----------------------------------------------
 
 The missing Gunina main text does not prevent a numerical sensitivity
-study. We compare the current model with three VO2-only interventions:
+study. We compare the historical ``curated-c2h-v1`` model with three
+VO2-only interventions:
 
 * **Energy only:** add 59.342 kJ/mol to both G and H, preserving S and Cp.
   This is the historical gap between JANAF D0 = 1236.342 and Balducci's
@@ -375,7 +381,7 @@ solves is repeated from a cold start at a tighter tolerance.
      - V in VO2, %
      - V in VO, %
      - Atomic V, %
-   * - Current
+   * - Historical curated-c2h-v1
      - 62.7841
      - 36.3578
      - 0.857946
@@ -441,3 +447,28 @@ physical validation have separate follow-ups. A production candidate needs
 consistent energy and thermal functions with justified applicability and
 uncertainty. Numerical agreement alone does not establish atmospheric
 accuracy, especially where condensation matters.
+
+Historical replay maintenance (2026-11-06)
+------------------------------------------
+
+The current review helper explicitly constructs ``curated_c2h.chemsetup()``.
+Its complete Gibbs vectors for all four variants and all 75 archived
+conditions are checked against the original archive. This prevents a later
+public-default update from silently changing unrelated molecules while
+retaining the old diagnostic labels.
+
+The original execution receipt, numerical outputs and source packets remain
+byte-for-byte unchanged. The separate
+``vo2_equilibrium_impact/revalidation-20261106`` packet preserves the original
+helper, test and public-preset bytes. The old contract subject points to
+those historical sources; a separate replay amendment pins the current
+helper and tests. No new nonlinear equilibrium or FastChem calculation is
+claimed by this maintenance. All six scientific assessments keep their
+original scope and status.
+
+This bounded source investigation can be merged while source reconciliation
+continues. The missing Gunina main text alone is not a veto. Before a
+production replacement, the energy/thermal selection must address the
+21.042 kJ/mol second-law/third-law discrepancy described above; the archived
+59.342 kJ/mol intervention remains a historical sensitivity diagnostic, not
+a selected new physical atomization energy.

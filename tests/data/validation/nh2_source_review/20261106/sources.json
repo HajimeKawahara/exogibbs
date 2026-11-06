@@ -1,0 +1,56 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "NH2",
+        "file": "H-060.txt",
+        "url": "https://janaf.nist.gov/tables/H-060.txt",
+        "sha256": "ecb2a5ef41810d98cd2da7d70d2dc6e55b0c0b8296a3abcc9e06f30edac783fd"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "H",
+        "file": "H-001.txt",
+        "url": "https://janaf.nist.gov/tables/H-001.txt",
+        "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+      }
+    ],
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Official cached CEA records and all selected coefficients/headers checked against frozen screening records."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact gas-phase CAS identifiers and selected tabulated 0/298 K formation enthalpies; rounded marginal uncertainties, not a reaction covariance."
+  },
+  "references": [
+    {
+      "doi": "10.1063/1.1724828",
+      "url": "https://cccbdb.nist.gov/hf0kx.asp",
+      "title": "IUPAC critical evaluation of selected radicals (2005), as indexed/transcribed by NIST CCCBDB",
+      "access": "NIST numerical transcription and bibliographic identity inspected; complete original article not obtained",
+      "finding": "NH2 hf0=189.1 kJ/mol, substantially below older JANAF 193.246 kJ/mol; not an independent ATcT covariance."
+    },
+    {
+      "doi": "10.5281/zenodo.20662187",
+      "url": "https://zenodo.org/records/20662187",
+      "title": "NH2: Amino radical (Andre et al., 2026)",
+      "access": "Complete numerical PDF inspected; raw file hash recorded, PDF not committed",
+      "finding": "RRHO-style inputs and tabulated calorics available; printed ground electronic degeneracy/total-spin convention needs reconciliation before replacement."
+    }
+  ],
+  "local_reference_scope": "The available refs_exogibbs_202611 and -2 collections were inventoried; relevant Gamache TIPS papers are used where indicated; no original Gurvich volume was present."
+}

@@ -1,0 +1,27 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "K2",
+      "file": "K-011.txt",
+      "url": "https://janaf.nist.gov/tables/K-011.txt",
+      "sha256": "e8f761c2b4128ba82a3fb6f0e742675dd81a165b73fbbcdb006fa8133b27ded8",
+      "bytes": 3686,
+      "header": "Potassium (K2)\tK2(g)"
+    },
+    {
+      "molecule": "K",
+      "file": "K-005.txt",
+      "url": "https://janaf.nist.gov/tables/K-005.txt",
+      "sha256": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+      "bytes": 3163,
+      "header": "Potassium (K)\tK1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}

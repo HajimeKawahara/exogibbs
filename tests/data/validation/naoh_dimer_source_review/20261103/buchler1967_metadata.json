@@ -1,0 +1,87 @@
+{
+  "DOI": "10.1063/1.1840711",
+  "title": [
+    "Electric-Deflection Studies of the Geometry of Some Molecules Containing Cesium"
+  ],
+  "author": [
+    {
+      "given": "Alfred",
+      "family": "B\u00fcchler",
+      "sequence": "first",
+      "affiliation": [
+        {
+          "name": "Arthur D. Little, Inc., Cambridge, Massachusetts"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "James L.",
+      "family": "Stauffer",
+      "sequence": "additional",
+      "affiliation": [
+        {
+          "name": "Arthur D. Little, Inc., Cambridge, Massachusetts"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "William",
+      "family": "Klemperer",
+      "sequence": "additional",
+      "affiliation": [
+        {
+          "name": "Department of Chemistry, Harvard University, Cambridge, Massachusetts"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    }
+  ],
+  "published": {
+    "date-parts": [
+      [
+        1967,
+        1,
+        15
+      ]
+    ]
+  },
+  "container-title": [
+    "The Journal of Chemical Physics"
+  ],
+  "volume": "46",
+  "issue": "2",
+  "page": "605-608",
+  "link": [
+    {
+      "URL": "https://pubs.aip.org/aip/jcp/article-pdf/46/2/605/18849655/605_1_online.pdf",
+      "content-type": "application/pdf",
+      "content-version": "vor",
+      "intended-application": "syndication"
+    },
+    {
+      "URL": "https://pubs.aip.org/aip/jcp/article-pdf/46/2/605/18849655/605_1_online.pdf",
+      "content-type": "unspecified",
+      "content-version": "vor",
+      "intended-application": "similarity-checking"
+    }
+  ],
+  "URL": "https://doi.org/10.1063/1.1840711",
+  "abstract_species_summary": "Publisher-deposited abstract names Cs2O, Cs2SO4, Cs2O2, Cs2(OH)2 and H2SO4; it does not name NaOH or its dimer."
+}

@@ -13,7 +13,10 @@ import sys
 import numpy as np
 import pytest
 
-from exogibbs.presets import curated, curated_c2h, curated_v1
+from exogibbs.presets import (
+    curated, curated_c2h, curated_c2h2, curated_ch2, curated_cn, curated_co2, curated_cos, curated_h2o, curated_hcp,
+    curated_ho2, curated_kh, curated_oh, curated_ps, curated_tio, curated_tio2, curated_v1, curated_v2,
+)
 from exogibbs.provenance import describe, evidence_catalog
 
 
@@ -54,7 +57,7 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     corrected = curated_c2h.chemsetup()
     description = describe(corrected)
     assert description["model_id"] == "exogibbs.curated_c2h.v1"
-    assert description["model_id"] == describe(setup)["model_id"]
+    assert describe(setup)["model_id"] == "exogibbs.curated_gas.v2"
     assert describe(curated_v1.chemsetup())["model_id"] == "exogibbs.curated_gas.v1"
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
@@ -64,15 +67,171 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     assert describe(curated_c2h.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
 
+
+def test_tio_adoption_retains_its_versioned_evidence_identity():
+    setup = curated_tio.chemsetup()
+    assert describe(setup)["model_id"] == "exogibbs.curated_tio.v1"
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_tio.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-tio-v1"
+    record = model["records"][0]
+    assert record["id"] == "tio_adoption"
+    assert "physical_accuracy_review" in record["assessments"]
+    assert "unquantified" in record["summary"]
+    assert any(s["id"] == "O1Ti1" and "TiO" in s["aliases"] for s in model["species"])
+    assert "Former default" in record["summary"]
+    assert describe(curated_tio.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+def test_co2_adoption_retains_its_versioned_evidence_identity():
+    setup = curated_co2.chemsetup()
+    assert describe(setup)["model_id"] == "exogibbs.curated_co2.v1"
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_co2.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-co2-v1"
+    record = model["records"][0]
+    assert record["id"] == "co2_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "physical accuracy remain unknown" in record["summary"]
+    assert "Former default" in record["summary"]
+    assert any(s["id"] == "C1O2" and "CO2" in s["aliases"] for s in model["species"])
+    assert describe(curated_co2.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+def test_h2o_adoption_has_separate_evidence_identity():
+    setup = curated_h2o.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_h2o.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-h2o-v1"
+    record = model["records"][0]
+    assert record["id"] == "h2o_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "physical atmospheric accuracy remain unknown" in record["summary"]
+    assert "not relabeled as joint results" in record["summary"]
+    assert any(s["id"] == "H2O1" and "H2O" in s["aliases"] for s in model["species"])
+    assert describe(curated_h2o.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+def test_oh_adoption_has_separate_evidence_identity():
+    setup = curated_oh.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_oh.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-oh-v1"
+    record = model["records"][0]
+    assert record["id"] == "oh_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "physical accuracy remain unknown" in record["summary"]
+    assert "MYTHOS" in record["summary"] and "it is not adopted" in record["summary"]
+    assert any(s["id"] == "H1O1" and "OH" in s["aliases"] for s in model["species"])
+    assert describe(curated_oh.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+def test_kh_adoption_has_separate_evidence_identity():
+    setup = curated_kh.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_kh.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-kh-v1"
+    record = model["records"][0]
+    assert record["id"] == "kh_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "physical accuracy remain unknown" in record["summary"]
+    assert "De uncertainty is not a D0 uncertainty" in record["summary"]
+    assert any(s["id"] == "H1K1" and "KH" in s["aliases"] for s in model["species"])
+    assert describe(curated_kh.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+def test_ho2_adoption_has_separate_evidence_identity():
+    setup = curated_ho2.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_ho2.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-ho2-v1"
+    record = model["records"][0]
+    assert record["id"] == "ho2_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "physical accuracy remain unknown" in record["summary"]
+    assert "old candidate abundances are not reused" in record["summary"]
+    assert any(s["id"] == "H1O2" and "HO2" in s["aliases"] for s in model["species"])
+    assert describe(curated_ho2.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+def test_cos_adoption_has_separate_evidence_identity():
+    setup = curated_cos.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_cos.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-cos-v1"
+    record = model["records"][0]
+    assert record["id"] == "cos_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "accuracy remains unknown" in record["summary"]
+    assert "Background changes from KH/HO2" in record["summary"]
+    assert any(s["id"] == "C1O1S1" and "COS" in s["aliases"] for s in model["species"])
+    assert describe(curated_cos.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+
+@pytest.mark.parametrize("module,key,species,alias,assessment", [
+    (curated_cn, "cn", "C1N1", "CN", "physical_accuracy_review"),
+    (curated_ps, "ps", "P1S1", "PS", "physical_accuracy_review"),
+    (curated_tio2, "tio2", "O2Ti1", "TiO2", "physical_accuracy_review"),
+    (curated_hcp, "hcp", "C1H1P1", "HCP", "physical_accuracy_review"),
+    (curated_c2h2, "c2h2", "C2H2", "C2H2", "physical_accuracy_review"),
+    (curated_ch2, "ch2", "C1H2", "CH2", "physical_accuracy_review"),
+])
+def test_new_adoptions_retain_separate_cumulative_evidence(module, key, species, alias, assessment):
+    setup = module.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    description = describe(setup)
+    assert description["model_id"] == f"exogibbs.curated_{key}.v1"
+    model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == f"curated-{key}-v1"
+    record = model["records"][0]
+    assert record["id"] == f"{key}_adoption"
+    assert assessment in record["assessments"]
+    assert "complete physical accuracy remains unknown" in record["summary"]
+    assert "actual cumulative base" in record["summary"]
+    assert any(s["id"] == species and alias in s["aliases"] for s in model["species"])
+    assert describe(module.chemsetup(ions=False))["record_match"] == "no_matching_record"
+    assert curated.chemsetup is curated_v2.chemsetup
+
+
 def test_describe_identifies_only_declared_metadata(setup):
     description = describe(setup)
-    assert description["model_id"] == "exogibbs.curated_c2h.v1"
+    assert description["model_id"] == "exogibbs.curated_gas.v2"
     assert description["record_match"] == "declared_metadata"
     assert "does not verify a custom setup" in description["notice"]
     assert json.loads(json.dumps(description)) == description
     # Metadata alone cannot certify a changed callable: the report says so.
     modified = replace(setup, hvector_func=lambda temperature: None)
     assert describe(modified) == description
+
+
+def test_gas_v2_default_has_its_own_combined_production_evidence(setup):
+    assert curated.chemsetup is curated_v2.chemsetup
+    description = describe(setup)
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
+    assert model["id"] == "exogibbs.curated_gas.v2"
+    assert model["dataset"] == "curated-gas-v2"
+    record = model["records"][0]
+    assert record["id"] == "gas_v2_adoption"
+    assert len(record["species"]) == 29  # 28 updated species plus the whole-model marker.
+    assert {"H1N1O2cis", "H1N1O2trans", "N1O2", "N2O4", "C1H1N1O1", "C1N1O1"} <= set(record["species"])
+    assert "complete physical accuracy remains unknown" in record["summary"]
+    assert describe(curated_ch2.chemsetup())["model_id"] == "exogibbs.curated_ch2.v1"
+    assert describe(curated_v2.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
 
 def test_builder_does_not_rebind_historical_study_to_changed_data(tmp_path, monkeypatch):
@@ -94,6 +253,45 @@ def test_builder_does_not_rebind_historical_study_to_changed_data(tmp_path, monk
     monkeypatch.setitem(builder.__globals__, "ROOT", source)
     with pytest.raises(ValueError, match="review new evidence"):
         builder(tmp_path / "output")
+
+
+@pytest.mark.parametrize("name", ["src/exogibbs/data/curated/co2_v1.json",
+                                 "tests/data/validation/curated_co2_adoption/20261104/summary.json",
+                                 "src/exogibbs/data/curated/h2o_v1.json",
+                                 "tests/data/validation/curated_h2o_adoption/20261104/summary.json",
+                                 "src/exogibbs/data/curated/oh_v1.json",
+                                 "tests/data/validation/curated_oh_adoption/20261105/summary.json",
+                                 "src/exogibbs/data/curated/kh_v1.json",
+                                 "tests/data/validation/curated_kh_adoption/20261105/summary.json",
+                                 "src/exogibbs/data/curated/ho2_v1.json",
+                                 "tests/data/validation/curated_ho2_adoption/20261105/summary.json",
+                                 "src/exogibbs/data/curated/cos_v1.json",
+                                 "tests/data/validation/curated_cos_adoption/20261105/summary.json",
+                                 "src/exogibbs/data/curated/cn_v1.json",
+                                 "tests/data/validation/curated_cn_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/ps_v1.json",
+                                 "tests/data/validation/curated_ps_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/tio2_v1.json",
+                                 "tests/data/validation/curated_tio2_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/hcp_v1.json",
+                                 "tests/data/validation/curated_hcp_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/c2h2_v1.json",
+                                 "tests/data/validation/curated_c2h2_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/ch2_v1.json",
+                                 "tests/data/validation/curated_ch2_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/gas_v2.json",
+                                 "tests/data/validation/curated_gas_v2_adoption/20261106/summary.json"])
+def test_builder_rejects_changed_adoption_bytes(tmp_path, monkeypatch, name):
+    builder = runpy.run_path(str(ROOT / "mceg/build_catalog.py"))["build_catalog"]
+    original = Path.read_bytes
+
+    def changed(path):
+        content = original(path)
+        return content + b"\n" if path == ROOT / name else content
+
+    monkeypatch.setattr(Path, "read_bytes", changed)
+    with pytest.raises(ValueError, match="CO2|H2O|OH|KH|HO2|COS|CN|PS|TiO2|HCP|C2H2|CH2|Gas-v2"):
+        builder(tmp_path)
 
 
 @pytest.mark.parametrize("changes", [

@@ -1,0 +1,59 @@
+{
+  "kind": "CI replay revalidation; original scientific packet and execution receipt preserved",
+  "molecule": "HNCO",
+  "field": "source_samples[1].curated_minus_janaf_reaction.G_J_mol",
+  "temperature_K": 2000,
+  "observation": "Python 3.11 GitHub CI plus independent sequential-sum emulation",
+  "expected_J_mol": 9.729414400528185,
+  "sequential_sum_actual_J_mol": 9.729414400295354,
+  "absolute_difference_J_mol": 2.3283064365386963e-10,
+  "replay_policy": {
+    "only_changed_field": "curated_minus_janaf_reaction.G_J_mol at each source knot",
+    "absolute_tolerance_J_mol": 1e-08,
+    "relative_tolerance": 0,
+    "rejected_perturbation_J_mol": 1e-05,
+    "other_fields": "Original shared check_equal tolerances unchanged",
+    "rationale": "Cancellation of reaction Gibbs energies of order 1e6 J/mol amplifies last-bit differences from Python 3.11 sequential versus Python 3.12 improved float sum. The absolute allowance is below 1e-12 in ln(K) at 1500-4000 K, not a physical accuracy tolerance."
+  },
+  "source_and_runtime_changed": false,
+  "original_receipt_sha256": "48494e70cc6da979f77e398cbe0e74aa6c8a8dda02329cbabbe90956cafa9e21",
+  "original_test_snapshot": "tests/data/validation/hnco_source_review/ci-revalidation-20261106/source/hnco_source_review_test.py",
+  "original_test_sha256": "199ae7c156388699bca3b69dea43ef10dbde149a3c9c0880aaa701a78a28da6f",
+  "current_test_source": "tests/model_evidence/hnco_source_review_test.py",
+  "current_test_sha256": "3ea6ae4c324a8930a993af42e6c4c920cc995452bfe7f05db814ed35598706d9",
+  "original_packet_sha256": {
+    "tests/data/validation/hnco_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/hnco_source_review/20261106/C-053.txt": "6607b4c9a1adf36bef0f44bd361af679c14dab5b98afab121d55fe94ecf0f3ad",
+    "tests/data/validation/hnco_source_review/20261106/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/hnco_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/hnco_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/hnco_source_review/20261106/README.rst": "4adbfe06b7992cc5cf9d3b58cf5eb1cf367d5dfdda2106ac89dc7eee4e4b962f",
+    "tests/data/validation/hnco_source_review/20261106/comparison.json": "08d1976e4f5f4e41b875e8d338570791fe03a10aaf17d0ff5d48b4f561ec4922",
+    "tests/data/validation/hnco_source_review/20261106/identity.json": "9a30d135bfcbc3adb71ae5e43b6fa586751596874e4a0dc26bf12bc6df296923",
+    "tests/data/validation/hnco_source_review/20261106/inputs.json": "03ae753ab3e029c4ea5efbd0c134fe0dcc88b6aeecca48256cfbb7be33b4fd95",
+    "tests/data/validation/hnco_source_review/20261106/literature.json": "51a25e2beefe760a84e6cda20fb223eafef9b8abcb797c3504c1f9f6ac62877e",
+    "tests/data/validation/hnco_source_review/20261106/nasa_records.json": "2e8703e4e42d21165f023262a8ea625a311f442f3a5e7afdbba4500945700317",
+    "tests/data/validation/hnco_source_review/20261106/nasa_selected_records.txt": "df5c7533acd57d0554326dba693fb2f7d8378f5c480a5360de620628f1f19b74",
+    "tests/data/validation/hnco_source_review/20261106/receipt.json": "48494e70cc6da979f77e398cbe0e74aa6c8a8dda02329cbabbe90956cafa9e21",
+    "tests/data/validation/hnco_source_review/20261106/sources.json": "eaa39a3076927dd5b720705e17b9c778f41029d94e8a63d2cbc2c159e23dcdff"
+  },
+  "environment": {
+    "python": "3.12.7",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "sequential_sum_emulation": "Set only the review module global sum to a loop adding each input in order from start=0. Common helpers, Python builtins and NumPy remain unchanged; this is not a full interpreter/platform simulation.",
+  "test_command": [
+    "taskset",
+    "-c",
+    "4-7",
+    "python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/model_evidence/hnco_source_review_test.py"
+  ],
+  "test_result": "8 passed in 1.84s",
+  "sequential_sum_full_replay_with_local_comparator": "passed"
+}

@@ -1,0 +1,76 @@
+{
+  "id": "cos_janaf_thermal_atct_1_228_candidate_v1",
+  "species": "C1O1S1",
+  "reaction": "C(g)+O(g)+S(g)->OCS(g)",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_dataset": "curated-oh-v1",
+  "base_D0_J_mol": 1371241.0,
+  "D0_J_mol": 1376853.0,
+  "delta_D0_J_mol": 5612.0,
+  "delta_D0_over_R_K": 674.9684564997785,
+  "atct_version": "1.228",
+  "same_version_hf0_kJ_mol": {
+    "C": 711.37,
+    "S": 276.85,
+    "O": 246.843,
+    "COS": -141.79
+  },
+  "thermal_record": {
+    "knots_K": [
+      1500.0,
+      2000.0,
+      3000.0,
+      4000.0
+    ],
+    "coefficients": [
+      [
+        -47880.604951041794,
+        -18980.84184724533,
+        -603.4464960343709,
+        60.09107538808104,
+        -8.689677651628472,
+        1.0774398471749578
+      ],
+      [
+        -67412.41445673787,
+        -40073.666249040936,
+        -1858.147749232596,
+        284.32384732108744,
+        -59.11386250361875,
+        8.779881918165529
+      ],
+      [
+        -109110.23858827577,
+        -43129.546245966514,
+        -1272.0605631093922,
+        132.05904583678603,
+        -18.822623564002242,
+        1.9243576806111378
+      ]
+    ],
+    "background_nasa9": [
+      352436.1,
+      -880.9110622000001,
+      -7.221725773,
+      0.000383641288,
+      -2.79450419264e-07,
+      4.801357847e-11,
+      -2.7188328793e-15,
+      -159197.56174932295,
+      -19.057637433
+    ],
+    "table_id": "C-094"
+  },
+  "representation": "Unchanged production JANAF piecewise quintic and NASA atomic background; subtract delta(D0/R)/T once; no refit",
+  "uncertainty_scope": "Same-version evaluated central energies; no synthesized covariance or physical uncertainty band. Historical thermal and isotope limitations retained.",
+  "source_sha256": {
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/cos_source_review/20261105/inputs.json": "60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f"
+  }
+}

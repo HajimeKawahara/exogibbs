@@ -1,0 +1,164 @@
+{
+  "schema_version": "1",
+  "review_date": "2026-11-02",
+  "downloads": [
+    {
+      "file": "Al-056.txt",
+      "url": "https://janaf.nist.gov/tables/Al-056.txt",
+      "inspection": "Official tab-separated bytes downloaded; species header and evaluation date inspected.",
+      "sha256": "517cff9f229e9446ff2217c326a515e5d3bdfe51fff69330605a0a59cbbb2063",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "Al-005.txt",
+      "url": "https://janaf.nist.gov/tables/Al-005.txt",
+      "inspection": "Official tab-separated bytes downloaded; species header and evaluation date inspected.",
+      "sha256": "666ec06681fe525b68eab0c2f297bd1be28144bd3bb7ab27cc48fc67dc76e5e7",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "Al-001.txt",
+      "url": "https://janaf.nist.gov/tables/Al-001.txt",
+      "inspection": "Official tab-separated bytes downloaded; species header and evaluation date inspected.",
+      "sha256": "ce4bb740c061a75998b3b4262bbdabf76c010360a7eeb73188476005878a1e58",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "H-001.txt",
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "inspection": "Official tab-separated bytes downloaded; species header and evaluation date inspected.",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "H-050.txt",
+      "url": "https://janaf.nist.gov/tables/H-050.txt",
+      "inspection": "Official tab-separated bytes downloaded; species header and evaluation date inspected.",
+      "sha256": "091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "janaf_alh_printed_114.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Aluminum.pdf",
+      "inspection": "PDF page 56 (printed p 114) extracted from the official aluminum volume and visually inspected. Original page content retained.",
+      "sha256": "2211263f2bf4f5804765b999d4cf8b3335e0e43c7fd2586cee12cec81f70c9ab",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "printed_alh_nodes.json",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Aluminum.pdf",
+      "inspection": "Six table rows transcribed from the archived printed page. Comparison with online data is limited to these inspected rows.",
+      "sha256": "bfad4142a32bc15ee2896367682f45ba19fe62c7baf8608c4966e0fac23a15ab",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "janaf_constants_printed_10.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-1Vol1-Intro.pdf",
+      "inspection": "PDF page 16 (printed p 10) extracted and visually inspected; 1973 CODATA R=8.31441 J/(mol K), with 1986 constants reserved for tables added after the third edition.",
+      "sha256": "2aeb29af2596f48e3148dcdb3cc77b71aeb5168db727741135951e67699cdb5b",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "nasa_selected_records.txt",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "inspection": "Official Appendix D ALH (printed p 49), AL (p 46), and H (p 126) records extracted with leading/trailing layout whitespace stripped. ALH and AL lower bounds are 200 K.",
+      "sha256": "d1d58617a388caba3f59a67fe477901db53a24f43c4ebb2b11d1359f4943cf9d",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "exomol_aloha_27AlH.pf",
+      "url": "https://www.exomol.com/db/AlH/27Al-1H/AloHa/27Al-1H__AloHa.pf",
+      "inspection": "Official full partition file downloaded as bytes: 5000 rows, 1 K through 5000 K, nuclear spin included.",
+      "sha256": "273b72ffa36b4db7e930393f35175684ad912e8bebcc722bf90a6843cd95f1ab",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "exomol_aloha_27AlH.def",
+      "url": "https://www.exomol.com/db/AlH/27Al-1H/AloHa/27Al-1H__AloHa.def",
+      "inspection": "Official definition bytes downloaded; version 20240307, isotope identity, mass, spin weight 12, 1364 states, and 5000 K maximum inspected.",
+      "sha256": "58aa76d593a6033458d9f692e3082f45ec71824e98942e52b4162b10723f7eec",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "dissociation_evidence.json",
+      "url": "https://doi.org/10.1063/1.437749",
+      "inspection": "Selected factual quantities and independently written notes from supplied 1979/2011 articles, with two-term and five-term zero-point diagnostics. Not raw article text.",
+      "sha256": "9397ede32b416d3c5af6fd8cbaa006af5b79a368f38521d0fe98c2aad9345b3a",
+      "retrieved": "2026-11-02",
+      "archived": true
+    }
+  ],
+  "identity": {
+    "formula": "AlH",
+    "model_name": "Al1H1",
+    "name": "Aluminum monohydride",
+    "phase": "gas",
+    "charge": 0,
+    "composition": {
+      "Al": 1,
+      "H": 1
+    },
+    "CAS": "13967-22-1",
+    "ground_state": "X1Sigma+",
+    "point_group": "Cinfv",
+    "electronic_multiplicity": 1,
+    "rotational_symmetry_number": 1,
+    "isotopologue_for_exomol": "27Al-1H",
+    "nuclear_spin_statistical_weight_for_exomol": 12,
+    "identity_sources": [
+      "janaf_printed1998",
+      "exomol_aloha_definition"
+    ],
+    "exclusion": "This review does not concern AlH3, AlH ions, or condensed aluminum hydride."
+  },
+  "additional_source_provenance": "literature.json records parent hashes, inspection scope, access limits, and distinctions between direct evidence and later quotations.",
+  "local_sources_not_archived": [
+    {
+      "file": "Baltayan_1979.pdf",
+      "local_reference": "ref/refs_exogibbs_202611/Baltayan_1979.pdf",
+      "doi": "10.1063/1.437749",
+      "url": "https://doi.org/10.1063/1.437749",
+      "sha256": "56ade3b4747b17dea2b8910bcf982251c283bac97ffcde9d698b15564a936cc9",
+      "size_bytes": 800511,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+      "archive_policy": "The user-provided full article and extracted full text remain local. The repository retains bibliographic metadata, hash, independently written review notes and selected factual quantities only."
+    },
+    {
+      "file": "2011SzajnaAlHActaPhysPolA.pdf",
+      "local_reference": "ref/refs_exogibbs_202611-2/2011SzajnaAlHActaPhysPolA.pdf",
+      "doi": "10.12693/APhysPolA.120.417",
+      "url": "https://doi.org/10.12693/APhysPolA.120.417",
+      "sha256": "24f16a10d4d1796c7eb56b51d59a687249500e8e5c046a65711e50667394ffc4",
+      "size_bytes": 670937,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher article pp 417-423 read. Tables II and IV on printed pp 420-421 visually checked, including signs, scale factors, 1-sigma notation and fixed-coefficient footnotes.",
+      "archive_policy": "The supplied full article and extracted full text remain local. The repository retains metadata, hashes, selected factual inputs and independently written review notes only."
+    },
+    {
+      "file": "Yurchenko_2024.pdf",
+      "local_reference": "ref/refs_exogibbs_202611-2/Yurchenko_2024.pdf",
+      "doi": "10.1093/mnras/stad3802",
+      "url": "https://doi.org/10.1093/mnras/stad3802",
+      "sha256": "abde58d486f596de9b1c450407fafc5145822f8c45918f2e8e3989255296d0ab",
+      "size_bytes": 5966030,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher article inspected in Sections 3.1, 4, 4.1, 5 and 5.1. Table 1 on p 9738 and Table 6/Section 5.1 on p 9744 visually checked. This supplements the previously inspected preprint; AlD transition appendices were not transcribed.",
+      "archive_policy": "The supplied full article and extracted full text remain local. The repository retains metadata, hashes, selected factual inputs and independently written review notes only."
+    }
+  ]
+}

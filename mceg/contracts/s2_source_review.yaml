@@ -1,0 +1,295 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.s2_source_review.v1
+  name: S2 balanced energy and UV thermal-coverage review
+  description: Retain the current construction provisionally; converge low electronic and rovibrational states
+    before a thermal replacement.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:e24dfe77190ec26058dcfc3b25e077bc6f827afa29c96332614f193700f180f8
+    entry_points:
+    - mceg/reviews/s2_source_review.py
+assumptions:
+- statement: Use same-version balanced D0 with ground sulfur atoms and the occupied molecular ground zero;
+    preserve native NASA R in dimensionless functions.
+  evidence:
+  - literature
+  - source_replay
+- statement: 32S2 nuclear spin product is one; permitted N parity already accounts for permutation symmetry.
+    Natural translation with representative-isotope levels is an elemental proxy.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+  conditions:
+  - Nine source nodes 300-4000 K; production only 1500-4000 K.
+  - 75 archived cases over 1e-6-100 bar and three C/O values; no new equilibrium solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Full physical uncertainty and planetary applicability remain unestablished.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged S2 column combines NASA thermal functions with same-version ATcT 1.172 atomization
+    energy; the latest 1.228 balanced energy agrees to displayed precision.
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+- id: finite_state_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: Every distributed Gomez state reproduces the published partition sums and exact energy moments
+    with explicit permutation counting, ground zero and high-temperature coverage diagnostics.
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+- id: scoped_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retaining current S2 is justified while the UV state list lacks complete 1500-4000 K thermal coverage;
+    its truncated sum is not a production replacement.
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: S2 energy and thermal functions have complete quantified uncertainty and predict accurate planetary
+    abundances.
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary methods, official state distribution and ATcT tables, with actual inspection limits.
+  sources:
+  - tests/data/validation/s2_source_review/20261105/sources.json
+  - tests/data/validation/s2_source_review/20261105/literature.json
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+  subject: s2_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/s2_source_review/20261105/sources.json
+    sha256: d5439d44c203f670b09f8b978654b659b60cdcb30358581016773cae7f37f7df
+  - source: tests/data/validation/s2_source_review/20261105/literature.json
+    sha256: 2f47e9306def628c0a0a19b0e7ffe31315509eb5d8b53ce05eb47d9b11e9f001
+  provenance:
+    role: primary
+    location: documents/mceg/s2_source_review.rst
+    inspection: inspected
+    note: Individual inspection limits are explicit in sources.json; numerical replay is not physical completeness.
+- id: source_replay
+  kind: numerical_test
+  summary: Compact complete state arrays, analytic moments, balanced energies and archived sulfur budget.
+  sources:
+  - tests/data/validation/s2_source_review/20261105/states.npz
+  - tests/data/validation/s2_source_review/20261105/state_inventory.json
+  - tests/data/validation/s2_source_review/20261105/comparison.json
+  - tests/data/validation/s2_source_review/20261105/receipt.json
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+  subject: s2_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/s2_source_review/20261105/states.npz
+    sha256: 1d184ce21de5b90b3b86e02765d79f7774c92bc586043395b44825cfd0c5e5b8
+  - source: tests/data/validation/s2_source_review/20261105/state_inventory.json
+    sha256: d60f339b95b8ca4496fde1f5ae7f374253bfff070f4620078e7acbde6878d6cf
+  - source: tests/data/validation/s2_source_review/20261105/comparison.json
+    sha256: c6ac7f4ca7c5731a449c69fc3ce0b18d3e3d08660d32a5deda37130448f7c13d
+  - source: tests/data/validation/s2_source_review/20261105/receipt.json
+    sha256: b90c209f2e53f9ea02d69f4ec38e8307ea7f9fb910b76fc457fb7003ec78ad7d
+  provenance:
+    role: primary
+    location: documents/mceg/s2_source_review.rst
+    inspection: inspected
+    note: Individual inspection limits are explicit in sources.json; numerical replay is not physical completeness.
+  result: passed
+- id: retention_reasoning
+  kind: theory
+  summary: The intended UV scope and omitted thermal states justify provisional retention, not a NASA accuracy
+    claim.
+  sources:
+  - tests/data/validation/s2_source_review/20261105/literature.json
+  - documents/mceg/s2_source_review.rst
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+  subject: s2_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/s2_source_review/20261105/literature.json
+    sha256: 2f47e9306def628c0a0a19b0e7ffe31315509eb5d8b53ce05eb47d9b11e9f001
+  - source: documents/mceg/s2_source_review.rst
+    sha256: d3a969fc3aaea350a77df38b899a7c97567ac7c7c43378a06d079b6eee09db7c
+  provenance:
+    role: primary
+    location: documents/mceg/s2_source_review.rst
+    inspection: inspected
+    note: Individual inspection limits are explicit in sources.json; numerical replay is not physical completeness.
+subjects:
+- id: s2_sources_20261105
+  implementation: *id001
+  selected_files:
+    mceg/reviews/s2_source_review.py: e24dfe77190ec26058dcfc3b25e077bc6f827afa29c96332614f193700f180f8
+    documents/mceg/s2_source_review.rst: d3a969fc3aaea350a77df38b899a7c97567ac7c7c43378a06d079b6eee09db7c
+    tests/model_evidence/s2_source_review_test.py: 70d0df845eefc1770cb0ffaf46a8695ad40951bcb9f3e3fdbdd4f6f06958027f
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/s2_source_review/20261105/README.rst: 07b3bc50908a80663f19a70077ded8071794e2826147f08b640ae56881505349
+    tests/data/validation/s2_source_review/20261105/literature.json: 2f47e9306def628c0a0a19b0e7ffe31315509eb5d8b53ce05eb47d9b11e9f001
+    tests/data/validation/s2_source_review/20261105/sources.json: d5439d44c203f670b09f8b978654b659b60cdcb30358581016773cae7f37f7df
+    tests/data/validation/s2_source_review/20261105/state_inventory.json: d60f339b95b8ca4496fde1f5ae7f374253bfff070f4620078e7acbde6878d6cf
+    tests/data/validation/s2_source_review/20261105/states.npz: 1d184ce21de5b90b3b86e02765d79f7774c92bc586043395b44825cfd0c5e5b8
+    tests/data/validation/s2_source_review/20261105/comparison.json: c6ac7f4ca7c5731a449c69fc3ce0b18d3e3d08660d32a5deda37130448f7c13d
+    tests/data/validation/s2_source_review/20261105/receipt.json: b90c209f2e53f9ea02d69f4ec38e8307ea7f9fb910b76fc457fb7003ec78ad7d
+contexts:
+- id: source_review
+  scope: Neutral S2, 2S(g)->S2(g), one bar; source 300-4000 K, curated 1500-4000 K; 75 archived 537-species
+    endpoints. No planetary validation.
+  settings:
+    reaction: 2S(g)->S2(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT 1.172 current ; 1.228 separate comparison
+    atomic_thermal: NASA; native JANAF difference separate
+    partition_normalization: Lowest occupied level, nuclear spin 1, no extra symmetry factor
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: s2_sources_20261105
+  context: source_review
+  method:
+    id: review_s2_energy_and_uv_thermal_scope
+    revision: '1'
+    description: Separate energy reconstruction, finite-state replay, retention and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - ATcT 1.172 D0=426.290 kJ/mol versus NASA 421.557260; native-R shift 569.506718981 K. Latest 1.228 balanced
+    D0=426.280 kJ/mol; correlated species shifts cancel.
+  status: supported
+  origin: reviewed
+- id: finite_state_comparison_review
+  kind: evidence_support
+  claim: finite_state_comparison
+  claim_revision: '1'
+  subject: s2_sources_20261105
+  context: source_review
+  method:
+    id: review_s2_energy_and_uv_thermal_scope
+    revision: '1'
+    description: Separate energy reconstruction, finite-state replay, retention and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - 17766 states; gtot=2J+1, X odd N/B even N; no extra spin or symmetry factor. Gomez/HITRAN tables identical;
+    moments agree within 4.5 ppm at selected nodes. Missing singlets, terminal shells and raw label conflict
+    recorded.
+  status: supported
+  origin: reviewed
+- id: scoped_retention_review
+  kind: evidence_support
+  claim: scoped_retention
+  claim_revision: '1'
+  subject: s2_sources_20261105
+  context: source_review
+  method:
+    id: review_s2_energy_and_uv_thermal_scope
+    revision: '1'
+    description: Separate energy reconstruction, finite-state replay, retention and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - Gomez/NASA Q=.983437 at 1500 K and .717657 at 4000 K; Cp at 4000 K=27.591 vs NASA 42.603 J/mol/K. J>=145
+    and X v10 shells each exceed 2%. Updated energy adds no substantial correction; NASA physical completeness
+    is not established.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: s2_sources_20261105
+  context: source_review
+  method:
+    id: review_s2_energy_and_uv_thermal_scope
+    revision: '1'
+    description: Separate energy reconstruction, finite-state replay, retention and physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - Missing low electronic states, J/v convergence, bound/resonance treatment, isotope mixtures and correlated
+    energy uncertainty remain unresolved. No finite substitution, photochemistry, condensation, transport or
+    observational validation.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: thermal_convergence
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Converge X and low-singlet/higher electronic Q and first/second moments through 4000 K; distinguish
+    bound levels, resonances and continuum before fitting and finite substitution.
+  requires:
+  - Gomez 10.1093/mnras/stae246 already inspected; Xing 10.1080/00268976.2012.741721 potential data or equivalent
+    verified levels.
+  - Common occupied-ground zero, permutation statistics and explicit isotope convention; J/v/electronic convergence
+    bounds.
+  completion: A derivative-consistent candidate plus sulfur-conserving finite-substitution evidence; not required
+    to merge the scoped source review.
+- id: provenance_details
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Reconcile raw excited-state labels and, when useful, inspect full energy-provenance papers and covariance.
+  requires:
+  - Frederix 10.1021/jp905104u and Thorpe 10.1021/acs.jpca.6c05060 currently abstract/official-table inspection
+    only; original Gurvich pages optional.
+  - Preserve raw distribution and prior receipts; no silent relabeling or mixed ATcT versions.
+  completion: Record source clarification and rerun affected comparisons; no unconditional paper-acquisition
+    gate.
+limitations:
+- statement: The complete UV list is intentionally restricted in J/v and electronic manifolds; table availability
+    to 5000 K does not establish thermal completeness.
+  evidence:
+  - literature
+  - source_replay
+- statement: Boundary-shell populations overlap and do not quantify missing Q. NASA/JANAF/BC differences are
+    not resolved by this replay.
+  evidence:
+  - source_replay
+- statement: Latest ATcT comparison uses rounded correlated species values; raw covariance is not propagated.
+    Full original energy-provenance papers and Gurvich pages were not inspected.
+  evidence:
+  - literature
+- statement: Archived current abundance is not a response or planetary accuracy bound; default curated-h2o-v1
+    and all production columns remain unchanged.
+  evidence:
+  - source_replay

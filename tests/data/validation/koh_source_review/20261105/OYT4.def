@@ -1,0 +1,69 @@
+EXOMOL.def                                                                      # ID
+(39K)(16O)(1H)                                                                  # IsoFormula
+39K-16O-1H                                                                      # Iso-slug
+OYT4                                                                            # Isotopologue dataset name
+20250807                                                                        # Version number with format YYYYMMDD
+InChI=1S/K.H2O/h;1H2/q+1;/p-1/i1+0;                                             # In-ChI of molecule
+KWYUFKZDYYNOTN-XUGDXVOUSA-M                                                     # In-ChI key of molecule
+3                                                                               # Number of atoms
+39                                                                              # Isotope number 1
+K                                                                               # Element symbol 1
+16                                                                              # Isotope number 2
+O                                                                               # Element symbol 2
+1                                                                               # Isotope number 3
+H                                                                               # Element symbol 3
+55.96644633 9.29344707e-26                                                      # Isotopologue mass (Da) and (kg)
+C                                                                               # Symmetry group
+2                                                                               # Number of irreducible representations
+Sigma+                                                                          # Irreducible representation label 1
+6                                                                               # Nuclear spin degeneracy 1
+Sigma-                                                                          # Irreducible representation label 2
+6                                                                               # Nuclear spin degeneracy 2
+3500.00                                                                         # Maximum temperature of linelist
+0                                                                               # No. of pressure broadeners available
+0                                                                               # Cooling function availability (1=yes, 0=no)
+1                                                                               # Specific heat availability (1=yes, 0=no)
+0                                                                               # Photo-absorption continuum cross-sections availability (1=yes, 0=no)
+7307923                                                                         # No. of states in .states file
+0                                                                               # Hyperfine resolved dataset (1=yes, 0=no)
+1                                                                               # Uncertainty availability (1=yes, 0=no)
+1                                                                               # Lifetime availability (1=yes, 0=no)
+0                                                                               # Lande g-factor availability (1=yes, 0=no)
+lpcs                                                                            # Quantum case label
+2                                                                               # No. of quantum number types
+9                                                                               # No. of quanta defined
+Grve                                                                            # Quantum label 1
+A3 %3s                                                                          # Format quantum label 1
+Total (rovibronic) symmetry                                                     # Description quantum label 1
+Herzberg:v1                                                                     # Quantum label 2
+I2 %2d                                                                          # Format quantum label 2
+v1 vibrational quantum number                                                   # Description quantum label 2
+Herzberg:v2lin                                                                  # Quantum label 3
+I2 %2d                                                                          # Format quantum label 3
+v2lin vibrational quantum number                                                # Description quantum label 3
+Herzberg:L                                                                      # Quantum label 4
+I3 %3d                                                                          # Format quantum label 4
+L vibrational quantum number                                                    # Description quantum label 4
+Herzberg:v3                                                                     # Quantum label 5
+I2 %2d                                                                          # Format quantum label 5
+v3 vibrational quantum number                                                   # Description quantum label 5
+TROVE:Coef                                                                      # Quantum label 6
+F5.2 %5.2f                                                                      # Format quantum label 6
+Coefficient with the largest contribution                                       # Description quantum label 6
+TROVE:n1                                                                        # Quantum label 7
+I2 %2d                                                                          # Format quantum label 7
+n1 vibrational quantum number (TROVE)                                           # Description quantum label 7
+TROVE:n2                                                                        # Quantum label 8
+I2 %2d                                                                          # Format quantum label 8
+n2 vibrational quantum number (TROVE)                                           # Description quantum label 8
+TROVE:n3                                                                        # Quantum label 9
+I2 %2d                                                                          # Format quantum label 9
+n3 vibrational quantum number (TROVE)                                           # Description quantum label 9
+38362078911                                                                     # Total number of transitions
+60                                                                              # No. of transition files
+6000.00                                                                         # Maximum wavenumber (in cm-1)
+16000.00                                                                        # Higher energy with complete set of transitions (in cm-1)
+4000.00                                                                         # Maximum temperature of partition function
+1.00                                                                            # Step size of temperature
+0.0840                                                                          # Default value of Lorentzian half-width for all lines (in cm-1/bar)
+0.500                                                                           # Default value of temperature exponent for all lines

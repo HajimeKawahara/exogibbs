@@ -1,0 +1,319 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.koh_dimer_source_review.v1
+  name: Neutral potassium hydroxide dimer source investigation
+  description: Trace and decompose JANAF versus Gurvich/NASA thermochemistry and reuse a potassium footprint
+    without changing production.
+  implementation: &id004
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d1213cd296f32fd522a586db22b346220a76784e5290b4388101793072cc910d
+    entry_points:
+    - mceg/reviews/koh_dimer_source_review.py
+assumptions:
+- statement: H2K2O2 and NASA K2O2H2 denote the neutral hydroxide dimer, distinct from peroxide, monomer, hydrates,
+    ions and condensed phases.
+  evidence:
+  - literature
+- statement: Both source comparisons use 1 bar; frozen atomic references are retained explicitly, while 2KOH(g)->dimer
+    association cancels atoms but changes both molecular source functions.
+  evidence:
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven
+    published thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+  conditions:
+  - Screening at 500, 1000, 1500 and 3000 K; current fit only evaluated at 1500-4000 K.
+  - Published absolute-function comparison at 298.15, 500, 1000, 1500, 2000, 3000 and 4000 K.
+  - 'Archived grid: 1500-4000 K, five pressures from 1e-6 to100bar, C/O=0.5888436553555908,1,1.5.'
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete high-temperature physical accuracy and atmospheric applicability are not established.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_and_footprint
+  revision: '1'
+  kind: numerical_verification
+  statement: The frozen source discrepancy is reproduced and decomposed; the NASA record follows Gurvich1997,
+    the printed molecular-constant change explains the thermal difference, and the archived maximum dimer potassium
+    fraction is 2.206309434e-9.
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+- id: conditional_source_preference
+  revision: '1'
+  kind: theoretical
+  statement: Among the inspected sources, Gurvich1997/NASA is the scientifically preferred improvement direction
+    because it revises molecular thermal construction and the experimental energy analysis; empirical constants
+    and shared experimental ancestry remain explicit.
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+- id: original_source_confirmation
+  revision: '1'
+  kind: physical_validation
+  statement: All primary experiments underlying the inherited and revised dimer thermochemistry have been independently
+    inspected and confirmed.
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+- id: quantified_physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A complete dimer replacement has quantified physical accuracy over 1500-4000 K.
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+- id: atmospheric_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The retained or candidate dimer model predicts physically accurate atmospheric abundances.
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+evidence:
+- id: literature
+  kind: literature
+  summary: Inspected JANAF1974 and Gurvich1997 dimer construction, numerical excerpts, DOI metadata, original-paper
+    access limits and shared ancestry.
+  sources: &id001
+  - tests/data/validation/koh_dimer_source_review/20261103/sources.json
+  - tests/data/validation/koh_dimer_source_review/20261103/literature.json
+  - tests/data/validation/koh_dimer_source_review/20261103/inputs.json
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  artifacts: &id002
+  - source: tests/data/validation/koh_dimer_source_review/20261103/sources.json
+    sha256: 7bd071bc8bec7e335e1f6271ee3b8a41743fca052a0d4b9a85f24c66a0eb9f98
+  - source: tests/data/validation/koh_dimer_source_review/20261103/literature.json
+    sha256: 0105fe77106c38dcf80676d4f587f2a7fe7a080afb6839f049e8ce990ac1ebca
+  - source: tests/data/validation/koh_dimer_source_review/20261103/inputs.json
+    sha256: f483186f0bf5ad8211af348afbdc471049ad1e68680026fe58cfdf8fe0bfb748
+  provenance: &id003
+    role: secondary
+    location: Frozen potassium hydroxide dimer packet with inspected page locations and source hashes
+    inspection: partial
+    note: Numerical representation and evaluated-source interpretation are distinguished from independent inspection
+      of original vapor experiments and physical validation.
+- id: source_replay
+  kind: numerical_test
+  summary: Exact-node decomposition, NASA versus published absolute functions, harmonic/rotor diagnostic, atom-cancelling
+    association and archived potassium accounting.
+  sources:
+  - tests/data/validation/koh_dimer_source_review/20261103/comparison.json
+  - tests/data/validation/koh_dimer_source_review/20261103/receipt.json
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/koh_dimer_source_review/20261103/comparison.json
+    sha256: e39fde6d17ced92ad138cc22921b2ea1014072e50f37603040bd643eeace9218
+  - source: tests/data/validation/koh_dimer_source_review/20261103/receipt.json
+    sha256: e3c3c7e8c872726186e193f6fb720a1a2dd9436eac8660df1e74e2ed9d26dac1
+  provenance:
+    role: primary
+    location: Frozen potassium hydroxide dimer packet with inspected page locations and source hashes
+    inspection: inspected
+    note: Numerical representation and evaluated-source interpretation are distinguished from independent inspection
+      of original vapor experiments and physical validation.
+  result: passed
+- id: reference_reasoning
+  kind: theory
+  summary: Prefer the revised evaluated thermal and energy construction conditionally, preserving empirical
+    constants, shared ancestry and high-temperature uncertainty.
+  sources: *id001
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  artifacts: *id002
+  provenance: *id003
+subjects:
+- id: koh_dimer_sources_20261103
+  implementation: *id004
+  selected_files:
+    mceg/reviews/koh_dimer_source_review.py: d1213cd296f32fd522a586db22b346220a76784e5290b4388101793072cc910d
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    documents/mceg/koh_dimer_source_review.rst: 06e93141c6b9b11cd34f0b69e18ea7b4f93675d552f7df4e61ee7e642bc8e8e9
+    tests/data/validation/koh_dimer_source_review/20261103/H-054.txt: c1b7f6d9cee0f308260d47f216e61ae8a4e47b1b6ca3c969540345c45722abea
+    tests/data/validation/koh_dimer_source_review/20261103/README.rst: 514db1306e4675f7ef3c6e89e97e76873576e5c1e09f1c6834b655632d970cd3
+    tests/data/validation/koh_dimer_source_review/20261103/girichev1989_metadata.json: 48b2d74effa0844d8a940c397ed103fad261a33da64dc94b81167d10e7535035
+    tests/data/validation/koh_dimer_source_review/20261103/hastie1984_metadata.json: 8746a58aae6d9c16bb8429ee9c0ce8a55759fad067aebe8d7fbcec3b14376ab2
+    tests/data/validation/koh_dimer_source_review/20261103/inputs.json: f483186f0bf5ad8211af348afbdc471049ad1e68680026fe58cfdf8fe0bfb748
+    tests/data/validation/koh_dimer_source_review/20261103/literature.json: 0105fe77106c38dcf80676d4f587f2a7fe7a080afb6839f049e8ce990ac1ebca
+    tests/data/validation/koh_dimer_source_review/20261103/schoonmaker1959_metadata.json: 00ed8b69bacb03363d5373889257192a74f582f6b1c182fe6b24e606d3184018
+    tests/data/validation/koh_dimer_source_review/20261103/sources.json: 7bd071bc8bec7e335e1f6271ee3b8a41743fca052a0d4b9a85f24c66a0eb9f98
+    tests/data/validation/koh_dimer_source_review/20261103/comparison.json: e39fde6d17ced92ad138cc22921b2ea1014072e50f37603040bd643eeace9218
+    tests/data/validation/koh_dimer_source_review/20261103/receipt.json: e3c3c7e8c872726186e193f6fb720a1a2dd9436eac8660df1e74e2ed9d26dac1
+contexts:
+- id: source_review
+  scope: 'Neutral ideal-gas hydroxide dimer source investigation: four frozen screening nodes, seven published
+    thermal-function nodes, archived 75-case potassium footprint; no production adoption.'
+  settings:
+    standard_pressure_Pa: 100000
+    reaction: 2K(g)+2O(g)+2H(g)->(KOH)2(g)
+    association_reaction: 2KOH(g)->(KOH)2(g)
+    energy_alignment: ReactionH298 diagnostic only; no adopted model
+    equilibrium_substitution: not_run
+    production_change: none
+assessments:
+- id: source_and_footprint_review
+  kind: evidence_support
+  claim: source_and_footprint
+  claim_revision: '1'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  method:
+    id: review_koh_dimer_sources
+    revision: '1'
+    description: Separate source reproduction, evaluated scientific preference, original-source access and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - Fresh official dimer nodes reproduce all four frozen source differences; seven NASA thermal-function nodes
+    and printed frequencies/rotor parameters explain revised thermal functions. Archived potassium accounting
+    is reused, not newly solved.
+  status: supported
+  origin: reviewed
+- id: conditional_source_preference_review
+  kind: evidence_support
+  claim: conditional_source_preference
+  claim_revision: '1'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  method:
+    id: review_koh_dimer_sources
+    revision: '1'
+    description: Separate source reproduction, evaluated scientific preference, original-source access and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - The revised evaluation is preferred on its explicit thermal/energy reasoning, not merely its date. It incorporates
+    potassium-specific matrixIR and electron diffraction as well as estimates; both evaluations reuse older
+    experimental ancestors. No production replacement is performed.
+  status: supported
+  origin: reviewed
+- id: original_source_confirmation_review
+  kind: evidence_support
+  claim: original_source_confirmation
+  claim_revision: '1'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  method:
+    id: review_koh_dimer_sources
+    revision: '1'
+    description: Separate source reproduction, evaluated scientific preference, original-source access and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - The evaluation-level source trail is inspected. Hastie1984 publisher abstract and DOI metadata are inspected;
+    the full chapter, Gusarov1968, original spectroscopy/diffraction and Schoonmaker1959 full texts remain
+    uninspected.
+  status: unknown
+  origin: reviewed
+- id: quantified_physical_accuracy_review
+  kind: evidence_support
+  claim: quantified_physical_accuracy
+  claim_revision: '1'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  method:
+    id: review_koh_dimer_sources
+    revision: '1'
+    description: Separate source reproduction, evaluated scientific preference, original-source access and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - Estimated soft-mode harmonic treatment and high-temperature state/structural uncertainty are not independently
+    validated. The prose Hf298 uncertainty8kJ/mol and Table28 at0/300K uncertainty9kJ/mol are both preserved
+    without Gaussian interpretation. Source spread is not an independent probabilistic uncertainty.
+  status: unknown
+  origin: reviewed
+- id: atmospheric_accuracy_review
+  kind: evidence_support
+  claim: atmospheric_accuracy
+  claim_revision: '1'
+  subject: koh_dimer_sources_20261103
+  context: source_review
+  method:
+    id: review_koh_dimer_sources
+    revision: '1'
+    description: Separate source reproduction, evaluated scientific preference, original-source access and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - The archived ideal-gas potassium footprint is a finite-grid model prioritization measure. No candidate
+    substitution, observation, condensation, nonideality or kinetic validation is performed.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: evaluate_named_candidate
+  target_kind: claim
+  target: quantified_physical_accuracy
+  revision: '1'
+  action: Construct and test a named Gurvich/NASA dimer candidate with consistent atomic references and one
+    fixed-network substitution before a production decision.
+  requires:
+  - Explicit choice of dimer-only replacement; monomer+dimer replacement is a separate model
+  - Thermodynamic consistency and focused numerical substitution checks; all old primary papers are not a prerequisite
+    to candidate evaluation
+  completion: Record the candidate, numerical result and justified adopted domain or reason to retain the current
+    representation.
+- id: confirm_ancestral_experiments
+  target_kind: claim
+  target: original_source_confirmation
+  revision: '1'
+  action: Inspect old vapor/beam originals and document their measured species, pressure ratios, condensed-phase
+    conditions and relation to the evaluations.
+  requires:
+  - 'Hastie et al1984: DOI10.1007/978-1-4612-5180-4_19; Gusarov and Gorokhov1968 Zh.Fiz.Khim42,860-865, DOI
+    unverified'
+  - 'Girichev and Lapshina1989: DOI10.1007/BF00751899; Belyaeva1978thesis/1991Opt.Spektrosk71,88, DOI unverified'
+  - 'Schoonmaker and Porter1959: DOI10.1063/1.1730469'
+  completion: Update MCEG source confirmation; unresolved primary-paper access does not block merging the completed
+    investigation.
+- id: improve_hot_partition_if_relevant
+  target_kind: claim
+  target: quantified_physical_accuracy
+  revision: '1'
+  action: Seek independent molecular constants and quantified soft-mode anharmonic/structural uncertainty when
+    applications make the dimer important.
+  requires:
+  - A declared target domain, including cooler potassium-rich cases if needed
+  - Consistent molecular state, isotope and energy-zero convention
+  completion: Record an improved physical support argument or explicit remaining limits.
+limitations:
+- statement: Source differences and the harmonic/rotor diagnostic are model comparisons, not independent uncertainty
+    measurements or a new validated partition function.
+  evidence:
+  - literature
+  - source_replay
+- statement: No production change, new equilibrium solve, condensation, nonideality, kinetics or spectral validation.
+    Retaining curated operationally does not scientifically prefer its older thermal construction.
+  evidence:
+  - source_replay
+  - literature

@@ -1,0 +1,30 @@
+{
+  "schema_version": "1",
+  "command": "python mceg/reviews/naoh_dimer_source_review.py --output tests/data/validation/naoh_dimer_source_review/20261103/comparison.json",
+  "selected_input_sha256": {
+    "mceg/reviews/naoh_dimer_source_review.py": "f6cbdd8166ede3aeba219806e80f8f7a737835466f37b6b06f43ca4b60dbd194",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "documents/mceg/naoh_dimer_source_review.rst": "990a0dc3cf8641ee31fbc1386afa127dc8532878dcce801997cd8d3c3e2108af",
+    "tests/data/validation/naoh_dimer_source_review/20261103/H-062.txt": "46c9347ba626444fd747de690d43c75369e326d68d768992cd2699a290b70761",
+    "tests/data/validation/naoh_dimer_source_review/20261103/README.rst": "b00e0d2f559e707605a516fed17914292eec2701b7da3858a4e6434335b348e1",
+    "tests/data/validation/naoh_dimer_source_review/20261103/buchler1967_metadata.json": "9a80b39979c31db7fbca6d3ebef5924e9a007205e33d988eb1fb1e04f274bac8",
+    "tests/data/validation/naoh_dimer_source_review/20261103/inputs.json": "b6922322ff7c8e9af8b4ebb41feda0e92026f0e37328197a32189cf0205334a8",
+    "tests/data/validation/naoh_dimer_source_review/20261103/literature.json": "bcaf53e183a16ea2a35b0774951e7b57abe575316b38bbc6a837085d92d00448",
+    "tests/data/validation/naoh_dimer_source_review/20261103/rao1960_metadata.json": "2de75fecc5f8486e651d126618e55c506e7f23104d349c449072884885363120",
+    "tests/data/validation/naoh_dimer_source_review/20261103/schoonmaker1958_metadata.json": "1dff67634cd31b00a9071b6084d3df3ea58c326944adc1268005755940707b10",
+    "tests/data/validation/naoh_dimer_source_review/20261103/sources.json": "829da32a6b038793a70d154319adeb5a8901374ec25d31f98d1a68aa3f816190"
+  },
+  "output_sha256": {
+    "tests/data/validation/naoh_dimer_source_review/20261103/comparison.json": "d7d6aa9e1a7309bf11c19df9a72f34bc7ff6008bd789b4356b31aa48185107fd"
+  },
+  "production_change": "none",
+  "equilibrium_substitution": "not_run",
+  "note": "Fresh offline thermochemical replay; reuse of archived 75-case equilibrium endpoints, no new equilibrium solves. Full articles not vendored.",
+  "executed_at_utc": "2026-11-02T23:20:05.339336+00:00"
+}

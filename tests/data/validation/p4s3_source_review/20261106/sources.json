@@ -1,0 +1,22 @@
+{
+  "review_date": "2026-11-06",
+  "janaf": {
+    "P4S3": {
+      "url": "https://janaf.nist.gov/tables/P-017.txt",
+      "sha256": "38f5bc02c00d6b915defe5edb04b00b45aa361817b34c025688813ebe305fde6"
+    },
+    "P": {
+      "url": "https://janaf.nist.gov/tables/P-008.txt",
+      "sha256": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879"
+    },
+    "S": {
+      "url": "https://janaf.nist.gov/tables/S-006.txt",
+      "sha256": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a"
+    }
+  },
+  "NASA_absence_check": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "finding": "unavailable: no matching neutral P4S3 gas record in the inspected official NASA source; no condensed or other P4Sn surrogate."
+  }
+}

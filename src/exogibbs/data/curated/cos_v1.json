@@ -1,0 +1,49 @@
+{
+  "id": "curated-cos-v1",
+  "species": "C1O1S1",
+  "reaction": "C(g)+O(g)+S(g)->OCS(g)",
+  "base_dataset": "curated-ho2-v1",
+  "base_data_sha256": "de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_D0_J_mol": 1371241.0,
+  "D0_J_mol": 1376853.0,
+  "delta_D0_J_mol": 5612.0,
+  "delta_D0_over_R_K": 674.9684564997785,
+  "atct_version": "1.228",
+  "same_version_hf0_kJ_mol": {
+    "C": 711.37,
+    "S": 276.85,
+    "O": 246.843,
+    "COS": -141.79
+  },
+  "representation": "Unchanged production JANAF piecewise quintic and NASA atomic background; subtract delta(D0/R)/T once; no refit",
+  "decision": {
+    "name": "COS",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "Retained JANAF molecular thermal fit and NASA atomic background",
+    "energy_source": "ATcT 1.228 balanced C+O+S-OCS atomization",
+    "reason": "Adopt the consistently balanced evaluated central energy while preserving the reviewed production thermal functions. Exact constant-energy construction and conserved finite substitutions support this bounded update; TIPS/OYT8 thermal replacement is a separate unresolved question.",
+    "condition": "1500-4000 K, 1 bar standard pressure. Correlated ATcT reaction uncertainty, isotope approximation, thermal source limitations and complete atmospheric physical accuracy remain unquantified."
+  },
+  "sources": {
+    "atct": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+    "janaf": "https://janaf.nist.gov/tables/C-094.html",
+    "nasa": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "candidate": "tests/data/validation/cos_candidate/20261105/candidate.json",
+    "review": "documents/mceg/cos_candidate.rst",
+    "substitution": "tests/data/validation/cos_equilibrium_impact/20261105/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/cos_candidate/20261105/candidate.json": "ff823f51498eb83614920d60ca11656cebdc5c9c0ab1b14e91ce82d55f1aca94",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/cos_source_review/20261105/inputs.json": "60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f"
+  },
+  "interpretation": "COS-only energy adoption on curated-ho2-v1, retaining KH, HO2, OH, H2O, CO2, TiO and C2H updates. Subtract the reviewed delta(D0/R)/T exactly once; no thermal fit, isotope/spin change or TIPS crossover. Numerical and scoped scientific support do not establish full physical accuracy."
+}

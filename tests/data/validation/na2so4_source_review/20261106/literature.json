@@ -1,0 +1,56 @@
+{
+  "janaf_printed": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Sodium.pdf",
+    "page": 1669,
+    "evaluation": "June 1978; 1-bar conversion",
+    "identity": "Neutral Na2SO4 ideal gas, D2d, two metal atoms bridged to tetrahedral sulfate; not SO4(2-), crystal or liquid.",
+    "sigma": 4,
+    "ground_weight": 1,
+    "mass_u": 142.03714,
+    "inertia_product_g3_cm6": 7.9153e-113,
+    "vibrational_frequencies_expanded_cm_inverse": [
+      961,
+      510,
+      160,
+      391,
+      460,
+      1131,
+      640,
+      81,
+      81,
+      1101,
+      1101,
+      610,
+      610,
+      333,
+      333
+    ],
+    "Hf298_J_mol": -1033615.0,
+    "Hf298_uncertainty_J_mol": 25100.0,
+    "S298_uncertainty_J_mol_K": 16.7,
+    "construction": "Third-law vaporization analysis correcting decomposition; gas/matrix spectral and structural constraints mixed with estimated low modes."
+  },
+  "armatys2011": {
+    "doi": "10.2478/s13536-011-0016-6",
+    "url": "https://reference-global.com/2/v2/download/article/10.2478/s13536-011-0016-6.pdf",
+    "pdf_sha256": "b211c295ed5519d7c7e3730be71f66b0b85a9d598cdd4104209d5af102482537",
+    "access": "Full primary article inspected, Tables 2/3 and fragmentation discussion.",
+    "temperature_K": 1350.0,
+    "pure_sulfate_molecular_partial_pressure_Pa": 0.0019,
+    "M2Oplus_over_M2SO4plus": 1.3,
+    "ratio_uncertainty": 0.12,
+    "status": "Neutral molecular parent supported; partial pressures approximate because 70 eV fragmentation and estimated ionization cross sections leave alternative channels."
+  },
+  "older_primary_followups": [
+    {
+      "doi": "10.1149/1.2129068",
+      "title": "Effusion Studies of the Vaporization/Decomposition of Potassium Sulfate",
+      "access": "Primary bibliographic/abstract record; full text not obtained."
+    },
+    {
+      "doi": "10.1149/1.2113719",
+      "title": "Studies of the Vaporization/Decomposition of Alkali Sulfates",
+      "access": "Primary bibliographic record and explicit citation in inspected 2011 article; full text not obtained."
+    }
+  ]
+}

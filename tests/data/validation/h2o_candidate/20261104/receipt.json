@@ -1,0 +1,33 @@
+{
+  "review_date": "2026-11-04",
+  "commands": [
+    "PYTHONPATH=src python mceg/reviews/h2o_candidate.py --extract /path/to/pinned/originals",
+    "PYTHONPATH=src python mceg/reviews/h2o_candidate.py"
+  ],
+  "selected_input_sha256": {
+    "mceg/reviews/h2o_candidate.py": "3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113",
+    "documents/mceg/h2o_candidate.rst": "df51253aec5d98e107abc7ce1a22f329728138a4d53c797145344de718137a5f",
+    "tests/model_evidence/h2o_candidate_test.py": "31cacb05e75f1594ed66d49ba51e30aa89e4e9c30476a4c06c749a523eaac393",
+    "mceg/reviews/h2o_source_review.py": "aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "tests/data/validation/h2o_source_review/20261103/sources.json": "53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4",
+    "tests/data/validation/h2o_source_review/20261103/published_samples.json": "b5402dd5cc887d11586796e5bff2c27562ac5aa0da3de8fd19ecc4435f7582d9",
+    "tests/data/validation/h2o_source_review/20261103/state_samples.json": "d929a23dbaf43f20679ae629a902efdff9284c53e6a09ba5cae549f5ab61e8cd",
+    "tests/data/validation/h2o_source_review/20261103/receipt.json": "84433207664e5a9a4a0b92a295910186a8705fffe7d863d7af4b21efdfdc695e",
+    "tests/data/validation/h2o_candidate/20261104/README.rst": "b282a70c858705f2bfb84fe0417632c2204cb83028ffbdf087cc56654c61c80b"
+  },
+  "output_sha256": {
+    "tests/data/validation/h2o_candidate/20261104/candidate.json": "0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a",
+    "tests/data/validation/h2o_candidate/20261104/published_tables.npz": "b080fb34a8007c4cecab1127d17f40ef4dde310460ff25948b3c15f531fdb5ba",
+    "tests/data/validation/h2o_candidate/20261104/discrete_nodes.json": "2699769b9232e8f04ee8574e76d85a1f0469d3ca1a8a8a0fc37adca5d2bf5265",
+    "tests/data/validation/h2o_candidate/20261104/discrete_off_knot_reference.json": "99d08db47fbedc5867b48a5098e6fb0c01c66451baad7c988a9e5bbd1d9b68e2",
+    "tests/data/validation/h2o_candidate/20261104/validation.json": "c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3"
+  },
+  "scope": "Two derivative-consistent H2O candidates on 1500-4000 K; 251 fitted Cp rows, 2250 withheld Cp rows, independent H/S/Q, six direct-state fit nodes and 45 withheld state sums. Original-file hashes are pinned in candidate.json and checked by the extractor; no production change."
+}

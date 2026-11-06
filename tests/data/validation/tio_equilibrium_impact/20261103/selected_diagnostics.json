@@ -1,0 +1,157 @@
+{
+  "tight": [
+    {
+      "variant": "toto",
+      "case_index": 4,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 1.3911795047543938e-14,
+      "element_relative_residual": 5.604155870042734e-09,
+      "charge_relative_residual": 1.4001273277974527e-14,
+      "mass_action_max_abs_ln": 3.979039320256561e-13
+    },
+    {
+      "variant": "toto",
+      "case_index": 25,
+      "temperature_K": 1500.0,
+      "pressure_bar": 1e-06,
+      "converged": true,
+      "iterations": 269,
+      "solver_residual": 4.3755823493923056e-14,
+      "element_relative_residual": 1.0654257688295598e-06,
+      "charge_relative_residual": 4.744114123196671e-15,
+      "mass_action_max_abs_ln": 1.4210854715202004e-12
+    },
+    {
+      "variant": "toto",
+      "case_index": 47,
+      "temperature_K": 4000.0,
+      "pressure_bar": 0.01,
+      "converged": true,
+      "iterations": 179,
+      "solver_residual": 9.44380568850806e-15,
+      "element_relative_residual": 6.265421201294333e-09,
+      "charge_relative_residual": 9.732736626846743e-15,
+      "mass_action_max_abs_ln": 3.304023721284466e-13
+    },
+    {
+      "variant": "nasa_proxy",
+      "case_index": 4,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 1.1587913501717856e-14,
+      "element_relative_residual": 5.60414340470913e-09,
+      "charge_relative_residual": 1.1562471209575112e-14,
+      "mass_action_max_abs_ln": 8.526512829121202e-13
+    },
+    {
+      "variant": "nasa_proxy",
+      "case_index": 25,
+      "temperature_K": 1500.0,
+      "pressure_bar": 1e-06,
+      "converged": true,
+      "iterations": 269,
+      "solver_residual": 3.789324633996955e-14,
+      "element_relative_residual": 1.0723417475576994e-06,
+      "charge_relative_residual": 6.946262647439456e-15,
+      "mass_action_max_abs_ln": 1.4210854715202004e-12
+    },
+    {
+      "variant": "nasa_proxy",
+      "case_index": 47,
+      "temperature_K": 4000.0,
+      "pressure_bar": 0.01,
+      "converged": true,
+      "iterations": 179,
+      "solver_residual": 5.4291075507225225e-15,
+      "element_relative_residual": 6.265426575281913e-09,
+      "charge_relative_residual": 5.599542027397787e-15,
+      "mass_action_max_abs_ln": 3.588240815588506e-13
+    }
+  ],
+  "lambda": [
+    {
+      "lambda": 0.0,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 4.4643723804659746e-15,
+      "element_relative_residual": 5.604173923284505e-09,
+      "charge_relative_residual": 1.7853304856269106e-15,
+      "mass_action_max_abs_ln": 4.689582056016661e-13
+    },
+    {
+      "lambda": 0.25,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 3.2613175010087965e-15,
+      "element_relative_residual": 5.6041623176290805e-09,
+      "charge_relative_residual": 3.366622629944609e-15,
+      "mass_action_max_abs_ln": 4.831690603168681e-13
+    },
+    {
+      "lambda": 0.5,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 1.0721437493473125e-14,
+      "element_relative_residual": 5.604167045859068e-09,
+      "charge_relative_residual": 1.0661599066728357e-14,
+      "mass_action_max_abs_ln": 4.973799150320701e-13
+    },
+    {
+      "lambda": 0.75,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 6.7940305812526365e-15,
+      "element_relative_residual": 5.6041472732609374e-09,
+      "charge_relative_residual": 3.101198533196391e-15,
+      "mass_action_max_abs_ln": 6.679101716144942e-13
+    },
+    {
+      "lambda": 1.0,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 1.3911795047543938e-14,
+      "element_relative_residual": 5.604155870042734e-09,
+      "charge_relative_residual": 1.4001273277974527e-14,
+      "mass_action_max_abs_ln": 3.979039320256561e-13
+    }
+  ],
+  "energy_sensitivity": [
+    {
+      "D0_eV": 6.814,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 8.685979266320227e-15,
+      "element_relative_residual": 5.604161672870446e-09,
+      "charge_relative_residual": 4.97398353927069e-15,
+      "mass_action_max_abs_ln": 5.400124791776761e-13
+    },
+    {
+      "D0_eV": 6.834,
+      "temperature_K": 1500.0,
+      "pressure_bar": 100.0,
+      "converged": true,
+      "iterations": 180,
+      "solver_residual": 2.760241371784824e-15,
+      "element_relative_residual": 5.604165326502709e-09,
+      "charge_relative_residual": 6.3428110105411e-16,
+      "mass_action_max_abs_ln": 6.252776074688882e-13
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "s8_retained_thermal_w4l_energy_candidate_v1",
+  "species": "S8",
+  "reaction": "8 S(g) -> S8(g)",
+  "base_dataset": "curated-cos-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_source_D0_J_mol": 2093492.0000000002,
+  "direct_W4L_TAE0_J_mol": 2115723.2800000003,
+  "delta_D0_J_mol": 22231.280000000028,
+  "delta_D0_over_R_K": 2673.808401214258,
+  "original_logK_coefficients": [
+    254396.85586275795,
+    -1.53787908196648,
+    -101.13324425856217,
+    0.0013295892454736613,
+    -9.406144343517808e-08
+  ],
+  "source_doi": "10.1016/j.chphi.2021.100047",
+  "representation": "Current five-coefficient reaction with one additive delta(D0)/(R T) in ln K; no thermal refit or extra atomic shift",
+  "anchor_scope": "Difference between direct W4L TAE0 and balanced same-version JANAF zero-K source rows; not a unique D0 extrapolated from the finite-range inherited fit. Its fitting residual and thermal uncertainty remain.",
+  "uncertainty_scope": "Printed central values; no inferred reaction covariance, complete state-sum uncertainty or physical abundance bounds",
+  "source_sha256": {
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/s8_source_review/20261105/inputs.json": "5df729661795e8305f21cfe90b0d38e08ccf4c8ce489c9663b2567508684166f",
+    "tests/data/validation/s8_source_review/20261105/sources.json": "552d3d967e7cf5e8ba8ec20aa18824e4495986c344f2911196219daca7ea3af5",
+    "tests/data/validation/s2o_source_investigation/20261102/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a"
+  }
+}

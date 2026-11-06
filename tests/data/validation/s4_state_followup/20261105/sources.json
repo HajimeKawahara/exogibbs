@@ -1,0 +1,56 @@
+{
+  "review_date": "2026-11-05",
+  "primary_publication": {
+    "doi": "10.1039/C5SC03088A",
+    "url": "https://arxiv.org/html/1509.00722",
+    "inspected": "Full author manuscript sections 2.3, 2.4 and 3.1; numerical archive separately inspected."
+  },
+  "archive": {
+    "doi": "10.5281/zenodo.28536",
+    "tag": "v1.0",
+    "download_url": "https://codeload.github.com/WMD-Bath/sulfur-model/zip/refs/tags/v1.0",
+    "archive_sha256": "2bea0161a93750302acae4d590a01b2d6e6c977743dff7529623803d6c26d786",
+    "selected_data_path": "data/sulfur_pbe0_96.json",
+    "selected_data_sha256": "1300f664b2a51a95f9fd8be65f67c5d8e18e65c6bb12f50027a976408adb0496",
+    "code_sha256": "98f87cc0444cfa53163a74aff075a08403f70cfc3bf96f3598a4544a5c7c23ae",
+    "license_note": "Upstream code is GPL-3.0; no code copied or executed. Only selected numerical molecular facts are transcribed and independently evaluated.",
+    "inspection": "Downloaded complete GitHub tag archive associated with Zenodo initial submission. Not a claim that this version reproduces every final-paper result."
+  },
+  "raw_DFT_archive": {
+    "doi": "10.6084/m9.figshare.1513736",
+    "metadata_inspected": true,
+    "full_74849649_byte_archive_downloaded": false
+  },
+  "conventions": [
+    "Frequency factor 0.96 is already applied; do not scale twice.",
+    "Retain largest 3N-6 frequencies; omitted six translational/rotational residues are recorded and checked below 2 cm^-1.",
+    "Electronic energies plus retained-mode ZPE define only relative energies among same-N records. No absolute atomization energy is adopted.",
+    "One electronic component and one geometric entry per record, source rotational symmetry; no extra spin or chiral multiplicity.",
+    "Declared mass 32.065 u per atom and 1 bar; this is not an exact execution of the original ASE 3.8.1 code."
+  ],
+  "limits": [
+    "Matus 2007 full state constants and zero-point conventions remain unavailable.",
+    "Fedyaeva 2023 supplemental coordinates/frequencies not recovered (publisher request denied); full article remains inspected.",
+    "The high-temperature RRHO sum does not establish completeness or a production replacement."
+  ],
+  "W4_08_energy": {
+    "doi": "10.1021/jp801805p",
+    "url": "https://lab409chem.ccu.edu.tw/var/file/80/1080/img/1707/B2GP-PLYP_Martin_JPCA_2008.pdf",
+    "pdf_sha256": "9e361d786939a8d9b048d3bffd7c95c3bb56a6c8f8fdd07c78bf196585b13940",
+    "inspection": "Full primary Table 2, printed page 12872/PDF page 6, visually inspected S4 row and footnotes a/b/c/f. Numerical facts only archived.",
+    "definitions": {
+      "a": "Nonrelativistic, clamped-nuclei, zero-point-exclusive TAEe",
+      "b": "Physical relativistic/DBOC, zero-point-exclusive TAEe",
+      "c": "Physical total atomization energy at 0 K; do not subtract ZPE or atomic spin correction again",
+      "f": "C2v symmetry"
+    },
+    "scope": "Directly inspected W4-08 physical value; W4-11 (2011) supporting information was not obtained."
+  },
+  "legacy_energy_bridge": {
+    "molecule_url": "https://janaf.nist.gov/tables/S-017.txt",
+    "molecule_inspection": "298.15 K Hf is 145.771 kJ/mol; 0/100/200/250 K numerical entries are blank. No intrinsic D0 can be reconstructed from this table alone.",
+    "atom_url": "https://janaf.nist.gov/tables/S-006.html",
+    "atom_local_source": "tests/data/validation/s2o_source_investigation/20261102/S-006.txt",
+    "atom_inspection": "Hf298=276.980 kJ/mol; H0-H298=-6.657 kJ/mol. These transcribed facts balance D298; the Jackson molecular increment is a separate declared assumption."
+  }
+}

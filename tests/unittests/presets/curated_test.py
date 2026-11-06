@@ -61,16 +61,18 @@ def test_catalog_and_solar_budget_match_approved_study(setup, neutral):
 
 
 def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
-    assert setup.metadata["dataset"] == "curated-c2h-v1"
+    updates = json.loads((ROOT / "src/exogibbs/data/curated/gas_v2.json").read_text())
+    assert setup.metadata["dataset"] == "curated-gas-v2"
     assert set(setup.metadata["species_provenance"]) == set(setup.species)
     counts = Counter(r["status"] for r in setup.metadata["species_provenance"].values())
-    assert counts["inherited_unreviewed"] == 426
+    assert counts["inherited_unreviewed"] == 390
     assert counts["reference_gauge"] == 28
     assert len(data["decisions"]) == 82
     base = fastchem4.chemsetup(path="FastChem4/logK/logK.dat", silent=True)
     changed = (set(data["nasa9_reactions"]) | set(data["janaf_reactions"])
-               | set(data["partition_reactions"]) | set(data["logk_energy_shifts_K"]) | {"C2H1"})
-    assert len(changed) == 71
+               | set(data["partition_reactions"]) | set(data["logk_energy_shifts_K"]) | {"C2H1", "H1O1", "H1K1", "H1O2", "C1O1S1", "C1N1", "P1S1", "O2Ti1", "C1H1P1", "C2H2", "C1H2"})
+    changed |= set(updates["energy_shifts_J_mol"])
+    assert len(changed) == 108
     retained = [name for name in setup.species if name not in changed]
     t = jnp.array([1601., 2527., 3997.])
     # Separate JIT graphs can round the same inherited constants differently.
@@ -82,19 +84,24 @@ def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
 
 
 def test_continuous_constants_reproduce_approved_nodes(setup):
+    updates = json.loads((ROOT / "src/exogibbs/data/curated/gas_v2.json").read_text())
     with np.load(ROOT / "tests/data/validation/gas_thermochemistry_impact/equilibria.npz") as archive:
         actual = np.asarray(setup.hvector_func(archive["temperature_K"]))
         expected = archive["h"][3]
     # Rounded Ca partition values require a small positive thermal contribution.
     partitions = [setup.species.index(s) for s in ("Co1+", "C1-", "Ca1-", "Ge1-")]
     np.testing.assert_allclose(actual[:, partitions], expected[:, partitions], atol=5e-6, rtol=0)
-    others = [i for i in range(537) if i not in partitions and setup.species[i] != "C2H1"]
+    others = [i for i in range(537) if i not in partitions and setup.species[i] not in {"C2H1", "O1Ti1", "C1O2", "H2O1", "H1O1", "H1K1", "H1O2", "C1O1S1", "C1N1", "P1S1", "O2Ti1", "C1H1P1", "C2H2", "C1H2"}]
+    others = [i for i in others if setup.species[i] not in updates["energy_shifts_J_mol"]]
     np.testing.assert_allclose(actual[:, others], expected[:, others], atol=2e-12, rtol=0)
 
 
 @pytest.mark.parametrize("species, name", [("C1H4", "CH4"), ("C1O1S1", "COS"),
                                            ("O1Ti1", "TiO"), ("O1V1", "VO")])
 def test_janaf_free_energy_and_derivatives_at_withheld_nodes(setup, data, species, name):
+    # Preserve legacy JANAF TiO/COS regressions; each adoption has separate tests.
+    if species in {"O1Ti1", "C1O1S1", "C1N1", "P1S1", "O2Ti1"}:
+        setup = curated_v1.chemsetup()
     reference = json.loads((ROOT / "examples/comparisons/data/curated_continuous_reference.json").read_text())["janaf"][name]
     record = data["janaf_reactions"][species]
     index = setup.species.index(species)

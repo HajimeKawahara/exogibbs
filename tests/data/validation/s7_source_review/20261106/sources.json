@@ -1,0 +1,27 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "S7",
+      "file": "S-020.txt",
+      "url": "https://janaf.nist.gov/tables/S-020.txt",
+      "sha256": "be68622abbe0b1b5bec8ecfb6cc2f81b9fd95c1dbe6bf23886364e5a7b626bc8",
+      "bytes": 3877,
+      "header": "Sulfur (S7)\tS7(g)"
+    },
+    {
+      "molecule": "S",
+      "file": "S-006.txt",
+      "url": "https://janaf.nist.gov/tables/S-006.txt",
+      "sha256": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+      "bytes": 3804,
+      "header": "Sulfur (S)\tS1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}

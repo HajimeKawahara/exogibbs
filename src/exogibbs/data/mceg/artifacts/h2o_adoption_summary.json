@@ -1,0 +1,109 @@
+{
+  "dataset": "curated-h2o-v1",
+  "base_dataset": "curated-co2-v1",
+  "comparison_dataset": "curated-tio-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_joint_reference_solves": 6,
+  "tolerance_note": "A diagnostic 1e-14 request at 1500 K, 1e-6 bar reached a float64 residual floor of 1.54e-14 without a converged flag; all recorded tighter cases require convergence at 2e-14, below the production 5e-14.",
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_joint_candidates": 4.263256414560601e-14,
+      "tighter_case_indices": [
+        0,
+        24,
+        74
+      ],
+      "max_tight_abs_delta_ln_x": 1.7280115116591332e-08,
+      "max_tight_co2_h2o_abs_delta_ln_x": 3.375077994860476e-14,
+      "max_tight_absolute_delta_x": 9.992007221626409e-16,
+      "max_element_relative_residual": 1.443661527435063e-06,
+      "max_mass_action_abs_ln": 1.0231815394945443e-12,
+      "max_charge_relative_residual": 3.6216113288242e-14,
+      "species_response": [
+        {
+          "species": "H2O1",
+          "min_x_ratio": 0.9820713529575638,
+          "max_x_ratio": 0.9999995500384742,
+          "max_abs_delta_x": 7.815371409368096e-07,
+          "case24_x_before": 0.00027186239798786407,
+          "case24_x_after": 0.00027108086084692726
+        },
+        {
+          "species": "C1O2",
+          "min_x_ratio": 1.00065147469924,
+          "max_x_ratio": 1.0235475558667575,
+          "max_abs_delta_x": 4.4785724686349665e-10,
+          "case24_x_before": 1.901926677221511e-08,
+          "case24_x_after": 1.9467124019078608e-08
+        }
+      ]
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_joint_candidates": 4.263256414560601e-14,
+      "tighter_case_indices": [
+        0,
+        24,
+        74
+      ],
+      "max_tight_abs_delta_ln_x": 6.110667527536862e-13,
+      "max_tight_co2_h2o_abs_delta_ln_x": 5.3290705182007514e-14,
+      "max_tight_absolute_delta_x": 3.1086244689504383e-15,
+      "max_element_relative_residual": 1.349105568907918e-06,
+      "max_mass_action_abs_ln": 1.3642420526593924e-12,
+      "species_response": [
+        {
+          "species": "H2O1",
+          "min_x_ratio": 0.9820713529575079,
+          "max_x_ratio": 0.9999995500387957,
+          "max_abs_delta_x": 7.815384164516596e-07,
+          "case24_x_before": 0.0002718608986391548,
+          "case24_x_after": 0.00027107936022270315
+        },
+        {
+          "species": "C1O2",
+          "min_x_ratio": 1.0006514746993753,
+          "max_x_ratio": 1.0235475239836354,
+          "max_abs_delta_x": 4.4785445701791533e-10,
+          "case24_x_before": 1.9019174046883124e-08,
+          "case24_x_after": 1.946702850390104e-08
+        }
+      ]
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 0,
+      "comparisons": [
+        {
+          "dataset": "curated-h2o-v1",
+          "max_abs_delta_log10_x": 1.6080180562787365e-08,
+          "element_relative_residual": 2.5163323773096525e-11,
+          "charge_relative_residual": 2.239882446821185e-12,
+          "mass_action_max_abs_ln": 2.573870006017387e-10
+        }
+      ]
+    },
+    {
+      "case_index": 24,
+      "comparisons": [
+        {
+          "dataset": "curated-h2o-v1",
+          "max_abs_delta_log10_x": 3.344935682064323e-09,
+          "element_relative_residual": 3.488188916972328e-11,
+          "charge_relative_residual": 1.3507428389117065e-11,
+          "mass_action_max_abs_ln": 2.149391775674303e-10
+        }
+      ]
+    }
+  ],
+  "scope": "Joint CO2 NIST626 and H2O evaluated-2025 production adoption, both network modes. Independent assembly of the frozen reviewed candidates agrees in h on 2501 temperatures. Numerical closure and solver parity do not establish complete physical accuracy."
+}

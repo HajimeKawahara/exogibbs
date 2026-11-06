@@ -1,0 +1,59 @@
+{
+  "source_url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Aluminum.pdf",
+  "printed_page": 114,
+  "pdf_page_1based": 56,
+  "inspection": "Original scan rendered and visually inspected; selected rows manually transcribed.",
+  "evaluation_date": "June 1963 (1 bar)",
+  "source_file": "janaf_alh_printed_114.pdf",
+  "source_sha256": "2211263f2bf4f5804765b999d4cf8b3335e0e43c7fd2586cee12cec81f70c9ab",
+  "rows": [
+    {
+      "temperature_K": 0,
+      "cp_J_mol_K": 0,
+      "entropy_J_mol_K": 0,
+      "enthalpy_increment_kJ_mol": -8.669,
+      "formation_enthalpy_kJ_mol": 259.512,
+      "formation_gibbs_kJ_mol": 259.512
+    },
+    {
+      "temperature_K": 298.15,
+      "cp_J_mol_K": 29.373,
+      "entropy_J_mol_K": 187.864,
+      "enthalpy_increment_kJ_mol": 0,
+      "formation_enthalpy_kJ_mol": 259.408,
+      "formation_gibbs_kJ_mol": 231.308
+    },
+    {
+      "temperature_K": 500,
+      "cp_J_mol_K": 30.996,
+      "entropy_J_mol_K": 203.381,
+      "enthalpy_increment_kJ_mol": 6.072,
+      "formation_enthalpy_kJ_mol": 257.354,
+      "formation_gibbs_kJ_mol": 212.848
+    },
+    {
+      "temperature_K": 1000,
+      "cp_J_mol_K": 35.018,
+      "entropy_J_mol_K": 226.257,
+      "enthalpy_increment_kJ_mol": 22.692,
+      "formation_enthalpy_kJ_mol": 240.954,
+      "formation_gibbs_kJ_mol": 171.204
+    },
+    {
+      "temperature_K": 1500,
+      "cp_J_mol_K": 36.844,
+      "entropy_J_mol_K": 240.847,
+      "enthalpy_increment_kJ_mol": 40.714,
+      "formation_enthalpy_kJ_mol": 235.296,
+      "formation_gibbs_kJ_mol": 137.57
+    },
+    {
+      "temperature_K": 3000,
+      "cp_J_mol_K": 38.989,
+      "entropy_J_mol_K": 267.165,
+      "enthalpy_increment_kJ_mol": 97.85,
+      "formation_enthalpy_kJ_mol": -73.13,
+      "formation_gibbs_kJ_mol": 68.218
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "decision": "Retain production in this source PR; prioritize a spectroscopic-D0 candidate because modern evidence favors a smaller dissociation energy D0, while thermal/state selection must be explicit.",
+  "primary": [
+    {
+      "doi": "10.1093/mnras/stag979",
+      "inspection": "Full published 15-page paper, sections 2.3/3.1/4 and current official states/PF/definition.",
+      "findings": "Khan model includes X/A/B/C singlets, bound/quasi-bound selection and MARVELized levels. Nuclear spin product 8. The paper explicitly notes an unexplained extra factor two in BC2016 KH and divides it for its figure."
+    },
+    {
+      "doi": "10.1016/0009-2614(88)87016-7",
+      "inspection": "Publisher abstract inspected; original full text not acquired. Khan 2026 separately confirms adopted De.",
+      "findings": "Spectroscopic resonance-width analysis reports De=14772.7 +/-0.6 cm-1 and D0=14282.6 cm-1. The quoted +/-0.6 is attached to De; do not silently relabel it as a complete D0 uncertainty."
+    },
+    {
+      "doi": "10.1051/0004-6361/201526961",
+      "inspection": "Pinned numerical excerpts reused; older spectroscopic originals not reaudited.",
+      "findings": "BC D0=1.7708 eV agrees with the 1988 spectroscopic D0 to tabulation precision; its raw Q carries the factor-two issue. Production KH is JANAF, so no factor-two correction is applied to production."
+    }
+  ],
+  "Zemke1988": {
+    "De_cm-1": 14772.7,
+    "De_uncertainty_cm-1": 0.6,
+    "D0_cm-1": 14282.6
+  },
+  "limitations": [
+    "Published PF includes noninteger rounded temperature knots. Replay uses the actual nearest knot, not an invented exact integer value; remaining small mismatch is not claimed to be fully explained by rounding.",
+    "Paper PF discussion names X/A/B while distributed states also include C. C contribution and boundary populations are quantified without discarding states or declaring completeness.",
+    "Metadata maximum 5000 K and tabulated PF through 10001 K are distinct; no global omitted-state or isotope-mixture bound is established."
+  ],
+  "followups": [
+    "Build a provisional energy-only candidate using the inspected D0=14282.6 cm-1, explicitly retaining abstract-only uncertainty limits; use the full 1988 paper if a precision uncertainty claim is needed.",
+    "Reconcile Khan PF generation, MARVELization and X/A/B/C bound/quasi-bound selection, then compare Q/H/S/Cp with production and NASA thermal candidates.",
+    "Run fixed-network K redistribution, conserving K/H and recording convergence. Source-review merger does not require completing candidate adoption."
+  ]
+}

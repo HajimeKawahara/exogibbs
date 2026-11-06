@@ -1,0 +1,1446 @@
+{
+  "nist626": [
+    {
+      "temperature_K": 1513.0,
+      "G_relative_J_mol": -371031.42155424826,
+      "H_relative_J_mol": 71864.98398663178,
+      "S_J_mol_K": 292.72730042358234,
+      "Cp_J_mol_K": 58.511191599266915,
+      "relative_standard_u_Q": 4.631204314982783e-06,
+      "standard_u_Cp_J_mol_K": 0.002468896529834423
+    },
+    {
+      "temperature_K": 1531.0,
+      "G_relative_J_mol": -376306.7565687649,
+      "H_relative_J_mol": 72919.04393120478,
+      "S_J_mol_K": 293.419856629634,
+      "Cp_J_mol_K": 58.60618608071646,
+      "relative_standard_u_Q": 4.410937391284495e-06,
+      "standard_u_Cp_J_mol_K": 0.002618556856961181
+    },
+    {
+      "temperature_K": 1562.0,
+      "G_relative_J_mol": -385421.0591605906,
+      "H_relative_J_mol": 74738.30412505624,
+      "S_J_mol_K": 294.59626330707226,
+      "Cp_J_mol_K": 58.764306124123316,
+      "relative_standard_u_Q": 4.019512240602379e-06,
+      "standard_u_Cp_J_mol_K": 0.00288761286728462
+    },
+    {
+      "temperature_K": 1594.0,
+      "G_relative_J_mol": -394867.28852284903,
+      "H_relative_J_mol": 76621.2811316971,
+      "S_J_mol_K": 295.7895669100039,
+      "Cp_J_mol_K": 58.920617605621466,
+      "relative_standard_u_Q": 3.6472238785532692e-06,
+      "standard_u_Cp_J_mol_K": 0.0031815291208363372
+    },
+    {
+      "temperature_K": 1625.0,
+      "G_relative_J_mol": -404054.4268579929,
+      "H_relative_J_mol": 78450.08521823771,
+      "S_J_mol_K": 296.9258535853727,
+      "Cp_J_mol_K": 59.06573815301409,
+      "relative_standard_u_Q": 3.4036301528653547e-06,
+      "standard_u_Cp_J_mol_K": 0.003483593547753844
+    },
+    {
+      "temperature_K": 1656.0,
+      "G_relative_J_mol": -413276.49732541357,
+      "H_relative_J_mol": 80283.29647066287,
+      "S_J_mol_K": 298.04335374159206,
+      "Cp_J_mol_K": 59.20500939281021,
+      "relative_standard_u_Q": 3.3918877903360426e-06,
+      "standard_u_Cp_J_mol_K": 0.0038045318048145595
+    },
+    {
+      "temperature_K": 1688.0,
+      "G_relative_J_mol": -422832.08702500013,
+      "H_relative_J_mol": 82180.07964946533,
+      "S_J_mol_K": 299.17782385928047,
+      "Cp_J_mol_K": 59.342987650524584,
+      "relative_standard_u_Q": 3.7275870099006284e-06,
+      "standard_u_Cp_J_mol_K": 0.004157563887581346
+    },
+    {
+      "temperature_K": 1719.0,
+      "G_relative_J_mol": -432123.40164477844,
+      "H_relative_J_mol": 84021.71506777334,
+      "S_J_mol_K": 300.25893933249085,
+      "Cp_J_mol_K": 59.47136652856779,
+      "relative_standard_u_Q": 4.411371414560428e-06,
+      "standard_u_Cp_J_mol_K": 0.004522651941144454
+    },
+    {
+      "temperature_K": 1737.0,
+      "G_relative_J_mol": -437533.6499954612,
+      "H_relative_J_mol": 85092.85256519937,
+      "S_J_mol_K": 300.87881552139356,
+      "Cp_J_mol_K": 59.54363766682656,
+      "relative_standard_u_Q": 4.9536842378742625e-06,
+      "standard_u_Cp_J_mol_K": 0.004745812117815687
+    },
+    {
+      "temperature_K": 1763.0,
+      "G_relative_J_mol": -445368.03491023026,
+      "H_relative_J_mol": 86642.3147349041,
+      "S_J_mol_K": 301.7642368945742,
+      "Cp_J_mol_K": 59.64521520719866,
+      "relative_standard_u_Q": 5.897921447747324e-06,
+      "standard_u_Cp_J_mol_K": 0.005083711878617435
+    },
+    {
+      "temperature_K": 1781.0,
+      "G_relative_J_mol": -450805.2554423298,
+      "H_relative_J_mol": 87716.54693925481,
+      "S_J_mol_K": 302.3704673675377,
+      "Cp_J_mol_K": 59.71366194208695,
+      "relative_standard_u_Q": 6.649803645197881e-06,
+      "standard_u_Cp_J_mol_K": 0.005328905381226774
+    },
+    {
+      "temperature_K": 1812.0,
+      "G_relative_J_mol": -460194.76784575754,
+      "H_relative_J_mol": 89569.45527917077,
+      "S_J_mol_K": 303.40188914179265,
+      "Cp_J_mol_K": 59.828103452732606,
+      "relative_standard_u_Q": 8.11120676927433e-06,
+      "standard_u_Cp_J_mol_K": 0.0057742279990550625
+    },
+    {
+      "temperature_K": 1844.0,
+      "G_relative_J_mol": -469920.44544871326,
+      "H_relative_J_mol": 91485.78661797363,
+      "S_J_mol_K": 304.4502343094831,
+      "Cp_J_mol_K": 59.94188870284381,
+      "relative_standard_u_Q": 9.821459406391275e-06,
+      "standard_u_Cp_J_mol_K": 0.006266111607545007
+    },
+    {
+      "temperature_K": 1875.0,
+      "G_relative_J_mol": -479373.9444957716,
+      "H_relative_J_mol": 93345.64177081017,
+      "S_J_mol_K": 305.45044600884364,
+      "Cp_J_mol_K": 60.04813531284376,
+      "relative_standard_u_Q": 1.1661631866804168e-05,
+      "standard_u_Cp_J_mol_K": 0.0067758713106639825
+    },
+    {
+      "temperature_K": 1906.0,
+      "G_relative_J_mol": -488858.2213104675,
+      "H_relative_J_mol": 95208.73276815863,
+      "S_J_mol_K": 306.4359675123957,
+      "Cp_J_mol_K": 60.150674337673024,
+      "relative_standard_u_Q": 1.3677150406668182e-05,
+      "standard_u_Cp_J_mol_K": 0.007320385467526838
+    },
+    {
+      "temperature_K": 1938.0,
+      "G_relative_J_mol": -498680.24974740075,
+      "H_relative_J_mol": 97135.19865865931,
+      "S_J_mol_K": 307.43831187103206,
+      "Cp_J_mol_K": 60.252840375709226,
+      "relative_standard_u_Q": 1.5940586313095588e-05,
+      "standard_u_Cp_J_mol_K": 0.007920689668557503
+    },
+    {
+      "temperature_K": 1969.0,
+      "G_relative_J_mol": -508225.70514678216,
+      "H_relative_J_mol": 99004.52676078328,
+      "S_J_mol_K": 308.3952422080068,
+      "Cp_J_mol_K": 60.34843790513248,
+      "relative_standard_u_Q": 1.8312114796112734e-05,
+      "standard_u_Cp_J_mol_K": 0.008541281158376459
+    },
+    {
+      "temperature_K": 1987.0,
+      "G_relative_J_mol": -513781.7711123168,
+      "H_relative_J_mol": 100091.2867919107,
+      "S_J_mol_K": 308.9446693025805,
+      "Cp_J_mol_K": 60.402491307493236,
+      "relative_standard_u_Q": 1.977115531738951e-05,
+      "standard_u_Cp_J_mol_K": 0.008919921786007158
+    },
+    {
+      "temperature_K": 2013.0,
+      "G_relative_J_mol": -521824.56712236267,
+      "H_relative_J_mol": 101662.74759803576,
+      "S_J_mol_K": 309.7304096971676,
+      "Cp_J_mol_K": 60.47876087082506,
+      "relative_standard_u_Q": 2.198708643872376e-05,
+      "standard_u_Cp_J_mol_K": 0.009491291657126649
+    },
+    {
+      "temperature_K": 2031.0,
+      "G_relative_J_mol": -527404.568581506,
+      "H_relative_J_mol": 102751.83110823612,
+      "S_J_mol_K": 310.2690298817046,
+      "Cp_J_mol_K": 60.530354938288,
+      "relative_standard_u_Q": 2.3597624539661474e-05,
+      "standard_u_Cp_J_mol_K": 0.00990427101537032
+    },
+    {
+      "temperature_K": 2062.0,
+      "G_relative_J_mol": -537037.1634837663,
+      "H_relative_J_mol": 104629.6220295145,
+      "S_J_mol_K": 311.1866079113874,
+      "Cp_J_mol_K": 60.61699080732289,
+      "relative_standard_u_Q": 2.652146117652678e-05,
+      "standard_u_Cp_J_mol_K": 0.010649828878340123
+    },
+    {
+      "temperature_K": 2094.0,
+      "G_relative_J_mol": -547010.1162040553,
+      "H_relative_J_mol": 106570.75898369706,
+      "S_J_mol_K": 312.1207617897575,
+      "Cp_J_mol_K": 60.70360522504423,
+      "relative_standard_u_Q": 2.9744448972144342e-05,
+      "standard_u_Cp_J_mol_K": 0.01146639225206895
+    },
+    {
+      "temperature_K": 2125.0,
+      "G_relative_J_mol": -556699.727169159,
+      "H_relative_J_mol": 108453.83764927689,
+      "S_J_mol_K": 313.0134422674992,
+      "Cp_J_mol_K": 60.784924244668694,
+      "relative_standard_u_Q": 3.307191384516422e-05,
+      "standard_u_Cp_J_mol_K": 0.012304406939352617
+    },
+    {
+      "temperature_K": 2156.0,
+      "G_relative_J_mol": -566416.8280182364,
+      "H_relative_J_mol": 110339.3993275149,
+      "S_J_mol_K": 313.89435405647095,
+      "Cp_J_mol_K": 60.86382475340679,
+      "relative_standard_u_Q": 3.660842121931835e-05,
+      "standard_u_Cp_J_mol_K": 0.013189980352812119
+    },
+    {
+      "temperature_K": 2188.0,
+      "G_relative_J_mol": -576475.8363691692,
+      "H_relative_J_mol": 112288.31261683005,
+      "S_J_mol_K": 314.79165858592285,
+      "Cp_J_mol_K": 60.942861037319446,
+      "relative_standard_u_Q": 4.048612549674649e-05,
+      "standard_u_Cp_J_mol_K": 0.014155455752032071
+    },
+    {
+      "temperature_K": 2219.0,
+      "G_relative_J_mol": -586247.7039418971,
+      "H_relative_J_mol": 114178.69926594183,
+      "S_J_mol_K": 315.6495733248486,
+      "Cp_J_mol_K": 61.01720979349723,
+      "relative_standard_u_Q": 4.447059719931655e-05,
+      "standard_u_Cp_J_mol_K": 0.01514188359704977
+    },
+    {
+      "temperature_K": 2237.0,
+      "G_relative_J_mol": -591933.8399062759,
+      "H_relative_J_mol": 115277.38995985116,
+      "S_J_mol_K": 316.1427044551305,
+      "Cp_J_mol_K": 61.05942140561871,
+      "relative_standard_u_Q": 4.689028672861706e-05,
+      "standard_u_Cp_J_mol_K": 0.015738196856023724
+    },
+    {
+      "temperature_K": 2263.0,
+      "G_relative_J_mol": -600162.7434827164,
+      "H_relative_J_mol": 116865.7150598472,
+      "S_J_mol_K": 316.8486339118708,
+      "Cp_J_mol_K": 61.11919914920281,
+      "relative_standard_u_Q": 5.05269620189376e-05,
+      "standard_u_Cp_J_mol_K": 0.016630837562708653
+    },
+    {
+      "temperature_K": 2281.0,
+      "G_relative_J_mol": -605870.3836095883,
+      "H_relative_J_mol": 117966.22692853873,
+      "S_J_mol_K": 317.3330164568729,
+      "Cp_J_mol_K": 61.159783537845286,
+      "relative_standard_u_Q": 5.314495360834228e-05,
+      "standard_u_Cp_J_mol_K": 0.01727080175042791
+    },
+    {
+      "temperature_K": 2312.0,
+      "G_relative_J_mol": -615720.5374568342,
+      "H_relative_J_mol": 119863.24544022369,
+      "S_J_mol_K": 318.15907564751643,
+      "Cp_J_mol_K": 61.2282036664532,
+      "relative_standard_u_Q": 5.785145877900598e-05,
+      "standard_u_Cp_J_mol_K": 0.018416118976078515
+    },
+    {
+      "temperature_K": 2344.0,
+      "G_relative_J_mol": -625915.1300105851,
+      "H_relative_J_mol": 121823.65279398541,
+      "S_J_mol_K": 319.00118720331506,
+      "Cp_J_mol_K": 61.296953879227054,
+      "relative_standard_u_Q": 6.298007327675616e-05,
+      "standard_u_Cp_J_mol_K": 0.019656886232585526
+    },
+    {
+      "temperature_K": 2375.0,
+      "G_relative_J_mol": -635816.6815691829,
+      "H_relative_J_mol": 123724.86818324731,
+      "S_J_mol_K": 319.8069683168127,
+      "Cp_J_mol_K": 61.36182339971852,
+      "relative_standard_u_Q": 6.821920446847101e-05,
+      "standard_u_Cp_J_mol_K": 0.020917275620871378
+    },
+    {
+      "temperature_K": 2406.0,
+      "G_relative_J_mol": -645743.0626531683,
+      "H_relative_J_mol": 125628.06914832929,
+      "S_J_mol_K": 320.6031304245626,
+      "Cp_J_mol_K": 61.425067941635874,
+      "relative_standard_u_Q": 7.373374549686947e-05,
+      "standard_u_Cp_J_mol_K": 0.022236863982998477
+    },
+    {
+      "temperature_K": 2438.0,
+      "G_relative_J_mol": -656015.3811092046,
+      "H_relative_J_mol": 127594.69420340512,
+      "S_J_mol_K": 321.41512523076693,
+      "Cp_J_mol_K": 61.48872687637013,
+      "relative_standard_u_Q": 7.972451829807014e-05,
+      "standard_u_Cp_J_mol_K": 0.023663210045142664
+    },
+    {
+      "temperature_K": 2469.0,
+      "G_relative_J_mol": -665991.3215781611,
+      "H_relative_J_mol": 129501.78105855582,
+      "S_J_mol_K": 322.1924271513637,
+      "Cp_J_mol_K": 61.54889298850313,
+      "relative_standard_u_Q": 8.582635317338625e-05,
+      "standard_u_Cp_J_mol_K": 0.025109344528318058
+    },
+    {
+      "temperature_K": 2487.0,
+      "G_relative_J_mol": -671794.8146826326,
+      "H_relative_J_mol": 130609.970276707,
+      "S_J_mol_K": 322.63964011231985,
+      "Cp_J_mol_K": 61.583175347059544,
+      "relative_standard_u_Q": 8.950768616748154e-05,
+      "standard_u_Cp_J_mol_K": 0.025979037318176888
+    },
+    {
+      "temperature_K": 2513.0,
+      "G_relative_J_mol": -680191.7880838551,
+      "H_relative_J_mol": 132211.7680903572,
+      "S_J_mol_K": 323.2803645739006,
+      "Cp_J_mol_K": 61.63187764442388,
+      "relative_standard_u_Q": 9.50089750360049e-05,
+      "standard_u_Cp_J_mol_K": 0.027275594618851703
+    },
+    {
+      "temperature_K": 2531.0,
+      "G_relative_J_mol": -686014.7989918437,
+      "H_relative_J_mol": 133321.4409602581,
+      "S_J_mol_K": 323.72036347376604,
+      "Cp_J_mol_K": 61.6650452829771,
+      "relative_standard_u_Q": 9.894733300866939e-05,
+      "standard_u_Cp_J_mol_K": 0.02820174260988779
+    },
+    {
+      "temperature_K": 2562.0,
+      "G_relative_J_mol": -696061.7931606909,
+      "H_relative_J_mol": 135233.93022396535,
+      "S_J_mol_K": 324.4713986669228,
+      "Cp_J_mol_K": 61.72114961383186,
+      "relative_standard_u_Q": 0.00010598483829146556,
+      "standard_u_Cp_J_mol_K": 0.02985382633211484
+    },
+    {
+      "temperature_K": 2594.0,
+      "G_relative_J_mol": -706457.1652463725,
+      "H_relative_J_mol": 137209.91641959254,
+      "S_J_mol_K": 325.2378880747745,
+      "Cp_J_mol_K": 61.77776137634023,
+      "relative_standard_u_Q": 0.00011359597683691726,
+      "standard_u_Cp_J_mol_K": 0.0316377774314658
+    },
+    {
+      "temperature_K": 2625.0,
+      "G_relative_J_mol": -716550.9411841027,
+      "H_relative_J_mol": 139125.86129252813,
+      "S_J_mol_K": 325.9721152291927,
+      "Cp_J_mol_K": 61.831392819723106,
+      "relative_standard_u_Q": 0.00012131464948822278,
+      "standard_u_Cp_J_mol_K": 0.03344617305091413
+    },
+    {
+      "temperature_K": 2656.0,
+      "G_relative_J_mol": -726667.3537533247,
+      "H_relative_J_mol": 141043.45081838442,
+      "S_J_mol_K": 326.69834509477,
+      "Cp_J_mol_K": 61.88387853015721,
+      "relative_standard_u_Q": 0.00012938274525734305,
+      "standard_u_Cp_J_mol_K": 0.03533754700729163
+    },
+    {
+      "temperature_K": 2688.0,
+      "G_relative_J_mol": -737133.5860016431,
+      "H_relative_J_mol": 143024.58649195923,
+      "S_J_mol_K": 327.4397963145842,
+      "Cp_J_mol_K": 61.93689985827317,
+      "relative_standard_u_Q": 0.0001380877014714225,
+      "standard_u_Cp_J_mol_K": 0.03738190707584314
+    },
+    {
+      "temperature_K": 2719.0,
+      "G_relative_J_mol": -747295.2520440287,
+      "H_relative_J_mol": 144945.41228719646,
+      "S_J_mol_K": 328.1502994965889,
+      "Cp_J_mol_K": 61.98718240240272,
+      "relative_standard_u_Q": 0.00014689534154874553,
+      "standard_u_Cp_J_mol_K": 0.039456614932950926
+    },
+    {
+      "temperature_K": 2737.0,
+      "G_relative_J_mol": -753205.6431243048,
+      "H_relative_J_mol": 146061.4405632065,
+      "S_J_mol_K": 328.55940215108194,
+      "Cp_J_mol_K": 62.01590413150475,
+      "relative_standard_u_Q": 0.000152182572519873,
+      "standard_u_Cp_J_mol_K": 0.040705946085954625
+    },
+    {
+      "temperature_K": 2763.0,
+      "G_relative_J_mol": -761755.8236498811,
+      "H_relative_J_mol": 147674.38721533684,
+      "S_J_mol_K": 329.14593227116103,
+      "Cp_J_mol_K": 62.05679091715265,
+      "relative_standard_u_Q": 0.0001600489614964065,
+      "standard_u_Cp_J_mol_K": 0.04257129577433731
+    },
+    {
+      "temperature_K": 2781.0,
+      "G_relative_J_mol": -767684.0816092866,
+      "H_relative_J_mol": 148791.6609829642,
+      "S_J_mol_K": 329.5489905042254,
+      "Cp_J_mol_K": 62.08468976388935,
+      "relative_standard_u_Q": 0.00016565639847483212,
+      "standard_u_Cp_J_mol_K": 0.04390626589230799
+    },
+    {
+      "temperature_K": 2812.0,
+      "G_relative_J_mol": -777910.7903665149,
+      "H_relative_J_mol": 150717.02175716488,
+      "S_J_mol_K": 330.23748653046937,
+      "Cp_J_mol_K": 62.13197353078641,
+      "relative_standard_u_Q": 0.0001756298099878762,
+      "standard_u_Cp_J_mol_K": 0.04629309867610124
+    },
+    {
+      "temperature_K": 2844.0,
+      "G_relative_J_mol": -788489.6629586581,
+      "H_relative_J_mol": 152706.0126227301,
+      "S_J_mol_K": 330.94081419880035,
+      "Cp_J_mol_K": 62.179790171592664,
+      "relative_standard_u_Q": 0.00018635397882966592,
+      "standard_u_Cp_J_mol_K": 0.04887914598422544
+    },
+    {
+      "temperature_K": 2875.0,
+      "G_relative_J_mol": -798759.298201936,
+      "H_relative_J_mol": 154634.2920377928,
+      "S_J_mol_K": 331.6151618225144,
+      "Cp_J_mol_K": 62.225172504033566,
+      "relative_standard_u_Q": 0.0001971694779566936,
+      "standard_u_Cp_J_mol_K": 0.051509675667356765
+    },
+    {
+      "temperature_K": 2906.0,
+      "G_relative_J_mol": -809049.7332362712,
+      "H_relative_J_mol": 156563.96405650026,
+      "S_J_mol_K": 332.2827588756956,
+      "Cp_J_mol_K": 62.26964714659045,
+      "relative_standard_u_Q": 0.00020841561579000353,
+      "standard_u_Cp_J_mol_K": 0.05427049297971455
+    },
+    {
+      "temperature_K": 2938.0,
+      "G_relative_J_mol": -819693.7152249814,
+      "H_relative_J_mol": 158557.31475038858,
+      "S_J_mol_K": 332.96495234015316,
+      "Cp_J_mol_K": 62.3146189940119,
+      "relative_standard_u_Q": 0.00022048805806613428,
+      "standard_u_Cp_J_mol_K": 0.057264447823885345
+    },
+    {
+      "temperature_K": 2969.0,
+      "G_relative_J_mol": -830025.7867632891,
+      "H_relative_J_mol": 160489.73164367577,
+      "S_J_mol_K": 333.6192382643869,
+      "Cp_J_mol_K": 62.35728815101126,
+      "relative_standard_u_Q": 0.00023264410257952135,
+      "standard_u_Cp_J_mol_K": 0.06031169837343851
+    },
+    {
+      "temperature_K": 2987.0,
+      "G_relative_J_mol": -836034.3290921944,
+      "H_relative_J_mol": 161612.38255278982,
+      "S_J_mol_K": 333.99622083862886,
+      "Cp_J_mol_K": 62.38166133301936,
+      "relative_standard_u_Q": 0.0002399153278707708,
+      "standard_u_Cp_J_mol_K": 0.06215019234756456
+    },
+    {
+      "temperature_K": 3013.0,
+      "G_relative_J_mol": -844725.2706728091,
+      "H_relative_J_mol": 163234.7581558175,
+      "S_J_mol_K": 334.53701587408784,
+      "Cp_J_mol_K": 62.41634727559127,
+      "relative_standard_u_Q": 0.0002507001957364481,
+      "standard_u_Cp_J_mol_K": 0.06489895368912602
+    },
+    {
+      "temperature_K": 3031.0,
+      "G_relative_J_mol": -850750.2866591534,
+      "H_relative_J_mol": 164358.46557305387,
+      "S_J_mol_K": 334.9088591990126,
+      "Cp_J_mol_K": 62.44000117343828,
+      "relative_standard_u_Q": 0.0002583653208640886,
+      "standard_u_Cp_J_mol_K": 0.06686823416023562
+    },
+    {
+      "temperature_K": 3062.0,
+      "G_relative_J_mol": -861142.3283591794,
+      "H_relative_J_mol": 166294.72853321017,
+      "S_J_mol_K": 335.5444339949019,
+      "Cp_J_mol_K": 62.480048697229506,
+      "relative_standard_u_Q": 0.00027195567359391756,
+      "standard_u_Cp_J_mol_K": 0.07039132140542569
+    },
+    {
+      "temperature_K": 3094.0,
+      "G_relative_J_mol": -871890.1636471546,
+      "H_relative_J_mol": 168294.7393863655,
+      "S_J_mol_K": 336.194215589373,
+      "Cp_J_mol_K": 62.52046912466915,
+      "relative_standard_u_Q": 0.0002865133435012946,
+      "standard_u_Cp_J_mol_K": 0.07420849119341984
+    },
+    {
+      "temperature_K": 3125.0,
+      "G_relative_J_mol": -882321.8635120961,
+      "H_relative_J_mol": 170233.46921847996,
+      "S_J_mol_K": 336.81770647378437,
+      "Cp_J_mol_K": 62.558729288431344,
+      "relative_standard_u_Q": 0.00030114274618735367,
+      "standard_u_Cp_J_mol_K": 0.07808768687254541
+    },
+    {
+      "temperature_K": 3156.0,
+      "G_relative_J_mol": -892772.8017108898,
+      "H_relative_J_mol": 172173.37135872754,
+      "S_J_mol_K": 337.4354160550118,
+      "Cp_J_mol_K": 62.59609631261911,
+      "relative_standard_u_Q": 0.0003163050835853357,
+      "standard_u_Cp_J_mol_K": 0.08215096475403691
+    },
+    {
+      "temperature_K": 3188.0,
+      "G_relative_J_mol": -903580.8579202901,
+      "H_relative_J_mol": 174177.05093907993,
+      "S_J_mol_K": 338.0670981365653,
+      "Cp_J_mol_K": 62.63371742678447,
+      "relative_standard_u_Q": 0.00033253153562338365,
+      "standard_u_Cp_J_mol_K": 0.08654407736759054
+    },
+    {
+      "temperature_K": 3219.0,
+      "G_relative_J_mol": -914070.349544462,
+      "H_relative_J_mol": 176119.24910778643,
+      "S_J_mol_K": 338.67337640641455,
+      "Cp_J_mol_K": 62.66922408996142,
+      "relative_standard_u_Q": 0.0003488241157324469,
+      "standard_u_Cp_J_mol_K": 0.09099722040124722
+    },
+    {
+      "temperature_K": 3237.0,
+      "G_relative_J_mol": -920169.6186992994,
+      "H_relative_J_mol": 177247.47710366955,
+      "S_J_mol_K": 339.0228902696845,
+      "Cp_J_mol_K": 62.68940894457026,
+      "relative_standard_u_Q": 0.0003585497184946246,
+      "standard_u_Cp_J_mol_K": 0.09367372906265693
+    },
+    {
+      "temperature_K": 3263.0,
+      "G_relative_J_mol": -928990.7432703946,
+      "H_relative_J_mol": 178877.77493819973,
+      "S_J_mol_K": 339.5245228956771,
+      "Cp_J_mol_K": 62.71799381761759,
+      "relative_standard_u_Q": 0.0003729501611650683,
+      "standard_u_Cp_J_mol_K": 0.09765910042941632
+    },
+    {
+      "temperature_K": 3281.0,
+      "G_relative_J_mol": -935105.2930894817,
+      "H_relative_J_mol": 180006.87367906794,
+      "S_J_mol_K": 339.8696027944375,
+      "Cp_J_mol_K": 62.73738114897209,
+      "relative_standard_u_Q": 0.0003831684196765824,
+      "standard_u_Cp_J_mol_K": 0.10050164890931056
+    },
+    {
+      "temperature_K": 3312.0,
+      "G_relative_J_mol": -945650.4114154491,
+      "H_relative_J_mol": 181952.24064903276,
+      "S_J_mol_K": 340.45973794217446,
+      "Cp_J_mol_K": 62.769981741174746,
+      "relative_standard_u_Q": 0.0004012549966867046,
+      "standard_u_Cp_J_mol_K": 0.10555892079680226
+    },
+    {
+      "temperature_K": 3344.0,
+      "G_relative_J_mol": -956554.7971841092,
+      "H_relative_J_mol": 183961.4040275511,
+      "S_J_mol_K": 341.06345730013766,
+      "Cp_J_mol_K": 62.802559884328325,
+      "relative_standard_u_Q": 0.00042059023209571486,
+      "standard_u_Cp_J_mol_K": 0.11099533217968174
+    },
+    {
+      "temperature_K": 3375.0,
+      "G_relative_J_mol": -967136.7621827205,
+      "H_relative_J_mol": 185908.75886072783,
+      "S_J_mol_K": 341.6431173462069,
+      "Cp_J_mol_K": 62.833045859253296,
+      "relative_standard_u_Q": 0.0004399853506916851,
+      "standard_u_Cp_J_mol_K": 0.11647231814013785
+    },
+    {
+      "temperature_K": 3406.0,
+      "G_relative_J_mol": -977736.6185219559,
+      "H_relative_J_mol": 187857.04184684512,
+      "S_J_mol_K": 342.2177511358782,
+      "Cp_J_mol_K": 62.86243898121174,
+      "relative_standard_u_Q": 0.000460054094539905,
+      "standard_u_Cp_J_mol_K": 0.1221565005090383
+    },
+    {
+      "temperature_K": 3438.0,
+      "G_relative_J_mol": -988697.0082386294,
+      "H_relative_J_mol": 189869.10959952223,
+      "S_J_mol_K": 342.80573526415117,
+      "Cp_J_mol_K": 62.891593478093036,
+      "relative_standard_u_Q": 0.00048149854147232495,
+      "standard_u_Cp_J_mol_K": 0.12824060852987193
+    },
+    {
+      "temperature_K": 3469.0,
+      "G_relative_J_mol": -999332.7508216947,
+      "H_relative_J_mol": 191819.17119303372,
+      "S_J_mol_K": 343.37040127262276,
+      "Cp_J_mol_K": 62.91864499794433,
+      "relative_standard_u_Q": 0.000503000150996411,
+      "standard_u_Cp_J_mol_K": 0.13434275893458697
+    },
+    {
+      "temperature_K": 3487.0,
+      "G_relative_J_mol": -1005516.3514720331,
+      "H_relative_J_mol": 192951.84392278615,
+      "S_J_mol_K": 343.6960698006364,
+      "Cp_J_mol_K": 62.933796692607274,
+      "relative_standard_u_Q": 0.0005158220961283253,
+      "standard_u_Cp_J_mol_K": 0.1379790060160101
+    },
+    {
+      "temperature_K": 3513.0,
+      "G_relative_J_mol": -1014458.5351336235,
+      "H_relative_J_mol": 194588.39933063593,
+      "S_J_mol_K": 344.1636591130827,
+      "Cp_J_mol_K": 62.95494020475598,
+      "relative_standard_u_Q": 0.0005347906376455493,
+      "standard_u_Cp_J_mol_K": 0.143350564590468
+    },
+    {
+      "temperature_K": 3531.0,
+      "G_relative_J_mol": -1020656.3794015386,
+      "H_relative_J_mol": 195721.7158764172,
+      "S_J_mol_K": 344.4854418799082,
+      "Cp_J_mol_K": 62.96905109498838,
+      "relative_standard_u_Q": 0.0005482390441497479,
+      "standard_u_Cp_J_mol_K": 0.1471508560193473
+    },
+    {
+      "temperature_K": 3562.0,
+      "G_relative_J_mol": -1031343.973054788,
+      "H_relative_J_mol": 197674.12044666594,
+      "S_J_mol_K": 345.035961117758,
+      "Cp_J_mol_K": 62.9923115524643,
+      "relative_standard_u_Q": 0.0005720215734899759,
+      "standard_u_Cp_J_mol_K": 0.1538492365384101
+    },
+    {
+      "temperature_K": 3594.0,
+      "G_relative_J_mol": -1042394.1523945458,
+      "H_relative_J_mol": 199690.2397500076,
+      "S_J_mol_K": 345.59944133126135,
+      "Cp_J_mol_K": 63.014893632935205,
+      "relative_standard_u_Q": 0.0005974173687794797,
+      "standard_u_Cp_J_mol_K": 0.16096284132062344
+    },
+    {
+      "temperature_K": 3625.0,
+      "G_relative_J_mol": -1053116.1366593523,
+      "H_relative_J_mol": 201644.02209372673,
+      "S_J_mol_K": 346.14073344912526,
+      "Cp_J_mol_K": 63.03533232808777,
+      "relative_standard_u_Q": 0.0006228636273654532,
+      "standard_u_Cp_J_mol_K": 0.16804077705820494
+    },
+    {
+      "temperature_K": 3656.0,
+      "G_relative_J_mol": -1063854.8319718987,
+      "H_relative_J_mol": 203598.4152602736,
+      "S_J_mol_K": 346.67758403505803,
+      "Cp_J_mol_K": 63.05430144197259,
+      "relative_standard_u_Q": 0.0006491649782877003,
+      "standard_u_Cp_J_mol_K": 0.1752958108495531
+    },
+    {
+      "temperature_K": 3688.0,
+      "G_relative_J_mol": -1074957.3202258158,
+      "H_relative_J_mol": 205616.44487775117,
+      "S_J_mol_K": 347.2271597352405,
+      "Cp_J_mol_K": 63.07228188310747,
+      "relative_standard_u_Q": 0.0006772375815995641,
+      "standard_u_Cp_J_mol_K": 0.18296265997437838
+    },
+    {
+      "temperature_K": 3719.0,
+      "G_relative_J_mol": -1085729.557475766,
+      "H_relative_J_mol": 207571.93500544055,
+      "S_J_mol_K": 347.7551741008891,
+      "Cp_J_mol_K": 63.08809108547426,
+      "relative_standard_u_Q": 0.0007053522160518031,
+      "standard_u_Cp_J_mol_K": 0.1905536812001261
+    },
+    {
+      "temperature_K": 3737.0,
+      "G_relative_J_mol": -1091991.8944335063,
+      "H_relative_J_mol": 208707.59720463402,
+      "S_J_mol_K": 348.05980509449836,
+      "Cp_J_mol_K": 63.09652053711042,
+      "relative_standard_u_Q": 0.0007221019117975478,
+      "standard_u_Cp_J_mol_K": 0.19503176762163726
+    },
+    {
+      "temperature_K": 3763.0,
+      "G_relative_J_mol": -1101047.1434051092,
+      "H_relative_J_mol": 210348.2547373638,
+      "S_J_mol_K": 348.4973154776702,
+      "Cp_J_mol_K": 63.10769500857996,
+      "relative_standard_u_Q": 0.0007468591719199981,
+      "standard_u_Cp_J_mol_K": 0.20158688994978927
+    },
+    {
+      "temperature_K": 3781.0,
+      "G_relative_J_mol": -1107322.807698302,
+      "H_relative_J_mol": 211484.25727919032,
+      "S_J_mol_K": 348.79848319954834,
+      "Cp_J_mol_K": 63.11472156093856,
+      "relative_standard_u_Q": 0.0007643955794276665,
+      "standard_u_Cp_J_mol_K": 0.20618237658346877
+    },
+    {
+      "temperature_K": 3812.0,
+      "G_relative_J_mol": -1118143.560110946,
+      "H_relative_J_mol": 213440.98409381366,
+      "S_J_mol_K": 349.3138888260125,
+      "Cp_J_mol_K": 63.12542293948514,
+      "relative_standard_u_Q": 0.0007953739270735782,
+      "standard_u_Cp_J_mol_K": 0.2142001791754063
+    },
+    {
+      "temperature_K": 3844.0,
+      "G_relative_J_mol": -1129330.059903193,
+      "H_relative_J_mol": 215461.14912437025,
+      "S_J_mol_K": 349.8416256575347,
+      "Cp_J_mol_K": 63.13455596094805,
+      "relative_standard_u_Q": 0.0008284049955940983,
+      "standard_u_Cp_J_mol_K": 0.2226038559774523
+    },
+    {
+      "temperature_K": 3875.0,
+      "G_relative_J_mol": -1140183.021295569,
+      "H_relative_J_mol": 217418.43276836618,
+      "S_J_mol_K": 350.34876233908005,
+      "Cp_J_mol_K": 63.14148664755266,
+      "relative_standard_u_Q": 0.0008614494489084583,
+      "standard_u_Cp_J_mol_K": 0.23085637584910032
+    },
+    {
+      "temperature_K": 3906.0,
+      "G_relative_J_mol": -1151051.6419014412,
+      "H_relative_J_mol": 219375.90106842868,
+      "S_J_mol_K": 350.85190552224014,
+      "Cp_J_mol_K": 63.146468340974955,
+      "relative_standard_u_Q": 0.0008955473057866511,
+      "standard_u_Cp_J_mol_K": 0.23920667380113778
+    },
+    {
+      "temperature_K": 3938.0,
+      "G_relative_J_mol": -1162287.157785807,
+      "H_relative_J_mol": 221396.64245304413,
+      "S_J_mol_K": 351.3671407412014,
+      "Cp_J_mol_K": 63.14950087492568,
+      "relative_standard_u_Q": 0.0009318751763323163,
+      "standard_u_Cp_J_mol_K": 0.24791574081514858
+    },
+    {
+      "temperature_K": 3969.0,
+      "G_relative_J_mol": -1173187.2243292695,
+      "H_relative_J_mol": 223354.29524537834,
+      "S_J_mol_K": 351.86231281800144,
+      "Cp_J_mol_K": 63.1503314065966,
+      "relative_standard_u_Q": 0.0009681864377949778,
+      "standard_u_Cp_J_mol_K": 0.2564260921725855
+    },
+    {
+      "temperature_K": 3987.0,
+      "G_relative_J_mol": -1179523.319632552,
+      "H_relative_J_mol": 224490.99790320382,
+      "S_J_mol_K": 352.14806058082667,
+      "Cp_J_mol_K": 63.14983744437246,
+      "relative_standard_u_Q": 0.0009897846707653997,
+      "standard_u_Cp_J_mol_K": 0.26139556333482955
+    }
+  ],
+  "isotope_average": [
+    {
+      "G_relative_J_mol": -371085.16130590666,
+      "H_relative_J_mol": 71869.51378806595,
+      "S_J_mol_K": 292.7658130165054,
+      "Cp_J_mol_K": 58.5132979165542,
+      "temperature_K": 1513.0
+    },
+    {
+      "G_relative_J_mol": -376361.1897705962,
+      "H_relative_J_mol": 72923.6113589642,
+      "S_J_mol_K": 293.45839394484665,
+      "Cp_J_mol_K": 58.60826055862817,
+      "temperature_K": 1531.0
+    },
+    {
+      "G_relative_J_mol": -385476.68766031787,
+      "H_relative_J_mol": 74742.93502699805,
+      "S_J_mol_K": 294.6348416692164,
+      "Cp_J_mol_K": 58.76632706309724,
+      "temperature_K": 1562.0
+    },
+    {
+      "G_relative_J_mol": -394924.15218228585,
+      "H_relative_J_mol": 76625.97584164995,
+      "S_J_mol_K": 295.82818571137756,
+      "Cp_J_mol_K": 58.922584985590845,
+      "temperature_K": 1594.0
+    },
+    {
+      "G_relative_J_mol": -404112.488284491,
+      "H_relative_J_mol": 78454.84013314951,
+      "S_J_mol_K": 296.96450979547103,
+      "Cp_J_mol_K": 59.06765528337585,
+      "temperature_K": 1625.0
+    },
+    {
+      "G_relative_J_mol": -413335.75765297434,
+      "H_relative_J_mol": 80288.1100581609,
+      "S_J_mol_K": 298.0820457192847,
+      "Cp_J_mol_K": 59.206877858840166,
+      "temperature_K": 1656.0
+    },
+    {
+      "G_relative_J_mol": -422892.58606488066,
+      "H_relative_J_mol": 82184.95224661959,
+      "S_J_mol_K": 299.2165511324053,
+      "Cp_J_mol_K": 59.344807516900225,
+      "temperature_K": 1688.0
+    },
+    {
+      "G_relative_J_mol": -432185.10174072074,
+      "H_relative_J_mol": 84026.64337303166,
+      "S_J_mol_K": 300.29769930992,
+      "Cp_J_mol_K": 59.47314086642236,
+      "temperature_K": 1719.0
+    },
+    {
+      "G_relative_J_mol": -437596.0479368095,
+      "H_relative_J_mol": 85097.81257610295,
+      "S_J_mol_K": 300.91759384738765,
+      "Cp_J_mol_K": 59.545386255804175,
+      "temperature_K": 1737.0
+    },
+    {
+      "G_relative_J_mol": -445431.4414242484,
+      "H_relative_J_mol": 86647.31973405853,
+      "S_J_mol_K": 301.8030409292722,
+      "Cp_J_mol_K": 59.64692748124989,
+      "temperature_K": 1763.0
+    },
+    {
+      "G_relative_J_mol": -450869.3605850353,
+      "H_relative_J_mol": 87721.58253658071,
+      "S_J_mol_K": 302.4092886701943,
+      "Cp_J_mol_K": 59.71534967175204,
+      "temperature_K": 1781.0
+    },
+    {
+      "G_relative_J_mol": -460260.0768978799,
+      "H_relative_J_mol": 89574.54255556449,
+      "S_J_mol_K": 303.44073921271774,
+      "Cp_J_mol_K": 59.82975003373741,
+      "temperature_K": 1812.0
+    },
+    {
+      "G_relative_J_mol": -469986.9981617881,
+      "H_relative_J_mol": 91490.92592475485,
+      "S_J_mol_K": 304.4891128451969,
+      "Cp_J_mol_K": 59.943494261175886,
+      "temperature_K": 1844.0
+    },
+    {
+      "G_relative_J_mol": -479441.70285616565,
+      "H_relative_J_mol": 93350.83025358357,
+      "S_J_mol_K": 305.4893509918663,
+      "Cp_J_mol_K": 60.04970250536566,
+      "temperature_K": 1875.0
+    },
+    {
+      "G_relative_J_mol": -488927.186121562,
+      "H_relative_J_mol": 95213.96925400425,
+      "S_J_mol_K": 306.4748978885447,
+      "Cp_J_mol_K": 60.15220447512752,
+      "temperature_K": 1906.0
+    },
+    {
+      "G_relative_J_mol": -498750.4607359822,
+      "H_relative_J_mol": 97140.48351576518,
+      "S_J_mol_K": 307.4772674157624,
+      "Cp_J_mol_K": 60.254333604427174,
+      "temperature_K": 1938.0
+    },
+    {
+      "G_relative_J_mol": -508297.124122656,
+      "H_relative_J_mol": 99009.85737096397,
+      "S_J_mol_K": 308.4342211750228,
+      "Cp_J_mol_K": 60.34989663511332,
+      "temperature_K": 1969.0
+    },
+    {
+      "G_relative_J_mol": -513853.89182870334,
+      "H_relative_J_mol": 100096.64348150362,
+      "S_J_mol_K": 308.9836614545581,
+      "Cp_J_mol_K": 60.4039305605764,
+      "temperature_K": 1987.0
+    },
+    {
+      "G_relative_J_mol": -521897.7018769133,
+      "H_relative_J_mol": 101668.1413497813,
+      "S_J_mol_K": 309.76942038087174,
+      "Cp_J_mol_K": 60.48017269247274,
+      "temperature_K": 2013.0
+    },
+    {
+      "G_relative_J_mol": -527478.4056411523,
+      "H_relative_J_mol": 102757.25010576894,
+      "S_J_mol_K": 310.3080530511674,
+      "Cp_J_mol_K": 60.53174824411319,
+      "temperature_K": 2031.0
+    },
+    {
+      "G_relative_J_mol": -537112.2105871894,
+      "H_relative_J_mol": 104635.08373708477,
+      "S_J_mol_K": 311.2256519516365,
+      "Cp_J_mol_K": 60.61835311877867,
+      "temperature_K": 2062.0
+    },
+    {
+      "G_relative_J_mol": -547086.4130507292,
+      "H_relative_J_mol": 106576.26378849332,
+      "S_J_mol_K": 312.1598265707843,
+      "Cp_J_mol_K": 60.70493669357755,
+      "temperature_K": 2094.0
+    },
+    {
+      "G_relative_J_mol": -556777.2353258604,
+      "H_relative_J_mol": 108459.38328034582,
+      "S_J_mol_K": 313.05252640292053,
+      "Cp_J_mol_K": 60.78622691564928,
+      "temperature_K": 2125.0
+    },
+    {
+      "G_relative_J_mol": -566495.5480741702,
+      "H_relative_J_mol": 110344.98490703029,
+      "S_J_mol_K": 313.93345685584444,
+      "Cp_J_mol_K": 60.865099657598506,
+      "temperature_K": 2156.0
+    },
+    {
+      "G_relative_J_mol": -576555.8080137819,
+      "H_relative_J_mol": 112293.9385509664,
+      "S_J_mol_K": 314.8307799656071,
+      "Cp_J_mol_K": 60.9441083282138,
+      "temperature_K": 2188.0
+    },
+    {
+      "G_relative_J_mol": -586328.8886200022,
+      "H_relative_J_mol": 114184.3634634493,
+      "S_J_mol_K": 315.6887120700548,
+      "Cp_J_mol_K": 61.01843131586015,
+      "temperature_K": 2219.0
+    },
+    {
+      "G_relative_J_mol": -592015.729170375,
+      "H_relative_J_mol": 115283.07601366016,
+      "S_J_mol_K": 316.18185301029735,
+      "Cp_J_mol_K": 61.06062839558764,
+      "temperature_K": 2237.0
+    },
+    {
+      "G_relative_J_mol": -600245.6507898793,
+      "H_relative_J_mol": 116871.43222698754,
+      "S_J_mol_K": 316.8877962955664,
+      "Cp_J_mol_K": 61.120385694318976,
+      "temperature_K": 2263.0
+    },
+    {
+      "G_relative_J_mol": -605953.9959240499,
+      "H_relative_J_mol": 117971.96532785191,
+      "S_J_mol_K": 317.37218818584023,
+      "Cp_J_mol_K": 61.16095629751288,
+      "temperature_K": 2281.0
+    },
+    {
+      "G_relative_J_mol": -615805.3643392291,
+      "H_relative_J_mol": 119869.01983638595,
+      "S_J_mol_K": 318.1982630517367,
+      "Cp_J_mol_K": 61.22935337079344,
+      "temperature_K": 2312.0
+    },
+    {
+      "G_relative_J_mol": -626001.2111416704,
+      "H_relative_J_mol": 121829.46361361958,
+      "S_J_mol_K": 319.04039025396327,
+      "Cp_J_mol_K": 61.298080666922445,
+      "temperature_K": 2344.0
+    },
+    {
+      "G_relative_J_mol": -635903.9782233301,
+      "H_relative_J_mol": 123730.71359846719,
+      "S_J_mol_K": 319.8461860302303,
+      "Cp_J_mol_K": 61.36292881087601,
+      "temperature_K": 2375.0
+    },
+    {
+      "G_relative_J_mol": -645831.575277719,
+      "H_relative_J_mol": 125633.94851057658,
+      "S_J_mol_K": 320.64236233927505,
+      "Cp_J_mol_K": 61.426152755863036,
+      "temperature_K": 2406.0
+    },
+    {
+      "G_relative_J_mol": -656105.1493834009,
+      "H_relative_J_mol": 127600.6079479349,
+      "S_J_mol_K": 321.4543713418113,
+      "Cp_J_mol_K": 61.4897912100827,
+      "temperature_K": 2438.0
+    },
+    {
+      "G_relative_J_mol": -666082.3066894483,
+      "H_relative_J_mol": 129507.7274999389,
+      "S_J_mol_K": 322.23168658946423,
+      "Cp_J_mol_K": 61.54993820643722,
+      "temperature_K": 2469.0
+    },
+    {
+      "G_relative_J_mol": -671886.506531993,
+      "H_relative_J_mol": 130615.93543589504,
+      "S_J_mol_K": 322.67890710409654,
+      "Cp_J_mol_K": 61.58420977873315,
+      "temperature_K": 2487.0
+    },
+    {
+      "G_relative_J_mol": -680284.5010144108,
+      "H_relative_J_mol": 132217.7599453098,
+      "S_J_mol_K": 323.31964224421836,
+      "Cp_J_mol_K": 61.63289688435552,
+      "temperature_K": 2513.0
+    },
+    {
+      "G_relative_J_mol": -686108.2189858004,
+      "H_relative_J_mol": 133327.4510712949,
+      "S_J_mol_K": 323.7596483828903,
+      "Cp_J_mol_K": 61.66605426506998,
+      "temperature_K": 2531.0
+    },
+    {
+      "G_relative_J_mol": -696156.4311764963,
+      "H_relative_J_mol": 135239.97134559407,
+      "S_J_mol_K": 324.5106957541338,
+      "Cp_J_mol_K": 61.72214140337863,
+      "temperature_K": 2562.0
+    },
+    {
+      "G_relative_J_mol": -706553.0609651873,
+      "H_relative_J_mol": 137215.98899978364,
+      "S_J_mol_K": 325.27719736506214,
+      "Cp_J_mol_K": 61.7787360090839,
+      "temperature_K": 2594.0
+    },
+    {
+      "G_relative_J_mol": -716648.0556697558,
+      "H_relative_J_mol": 139131.9638361687,
+      "S_J_mol_K": 326.0114360022569,
+      "Cp_J_mol_K": 61.83235136339311,
+      "temperature_K": 2625.0
+    },
+    {
+      "G_relative_J_mol": -726765.6873567683,
+      "H_relative_J_mol": 141049.58283561585,
+      "S_J_mol_K": 326.73767703026516,
+      "Cp_J_mol_K": 61.884821461578376,
+      "temperature_K": 2656.0
+    },
+    {
+      "G_relative_J_mol": -737233.1784070443,
+      "H_relative_J_mol": 143030.74842826926,
+      "S_J_mol_K": 327.47913944766134,
+      "Cp_J_mol_K": 61.9378271252523,
+      "temperature_K": 2688.0
+    },
+    {
+      "G_relative_J_mol": -747396.0642508153,
+      "H_relative_J_mol": 144951.6027421445,
+      "S_J_mol_K": 328.1896531787274,
+      "Cp_J_mol_K": 61.98809488057809,
+      "temperature_K": 2719.0
+    },
+    {
+      "G_relative_J_mol": -753307.1637514367,
+      "H_relative_J_mol": 146067.64736737305,
+      "S_J_mol_K": 328.5987618263828,
+      "Cp_J_mol_K": 62.016808175819925,
+      "temperature_K": 2737.0
+    },
+    {
+      "G_relative_J_mol": -761858.3677393441,
+      "H_relative_J_mol": 147680.61736646536,
+      "S_J_mol_K": 329.18530043641306,
+      "Cp_J_mol_K": 62.057682952499476,
+      "temperature_K": 2763.0
+    },
+    {
+      "G_relative_J_mol": -767787.3343777466,
+      "H_relative_J_mol": 148797.90711623515,
+      "S_J_mol_K": 329.5883644350888,
+      "Cp_J_mol_K": 62.085573588074716,
+      "temperature_K": 2781.0
+    },
+    {
+      "G_relative_J_mol": -778015.2638781669,
+      "H_relative_J_mol": 150723.29507236683,
+      "S_J_mol_K": 330.27687018155547,
+      "Cp_J_mol_K": 62.13284337654124,
+      "temperature_K": 2812.0
+    },
+    {
+      "G_relative_J_mol": -788595.3969040527,
+      "H_relative_J_mol": 152712.31354438685,
+      "S_J_mol_K": 330.9802076119688,
+      "Cp_J_mol_K": 62.18064574222179,
+      "temperature_K": 2844.0
+    },
+    {
+      "G_relative_J_mol": -798866.2534863851,
+      "H_relative_J_mol": 154640.61926593282,
+      "S_J_mol_K": 331.65456443558884,
+      "Cp_J_mol_K": 62.22601432736292,
+      "temperature_K": 2875.0
+    },
+    {
+      "G_relative_J_mol": -809157.9101411774,
+      "H_relative_J_mol": 156570.31717032482,
+      "S_J_mol_K": 332.3221704444261,
+      "Cp_J_mol_K": 62.27047523325478,
+      "temperature_K": 2906.0
+    },
+    {
+      "G_relative_J_mol": -819803.1534446215,
+      "H_relative_J_mol": 158563.6941360626,
+      "S_J_mol_K": 333.0043729001648,
+      "Cp_J_mol_K": 62.31543283391991,
+      "temperature_K": 2938.0
+    },
+    {
+      "G_relative_J_mol": -830136.4471521628,
+      "H_relative_J_mol": 160496.13604056297,
+      "S_J_mol_K": 333.6586672929355,
+      "Cp_J_mol_K": 62.358088042871366,
+      "temperature_K": 2969.0
+    },
+    {
+      "G_relative_J_mol": -836145.6992469991,
+      "H_relative_J_mol": 161618.8012770362,
+      "S_J_mol_K": 334.03565467828435,
+      "Cp_J_mol_K": 62.382453028555766,
+      "temperature_K": 2987.0
+    },
+    {
+      "G_relative_J_mol": -844837.6661963094,
+      "H_relative_J_mol": 163241.19730637976,
+      "S_J_mol_K": 334.57645652263164,
+      "Cp_J_mol_K": 62.41712696525385,
+      "temperature_K": 3013.0
+    },
+    {
+      "G_relative_J_mol": -850863.3921560185,
+      "H_relative_J_mol": 164364.91868454093,
+      "S_J_mol_K": 334.9483044673572,
+      "Cp_J_mol_K": 62.44077241164402,
+      "temperature_K": 3031.0
+    },
+    {
+      "G_relative_J_mol": -861256.6567804167,
+      "H_relative_J_mol": 166301.20532470435,
+      "S_J_mol_K": 335.58388703629043,
+      "Cp_J_mol_K": 62.48080505467312,
+      "temperature_K": 3062.0
+    },
+    {
+      "G_relative_J_mol": -872005.7546908467,
+      "H_relative_J_mol": 168301.24012526605,
+      "S_J_mol_K": 336.23367641115465,
+      "Cp_J_mol_K": 62.52120960825708,
+      "temperature_K": 3094.0
+    },
+    {
+      "G_relative_J_mol": -882438.6779550703,
+      "H_relative_J_mol": 170239.99266938987,
+      "S_J_mol_K": 336.8571745998273,
+      "Cp_J_mol_K": 62.55945379767147,
+      "temperature_K": 3125.0
+    },
+    {
+      "G_relative_J_mol": -892890.8397759418,
+      "H_relative_J_mol": 172179.91701151934,
+      "S_J_mol_K": 337.47489125077976,
+      "Cp_J_mol_K": 62.596804161143474,
+      "temperature_K": 3156.0
+    },
+    {
+      "G_relative_J_mol": -903700.1593050899,
+      "H_relative_J_mol": 174183.61895789776,
+      "S_J_mol_K": 338.1065803836222,
+      "Cp_J_mol_K": 62.63440725370666,
+      "temperature_K": 3188.0
+    },
+    {
+      "G_relative_J_mol": -914190.874981635,
+      "H_relative_J_mol": 176125.8382256004,
+      "S_J_mol_K": 338.71286523989914,
+      "Cp_J_mol_K": 62.66989555351028,
+      "temperature_K": 3219.0
+    },
+    {
+      "G_relative_J_mol": -920290.8549690301,
+      "H_relative_J_mol": 177254.0782126068,
+      "S_J_mol_K": 339.0623828179292,
+      "Cp_J_mol_K": 62.69006929506988,
+      "temperature_K": 3237.0
+    },
+    {
+      "G_relative_J_mol": -929113.0064145565,
+      "H_relative_J_mol": 178884.39299861327,
+      "S_J_mol_K": 339.56402065987436,
+      "Cp_J_mol_K": 62.7186374807577,
+      "temperature_K": 3263.0
+    },
+    {
+      "G_relative_J_mol": -935228.2672250998,
+      "H_relative_J_mol": 180013.5032194556,
+      "S_J_mol_K": 339.909104067222,
+      "Cp_J_mol_K": 62.73801279039318,
+      "temperature_K": 3281.0
+    },
+    {
+      "G_relative_J_mol": -945774.6101816826,
+      "H_relative_J_mol": 181958.88943369716,
+      "S_J_mol_K": 340.49924505295274,
+      "Cp_J_mol_K": 62.77059170911179,
+      "temperature_K": 3312.0
+    },
+    {
+      "G_relative_J_mol": -956680.2602707011,
+      "H_relative_J_mol": 183968.071957935,
+      "S_J_mol_K": 341.1029701640659,
+      "Cp_J_mol_K": 62.803146093855084,
+      "temperature_K": 3344.0
+    },
+    {
+      "G_relative_J_mol": -967263.4502509115,
+      "H_relative_J_mol": 185915.44458796558,
+      "S_J_mol_K": 341.68263550781546,
+      "Cp_J_mol_K": 62.83360760070269,
+      "temperature_K": 3375.0
+    },
+    {
+      "G_relative_J_mol": -977864.5317316736,
+      "H_relative_J_mol": 187863.74458573535,
+      "S_J_mol_K": 342.2572743151524,
+      "Cp_J_mol_K": 62.8629747132116,
+      "temperature_K": 3406.0
+    },
+    {
+      "G_relative_J_mol": -988826.186268989,
+      "H_relative_J_mol": 189875.82902960267,
+      "S_J_mol_K": 342.845263321289,
+      "Cp_J_mol_K": 62.89210062912069,
+      "temperature_K": 3438.0
+    },
+    {
+      "G_relative_J_mol": -999463.1542911704,
+      "H_relative_J_mol": 191825.90589637795,
+      "S_J_mol_K": 343.4099337525363,
+      "Cp_J_mol_K": 62.919122672230436,
+      "temperature_K": 3469.0
+    },
+    {
+      "G_relative_J_mol": -1005647.4665481331,
+      "H_relative_J_mol": 192958.58706106903,
+      "S_J_mol_K": 343.7356047058222,
+      "Cp_J_mol_K": 62.934256402060676,
+      "temperature_K": 3487.0
+    },
+    {
+      "G_relative_J_mol": -1014590.6781608561,
+      "H_relative_J_mol": 194595.15407429964,
+      "S_J_mol_K": 344.2031973342317,
+      "Cp_J_mol_K": 62.9553728094724,
+      "temperature_K": 3513.0
+    },
+    {
+      "G_relative_J_mol": -1020789.2341363643,
+      "H_relative_J_mol": 195728.4782304231,
+      "S_J_mol_K": 344.5249822619052,
+      "Cp_J_mol_K": 62.96946410732816,
+      "temperature_K": 3531.0
+    },
+    {
+      "G_relative_J_mol": -1031478.0535959222,
+      "H_relative_J_mol": 197680.89506105563,
+      "S_J_mol_K": 345.0755049570404,
+      "Cp_J_mol_K": 62.9926891712987,
+      "temperature_K": 3562.0
+    },
+    {
+      "G_relative_J_mol": -1042529.4983908319,
+      "H_relative_J_mol": 199697.02583540158,
+      "S_J_mol_K": 345.63898837680387,
+      "Cp_J_mol_K": 63.0152324330102,
+      "temperature_K": 3594.0
+    },
+    {
+      "G_relative_J_mol": -1053252.7086574545,
+      "H_relative_J_mol": 201650.8180649333,
+      "S_J_mol_K": 346.1802832337622,
+      "Cp_J_mol_K": 63.03563121122167,
+      "temperature_K": 3625.0
+    },
+    {
+      "G_relative_J_mol": -1063992.6300510166,
+      "H_relative_J_mol": 203605.21984813167,
+      "S_J_mol_K": 346.7171361868567,
+      "Cp_J_mol_K": 63.05455803660318,
+      "temperature_K": 3656.0
+    },
+    {
+      "G_relative_J_mol": -1075096.3840075207,
+      "H_relative_J_mol": 205623.25694794854,
+      "S_J_mol_K": 347.2667139250188,
+      "Cp_J_mol_K": 63.072492246522145,
+      "temperature_K": 3688.0
+    },
+    {
+      "G_relative_J_mol": -1085869.8474626474,
+      "H_relative_J_mol": 207578.75286498413,
+      "S_J_mol_K": 347.7947298541628,
+      "Cp_J_mol_K": 63.088254075069294,
+      "temperature_K": 3719.0
+    },
+    {
+      "G_relative_J_mol": -1092132.8964306337,
+      "H_relative_J_mol": 208714.417744771,
+      "S_J_mol_K": 348.0993615668731,
+      "Cp_J_mol_K": 63.09665481990175,
+      "temperature_K": 3737.0
+    },
+    {
+      "G_relative_J_mol": -1101189.1738813466,
+      "H_relative_J_mol": 210355.0782085551,
+      "S_J_mol_K": 348.53687273183664,
+      "Cp_J_mol_K": 63.107786232311604,
+      "temperature_K": 3763.0
+    },
+    {
+      "G_relative_J_mol": -1107465.5502086114,
+      "H_relative_J_mol": 211491.08211899456,
+      "S_J_mol_K": 348.83804081661077,
+      "Cp_J_mol_K": 63.11478185002903,
+      "temperature_K": 3781.0
+    },
+    {
+      "G_relative_J_mol": -1118287.5289127107,
+      "H_relative_J_mol": 213447.80995001196,
+      "S_J_mol_K": 349.3534467111025,
+      "Cp_J_mol_K": 63.125427757244346,
+      "temperature_K": 3812.0
+    },
+    {
+      "G_relative_J_mol": -1129475.2945552715,
+      "H_relative_J_mol": 215467.97417782515,
+      "S_J_mol_K": 349.8811833332718,
+      "Cp_J_mol_K": 63.13450054436216,
+      "temperature_K": 3844.0
+    },
+    {
+      "G_relative_J_mol": -1140329.4822261815,
+      "H_relative_J_mol": 217425.2551594766,
+      "S_J_mol_K": 350.3883193253312,
+      "Cp_J_mol_K": 63.1413699387223,
+      "temperature_K": 3875.0
+    },
+    {
+      "G_relative_J_mol": -1151199.3290816029,
+      "H_relative_J_mol": 219382.71885795196,
+      "S_J_mol_K": 350.89146132605094,
+      "Cp_J_mol_K": 63.14628739609332,
+      "temperature_K": 3906.0
+    },
+    {
+      "G_relative_J_mol": -1162436.1107250387,
+      "H_relative_J_mol": 221403.453347785,
+      "S_J_mol_K": 351.40669478741063,
+      "Cp_J_mol_K": 63.14925048771723,
+      "temperature_K": 3938.0
+    },
+    {
+      "G_relative_J_mol": -1173337.4034106473,
+      "H_relative_J_mol": 223361.097297212,
+      "S_J_mol_K": 351.9018646278306,
+      "Cp_J_mol_K": 63.15001067056803,
+      "temperature_K": 3969.0
+    },
+    {
+      "G_relative_J_mol": -1179674.2106328604,
+      "H_relative_J_mol": 224497.793799823,
+      "S_J_mol_K": 352.1876108434119,
+      "Cp_J_mol_K": 63.149474458895725,
+      "temperature_K": 3987.0
+    }
+  ]
+}

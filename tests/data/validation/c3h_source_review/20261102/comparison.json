@@ -1,0 +1,99 @@
+{
+  "reaction": "3 C(g) + H(g) -> C3H(g)",
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "samples": [
+    {
+      "temperature_K": 1500,
+      "current_ln_K": 101.55677106262993,
+      "tsuji_ln_K_1bar": 101.5346195061196,
+      "current_minus_tsuji_ln_K": 0.0221515565103374,
+      "printed_coefficient_rounding_bound_ln_K": 0.005601006079441478,
+      "current_reaction_H_J_mol": -1840788.81378769,
+      "burcat_with_nasa_atoms_reaction_H_J_mol": -1667094.7091173104,
+      "current_minus_burcat_reaction_H_J_mol": -173694.10467037978,
+      "current_with_nasa_atoms_Cp_J_mol_K": 59.45984995786179,
+      "burcat_Cp_J_mol_K": 75.84480194974569
+    },
+    {
+      "temperature_K": 2000,
+      "current_ln_K": 64.53436634653242,
+      "tsuji_ln_K_1bar": 64.55823659290958,
+      "current_minus_tsuji_ln_K": -0.0238702463771574,
+      "printed_coefficient_rounding_bound_ln_K": 0.004314545768107237,
+      "current_reaction_H_J_mol": -1855261.39170747,
+      "burcat_with_nasa_atoms_reaction_H_J_mol": -1670134.0695107537,
+      "current_minus_burcat_reaction_H_J_mol": -185127.32219671598,
+      "current_with_nasa_atoms_Cp_J_mol_K": 50.13472612393077,
+      "burcat_Cp_J_mol_K": 78.49671516150278
+    },
+    {
+      "temperature_K": 2500,
+      "current_ln_K": 42.121209606454634,
+      "tsuji_ln_K_1bar": 42.13463800350244,
+      "current_minus_tsuji_ln_K": -0.013428397047803742,
+      "printed_coefficient_rounding_bound_ln_K": 0.0036153231384400894,
+      "current_reaction_H_J_mol": -1873672.378593314,
+      "burcat_with_nasa_atoms_reaction_H_J_mol": -1672509.0331196124,
+      "current_minus_burcat_reaction_H_J_mol": -201163.3454737016,
+      "current_with_nasa_atoms_Cp_J_mol_K": 45.01783295703092,
+      "burcat_Cp_J_mol_K": 79.98360947592751
+    },
+    {
+      "temperature_K": 3000,
+      "current_ln_K": 27.02148245484817,
+      "tsuji_ln_K_1bar": 27.013087169610515,
+      "current_minus_tsuji_ln_K": 0.008395285237654093,
+      "printed_coefficient_rounding_bound_ln_K": 0.003173465274180083,
+      "current_reaction_H_J_mol": -1894141.2860425017,
+      "burcat_with_nasa_atoms_reaction_H_J_mol": -1674808.3646963178,
+      "current_minus_burcat_reaction_H_J_mol": -219332.92134618387,
+      "current_with_nasa_atoms_Cp_J_mol_K": 43.90329895916405,
+      "burcat_Cp_J_mol_K": 80.90149991501336
+    },
+    {
+      "temperature_K": 4000,
+      "current_ln_K": 7.852131524349064,
+      "tsuji_ln_K_1bar": 7.840737414216459,
+      "current_minus_tsuji_ln_K": 0.011394110132604496,
+      "printed_coefficient_rounding_bound_ln_K": 0.002643519435606727,
+      "current_reaction_H_J_mol": -1933730.9090200257,
+      "burcat_with_nasa_atoms_reaction_H_J_mol": -1680088.7467949688,
+      "current_minus_burcat_reaction_H_J_mol": -253642.1622250569,
+      "current_with_nasa_atoms_Cp_J_mol_K": 52.94632594300029,
+      "burcat_Cp_J_mol_K": 82.03158330089332
+    }
+  ],
+  "max_abs_source_residual_ln_K": 0.0238702463771574,
+  "atct_balanced_reactions": {
+    "linear": {
+      "reaction_H0_kJ_mol": -1631.4270000000001,
+      "reaction_H298_kJ_mol": -1645.496
+    },
+    "cyclic": {
+      "reaction_H0_kJ_mol": -1638.937,
+      "reaction_H298_kJ_mol": -1653.226
+    }
+  },
+  "linear_minus_cyclic_H0_kJ_mol": 7.509999999999991,
+  "footprint": {
+    "source": "tests/data/validation/curated_default_adoption/20261102/ions.npz",
+    "source_sha256": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "model": "curated-c2h-v1",
+    "cases": 75,
+    "species_count": 537,
+    "all_cases_converged": true,
+    "maximum_carbon_share": {
+      "case_index": 55,
+      "temperature_K": 2000.0,
+      "pressure_bar": 1e-06,
+      "C_over_O": 1.5,
+      "mole_fraction": 3.141601439185082e-05,
+      "carbon_fraction": 0.11643053741695293
+    },
+    "interpretation": "Finite ideal-gas model footprint, not observed abundance or a substitution response."
+  },
+  "candidate_scope": "Conditional linear-C3H caloric comparison; original Tsuji isomer/state construction unresolved.",
+  "equilibrium_substitution": "not_run",
+  "production_change": "none"
+}

@@ -1,0 +1,221 @@
+{
+  "species": "PH3",
+  "doi": "10.1016/j.jqsrt.2014.03.012",
+  "interpretation": "Appendix A cumulative energy moments; published row labels retained",
+  "nuclear_spin_divisor_for_thermochemical_Q": 16,
+  "spin_normalization_cancels_from_moment_ratios": true,
+  "final_row_Q296": 3249.5,
+  "paper_direct_Q296": 3249.46,
+  "Q296_rounding_half_width": 0.05,
+  "published_Cp_at_1_K_J_mol_K": 20.819,
+  "translation_Cp_J_mol_K": 20.7861565453831,
+  "samples": [
+    {
+      "temperature_K": 300,
+      "final_row_Q": 3319.5,
+      "final_row_variance": -0.8968780810902977,
+      "variance_upper_after_source_rounding": -0.8967140267589349,
+      "moment_Cp_with_translation_J_mol_K": 13.32909726711681,
+      "published_Cp_J_mol_K": 37.306,
+      "Q2_row_41": 15010.0,
+      "Q2_row_42": 5437.1,
+      "Q2_drop_lower_after_source_rounding": 9572.35,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 37.30583333333333,
+          "dH_dT_rounding_bound_J_mol_K": 0.0025,
+          "T_dS_dT_J_mol_K": 37.291666666666785,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.075,
+          "dH_dT_minus_published_Cp_J_mol_K": -0.000166666666665094
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 37.30055555555556,
+          "dH_dT_rounding_bound_J_mol_K": 0.00125,
+          "T_dS_dT_J_mol_K": 37.25,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.0375,
+          "dH_dT_minus_published_Cp_J_mol_K": -0.005444444444435703
+        }
+      ]
+    },
+    {
+      "temperature_K": 500,
+      "final_row_Q": 8121.2,
+      "final_row_variance": -1.3250683521781395,
+      "variance_upper_after_source_rounding": -1.3246996503567998,
+      "moment_Cp_with_translation_J_mol_K": 9.768925264700046,
+      "published_Cp_J_mol_K": 46.758,
+      "Q2_row_41": 57057.0,
+      "Q2_row_42": 20927.0,
+      "Q2_drop_lower_after_source_rounding": 36129.0,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 46.75833333333331,
+          "dH_dT_rounding_bound_J_mol_K": 0.0037500000000000003,
+          "T_dS_dT_J_mol_K": 46.70833333333317,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.125,
+          "dH_dT_minus_published_Cp_J_mol_K": 0.0003333333333088717
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 46.76013888888889,
+          "dH_dT_rounding_bound_J_mol_K": 0.006875,
+          "T_dS_dT_J_mol_K": 46.777777777777764,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.0625,
+          "dH_dT_minus_published_Cp_J_mol_K": 0.00213888888888647
+        }
+      ]
+    },
+    {
+      "temperature_K": 1000,
+      "final_row_Q": 46152.0,
+      "final_row_variance": -2.367440179204208,
+      "variance_upper_after_source_rounding": -2.3663471840788874,
+      "moment_Cp_with_translation_J_mol_K": 1.102163674675704,
+      "published_Cp_J_mol_K": 65.385,
+      "Q2_row_41": 708250.0,
+      "Q2_row_42": 351730.0,
+      "Q2_drop_lower_after_source_rounding": 356510.0,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 65.39166666666672,
+          "dH_dT_rounding_bound_J_mol_K": 0.025000000000000005,
+          "T_dS_dT_J_mol_K": 65.33333333333375,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.25,
+          "dH_dT_minus_published_Cp_J_mol_K": 0.006666666666717447
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 65.38333333333328,
+          "dH_dT_rounding_bound_J_mol_K": 0.012500000000000002,
+          "T_dS_dT_J_mol_K": 65.27777777777746,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.125,
+          "dH_dT_minus_published_Cp_J_mol_K": -0.0016666666667219943
+        }
+      ]
+    },
+    {
+      "temperature_K": 1500,
+      "final_row_Q": 200910.0,
+      "final_row_variance": -2.6553305227627106,
+      "variance_upper_after_source_rounding": -2.6536868112830128,
+      "moment_Cp_with_translation_J_mol_K": -1.2914898249687585,
+      "published_Cp_J_mol_K": 74.114,
+      "Q2_row_41": 4607100.0,
+      "Q2_row_42": 2793500.0,
+      "Q2_drop_lower_after_source_rounding": 1813500.0,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 74.08611111111128,
+          "dH_dT_rounding_bound_J_mol_K": 0.025000000000000005,
+          "T_dS_dT_J_mol_K": 74.29166666666565,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.375,
+          "dH_dT_minus_published_Cp_J_mol_K": -0.027888888888725205
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 74.09722222222217,
+          "dH_dT_rounding_bound_J_mol_K": 0.012500000000000002,
+          "T_dS_dT_J_mol_K": 74.1250000000002,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.1875,
+          "dH_dT_minus_published_Cp_J_mol_K": -0.016777777777832625
+        }
+      ]
+    },
+    {
+      "temperature_K": 2000,
+      "final_row_Q": 719540.0,
+      "final_row_variance": -1.8368314013246767,
+      "variance_upper_after_source_rounding": -1.8350161276861208,
+      "moment_Cp_with_translation_J_mol_K": 5.513890523219043,
+      "published_Cp_J_mol_K": 74.359,
+      "Q2_row_41": 20220000.0,
+      "Q2_row_42": 14091000.0,
+      "Q2_drop_lower_after_source_rounding": 6128000.0,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 74.49999999999999,
+          "dH_dT_rounding_bound_J_mol_K": 0.25,
+          "T_dS_dT_J_mol_K": 74.2777777777759,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.5,
+          "dH_dT_minus_published_Cp_J_mol_K": 0.14099999999999113
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 74.52777777777774,
+          "dH_dT_rounding_bound_J_mol_K": 0.125,
+          "T_dS_dT_J_mol_K": 74.50000000000061,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.25,
+          "dH_dT_minus_published_Cp_J_mol_K": 0.16877777777774838
+        }
+      ]
+    },
+    {
+      "temperature_K": 3000,
+      "final_row_Q": 5830800.0,
+      "final_row_variance": 1.462354157519428,
+      "variance_upper_after_source_rounding": 1.4649460905799607,
+      "moment_Cp_with_translation_J_mol_K": 32.94484552257936,
+      "published_Cp_J_mol_K": 57.938,
+      "Q2_row_41": 184370000.0,
+      "Q2_row_42": 157480000.0,
+      "Q2_drop_lower_after_source_rounding": 26880000.0,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 61.99999999999998,
+          "dH_dT_rounding_bound_J_mol_K": 0.25,
+          "T_dS_dT_J_mol_K": 62.000000000000455,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.75,
+          "dH_dT_minus_published_Cp_J_mol_K": 4.061999999999976
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 61.99999999999998,
+          "dH_dT_rounding_bound_J_mol_K": 0.125,
+          "T_dS_dT_J_mol_K": 61.95833333333383,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.375,
+          "dH_dT_minus_published_Cp_J_mol_K": 4.061999999999976
+        }
+      ]
+    },
+    {
+      "temperature_K": 4000,
+      "final_row_Q": 29103000.0,
+      "final_row_variance": 2.398368044017193,
+      "variance_upper_after_source_rounding": 2.4021010304614414,
+      "moment_Cp_with_translation_J_mol_K": 40.727297991937355,
+      "published_Cp_J_mol_K": 41.402,
+      "Q2_row_41": 822270000.0,
+      "Q2_row_42": 775170000.0,
+      "Q2_drop_lower_after_source_rounding": 47090000.0,
+      "closure": [
+        {
+          "step_K": 30,
+          "dH_dT_J_mol_K": 51.16666666666647,
+          "dH_dT_rounding_bound_J_mol_K": 0.25,
+          "T_dS_dT_J_mol_K": 51.444444444443135,
+          "T_dS_dT_rounding_bound_J_mol_K": 1.0,
+          "dH_dT_minus_published_Cp_J_mol_K": 9.764666666666471
+        },
+        {
+          "step_K": 60,
+          "dH_dT_J_mol_K": 51.19444444444462,
+          "dH_dT_rounding_bound_J_mol_K": 0.125,
+          "T_dS_dT_J_mol_K": 50.94444444444327,
+          "T_dS_dT_rounding_bound_J_mol_K": 0.5,
+          "dH_dT_minus_published_Cp_J_mol_K": 9.79244444444462
+        }
+      ]
+    }
+  ],
+  "decision": "retain_current; resolve distributed-file moment and caloric inconsistencies",
+  "production_change": "none",
+  "candidate_created": false,
+  "equilibrium_substitution": "not_run"
+}

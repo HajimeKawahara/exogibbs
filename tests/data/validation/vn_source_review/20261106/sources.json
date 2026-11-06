@@ -1,0 +1,35 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "VN",
+      "file": "N-018.txt",
+      "url": "https://janaf.nist.gov/tables/N-018.txt",
+      "sha256": "4bf5eb96ecf144fb23de27f811bc021392661ee0e740ec228222d3c18115e912",
+      "bytes": 3877,
+      "header": "Vanadium Nitride (VN)\tN1V1(g)"
+    },
+    {
+      "molecule": "V",
+      "file": "V-005.txt",
+      "url": "https://janaf.nist.gov/tables/V-005.txt",
+      "sha256": "4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02",
+      "bytes": 3569,
+      "header": "Vanadium (V)\tV1(g)"
+    },
+    {
+      "molecule": "N",
+      "file": "N-002.txt",
+      "url": "https://janaf.nist.gov/tables/N-002.txt",
+      "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+      "bytes": 3847,
+      "header": "Nitrogen (N)\tN1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}

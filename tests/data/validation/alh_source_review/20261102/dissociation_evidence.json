@@ -1,0 +1,174 @@
+{
+  "schema_version": "1",
+  "review_date": "2026-11-02",
+  "species": "AlH(g), neutral, X1Sigma+",
+  "status": "Diagnostic evidence; not an adopted energy or uncertainty distribution.",
+  "baltayan_nedelec1979": {
+    "doi": "10.1063/1.437749",
+    "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+    "quantity": "De, measured from the potential minimum",
+    "X_De_eV": 3.16,
+    "X_reported_uncertainty_eV": 0.01,
+    "A_De_eV": 0.24,
+    "A_reported_uncertainty_eV": 0.01,
+    "uncertainty_definition": "Section IV identifies high-J lifetime precision as the largest uncertainty and high-J level energies (~50 cm^-1) as another contribution. Fig. 4 error bars exclude level-energy uncertainty. The reported +/-0.01 eV has no stated confidence level or probabilistic definition; it must not be treated as a calibrated 1-sigma error.",
+    "parent_crossref_json_sha256": "bd00c9b8cbed78c8dec42b930cb11c4902aee1a57be474ec56ab35a9afd38b83",
+    "local_pdf": {
+      "file": "Baltayan_1979.pdf",
+      "local_reference": "ref/refs_exogibbs_202611/Baltayan_1979.pdf",
+      "doi": "10.1063/1.437749",
+      "url": "https://doi.org/10.1063/1.437749",
+      "sha256": "56ade3b4747b17dea2b8910bcf982251c283bac97ffcde9d698b15564a936cc9",
+      "size_bytes": 800511,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+      "archive_policy": "The user-provided full article and extracted full text remain local. The repository retains bibliographic metadata, hash, independently written review notes and selected factual quantities only."
+    },
+    "printed_locations": [
+      "p 2399: printed abstract",
+      "p 2401: Section IV, Fig. 4, Table III and Section V opening"
+    ],
+    "publisher_metadata_discrepancy": {
+      "registered_abstract_X_De_eV": 3.17,
+      "printed_abstract_and_body_X_De_eV": 3.16,
+      "resolution": "Use the consistent printed abstract and body value 3.16 eV. The previously inspected publisher/Crossref metadata value 3.17 eV is retained only to document the discrepancy; it is not a second measurement."
+    },
+    "atomic_asymptote": {
+      "dissociation_products": "Al(3s2 3p 2P) + H(1s 2S), the atomic ground terms",
+      "X_limit_below_A_limit_cm-1": 100,
+      "basis": "Section IV explicitly lowers the X-state dissociation limit by 100 cm^-1 relative to A for Al(2P) fine structure. Section V identifies the atomic ground terms.",
+      "interpretation": "The lower X asymptote is consistent with Al(2P1/2)+H(2S1/2); the article does not print resolved J labels. Its De(X) already includes the stated fine-structure offset. Do not subtract a term-center correction again.",
+      "additional_fine_structure_correction_applied_eV": 0.0
+    },
+    "method": "Sections II-IV combine pulsed-laser radiative lifetimes, emission intensity deficits extrapolated to zero Ar pressure and diffuse-line widths with a semiclassical tunnelling model. The A-state potential uses RKR spectroscopy between v=0 and v=1, Morse continuation on the inner side and a reconstructed outer barrier; the slow outer tail near r>=5 angstrom yields the dissociation limit. This is a spectroscopic potential inference, not a direct dissociation-threshold measurement."
+  },
+  "later_quotations": [
+    {
+      "source": "Yurchenko et al. 2018, Section 2.2",
+      "doi": "10.1093/mnras/sty1524",
+      "quantity": "De",
+      "value_eV": 3.16,
+      "uncertainty_eV": 0.01,
+      "independent_measurement": false
+    },
+    {
+      "source": "Qin, Bai and Liu 2021, Table 1",
+      "doi": "10.3847/1538-4357/ac06d1",
+      "quantity": "De",
+      "value_eV": 3.16,
+      "uncertainty_eV": 0.01,
+      "independent_measurement": false
+    },
+    {
+      "source": "Pavlenko et al. 2022, Section 3.3",
+      "doi": "10.1093/mnras/stac2588",
+      "quantity": "D0",
+      "value_eV": 3.16,
+      "independent_measurement": false
+    }
+  ],
+  "qin2021_independent_theory": {
+    "method": "icMRCI+Q, Table 1",
+    "quantity": "De",
+    "basis_set_values_eV": {
+      "aug-cc-pVQZ": 3.19,
+      "aug-cc-pV5Z": 3.201,
+      "aug-cc-pV6Z": 3.198
+    },
+    "limitation": "No thermochemical uncertainty is assigned. The first dissociation limit is labelled Al(2P)+H(2S), without a resolved Al J label."
+  },
+  "zero_point_diagnostic": {
+    "constants_source": "Experimental row of Qin et al. 2021 Table 1, attributed to Szajna et al. 2011; not a new fit here.",
+    "omega_e_cm-1": 1682.37,
+    "omega_ex_e_cm-1": 29.05,
+    "formula": "G(0) approximately omega_e/2 - omega_ex_e/4; higher Dunham terms omitted.",
+    "ZPE_eV": 0.10339321271791044,
+    "limitation": "Preserved earlier two-term estimate from rounded secondhand constants. The supplied Szajna 2011 Table IV now permits the separate five-term diagnostic below; neither value is an adopted threshold or calibrated uncertainty interval.",
+    "D0_from_printed_primary_De_same_asymptote_eV": 3.0566067872820897
+  },
+  "al_atomic_fine_structure_diagnostic": {
+    "source_url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/aluminumtable3.htm",
+    "inspection": "NIST persistent-line level table inspected on 2026-11-02.",
+    "term": "3s2 3p 2P odd",
+    "levels": [
+      {
+        "J": 0.5,
+        "energy_cm-1": 0.0,
+        "electronic_weight_2J_plus_1": 2
+      },
+      {
+        "J": 1.5,
+        "energy_cm-1": 112.061,
+        "electronic_weight_2J_plus_1": 4
+      }
+    ],
+    "term_center_above_lowest_level_eV": 0.009262528840415236,
+    "interpretation": "The term-center scale is retained as a convention diagnostic only. The full 1979 paper explicitly places the X limit below A for fine structure, so no additional 0.0093 eV subtraction is applied. Updating its approximate 100 cm^-1 split to the modern 112.061 cm^-1 would require reconstructing the original potential reference and is not done here."
+  },
+  "barklem_collet2016_table1": {
+    "doi": "10.1051/0004-6361/201526961",
+    "record_source": "Frozen major_molecule_reference.json; column meanings checked against original paper Table 1 and Section 2.1.1.",
+    "quantity": "D0",
+    "Huber_Herzberg1979_eV": 3.06,
+    "Luo2007_eV": 2.949,
+    "Luo2007_uncertainty_eV": 0.13,
+    "Curtiss1991_G2_eV": 3.135,
+    "adopted_eV": 2.949,
+    "adopted_uncertainty_eV": 0.13,
+    "limitation": "The specific original sources behind the Luo AlH entry have not been inspected. Its similarity to JANAF is not proof of common ancestry."
+  },
+  "assessment": "The printed Baltayan De=3.16 eV combined with the supplied Szajna five-term vibrational polynomial gives diagnostic ZPE=0.1033973143 eV and D0=3.0566026857 eV, with no second fine-structure subtraction. The additional k=3..5 terms change ZPE by only 3.83e-6 eV relative to the same first two coefficients. This strengthens the existing conclusion that the missing displayed higher terms do not account for the JANAF/NASA energy gap. The polynomial reproduces printed v=0..5 spacings within 0.0003 cm^-1, but relative spectra do not establish the absolute potential zero or a complete uncertainty interval. The energy preference remains directional; neither the exact NASA energy nor its complete thermal model is certified.",
+  "szajna2011_zero_point_diagnostic": {
+    "doi": "10.12693/APhysPolA.120.417",
+    "local_pdf": {
+      "file": "2011SzajnaAlHActaPhysPolA.pdf",
+      "local_reference": "ref/refs_exogibbs_202611-2/2011SzajnaAlHActaPhysPolA.pdf",
+      "doi": "10.12693/APhysPolA.120.417",
+      "url": "https://doi.org/10.12693/APhysPolA.120.417",
+      "sha256": "24f16a10d4d1796c7eb56b51d59a687249500e8e5c046a65711e50667394ffc4",
+      "size_bytes": 670937,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher article pp 417-423 read. Tables II and IV on printed pp 420-421 visually checked, including signs, scale factors, 1-sigma notation and fixed-coefficient footnotes.",
+      "archive_policy": "The supplied full article and extracted full text remain local. The repository retains metadata, hashes, selected factual inputs and independently written review notes only."
+    },
+    "source_location": "Tables II (p 420) and IV, Section 4.2 (p 421)",
+    "species": "Neutral AlH X1Sigma+, ground isotopologue used by the AlH/AlD spectroscopic fit",
+    "signed_Yk0_cm-1": [
+      1682.37499,
+      -29.05111,
+      0.247654,
+      -0.0014152,
+      -0.00013
+    ],
+    "coefficient_order": "k=1..5; Y20=-omega_e*x_e, Y30=omega_e*y_e, Y40=omega_e*z_e",
+    "reported_coefficient_standard_errors_cm-1": [
+      0.00017,
+      0.00015,
+      4.4e-05,
+      4.4e-06,
+      null
+    ],
+    "fixed_parameter": "Y50=-1.3e-4 cm^-1 was constrained to White, Dulick and Bernath (1993); no uncertainty is supplied for it here.",
+    "X_v0_relative_terms_cm-1": [
+      0.0,
+      1625.069576,
+      3194.214047,
+      4708.818208,
+      6170.19408,
+      7579.56467
+    ],
+    "X_term_standard_errors_cm-1": [
+      0.0,
+      2.2e-05,
+      3.7e-05,
+      9.6e-05,
+      0.00016,
+      0.00052
+    ],
+    "formula": "G(v)=sum(Yk0*(v+1/2)^k), k=1..5; diagnostic sets Y00/potential-zero correction to zero. Table II provides G(v)-G(0), not an absolute potential minimum.",
+    "limitation": "The displayed higher-order terms can now be included and their printed low-v spacings checked. Coefficient covariance, uncertainty of fixed Y50, terms above k=5 and the absolute potential-zero correction are not determined by these tables. Do not propagate diagonal coefficient errors as a complete ZPE or D0 confidence interval, or extrapolate this polynomial to dissociation.",
+    "notation_guard": "Table IV De is the equilibrium centrifugal-distortion constant in cm^-1, not the dissociation energy De in eV."
+  }
+}

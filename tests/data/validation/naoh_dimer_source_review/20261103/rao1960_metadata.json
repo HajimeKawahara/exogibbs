@@ -1,0 +1,70 @@
+{
+  "DOI": "10.1063/1.1731491",
+  "title": [
+    "Velocity Analysis of Molecular Beams Generated from NaOH Vapors"
+  ],
+  "author": [
+    {
+      "given": "V. S.",
+      "family": "Rao",
+      "sequence": "first",
+      "affiliation": [
+        {
+          "name": "Columbia Radiation Laboratory, Department of Physics, Columbia University, New York"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "Richard C.",
+      "family": "Schoonmaker",
+      "sequence": "additional",
+      "affiliation": [
+        {
+          "name": "Columbia Radiation Laboratory, Department of Physics, Columbia University, New York"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    }
+  ],
+  "published": {
+    "date-parts": [
+      [
+        1960,
+        12,
+        1
+      ]
+    ]
+  },
+  "container-title": [
+    "The Journal of Chemical Physics"
+  ],
+  "volume": "33",
+  "issue": "6",
+  "page": "1718-1720",
+  "link": [
+    {
+      "URL": "https://pubs.aip.org/aip/jcp/article-pdf/33/6/1718/18820132/1718_1_online.pdf",
+      "content-type": "application/pdf",
+      "content-version": "vor",
+      "intended-application": "syndication"
+    },
+    {
+      "URL": "https://pubs.aip.org/aip/jcp/article-pdf/33/6/1718/18820132/1718_1_online.pdf",
+      "content-type": "unspecified",
+      "content-version": "vor",
+      "intended-application": "similarity-checking"
+    }
+  ],
+  "URL": "https://doi.org/10.1063/1.1731491"
+}

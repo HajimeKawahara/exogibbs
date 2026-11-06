@@ -1,0 +1,28 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/h2o_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/h2o_source_review.py": "aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007",
+    "documents/mceg/h2o_source_review.rst": "716c36e80f4117615d4ab2fef47504ec7cd41266bd23abea8d7c0538426b4e10",
+    "tests/model_evidence/h2o_source_review_test.py": "e741f4fb3a30030cc10cbbad22d5c473fc589d5e2dd9b505fc28c56bdf0e83c8",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_tio_adoption/20261103/ions.npz": "39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8",
+    "tests/data/validation/h2o_source_review/20261103/README.rst": "c3f70bbe5fc281a6ee1987b2027db8e53cf050a36e1933ba6ead52d294bf4cc2",
+    "tests/data/validation/h2o_source_review/20261103/sources.json": "53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4",
+    "tests/data/validation/h2o_source_review/20261103/literature.json": "1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1",
+    "tests/data/validation/h2o_source_review/20261103/state_samples.json": "d929a23dbaf43f20679ae629a902efdff9284c53e6a09ba5cae549f5ab61e8cd",
+    "tests/data/validation/h2o_source_review/20261103/published_samples.json": "b5402dd5cc887d11586796e5bff2c27562ac5aa0da3de8fd19ecc4435f7582d9",
+    "tests/data/validation/h2o_source_review/20261103/nasa9_excerpt.txt": "aef29a4e5b7f841fa9cf32753c14bbeee4b7e96a991b77a0b496fcb87ef6d6e3"
+  },
+  "output_sha256": {
+    "tests/data/validation/h2o_source_review/20261103/comparison.json": "56d203878488f0b843aac110d66735943b244745a386b7a504a069ed192a3d0c"
+  },
+  "scope": "Ten 298.15-4000 K source nodes, six production-domain nodes; both complete supplied state files; separately published PF/Cp/moments; 75 saved curated-tio-v1 endpoints; no new equilibrium solve or production change."
+}

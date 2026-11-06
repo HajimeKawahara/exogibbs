@@ -1,0 +1,126 @@
+{
+  "retrieved": "2026-11-02",
+  "sources": [
+    {
+      "file": "tsuji1973.pdf",
+      "url": "https://articles.adsabs.harvard.edu/pdf/1973A%26A....23..411T",
+      "retrieved": "2026-11-02",
+      "download_sha256": "b51cebcd74a748b18eefaf1257beddcd15f98f568c19cf6261e92dd16edf1443",
+      "location": "Inspected PDF pages 2, 6, 7, 10, 21 = printed 412, 416, 417, 420, 431; archived selected pages.",
+      "inspection": "selected pages visually inspected"
+    },
+    {
+      "file": "saturno1982.pdf",
+      "url": "https://ntrs.nasa.gov/api/citations/19830004897/downloads/19830004897.pdf",
+      "retrieved": "2026-11-02",
+      "download_sha256": "a76e23a1fd90d242b2d6096482d1d6dcd39606f4404e528e0ef8b44b87674d1c",
+      "location": "NASA-TM-84537, printed 4-9: empirical C3H heat and thermal functions; downloaded original not vendored.",
+      "inspection": "selected text inspected"
+    },
+    {
+      "file": "burcat2005.pdf",
+      "url": "https://atct.anl.gov/~ruscic/reprints/Burcat%202005.pdf",
+      "retrieved": "2026-11-02",
+      "download_sha256": "9359bd37bb8efaa014476048bb52faaf79734ed4f98cd19c6a121fc942ce8bac",
+      "location": "PDF 23, 106, 325 = printed 19, 102, 321; selected pages archived.",
+      "inspection": "C3H records and constants inspected; NASA9 sign visually checked"
+    },
+    {
+      "file": "atct_linear.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=360",
+      "retrieved": "2026-11-02",
+      "download_sha256": "8a9655c09cf36664354bf437ebc7cdb19abbf2e2056611b2d5d9f94583414117",
+      "location": "CCCH energies, shared provenance and correlations.",
+      "inspection": "inspected"
+    },
+    {
+      "file": "atct_cyclic.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=750",
+      "retrieved": "2026-11-02",
+      "download_sha256": "25a8599992ecd01a750875f568758a0eea47dcea8878ebba951ae789ed2d21f4",
+      "location": "CH(CC) energies and distinct chemical identity.",
+      "inspection": "inspected"
+    },
+    {
+      "file": "atct1172.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "retrieved": "2026-11-02",
+      "download_sha256": "88238bce79e173c2fe6b26ddad22d4423fbea7698c1c472ba9a3145ae895f96f",
+      "location": "Full index inspected for C/H atomic references and isomer identities; original not vendored.",
+      "inspection": "selected rows inspected"
+    },
+    {
+      "file": "cdms_linear.html",
+      "url": "https://cdms.astro.uni-koeln.de/classic/entries/e037501.cat",
+      "retrieved": "2026-11-02",
+      "download_sha256": "6df8cfca1d340d951566ede87766d29f050ebb534a28fffee13acf9e0b6172ea",
+      "location": "Entry 037501, Mar 2009: linear X2Pi_r and v4=1 2Sigma_mu at 27.20 cm-1, Q only 9.375-300 K.",
+      "inspection": "inspected"
+    },
+    {
+      "file": "loison2017.pdf",
+      "url": "https://arxiv.org/pdf/1707.07926",
+      "retrieved": "2026-11-02",
+      "download_sha256": "18a7f73db7ccabf3146338710e95b19b7d814cc6f80069a1f099b6d12a8ed6a4",
+      "location": "Loison et al. 2017 DOI 10.1093/mnras/stx1265, Table 1 and introduction; original not vendored.",
+      "inspection": "selected text inspected"
+    },
+    {
+      "file": "garcia2018.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/bibliography/?bib_number_search%5B%5D=6321",
+      "retrieved": "2026-11-02",
+      "download_sha256": "cc6a8f4712e6a58da3318890e21153c2e2d1988de66801eed0348c60b26dda18",
+      "location": "ATcT source reference and uncertainty note, not full original paper",
+      "inspection": "bibliographic record inspected"
+    },
+    {
+      "file": "costes2006.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/bibliography/?bib_number_search%5B%5D=4870&bib_number_search%5B%5D=992",
+      "retrieved": "2026-11-02",
+      "download_sha256": "52e323b9b41a1807fb61451e8b8a3a1f68fc014f165086979d423f3bc923590b",
+      "location": "ATcT source reference and uncertainty note, not full original paper",
+      "inspection": "bibliographic record inspected"
+    },
+    {
+      "file": "aguilera-iparraguirre2008.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/bibliography/?bib_number_search%5B%5D=2783&bib_number_search%5B%5D=995",
+      "retrieved": "2026-11-02",
+      "download_sha256": "fcc3ac86778bf52909310eb438f60cfdc28e8d4e584a2fb1117dc62848efd45f",
+      "location": "ATcT source reference and uncertainty note, not full original paper",
+      "inspection": "bibliographic record inspected"
+    },
+    {
+      "file": "costes2009.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/bibliography/?bib_number_search%5B%5D=6396&bib_number_search%5B%5D=995",
+      "retrieved": "2026-11-02",
+      "download_sha256": "6f63d597ca6387dcfa7663b8620c267e903b6080e566ceecb9ac13c0945c2ae1",
+      "location": "ATcT source reference and uncertainty note, not full original paper",
+      "inspection": "bibliographic record inspected"
+    },
+    {
+      "file": "ref/refs_exogibbs_202611-2/Caris_2009.pdf",
+      "url": "https://doi.org/10.1016/j.jms.2008.10.006",
+      "doi": "10.1016/j.jms.2008.10.006",
+      "sha256": "4055cc5e84afb5f27dd2a5ba410fa518392ce20d82f062f312cc11be42eeb80d",
+      "bytes": 573080,
+      "acquisition": "user_supplied",
+      "received": "2026-11-02",
+      "archived": false,
+      "inspection": "Full supplied article text read. Abstract (printed p 99, PDF p 1), Figure 4 and Table 5 (printed p 104, PDF p 6) visually checked. Figure 1 (p 100) and Section 5 Eq. (3) (p 103) identify the reference energy; the supplementary fit data are not part of this PDF and were not inspected.",
+      "redistribution": "Full supplied PDF and extracted text are not vendored."
+    }
+  ],
+  "unsuccessful_access": [
+    {
+      "url": "https://articles.adsabs.harvard.edu/pdf/1964AnTok...9....1T",
+      "result": "HTTP 403; bibliography identifies Tsuji 1964 Ann. Tokyo Astron. Obs., 2nd Ser., 9, 1-110 but source construction not inspected."
+    }
+  ],
+  "search_terms": [
+    "Tsuji 1973 C3H thermochemical dissociation energy",
+    "C3H linear cyclic enthalpy formation ATcT",
+    "C3H Burcat thermodynamic",
+    "Molecular abundance in stellar atmospheres Tsuji 1964",
+    "CDMS C3H Renner Teller"
+  ]
+}

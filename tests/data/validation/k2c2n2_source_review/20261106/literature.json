@@ -1,0 +1,51 @@
+{
+  "janaf_printed": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+    "page": 678,
+    "evaluation": "March 1966; 1-bar conversion",
+    "identity": "Neutral (KCN)2 ideal gas, six atoms, assumed D2h planar structure.",
+    "sigma": 4,
+    "ground_weight": 1,
+    "mass_u": 130.232,
+    "inertia_product_g3_cm6": 2.94854e-112,
+    "vibrational_frequencies_expanded_cm_inverse": [
+      240,
+      130,
+      205,
+      130,
+      220,
+      225,
+      207,
+      207,
+      2158,
+      2158,
+      2158,
+      2158
+    ],
+    "Hf298_J_mol": -8368.0,
+    "Hf298_uncertainty_J_mol": 42000.0,
+    "thermal_model": "Estimated dimer geometry/frequencies with the last six modes taken from historical linear monomer bend/stretch assumptions.",
+    "diagnostic_alternative_frequencies_cm_inverse": [
+      240,
+      130,
+      205,
+      130,
+      220,
+      225,
+      207,
+      207,
+      207,
+      207,
+      2158,
+      2158
+    ]
+  },
+  "primary_energy": {
+    "doi": "10.1021/j100523a006",
+    "access": "Publisher bibliographic record and indexed primary first-page transcription inspected; local full-issue download timed out and complete body was not obtained.",
+    "primary_page_url": "https://lib3.dss.go.th/fulltext/scan_ebook/j.of_physical_1977_v81_n8.pdf",
+    "Hf298_dimer_J_mol": 29288.0,
+    "reported_uncertainty_J_mol": 12552.0,
+    "scope": "1977 abstract reports 7.0 +/-3 kcal/mol for dimer; its large second/third-law difference requires the body and thermal assumptions before recommendation."
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "kind": "CI replay revalidation; original scientific packet and execution receipt preserved",
+  "molecule": "HNO",
+  "field": "source_samples[1].curated_minus_janaf_reaction.G_J_mol",
+  "temperature_K": 2000,
+  "observation": "Python 3.11 GitHub CI plus independent sequential-sum emulation",
+  "expected_J_mol": 28.714558444858994,
+  "sequential_sum_actual_J_mol": 28.714558445091825,
+  "absolute_difference_J_mol": 2.3283064365386963e-10,
+  "replay_policy": {
+    "only_changed_field": "curated_minus_janaf_reaction.G_J_mol at each source knot",
+    "absolute_tolerance_J_mol": 1e-08,
+    "relative_tolerance": 0,
+    "rejected_perturbation_J_mol": 1e-05,
+    "other_fields": "Original shared check_equal tolerances unchanged",
+    "rationale": "Cancellation of reaction Gibbs energies of order 1e6 J/mol amplifies last-bit differences from Python 3.11 sequential versus Python 3.12 improved float sum. The absolute allowance is below 1e-12 in ln(K) at 1500-4000 K, not a physical accuracy tolerance."
+  },
+  "source_and_runtime_changed": false,
+  "original_receipt_sha256": "6673d3cf2c6f5d2ae4a3c59ea30aacacbba5214c8bcb0ee31ba8909451674e4b",
+  "original_test_snapshot": "tests/data/validation/hno_source_review/ci-revalidation-20261106/source/hno_source_review_test.py",
+  "original_test_sha256": "4c4bd74c67e743cc29f615ef565abe8fb6e8d9efd507e2649574862b9b99b455",
+  "current_test_source": "tests/model_evidence/hno_source_review_test.py",
+  "current_test_sha256": "dfc0a75e0deabce54dfb6a1d4a1f2f3dbc1b76dc17db719c084a57d5b426e4e3",
+  "original_packet_sha256": {
+    "tests/data/validation/hno_source_review/20261106/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/hno_source_review/20261106/H-027.txt": "7aae4467b81ffee6255c738a62d16aa467e2d2fe30437de93546081e17f14e13",
+    "tests/data/validation/hno_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/hno_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/hno_source_review/20261106/README.rst": "4a89967b7168cffbd108736049809965bdb2f2d6e4da7be9ac2d0c99511f280e",
+    "tests/data/validation/hno_source_review/20261106/comparison.json": "ee5c57fe5cd5b857234fce5b971c0c3d98d396fcdf2092a0e311d392816f0240",
+    "tests/data/validation/hno_source_review/20261106/inputs.json": "b205e789cb89ce9f53bc08d961ad92bd0de3fbc93a768099e765da4669616049",
+    "tests/data/validation/hno_source_review/20261106/literature.json": "708dc725552768af8cfe986e9814e74e8bcd0eda50b876a95234da38ee275b26",
+    "tests/data/validation/hno_source_review/20261106/nasa_records.json": "4cf9573110692b09dcafc8839ec35a3aca5927e186720b3594b64f0e80b25ec1",
+    "tests/data/validation/hno_source_review/20261106/nasa_selected_records.txt": "0902806fdcee137c6c05387aa7f9fafc7110b2e43802c428363a50c168f69e41",
+    "tests/data/validation/hno_source_review/20261106/receipt.json": "6673d3cf2c6f5d2ae4a3c59ea30aacacbba5214c8bcb0ee31ba8909451674e4b",
+    "tests/data/validation/hno_source_review/20261106/sources.json": "da2353f732512226ad292379ba807eff81c1341a93ee5544975f4bd53aa6b92c"
+  },
+  "environment": {
+    "python": "3.12.7",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "sequential_sum_emulation": "Set only the review module global sum to a loop adding each input in order from start=0. Common helpers, Python builtins and NumPy remain unchanged; this is not a full interpreter/platform simulation.",
+  "test_command": [
+    "taskset",
+    "-c",
+    "4-7",
+    "python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/model_evidence/hno_source_review_test.py"
+  ],
+  "test_result": "7 passed in 1.98s",
+  "sequential_sum_full_replay_with_local_comparator": "passed"
+}

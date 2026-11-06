@@ -1,0 +1,150 @@
+{
+  "schema_version": "1",
+  "species_id": "H2Na2O2",
+  "nasa_species": "Na2O2H2",
+  "composition": {
+    "H": 2,
+    "Na": 2,
+    "O": 2
+  },
+  "charge": 0,
+  "standard_pressure_Pa": 100000,
+  "temperatures_K": [
+    500,
+    1000,
+    1500,
+    3000
+  ],
+  "gurvich1996": {
+    "doi": "10.1063/1.555982",
+    "printed_pages": [
+      1268,
+      1269,
+      1270,
+      1271
+    ],
+    "table_3_23": {
+      "janaf1985_frequencies_cm-1": [
+        3700,
+        350,
+        209,
+        1250,
+        270,
+        1250,
+        201,
+        1250,
+        1250,
+        313,
+        3700,
+        294
+      ],
+      "adopted_frequencies_cm-1": [
+        3700,
+        500,
+        250,
+        500,
+        400,
+        300,
+        200,
+        300,
+        350,
+        350,
+        3700,
+        500
+      ],
+      "mode_degeneracies": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "janaf1985_geometry": "C2h, square planar Na2O2 core; trans out-of-plane H",
+      "adopted_geometry": "D2h, planar rhomboid",
+      "adopted_symmetry_number": 4,
+      "adopted_electronic_weight": 1,
+      "adopted_inertia_product_1e-117_g3_cm6": 7000
+    },
+    "hf298_kJ_mol": -624.0,
+    "hf0_table_3_27_kJ_mol": -613.278,
+    "hf298_stated_uncertainty_kJ_mol": 10,
+    "uncertainty_convention": "Not identified as one standard deviation; shared ancestral data prevent treating source differences as independent errors.",
+    "table_3_27": [
+      {
+        "temperature_K": 298.15,
+        "Cp_J_mol_K": 97.36,
+        "S_J_mol_K": 309.769,
+        "H_minus_H0_kJ_mol": 19.346
+      },
+      {
+        "temperature_K": 500,
+        "Cp_J_mol_K": 108.788,
+        "S_J_mol_K": 363.432,
+        "H_minus_H0_kJ_mol": 40.394
+      },
+      {
+        "temperature_K": 1000,
+        "Cp_J_mol_K": 116.7,
+        "S_J_mol_K": 441.674,
+        "H_minus_H0_kJ_mol": 97.053
+      },
+      {
+        "temperature_K": 1500,
+        "Cp_J_mol_K": 121.878,
+        "S_J_mol_K": 490.024,
+        "H_minus_H0_kJ_mol": 156.763
+      },
+      {
+        "temperature_K": 2000,
+        "Cp_J_mol_K": 125.398,
+        "S_J_mol_K": 525.605,
+        "H_minus_H0_kJ_mol": 218.648
+      },
+      {
+        "temperature_K": 3000,
+        "Cp_J_mol_K": 129.05,
+        "S_J_mol_K": 577.249,
+        "H_minus_H0_kJ_mol": 346.139
+      },
+      {
+        "temperature_K": 4000,
+        "Cp_J_mol_K": 130.652,
+        "S_J_mol_K": 614.622,
+        "H_minus_H0_kJ_mol": 476.087
+      }
+    ],
+    "printed_inconsistencies": {
+      "table_3_24_delta_S_at_1000_J_mol_K": 15.049,
+      "table_3_27_minus_official_janaf_delta_S_at_1000_J_mol_K": 19.052,
+      "inertia_product_uncertainty_text": 5000,
+      "inertia_product_uncertainty_list": 500,
+      "inertia_product_units": "1e-117 g^3 cm^6",
+      "treatment": "Preserve both printed values. Replay absolute Table 3-27, not Table 3-24 entropy difference; no inertia uncertainty propagated."
+    }
+  },
+  "janaf1974": {
+    "doi": "10.1063/1.3253143",
+    "printed_page": 449,
+    "pdf_page": 140,
+    "geometry": "C2h",
+    "symmetry_number": 2,
+    "electronic_weight": 1,
+    "inertia_product_1e-117_g3_cm6": 8156.8,
+    "hf298_kcal_mol": -145.2,
+    "hf298_stated_uncertainty_kcal_mol": 6.0,
+    "gas_dimerization_H298_kcal_mol": -50.7,
+    "gas_dimerization_stated_uncertainty_kcal_mol": 3.0,
+    "reported_partial_pressure_analysis_temperature_K": [
+      573,
+      1050
+    ],
+    "pressure_note": "Historical table uses 1 atm and cal units. The modern official 1 bar table is used for all Gibbs comparisons."
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "review_date": "2026-11-03",
+  "decision": "Retain current fit provisionally; prioritize weaker modern atomization energy plus independently checked thermal functions.",
+  "identity": {
+    "species": "neutral linear N3 radical",
+    "state": "X2Pi_g",
+    "symmetry": "D_infinity_h",
+    "rotational_symmetry_number": 2,
+    "modern_neutral_CAS": "12596-60-0",
+    "janaf_index_CAS": "14343-69-2",
+    "CAS_note": "JANAF index number conflicts with the modern anion identifier; the printed electronic state and neutral formula identify the radical, not the anion."
+  },
+  "janaf_print": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Nitrogen.pdf",
+    "printed_page": 1632,
+    "pdf_page_1based": 34,
+    "evaluation": "December 1970 (1 bar)",
+    "hf298_kJ_mol": 414.22,
+    "reported_uncertainty_kJ_mol": 20.9,
+    "S298_J_mol_K": 226.469,
+    "reported_S_uncertainty_J_mol_K": 2.1,
+    "energy_basis": "Cyanogen azide photolysis onset to CN + N3, with a cyanogen-azide solid formation value and estimated 14.6 kcal/mol sublimation; original experiments not inspected.",
+    "estimated_vibrational_wavenumbers_cm-1": [
+      1800,
+      500,
+      1200
+    ],
+    "vibrational_degeneracies": [
+      1,
+      2,
+      1
+    ],
+    "electronic_levels_cm-1": [
+      0,
+      71.3,
+      36811
+    ],
+    "electronic_weights": [
+      2,
+      2,
+      2
+    ],
+    "B0_cm-1": 0.431085,
+    "bond_length_A": 1.1815
+  },
+  "nasa_headers": {
+    "N3": {
+      "hf298_J_mol": 436000.0,
+      "H298_minus_H0_J_mol": 9570.906,
+      "reference": "Gurvich 1989 volume 1 part 1 p325 / part 2 p202; originals not inspected"
+    },
+    "N": {
+      "hf298_J_mol": 472680.0,
+      "H298_minus_H0_J_mol": 6197.428,
+      "reference": "Cox 1989; Moore 1975; Gordon 1999"
+    }
+  },
+  "atct_1_172": {
+    "version": "1.172",
+    "dataset_doi": "10.17038/CSE/2440254",
+    "N3": {
+      "hf0_kJ_mol": 452.38,
+      "hf298_kJ_mol": 449.79,
+      "uncertainty_95pct_kJ_mol": 0.59,
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=304"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.583,
+      "hf298_kJ_mol": 472.445,
+      "uncertainty_95pct_kJ_mol": 0.022,
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=24"
+    },
+    "provenance_note": "N3 top20 account for68.9%;58 contributors for90%; no covariance matrix recovered and no independent-error combination claimed. Cook1999 contributes22.1%; Yuan2008 contributes5.5%. ATcT evaluation inspected, original papers not inspected."
+  },
+  "modern_spectroscopy": {
+    "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C12596600&Mask=800",
+    "compilation": "Jacox, NIST Chemistry WebBook",
+    "gas_fundamentals_cm-1": [
+      1320,
+      457,
+      1644.68
+    ],
+    "first_two": "Tentative/approximate values from Beaman1987; not exact harmonic frequencies.",
+    "dois": [
+      "10.1021/j100308a006",
+      "10.1063/1.455122"
+    ],
+    "inspection": "Official compilation and bibliography inspected; underlying numerical full texts not yet inspected."
+  },
+  "priority_literature": [
+    {
+      "authors": "Cook, Langford and Ashfold (1999)",
+      "doi": "10.1039/A805936E",
+      "inspection": "publisher abstract and ATcT provenance",
+      "finding": "H-N3 D0=30970 +/-50 cm^-1; this is hydrazoic-acid bond cleavage, not N3 total atomization."
+    },
+    {
+      "authors": "Yuan et al. (2008)",
+      "doi": "10.1021/jp800062t",
+      "inspection": "PubMed author abstract and ATcT provenance; full text not inspected",
+      "finding": "ATcT input H-N3 D0=30920 +/-100 cm^-1; photochemical slow channel is not proof of equilibrium cyclic abundance."
+    },
+    {
+      "authors": "Dixon et al. (2004)",
+      "doi": "10.1021/ja0303182",
+      "inspection": "PubMed author abstract and ATcT provenance; publisher full-text access403",
+      "finding": "Abstract gives Hf0(N3,2Pi)=109.2 +/-1 kcal/mol; computational route to energy, also an ATcT input, not independent validation of ATcT."
+    },
+    {
+      "authors": "Gurvich et al. (1989)",
+      "doi": null,
+      "locator": "volume1 part1 p325 / part2 p202",
+      "inspection": "NASA citation only"
+    },
+    {
+      "authors": "Beaman et al. (1987)",
+      "doi": "10.1021/j100308a006",
+      "inspection": "NIST compilation only; original not inspected",
+      "purpose": "Verify tentative symmetric-stretch and bending assignments"
+    },
+    {
+      "authors": "Brazier et al. (1988)",
+      "doi": "10.1063/1.455122",
+      "inspection": "NIST compilation only; original not inspected",
+      "purpose": "Gas-phase asymmetric stretch and ground rotational/spin structure"
+    }
+  ],
+  "cyclic_scope": {
+    "authors": "Jamieson and Kaiser (2007)",
+    "doi": "10.1016/j.cplett.2007.04.042",
+    "inspection": "Full author-hosted PDF inspected, pp98-104",
+    "finding": "Their isotope-resolved irradiated10K nitrogen-ice experiment identified linear N3, with no evidence for cyclic formation or access. Figure2 quotes cyclic X2B1 about127kJ/mol above linear, adapted from earlier work; not an independent modern thermal correction. Matrix site splitting and driven production do not validate hot gas equilibrium."
+  },
+  "not_adopted": [
+    "No NASA-only replacement",
+    "No ATcT energy shift applied to curated",
+    "No cyclic species added",
+    "No new equilibrium substitution"
+  ]
+}

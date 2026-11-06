@@ -1,0 +1,27 @@
+{
+  "review_date": "2026-11-05",
+  "command": "PYTHONPATH=src python mceg/reviews/s2_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/s2_source_review.py": "e24dfe77190ec26058dcfc3b25e077bc6f827afa29c96332614f193700f180f8",
+    "documents/mceg/s2_source_review.rst": "d3a969fc3aaea350a77df38b899a7c97567ac7c7c43378a06d079b6eee09db7c",
+    "tests/model_evidence/s2_source_review_test.py": "70d0df845eefc1770cb0ffaf46a8695ad40951bcb9f3e3fdbdd4f6f06958027f",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_h2o_adoption/20261104/ions.npz": "c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/s2_source_review/20261105/README.rst": "07b3bc50908a80663f19a70077ded8071794e2826147f08b640ae56881505349",
+    "tests/data/validation/s2_source_review/20261105/literature.json": "2f47e9306def628c0a0a19b0e7ffe31315509eb5d8b53ce05eb47d9b11e9f001",
+    "tests/data/validation/s2_source_review/20261105/sources.json": "d5439d44c203f670b09f8b978654b659b60cdcb30358581016773cae7f37f7df",
+    "tests/data/validation/s2_source_review/20261105/state_inventory.json": "d60f339b95b8ca4496fde1f5ae7f374253bfff070f4620078e7acbde6878d6cf",
+    "tests/data/validation/s2_source_review/20261105/states.npz": "1d184ce21de5b90b3b86e02765d79f7774c92bc586043395b44825cfd0c5e5b8"
+  },
+  "output_sha256": {
+    "tests/data/validation/s2_source_review/20261105/comparison.json": "c6ac7f4ca7c5731a449c69fc3ce0b18d3e3d08660d32a5deda37130448f7c13d"
+  },
+  "scope": "Nine source nodes 300-4000 K (curated only 1500-4000 K), every distributed Gomez state and75 archived current endpoints. No production change or finite substitution."
+}

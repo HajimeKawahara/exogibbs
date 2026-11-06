@@ -1,0 +1,24 @@
+{
+  "result": "passed",
+  "scope": "Continuous model and source-validation record; separate from equilibrium execution",
+  "selected_file_sha256": {
+    "mceg/reviews/o2_candidate.py": "2fb5e42f3ae7f11d98a29a0543ff91c32dd09bb58b024ded2f554fc5c990877c",
+    "tests/data/validation/o2_source_review/20261106/inputs.json": "ae3ee18594a9433527819e92760b305a015c7c027d998f7bc450c38e957db462",
+    "tests/data/validation/o2_source_review/20261106/sources.json": "41d8c15d3fb9cc83fdbab218b60b30cb4d39234e0d981afd4f8d8fad7f4deeb9",
+    "tests/data/validation/o2_source_review/20261106/O-029.txt": "47bd5d4d600e962b0ca18c30016364762ce9d4ff1a07f39ff300648635f7e648",
+    "tests/data/validation/o2_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/o2_source_review/20261106/nasa-selected-records.txt": "8891a2dd0decb330cca4f10736bec59c8c5c73549e9a85ea7538c2cc87f1e88f",
+    "tests/data/validation/o2_candidate/20261106/published_tables.npz": "bac8203e9a6ea9754c444954b3ef1546bf3acebfa5b45ea1a35b0d8143008e00",
+    "mceg/reviews/h2o_candidate.py": "3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/o2_candidate/20261106/candidate.json": "47e1541d97041b903441e8184cad479f277bf67328c4f91690be6362d3da8863"
+  },
+  "output_sha256": {
+    "review.json": "7a2b00325d56ca99fe6ef5493812925dfee4f0fdead870b7e888f6e5b497e490",
+    "candidate.json": "47e1541d97041b903441e8184cad479f277bf67328c4f91690be6362d3da8863",
+    "validation.json": "1602e399041a278ce3311c198774598042d4680ab44a29c3e87d8aefaa7cfd77",
+    "published_tables.npz": "bac8203e9a6ea9754c444954b3ef1546bf3acebfa5b45ea1a35b0d8143008e00",
+    "sources.json": "226e8719a622b4cc3b62e144f45ddf4747670546b3ab77a9a1c9250eaa79b36d"
+  }
+}

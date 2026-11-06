@@ -1,0 +1,69 @@
+{
+  "review_date": "2026-11-04",
+  "downloads": [
+    {
+      "file": "exoames.states.bz2",
+      "url": "https://exomol.com/db/SO2/32S-16O2/ExoAmes/32S-16O2__ExoAmes.states.bz2",
+      "sha256": "97f2ca4583640fe035f5eeb1a1dfc3227e0018837ad26887166fb3e720de7228",
+      "bytes": 51144680,
+      "archived": false,
+      "acquisition": "downloaded 2026-11-04; original complete file hashed"
+    },
+    {
+      "file": "exoames.pf",
+      "url": "https://exomol.com/db/SO2/32S-16O2/ExoAmes/32S-16O2__ExoAmes.pf",
+      "sha256": "184e8d11657b795c6c3165c024194d92b9284f441d98063d2e97523c753c5ef4",
+      "bytes": 52000,
+      "archived": true,
+      "acquisition": "downloaded 2026-11-04; original complete file hashed"
+    },
+    {
+      "file": "exoames.def.json",
+      "url": "https://exomol.com/db/SO2/32S-16O2/ExoAmes/32S-16O2__ExoAmes.def.json",
+      "sha256": "22ebf0fdcabe5ef50c8e01d1cde86253b6e11ed04900906b7bb10f704d817a24",
+      "bytes": 6596,
+      "archived": true,
+      "acquisition": "downloaded 2026-11-04; original complete file hashed"
+    },
+    {
+      "file": "underwood2016.pdf",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/16UnTeYu.pdf",
+      "sha256": "6e78b81f5a9e08622fd3af4761c51dde5a6ca2fcde7affb263802eb5257c5cd1",
+      "bytes": 1314064,
+      "archived": false,
+      "acquisition": "downloaded 2026-11-04; original complete file hashed"
+    },
+    {
+      "file": "tips2025.pdf",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+      "sha256": "9e10ce2fc4b90b486768bece3c21f6deaf0d96852ed85fd028e5b545225f1161",
+      "bytes": 773909,
+      "archived": false,
+      "acquisition": "downloaded 2026-11-04; original complete file hashed"
+    },
+    {
+      "file": "hapi.py",
+      "url": "https://raw.githubusercontent.com/hitranonline/hapi/5353f4021d4b344eb9dd3484feeab9d483f30faa/hapi/hapi.py",
+      "sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+      "bytes": 4073469,
+      "archived": false,
+      "acquisition": "existing local complete primary source inspected 2026-11-04; HAPI literal SO2 arrays extracted without executing source"
+    },
+    {
+      "file": "Gamache.pdf",
+      "url": "https://doi.org/10.1016/j.jqsrt.2021.107713",
+      "sha256": "85e5e9a6ca08f552a07bce2302b7f75c3385c7e901319d1db194d926610b27c0",
+      "bytes": 1154584,
+      "archived": false,
+      "acquisition": "existing local complete primary source inspected 2026-11-04; HAPI literal SO2 arrays extracted without executing source"
+    },
+    {
+      "file": "Gamache_Corr.pdf",
+      "url": "https://doi.org/10.1016/j.jqsrt.2025.109618",
+      "sha256": "704c8056e1e0ff27424a78c4dfe7dba7416c52b0d2e8895e98d15b21e3096380",
+      "bytes": 281413,
+      "archived": false,
+      "acquisition": "existing local complete primary source inspected 2026-11-04; HAPI literal SO2 arrays extracted without executing source"
+    }
+  ]
+}

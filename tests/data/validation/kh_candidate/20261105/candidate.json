@@ -1,0 +1,53 @@
+{
+  "id": "kh_retained_thermal_spectroscopic_D0_candidate_v1",
+  "species": "H1K1",
+  "reaction": "H(g)+K(g)->KH(g)",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "baseline_dataset": "curated-oh-v1",
+  "representation": "Exact current five-coefficient formation fit with one 1/T energy shift; no refit",
+  "D0_cm-1": 14282.6,
+  "D0_J_mol": 170857.8386391254,
+  "retained_D0_J_mol": 180390.0,
+  "delta_D0_J_mol": -9532.161360874597,
+  "delta_D0_over_R_K": -1146.4554955196643,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_R_J_mol_K": 8.31451,
+  "original_logK_coefficients": [
+    21827.075449376836,
+    -1.2149973046779152,
+    -1.4420742793037675,
+    0.0004139688730737563,
+    -3.157609561709404e-08
+  ],
+  "candidate_logK_coefficients": [
+    20680.61995385717,
+    -1.2149973046779152,
+    -1.4420742793037675,
+    0.0004139688730737563,
+    -3.157609561709404e-08
+  ],
+  "nasa_D0_J_mol": 177999.972,
+  "nasa_control_coefficients": [
+    -185914.94774250034,
+    875.0681254416995,
+    -2.1002396169999997,
+    0.0008448702012864,
+    1.7945563823670034e-07,
+    -1.3711649125544e-10,
+    1.2757054128980302e-14,
+    -26113.64768100732,
+    4.0931383770000025
+  ],
+  "nasa_control_scope": "Same spectroscopic D0 with NASA molecular and atomic thermal functions; a thermal-reference alternative, not an energy uncertainty interval",
+  "source_limit": "1988 publisher abstract supplies D0; +/-0.6 cm-1 belongs to De, not a complete D0 uncertainty. Current JANAF/FastChem thermal fit and its atomic convention are preserved by the primary model.",
+  "source_sha256": {
+    "tests/data/validation/kh_source_review/20261105/inputs.json": "69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587",
+    "tests/data/validation/kh_source_review/20261105/literature.json": "3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38"
+  }
+}

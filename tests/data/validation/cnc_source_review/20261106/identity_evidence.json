@@ -1,0 +1,51 @@
+{
+  "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+  "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+  "printed_page": 681,
+  "inspection": "Original page image inspected; low electronic term is 26.41, not an OCR-concatenated 9264.1 cm-1.",
+  "connectivity": "linear C-N-C, isocyanomethylidyne",
+  "point_group": "D-infinity-h",
+  "rotational_symmetry": 2,
+  "ground_term": "X2Pi_g",
+  "electronic_terms_cm-1_and_weights": [
+    [
+      0,
+      2
+    ],
+    [
+      26.41,
+      2
+    ],
+    [
+      30338.53,
+      4
+    ],
+    [
+      34802.33,
+      2
+    ]
+  ],
+  "B0_cm-1": 0.45274,
+  "fundamentals_cm-1_and_degeneracies": [
+    [
+      1200,
+      1
+    ],
+    [
+      321,
+      2
+    ],
+    [
+      900,
+      1
+    ]
+  ],
+  "estimated_fundamental_indices": [
+    0,
+    2
+  ],
+  "hf298_kJ_mol_rounded": 556,
+  "listed_uncertainty_kJ_mol": 126,
+  "evaluation_date": "1967-03",
+  "notes": "The two low components already count the orbital/spin manifold. Strong Renner-Teller coupling prevents treating a single bending harmonic as complete physical validation."
+}

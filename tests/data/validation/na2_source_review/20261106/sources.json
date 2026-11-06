@@ -1,0 +1,27 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "Na2",
+      "file": "Na-011.txt",
+      "url": "https://janaf.nist.gov/tables/Na-011.txt",
+      "sha256": "fb770370f6503812dd1a82e77785a8bae8e8f06d7e88de295b31bf45dc8fb88b",
+      "bytes": 3838,
+      "header": "Sodium (Na2)\tNa2(g)"
+    },
+    {
+      "molecule": "Na",
+      "file": "Na-005.txt",
+      "url": "https://janaf.nist.gov/tables/Na-005.txt",
+      "sha256": "56df39453bc3895f80161d7ca0146b344669da2d1a9918b27139e917d491c255",
+      "bytes": 3186,
+      "header": "Sodium (Na)\tNa1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}

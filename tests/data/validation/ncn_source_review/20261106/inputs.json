@@ -1,0 +1,230 @@
+{
+  "name": "NCN",
+  "species_id": "C1N2_ncn",
+  "composition": {
+    "C": 1,
+    "N": 2
+  },
+  "reaction": "1 C(g) + 2 N(g) -> NCN(g)",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "nasa_records": {
+    "NCN": {
+      "source_name": "NCN",
+      "source_line_1based": 7417,
+      "composition": {
+        "C": 1,
+        "N": 2
+      },
+      "reference": "Hf:Gurvich,1991 pt1 p219. Jacox,1998 p180.",
+      "hf298_J_mol": 500456.573,
+      "h298_minus_h0_J_mol": 10180.177,
+      "natural_mass_u": 40.0241,
+      "intervals": [
+        {
+          "bounds_K": [
+            300.0,
+            1000.0
+          ],
+          "coefficients": [
+            -56346.807,
+            732.380458,
+            -0.782140184,
+            0.01838552441,
+            -1.950836491e-05,
+            1.035712021e-08,
+            -2.208158483e-12,
+            55397.897,
+            29.05308985
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -164188.0975,
+            -776.784075,
+            7.99998187,
+            -0.0001659081508,
+            2.983403318e-08,
+            -3.120157047e-12,
+            1.99269872e-16,
+            61844.2448,
+            -21.4910882
+          ]
+        }
+      ]
+    },
+    "C": {
+      "source_name": "C",
+      "source_line_1based": 1954,
+      "composition": {
+        "C": 1
+      },
+      "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+      "hf298_J_mol": 716680.0,
+      "h298_minus_h0_J_mol": 6535.895,
+      "natural_mass_u": 12.0107,
+      "intervals": [
+        {
+          "bounds_K": [
+            300.0,
+            1000.0
+          ],
+          "coefficients": [
+            649.503147,
+            -0.964901086,
+            2.504675479,
+            -1.281448025e-05,
+            1.980133654e-08,
+            -1.606144025e-11,
+            5.314483411e-15,
+            85457.6311,
+            4.747924288
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -128913.6472,
+            171.9528572,
+            2.646044387,
+            -0.000335306895,
+            1.74209274e-07,
+            -2.902817829e-11,
+            1.642182385e-15,
+            84105.9785,
+            4.130047418
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            443252801.0,
+            -288601.8412,
+            77.3710832,
+            -0.00971528189,
+            6.64959533e-07,
+            -2.230078776e-11,
+            2.899388702e-16,
+            2355273.444,
+            -640.512316
+          ]
+        }
+      ]
+    },
+    "N": {
+      "source_name": "N",
+      "source_line_1based": 7115,
+      "composition": {
+        "N": 1
+      },
+      "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+      "hf298_J_mol": 472680.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "natural_mass_u": 14.0067,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            56104.6378,
+            4.193905036
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            88765.0138,
+            -107.12315,
+            2.362188287,
+            0.0002916720081,
+            -1.7295151e-07,
+            4.01265788e-11,
+            -2.677227571e-15,
+            56973.5133,
+            4.865231506
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            547518105.0,
+            -310757.498,
+            69.1678274,
+            -0.00684798813,
+            3.8275724e-07,
+            -1.098367709e-11,
+            1.277986024e-16,
+            2550585.618,
+            -584.8769753
+          ]
+        }
+      ]
+    }
+  },
+  "janaf_files": {
+    "NCN": "C-089.txt",
+    "C": "C-003.txt",
+    "N": "N-002.txt"
+  },
+  "identity_scope": "Issue308 identity appendix; exact source label and connectivity, not formula-only matching.",
+  "atct": {
+    "version": "1.228",
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+    "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "species": {
+      "NCN": {
+        "label": "Methanetetraylbisamidogen",
+        "formula": "NCN  (g)",
+        "hf0_kJ_mol": 451.33,
+        "hf298_kJ_mol": 451.74,
+        "uncertainty": "\u00b1 0.31",
+        "ATcT_id": "2669-76-3*0"
+      },
+      "C": {
+        "label": "Carbon",
+        "formula": "C  (g)",
+        "hf0_kJ_mol": 711.37,
+        "hf298_kJ_mol": 716.855,
+        "uncertainty": "\u00b1 0.038",
+        "ATcT_id": "7440-44-0*0"
+      },
+      "N": {
+        "label": "Nitrogen atom",
+        "formula": "N  (g)",
+        "hf0_kJ_mol": 470.655,
+        "hf298_kJ_mol": 472.518,
+        "uncertainty": "\u00b1 0.021",
+        "ATcT_id": "17778-88-0*0"
+      }
+    }
+  }
+}

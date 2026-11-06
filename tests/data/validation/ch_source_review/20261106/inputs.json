@@ -1,0 +1,74 @@
+{
+  "molecule": "CH",
+  "species_id": "C1H1",
+  "composition": {
+    "C": 1,
+    "H": 1
+  },
+  "footprint_element": "C",
+  "temperatures_K": [
+    300,
+    500,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "atomic_tables": {
+    "C": "tests/data/validation/c2h_source_review/20261102/C-003.txt",
+    "H": "tests/data/validation/c2h_source_review/20261102/H-001.txt"
+  },
+  "molecular_janaf_table": "C-043.txt",
+  "atct_version": "1.228",
+  "atct": {
+    "CH": {
+      "name": "Methylidyne",
+      "formula": "CH  (g)",
+      "hf0_kJ_mol": 592.961,
+      "hf298_kJ_mol": 596.296,
+      "reported_uncertainty_kJ_mol": 0.078,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=117"
+    },
+    "C": {
+      "name": "Carbon",
+      "formula": "C  (g)",
+      "hf0_kJ_mol": 711.37,
+      "hf298_kJ_mol": 716.855,
+      "reported_uncertainty_kJ_mol": 0.038,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21"
+    },
+    "H": {
+      "name": "Hydrogen atom",
+      "formula": "H  (g)",
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "reported_uncertainty_kJ_mol": 0.0,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    },
+    "CH_quartet": {
+      "name": "Methylidyne",
+      "formula": "CH  (g, quartet)",
+      "hf0_kJ_mol": 665.01,
+      "hf298_kJ_mol": 668.35,
+      "reported_uncertainty_kJ_mol": 0.39,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=197"
+    }
+  },
+  "partition": {
+    "file": "partition.pf",
+    "nuclear_spin_divisor": 2,
+    "mass_u": 13.00782503223,
+    "scope": "12C1H, published MoLLIST PF; not identified with downloaded states sum",
+    "states_file": "states.npz"
+  },
+  "masseron_log_Q_coefficients": [
+    11.00608809,
+    -2.68892131,
+    0.27091654
+  ],
+  "masseron_D0_cm-1": 27960,
+  "masseron_D0_uncertainty_cm-1": 10
+}

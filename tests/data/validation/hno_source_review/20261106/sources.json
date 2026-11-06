@@ -1,0 +1,62 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "HNO",
+        "file": "H-027.txt",
+        "url": "https://janaf.nist.gov/tables/H-027.txt",
+        "sha256": "7aae4467b81ffee6255c738a62d16aa467e2d2fe30437de93546081e17f14e13"
+      },
+      {
+        "name": "H",
+        "file": "H-001.txt",
+        "url": "https://janaf.nist.gov/tables/H-001.txt",
+        "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "O",
+        "file": "O-001.txt",
+        "url": "https://janaf.nist.gov/tables/O-001.txt",
+        "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+      }
+    ],
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Official cached CEA records and all selected coefficients/headers checked against frozen screening records."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact gas-phase CAS identifiers and selected tabulated 0/298 K formation enthalpies; rounded marginal uncertainties, not a reaction covariance."
+  },
+  "references": [
+    {
+      "doi": "10.1073/pnas.112202099",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC124232/",
+      "title": "Nitroxyl and its anion: spin states and reactivity (2002)",
+      "access": "Primary open article inspected for neutral/anion spin distinction; solution thermochemistry is not transferred",
+      "finding": "Singlet HNO and triplet NO- are distinct species; aqueous results do not supply hot gas thermal functions."
+    },
+    {
+      "doi": "10.1021/jp047912y",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=196",
+      "title": "ATcT1.228 HNO value and source-network provenance",
+      "access": "Current gas-species value/provenance page inspected; DOI identifies ATcT methodology, not a standalone new HNO measurement",
+      "finding": "Dissociation-threshold and atomization constraints are connected in one evaluated network."
+    }
+  ],
+  "local_reference_scope": "The available refs_exogibbs_202611 and -2 collections were inventoried; relevant Gamache TIPS papers are used where indicated; no original Gurvich volume was present."
+}

@@ -1,0 +1,75 @@
+{
+  "decision": "Prefer the modern ATcT energy evaluation for explicitly identified linear CCCH; retain inherited production coefficients operationally until identity and high-temperature thermal construction are reconciled.",
+  "identity": {
+    "current": "C3H1; label 2-Proynylidene, neutral gas, C3H stoichiometry. Neither typo nor formula uniquely proves the represented isomer.",
+    "tsuji1973": "Table 4 formula C3H; paper links older C/H/N/O energies to Tsuji 1964 and describes estimated structures where data were absent.",
+    "modern_linear": "ATcT CCCH differs from HCCCH(C3H2). CDMS identifies linear ground X2Pi_r.",
+    "modern_cyclic": "ATcT CH(CC) lower H0 by 7.51kJ/mol; distinct species, not an energy correction to the linear species."
+  },
+  "source_lineage": {
+    "tsuji": "Numerical agreement supports FastChem annotation. It does not recover exact fitting procedure or original state sum.",
+    "burcat": "A 7/05 G3B3 energy; Jacox 2005 plus calculated frequencies; tabulated low bent-rotor model with sigma 1 and weight 2. Historical alternative sigma 4 and 3 are explicitly noted. This is a candidate, not a validated Renner-Teller partition.",
+    "atct": "Thermochemical network mixes experiment and theory; Costes 2006/2009 crossed beams, Garcia 2018 photoelectron spectroscopy and Aguilera-Iparraguirre 2008 theory are ancestors. Not independent confirmations of ATcT. Costes 2006 uncertainty was enlarged in the ATcT network; full original papers not read in this review."
+  },
+  "thermal_constraints": {
+    "cdms": "Low vibrational Sigma component at 27.20 cm-1 above lowest Pi1/2 rotational state; v0 and one excited component catalog does not establish a complete 1500-4000 K partition. Caris 2009 Figure 4 confirms the 27.2 cm-1 lowest-level convention; its approximately 20.35 cm-1 Hamiltonian term uses the unsplit Pi zero instead.",
+    "burcat_vs_current": "Compare only ideal-gas H/Cp using common NASA atomic functions. Large caloric disagreement establishes that modern molecular energy alone cannot resolve the thermal representation. No candidate abundance response or probabilistic uncertainty inferred.",
+    "isotopes": "FastChem/Tsuji isotope-state convention unrecovered; Burcat mass 37.04004 is a natural-average convention; CDMS main isotopic species cannot be substituted without normalization review.",
+    "caris2009": {
+      "doi": "10.1016/j.jms.2008.10.006",
+      "supplied_full_text": {
+        "file": "ref/refs_exogibbs_202611-2/Caris_2009.pdf",
+        "url": "https://doi.org/10.1016/j.jms.2008.10.006",
+        "doi": "10.1016/j.jms.2008.10.006",
+        "sha256": "4055cc5e84afb5f27dd2a5ba410fa518392ce20d82f062f312cc11be42eeb80d",
+        "bytes": 573080,
+        "acquisition": "user_supplied",
+        "received": "2026-11-02",
+        "archived": false,
+        "inspection": "Full supplied article text read. Abstract (printed p 99, PDF p 1), Figure 4 and Table 5 (printed p 104, PDF p 6) visually checked. Figure 1 (p 100) and Section 5 Eq. (3) (p 103) identify the reference energy; the supplementary fit data are not part of this PDF and were not inspected.",
+        "redistribution": "Full supplied PDF and extracted text are not vendored."
+      },
+      "scope": "Gas-phase linear C3H X2Pi ground state and v4=1 lower 2Sigma_mu component, including their vibronic coupling; 44 pure rotational and 8 ro-vibrational transitions, 376-572 GHz.",
+      "energy_zero": "Section 5 Eq. (3) defines E relative to the 2Pi term with A_SO=0. This is not the lowest actual rotational level of 2Pi1/2.",
+      "abstract": {
+        "E_GHz": 609.9771,
+        "E_parenthetic_uncertainty_GHz": 0.0042,
+        "quoted_E_cm-1": 20.34664,
+        "quoted_E_parenthetic_uncertainty_cm-1": 0.00014,
+        "beta_MHz": 1231.77,
+        "beta_parenthetic_uncertainty_MHz": 0.51
+      },
+      "table_5": {
+        "E_GHz": 609.9742,
+        "E_1sigma_GHz": 0.0041,
+        "beta_MHz": 1234.2,
+        "beta_1sigma_MHz": 1.9,
+        "beta_D_kHz": -19.2,
+        "beta_D_1sigma_kHz": 2.9,
+        "A_SO_GHz": 432.7898,
+        "A_SO_1sigma_GHz": 0.0084,
+        "B_ground_MHz": 11189.1033,
+        "B_ground_1sigma_MHz": 0.0084,
+        "B_excited_MHz": 11212.6703,
+        "B_excited_1sigma_MHz": 0.0162
+      },
+      "figure_4_lowest_levels_cm-1": {
+        "2Pi1/2_J0.5": 0.0,
+        "2Pi3/2_J1.5": 14.8,
+        "2Sigma_mu_N0": 27.2
+      },
+      "interpretation": "The paper itself shows the 27.2 cm^-1 level separation when the lowest rotational state is zero, consistent with the rounded CDMS 27.20 entry. This resolves the apparent 20.35 versus 27.20 conflict as a reference-convention distinction, without an additional empirical energy shift.",
+      "abstract_table_difference": "The printed abstract and Table 5 report different E and beta central values. Both are retained; Table 5 explicitly defines its parentheses as one standard deviation. The cause is not established and neither set is silently substituted for the other. Supplementary fit files or a documented catalog realization are needed before numerical Hamiltonian reconstruction.",
+      "state_model_limit": "The effective Hamiltonian includes spin-orbit, rotation, spin-rotation, lambda doubling, hyperfine terms and interaction with one low Sigma component. The sign of beta is not determined from line positions; the Sigma+ assignment is assumed and linked to parity conventions. The high-J polynomial is a spectroscopic fit, not a converged high-temperature partition function.",
+      "shared_ancestry": "CDMS entry 037501 explicitly incorporates Caris et al. 2009 and earlier transition data; agreement is not independent thermodynamic validation."
+    }
+  },
+  "follow_ups": [
+    "Recover Tsuji 1964 C3H geometry, multiplicity, atomization energy and original structural inputs.",
+    "Reconstruct the low-state Hamiltonian with documented supplementary fit inputs and consistent parity/energy-zero conventions, preserving the Caris abstract/Table 5 distinction; then add and test higher vibronic/electronic coverage, nuclear-spin and isotope normalization through 4000 K. Treat cyclic thermodynamics separately.",
+    "Inspect full Costes/Garcia/Aguilera-Iparraguirre papers if adopting an energy/thermal candidate; preserve their shared ATcT ancestry.",
+    "Only then construct a named consistent candidate and rerun equilibrium with one well-defined species replacement; cyclic isomer addition requires a separate network identity."
+  ],
+  "production_changed": false,
+  "equilibrium_substitution": "not_run"
+}

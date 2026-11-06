@@ -1,0 +1,54 @@
+{
+  "retrieved_date": "2026-11-05",
+  "downloads": {
+    "JnK.states.bz2": {
+      "url": "https://exomol.com/db/CS/12C-32S/JnK/12C-32S__JnK.states.bz2",
+      "sha256": "d8e77944223b388f0e6b1f820ef18bafdf228787a05a4e9b923ed709500a80cc",
+      "bytes": 151352,
+      "original_archived": false
+    },
+    "JnK.pf": {
+      "url": "https://exomol.com/db/CS/12C-32S/JnK/12C-32S__JnK.pf",
+      "sha256": "0317675463bbb731b25f2c2f229895913f8157f356ae1dd59400ec8985249efc",
+      "bytes": 75000,
+      "original_archived": false
+    },
+    "JnK.def.json": {
+      "url": "https://exomol.com/db/CS/12C-32S/JnK/12C-32S__JnK.def.json",
+      "sha256": "8ab3c53143055e8f393fe8c8c2e631b248303ce06128247351386b48219867f9",
+      "bytes": 4214,
+      "original_archived": false
+    },
+    "JnK.readme": {
+      "url": "https://exomol.com/db/CS/CS__JnK.readme",
+      "sha256": "cff5958b65c15cefba95358177bfd1a88f848cc05791b86b467b1236ea39f895",
+      "bytes": 2955,
+      "original_archived": false
+    },
+    "paulose2015.pdf": {
+      "url": "https://arxiv.org/pdf/1507.01275",
+      "sha256": "c6c3fd3a0d8fb5e01efbb6b05f773fc173539a8e6ce7300eaf134b778cdf2bbe",
+      "bytes": 2967630,
+      "original_archived": false
+    },
+    "olivares2025.pdf": {
+      "url": "https://arxiv.org/pdf/2409.14875v2",
+      "sha256": "53991aa4e883cbcfdbcb23b7277292b69a31845baabac4f85c568874a057b19d",
+      "bytes": 192281,
+      "original_archived": false
+    },
+    "nist-cs.html": {
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C2944050&Mask=1000",
+      "sha256": "75f5445b3583be4a56c5cf70ba3656a006f570b78118b7e07b3b20cec8a0d1ec",
+      "bytes": 69448,
+      "original_archived": false
+    },
+    "li2022.pdf": {
+      "url": "https://cpb.iphy.ac.cn/en/article/pdf/preview/10.1088/1674-1056/ac834f.pdf",
+      "sha256": "6cf7d7384eed53c98146821f5a22c6e3142b186564a58f175b5342ab8f886d26",
+      "bytes": 887652,
+      "original_archived": false
+    }
+  },
+  "note": "Original numerical distributions and papers remain in ignored results/cs-raw; the packet retains compact state columns and factual values only. ATcT pages were inspected with the browser; direct downloads returned HTTP403, so no original-byte hash is claimed. Current mutable ExoMol URLs must match the recorded original hashes before extraction."
+}

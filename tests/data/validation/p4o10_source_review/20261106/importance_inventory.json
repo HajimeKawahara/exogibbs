@@ -1,0 +1,41 @@
+{
+  "molecule": "P4O10",
+  "canonical": "O10P4",
+  "max_mole_fraction": 4.356292794805679e-50,
+  "max_mole_fraction_condition": {
+    "case_index": 4,
+    "temperature_K": 1500.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 0.5888436553555908
+  },
+  "max_element_share": 3.9454424607291845e-43,
+  "max_element": "P",
+  "max_element_share_condition": {
+    "case_index": 4,
+    "temperature_K": 1500.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 0.5888436553555908
+  },
+  "element_shares": {
+    "O": {
+      "maximum_share": 5.176494093442248e-46,
+      "maximum_share_percent": 5.176494093442248e-44,
+      "condition": {
+        "case_index": 4,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 0.5888436553555908
+      }
+    },
+    "P": {
+      "maximum_share": 3.9454424607291845e-43,
+      "maximum_share_percent": 3.9454424607291844e-41,
+      "condition": {
+        "case_index": 4,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 0.5888436553555908
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "temperature_count": 2501,
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "step_K": 1,
+  "maximum_absolute_formation_h_reconstruction_error": 6.039613253960852e-14,
+  "maximum_absolute_molecular_property_reconstruction_errors": {
+    "G_relative_J_mol": 5.820766091346741e-10,
+    "H_relative_J_mol": 1.4551915228366852e-10,
+    "S_J_mol_K": 5.684341886080802e-14,
+    "Cp_J_mol_K": 1.4210854715202004e-14
+  },
+  "jax_float64_maximum_absolute_errors": {
+    "formation_h": 5.3290705182007514e-14,
+    "reaction_H_J_mol": 8.149072527885437e-10,
+    "reaction_S_J_mol_K": 5.968558980384842e-13,
+    "reaction_Cp_J_mol_K": 9.112710586123285e-13
+  },
+  "thermal_comparison": [
+    {
+      "temperature_K": 1500.0,
+      "nasa_ATcT_over_current_K": 0.44639282102950023,
+      "janaf_same_energy_atoms_over_nasa_K": 1.0022756535461668,
+      "janaf_control_formation_h": -29.28281622118968
+    },
+    {
+      "temperature_K": 2000.0,
+      "nasa_ATcT_over_current_K": 0.5493427798481769,
+      "janaf_same_energy_atoms_over_nasa_K": 1.0018734773743967,
+      "janaf_control_formation_h": -14.702246307515729
+    },
+    {
+      "temperature_K": 2500.0,
+      "nasa_ATcT_over_current_K": 0.6231376733260158,
+      "janaf_same_energy_atoms_over_nasa_K": 0.9990904192521962,
+      "janaf_control_formation_h": -5.909254431628905
+    },
+    {
+      "temperature_K": 3000.0,
+      "nasa_ATcT_over_current_K": 0.6780932998538258,
+      "janaf_same_energy_atoms_over_nasa_K": 0.9941501610979181,
+      "janaf_control_formation_h": -0.02699462389734142
+    },
+    {
+      "temperature_K": 3500.0,
+      "nasa_ATcT_over_current_K": 0.7206489246622536,
+      "janaf_same_energy_atoms_over_nasa_K": 0.9874819953705627,
+      "janaf_control_formation_h": 4.185159746903214
+    },
+    {
+      "temperature_K": 4000.0,
+      "nasa_ATcT_over_current_K": 0.7551617985460892,
+      "janaf_same_energy_atoms_over_nasa_K": 0.9799163021545025,
+      "janaf_control_formation_h": 7.350606837522916
+    }
+  ],
+  "production_change": "none",
+  "uncertainty_scope": "No reaction covariance or high-temperature electronic-state completeness bound; inherited source inspection limits retained"
+}

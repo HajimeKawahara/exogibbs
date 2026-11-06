@@ -25,17 +25,20 @@ composition. It does not verify a modified callable that retains the old
 metadata. A different dataset hash or network choice gives
 ``no_matching_record``; that means no matching review, not physical reliability.
 
-The default ion-inclusive setup matches ``exogibbs.curated_c2h.v1``: the C2H
-substitution and default-adoption record. ``curated_v1.chemsetup()`` matches
-``exogibbs.curated_gas.v1`` and its historical HCN comparison. These studies are
-not rebound across dataset identities. The catalog is not a complete uncertainty
-inventory. Neutral-mode default verification is recorded directly in
-``mceg/contracts/curated_c2h.yaml``; the packaged lookup remains ion-inclusive.
+The default ion-inclusive setup matches ``exogibbs.curated_tio2.v1``. Its
+record covers measured TiO2 thermal functions on the cumulative CN/PS base.
+Explicit ``curated_cn`` and ``curated_ps`` factories match their intermediate
+adoption records; all earlier named curated factories retain their records.
+``curated_v1.chemsetup()`` matches ``exogibbs.curated_gas.v1`` and its historical
+HCN comparison. These studies are not rebound across dataset identities.
+The catalog is not a complete uncertainty inventory. Both-network production
+verification is recorded in ``mceg/contracts/curated_tio2_adoption.yaml``;
+the packaged lookup remains ion-inclusive.
 
 Inspect the default with optional MCEG::
 
    mceg explain --catalog src/exogibbs/data/mceg/index.json \
-     --model exogibbs.curated_c2h.v1 --species C2H
+     --model exogibbs.curated_tio2.v1 --species TiO2
 
 Inspect HCN with optional MCEG
 ------------------------------

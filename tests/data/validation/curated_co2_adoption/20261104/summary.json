@@ -1,0 +1,26 @@
+{
+  "dataset": "curated-co2-v1",
+  "legacy_dataset": "curated-tio-v1",
+  "epsilon_crit": 5e-14,
+  "method": "vmap_cold",
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_element_relative_residual": 1.3521741496952767e-06,
+      "max_mass_action_abs_ln": 1.1084466677857563e-12,
+      "max_CO2_abs_delta_ln_x_from_candidate": 3.716138508025324e-12,
+      "max_charge_relative_residual": 4.5327467836197623e-14,
+      "max_abs_delta_ln_x_from_candidate": 2.5378519296737068e-05
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_element_relative_residual": 1.3463755780502874e-06,
+      "max_mass_action_abs_ln": 1.1368683772161603e-12
+    }
+  ],
+  "scope": "Actual public CO2 default execution and numerical closure in both networks; ion mode also replays the archived candidate. No new independent-solver or physical validation."
+}

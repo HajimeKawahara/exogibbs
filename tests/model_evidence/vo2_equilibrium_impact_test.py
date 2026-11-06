@@ -12,8 +12,11 @@ from scipy.special import logsumexp
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_adoption_history import historical_source
 from gas_source_comparison import file_hash
 from vo2_equilibrium_impact import DATA, INPUT, KINDS, PRIOR, correction, models
+
+REVALIDATION = DATA.parent / "revalidation-20261106"
 
 
 @pytest.fixture
@@ -79,7 +82,9 @@ def test_execution_receipt_and_all_cold_and_independent_checks():
     receipt = json.loads((DATA / "receipt.json").read_text())
     assert receipt["result"] == "passed" and receipt["dtype"] == "float64"
     for name, digest in receipt["selected_file_sha256"].items():
-        assert file_hash(ROOT / name) == digest, name
+        snapshot = REVALIDATION / "source" / name
+        path = snapshot if snapshot.is_file() else historical_source(ROOT, name, digest)
+        assert file_hash(path) == digest, name
     for name, digest in receipt["output_sha256"].items():
         assert file_hash(DATA / name) == digest, name
     summary = json.loads((DATA / "summary.json").read_text())
@@ -130,8 +135,14 @@ def test_complete_archive_preserves_budgets_mass_action_and_allocation():
             np.testing.assert_allclose(saved[element+"_fraction"].sum(axis=-1), 1, rtol=1e-5)
 
 
-def test_baseline_is_current_curated_and_energy_weakening_reduces_vo2():
+def test_named_historical_baseline_and_energy_weakening_reduces_vo2(prepared):
+    setups, _ = prepared
+    assert setups[0].metadata["dataset"] == "curated-c2h-v1"
     with np.load(DATA / "equilibria.npz") as saved, np.load(PRIOR) as prior:
+        for model, frozen_h in zip(setups, saved["h"]):
+            np.testing.assert_allclose(
+                np.asarray(model.hvector_func(saved["temperature_K"])),
+                frozen_h, rtol=0, atol=1e-12)
         for key in ("species", "elements", "formula_matrix", "temperature_K", "pressure_bar", "C_over_O"):
             np.testing.assert_array_equal(saved[key], prior[key])
         np.testing.assert_allclose(saved["budget"], prior["budget"], atol=1e-15)
@@ -146,3 +157,15 @@ def test_baseline_is_current_curated_and_energy_weakening_reduces_vo2():
         for block in summary["highlighted_allocations"]:
             np.testing.assert_allclose(np.sum([r["element_fractions"]["V"] for r in block["vanadium"]], axis=0),
                                        1, rtol=1e-5)
+
+
+def test_revalidation_pins_current_code_and_preserves_original_execution():
+    amendment = json.loads((REVALIDATION / "revalidation.json").read_text())
+    assert amendment["baseline_dataset"] == "curated-c2h-v1"
+    assert amendment["new_equilibrium_solves"] == 0
+    for name, digest in amendment["current_file_sha256"].items():
+        assert file_hash(ROOT / name) == digest, name
+    for name, digest in amendment["original_file_sha256"].items():
+        assert file_hash(REVALIDATION / "source" / name) == digest, name
+    assert file_hash(DATA / "receipt.json") == amendment["original_receipt_sha256"]
+    assert amendment["maximum_abs_h_error"] < 1e-12

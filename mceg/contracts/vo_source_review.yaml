@@ -1,0 +1,293 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.vo_source_review.v1
+  name: VO energy and modern partition investigation
+  description: Inspect adopted modern energy beyond its abstract and quantify a normalized modern thermal candidate;
+    retain current curated pending a scoped replacement.
+  implementation: &id002
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:83d86d9461044a0e2920be8403c7a79d2a64b4dacfa0d741de6c859f76eeca1b
+    entry_points:
+    - mceg/reviews/vo_source_review.py
+assumptions:
+- statement: Q/8 excludes nuclear spin; the conditional molecular replacement keeps adopted D0 and NASA atoms, applies
+    molecular mass correction and assumes unresolved zero alignment.
+  evidence:
+  - literature_review
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Exact source nodes, selected modern partition rows and saved ideal-gas equilibrium endpoints.
+  conditions:
+  - Curated 1500-4000 K only; source decomposition at 500, 1000, 1500, 2000, 3000, 4000 K.
+  - 75 saved cases, 537 species, 1e-6-100 bar, three C/O values; no new solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Full energy-zero/isotope alignment, thermal derivatives and physical atmospheric applicability are
+    not established.
+  conditions: []
+  evidence:
+  - literature_review
+  - source_replay
+claims:
+- id: source_reconstruction
+  revision: '1'
+  kind: numerical_verification
+  statement: Native energy/atomic references reconstruct the frozen VO comparison and actual current hybrid; archived
+    vanadium accounting is reproducible.
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+- id: retained_energy
+  revision: '1'
+  kind: theoretical
+  statement: The inspected Merriles (2020) author manuscript supports retaining the adopted neutral D0=6.545 eV
+    with its conditional threshold interpretation.
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+- id: partition_diagnostic
+  revision: '1'
+  kind: numerical_verification
+  statement: Removing 51V nuclear-spin weight and treating molecular mass and energy zero explicitly exposes a high-temperature
+    HyVO/JANAF population difference.
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A complete continuous VO thermochemical model and atmospheric predictions have quantified physical
+    accuracy.
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+evidence:
+- id: literature_review
+  kind: literature
+  summary: Fresh JANAF, HyVO full text and official data, plus Merriles accepted manuscript rendered full text;
+    historical Gurvich and raw experiment remain uninspected.
+  sources: &id001
+  - tests/data/validation/vo_source_review/20261103/literature.json
+  - tests/data/validation/vo_source_review/20261103/sources.json
+  - documents/mceg/vo_source_review.rst
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+  subject: vo_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/vo_source_review/20261103/literature.json
+    sha256: 82acdc7df345e62fcf6731ea50629819268509b48c6d60976a65034aeb09b07f
+  - source: tests/data/validation/vo_source_review/20261103/sources.json
+    sha256: 77372829ec8081c9c1fcf86cbc833c72eb129543a5cd6ea4311097c4b0872bb0
+  - source: documents/mceg/vo_source_review.rst
+    sha256: 7a242ac0b541214cc796baeaf14e8b3a4338b98dc79f483b8a7693a1aae084b3
+  provenance:
+    role: primary
+    location: documents/mceg/vo_source_review.rst
+    inspection: partial
+    note: Full-text inspection is distinguished from PDF/raw-data availability and complete physical validation;
+      modern line accuracy is not an abundance benchmark.
+- id: source_replay
+  kind: numerical_test
+  summary: Replay current hybrid, native atomic terms, normalized partition diagnostic and all 75 archived VO formation
+    potentials.
+  sources:
+  - tests/data/validation/vo_source_review/20261103/comparison.json
+  - tests/data/validation/vo_source_review/20261103/receipt.json
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+  subject: vo_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/vo_source_review/20261103/comparison.json
+    sha256: 6094f61be540030f39dca25043ce7804c31ba57084f2c5c7be0f96b49238ed52
+  - source: tests/data/validation/vo_source_review/20261103/receipt.json
+    sha256: fe0dc391d4cb1effd3acbc7189ca2ab42b9d9aa9192098e43f739a0d89cc759e
+  provenance:
+    role: primary
+    location: documents/mceg/vo_source_review.rst
+    inspection: inspected
+    note: Full-text inspection is distinguished from PDF/raw-data availability and complete physical validation;
+      modern line accuracy is not an abundance benchmark.
+  result: passed
+- id: energy_reasoning
+  kind: theory
+  summary: Four-threshold consistency and experimental controls support retaining the neutral energy, with the explicit
+    possible-barrier interpretation.
+  sources: *id001
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+  subject: vo_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/vo_source_review/20261103/literature.json
+    sha256: 82acdc7df345e62fcf6731ea50629819268509b48c6d60976a65034aeb09b07f
+  - source: tests/data/validation/vo_source_review/20261103/sources.json
+    sha256: 77372829ec8081c9c1fcf86cbc833c72eb129543a5cd6ea4311097c4b0872bb0
+  - source: documents/mceg/vo_source_review.rst
+    sha256: 7a242ac0b541214cc796baeaf14e8b3a4338b98dc79f483b8a7693a1aae084b3
+  provenance:
+    role: secondary
+    location: documents/mceg/vo_source_review.rst
+    inspection: partial
+    note: Full-text inspection is distinguished from PDF/raw-data availability and complete physical validation;
+      modern line accuracy is not an abundance benchmark.
+subjects:
+- id: vo_sources_20261103
+  implementation: *id002
+  selected_files:
+    mceg/reviews/vo_source_review.py: 83d86d9461044a0e2920be8403c7a79d2a64b4dacfa0d741de6c859f76eeca1b
+    documents/mceg/vo_source_review.rst: 7a242ac0b541214cc796baeaf14e8b3a4338b98dc79f483b8a7693a1aae084b3
+    tests/model_evidence/vo_source_review_test.py: 98bd721b75e15c04b46c90c277f3c955042c7374cc018f0fbb1592402edeb2b4
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    tests/data/validation/vo_source_review/20261103/O-026.txt: 88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552
+    tests/data/validation/vo_source_review/20261103/V-005.txt: 4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02
+    tests/data/validation/vo_source_review/20261103/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/vo_source_review/20261103/hyvo.def: 3f45e96cd915c74906a43d9018c77fbe40f110e140da181224b713c0bc9a290d
+    tests/data/validation/vo_source_review/20261103/partitions.json: cf6fe8848e96d3533e173885ff0729c3669a104ceeb58d08721b6025840116f8
+    tests/data/validation/vo_source_review/20261103/literature.json: 82acdc7df345e62fcf6731ea50629819268509b48c6d60976a65034aeb09b07f
+    tests/data/validation/vo_source_review/20261103/sources.json: 77372829ec8081c9c1fcf86cbc833c72eb129543a5cd6ea4311097c4b0872bb0
+    tests/data/validation/vo_source_review/20261103/README.rst: a23d8c83f1e4d0e679a101cac3193360b9ddd13553f8131771e875ac37e2bf99
+    tests/data/validation/vo_source_review/20261103/comparison.json: 6094f61be540030f39dca25043ce7804c31ba57084f2c5c7be0f96b49238ed52
+    tests/data/validation/vo_source_review/20261103/receipt.json: fe0dc391d4cb1effd3acbc7189ca2ab42b9d9aa9192098e43f739a0d89cc759e
+contexts:
+- id: source_comparison
+  scope: Neutral VO, V(g) + O(g) -> VO(g), p0=1 bar; current hybrid 1500-4000 K, source-only nodes outside this
+    domain, normalized 51V16O molecular-Q diagnostic and 75 archived gas-only cases.
+  settings:
+    reaction: V(g) + O(g) -> VO(g)
+    standard_pressure_bar: 1
+    adopted_D0_eV: 6.545
+    atomic_reference: Native atoms for raw source comparison; NASA thermal atoms for current hybrid and modern-Q
+      proxy.
+    nuclear_spin_divisor: 8
+    energy_zero_alignment: assumed only for conditional proxy; exact reconciliation pending
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_reconstruction_review
+  kind: evidence_support
+  claim: source_reconstruction
+  claim_revision: '1'
+  subject: vo_sources_20261103
+  context: source_comparison
+  method: &id003
+    id: vo_source_review
+    revision: '1'
+    description: Separate current hybrid reconstruction, retained energy evidence, normalized modern-Q diagnostic
+      and complete physical accuracy.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Fresh JANAF nodes match frozen inputs; native atomic thermal effect below 0.00032 in ln K; actual hybrid matches
+    all 75 saved potentials and V budget accounting.
+  status: supported
+  origin: reviewed
+- id: retained_energy_review
+  kind: evidence_support
+  claim: retained_energy
+  claim_revision: '1'
+  subject: vo_sources_20261103
+  context: source_comparison
+  method: *id003
+  evidence:
+  - literature_review
+  - source_replay
+  - energy_reasoning
+  reasons:
+  - Merriles author full text resolves the old abstract-only inspection gap. Calibration controls and four thresholds
+    support the adopted neutral energy; possible barrier interpretation remains explicit.
+  status: supported
+  origin: reviewed
+- id: partition_diagnostic_review
+  kind: evidence_support
+  claim: partition_diagnostic
+  claim_revision: '1'
+  subject: vo_sources_20261103
+  context: source_comparison
+  method: *id003
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - HyVO/JANAF internal Q grows from 1.00278 at 1500 K to 1.37980 at 4000 K after dividing by8. Mass-corrected fixed-D0
+    proxy is 1.37974 at 4000 K, conditional on zero alignment; no abundance factor inferred.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: vo_sources_20261103
+  context: source_comparison
+  method: *id003
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Modern zero/isotope reconciliation, continuous H/S/Cp and finite substitution remain undone. Condensation, cold
+    trapping, transport and irradiation are outside the gas-only archive.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: continuous_thermal_candidate
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Build a normalized HyVO-based continuous VO G/H/S/Cp candidate over 1500-4000 K while retaining the supported
+    modern D0.
+  requires:
+  - Resolve hyperfine/fine energy zero and molecular versus atomic isotope/mass conventions; preserve state weights
+    and native atom references.
+  - Use HyVO DOI 10.1093/mnras/stae542 and VOMYT DOI 10.1093/mnras/stw1969; pin versions, distinguish downloaded
+    VOMYT from paper Table 3 and quantify cutoff/derivative effects.
+  - Merriles DOI 10.1063/5.0014006 full author text is now inspected; PDF/raw data may improve reanalysis but obtaining
+    every historical Gurvich original is not a merge prerequisite.
+  completion: Archive explicit candidate and derivative/normalization checks with a scoped thermal uncertainty assessment.
+- id: finite_substitution
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Evaluate the named thermal candidate by fixed-network finite substitution before curated adoption.
+  requires:
+  - Check conservation, mass action, vanadium allocation and absolute abundances; do not equate K ratio with abundance
+    ratio.
+  - Separate gas thermochemical adoption from condensate, cold-trap, transport and spectroscopic line-position/intensity
+    accuracy.
+  completion: Record reproducible candidate response and a bounded adoption decision; physical atmospheric accuracy
+    stays scoped.
+limitations:
+- statement: Retaining curated is provisional; a 38% high-temperature partition diagnostic supports further thermal
+    work, not scientific irrelevance.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: Quoted 0.002 eV measurement uncertainty is not full K or atmospheric uncertainty; threshold-to-D0 inference
+    retains the stated barrier caveat.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: HyVO declared 5400 K completeness and VOMYT comparison are not rigorous physical uncertainty bounds.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: The 51V16O Q proxy keeps legacy NASA atoms and assumes zero alignment; it is not a complete isotope-resolved
+    reaction.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: 'No new equilibrium solve or production changes; VO2 and Gunina-dependent PR #318 are outside this
+    review.'
+  evidence:
+  - literature_review
+  - source_replay

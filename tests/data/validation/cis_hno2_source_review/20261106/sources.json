@@ -1,0 +1,81 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "cis-HNO2",
+        "file": "H-028.txt",
+        "url": "https://janaf.nist.gov/tables/H-028.txt",
+        "sha256": "a65855f568bc26068b087e0fd6a6a23741f5a5b7a74a97cc9d6026446cc5c1a0"
+      },
+      {
+        "name": "H",
+        "file": "H-001.txt",
+        "url": "https://janaf.nist.gov/tables/H-001.txt",
+        "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "O",
+        "file": "O-001.txt",
+        "url": "https://janaf.nist.gov/tables/O-001.txt",
+        "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+      },
+      {
+        "name": "trans-HNO2",
+        "file": "H-029.txt",
+        "url": "https://janaf.nist.gov/tables/H-029.txt",
+        "sha256": "a7bd864e1726f8f04154abb0852dbee07fdb4f34eb905c5d3e6f96630305448b",
+        "scope": "Companion isomer used only for ground-level gap diagnostic."
+      }
+    ],
+    "original_evaluation": {
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Hydrogen.pdf",
+      "sha256": "7c06e41eb753635a560e491c41ed04d2a5608fce3a656843b858aefb8e138427",
+      "printed_page": 1288,
+      "zero_based_pdf_page": 27,
+      "inspection": "Selected original evaluation page visually inspected, including molecular geometry, electronic weights, formation-enthalpy rationale and thermal assumptions; underlying cited experimental papers are not all recovered."
+    },
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Exact original CEA header and numerical coefficients inspected; original label preserves mixture versus single-isomer identity."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact neutral gas and isomer suffix selected; formation values and individual provenance page inspected."
+  },
+  "references": [
+    {
+      "title": "Partition sums for HITRAN2024 (Gamache et al., 2025)",
+      "doi": "10.1016/j.jqsrt.2025.109568",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+      "access": "Complete author PDF inspected, especially section 3.12; HONO is a cis-plus-trans sum, not a single-conformer table",
+      "inspected_artifact_sha256": "9e10ce2fc4b90b486768bece3c21f6deaf0d96852ed85fd028e5b545225f1161"
+    },
+    {
+      "title": "HONO far-infrared intensities and conformer energy difference (Tchana Betnga et al., 2023)",
+      "doi": "10.1016/j.jqsrt.2023.108727",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0022407323002455",
+      "access": "Primary publisher abstract and numerical result as cited in the inspected 2025 TIPS paper; 2023 full text not obtained"
+    },
+    {
+      "title": "New interacting-band analysis of cis- and trans-HONO (2025)",
+      "doi": "10.1080/00268976.2025.2561868",
+      "url": "https://www.tandfonline.com/doi/full/10.1080/00268976.2025.2561868",
+      "access": "Primary publisher abstract inspected; spectroscopy is not a complete hot thermodynamic evaluation"
+    }
+  ],
+  "local_reference_scope": "Local refs_exogibbs_202611 and -2 inventoried; no original Gurvich volume present."
+}

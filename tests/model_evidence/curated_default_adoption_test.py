@@ -3,6 +3,7 @@
 from hashlib import sha256
 import json
 from pathlib import Path
+import sys
 
 import numpy as np
 import pytest
@@ -10,6 +11,8 @@ from scipy.special import logsumexp
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_tio_history import historical_source
 DATA = ROOT / "tests/data/validation/curated_default_adoption/20261102"
 
 
@@ -17,7 +20,7 @@ def test_default_receipt_pins_current_sources_and_completed_outputs():
     receipt = json.loads((DATA / "receipt.json").read_text())
     assert receipt["result"] == "passed"
     for name, expected in receipt["selected_file_sha256"].items():
-        assert sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        assert sha256(historical_source(ROOT, name, expected).read_bytes()).hexdigest() == expected, name
     for name, expected in receipt["output_sha256"].items():
         assert sha256((DATA / name).read_bytes()).hexdigest() == expected, name
     summary = json.loads((DATA / "summary.json").read_text())

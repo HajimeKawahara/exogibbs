@@ -1,0 +1,311 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.h2s_source_review.v1
+  name: H2S balanced energy and high-temperature thermal review
+  description: Retain current construction provisionally; require high-J convergence before adopting the distributed
+    AYT2/TIPS thermal sums.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:3d24db1bc58d5813a72b0b3888c8f5f3a36d0762603cb5e275184a3fcd7d3877
+    entry_points:
+    - mceg/reviews/h2s_source_review.py
+assumptions:
+- statement: Use same-version atom-balanced ground-relative D0, not De or the first dissociation threshold;
+    NASA native R stays in dimensionless functions.
+  evidence:
+  - literature
+  - source_replay
+- statement: Remove nuclear spin product 4 once; allowed states encode symmetry. 1H2-32S levels with natural
+    translation are an elemental proxy, not an isotope-resolved reaction.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K,
+    75 archived gas-only endpoints. No planetary validation.
+  conditions:
+  - Source nodes 300,500,1000,1500,2000,2500,3000,3500,4000 K; production only 1500-4000 K.
+  - 75 archived 537-species endpoints over 1e-6-100 bar and three C/O values; no new solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Full physical uncertainty and planetary accuracy remain unestablished.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged H2S column combines NASA thermal functions with same-version atom-balanced ATcT
+    1.172 D0; the native NASA R, atomic fine-structure zero and first-fragmentation threshold are explicit.
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+- id: normalized_thermal_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: All distributed AYT2 states and pinned HAPI H2S tables reproduce spin-normalized Q and direct
+    moment calorics; assignment anomalies, metadata limits and shared source ancestry remain explicit.
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+- id: scoped_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retaining the current H2S construction is justified while high-temperature AYT2/TIPS state convergence
+    is unresolved; the finite distributed list is not adopted as a 4000 K production correction.
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: H2S energy and thermal functions have complete quantified physical uncertainty and produce accurate
+    planetary abundances.
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary methods, official numerical distributions and frozen reference values with acquisition/inspection
+    limits.
+  sources:
+  - tests/data/validation/h2s_source_review/20261104/sources.json
+  - tests/data/validation/h2s_source_review/20261104/literature.json
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+  subject: h2s_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/h2s_source_review/20261104/sources.json
+    sha256: 0e0bfbda46218fcaa09454219aa7b70ecabf04390c8b916fa1f70dbb1a02793f
+  - source: tests/data/validation/h2s_source_review/20261104/literature.json
+    sha256: c9798f9f1ae37ff8862d7fbe5c2660cc90a06eecb68597cc8443087fa9983851
+  provenance:
+    role: primary
+    location: documents/mceg/h2s_source_review.rst
+    inspection: inspected
+    note: Source agreement and finite-state replay do not establish full physical completeness; individual
+      access limits are in sources.json.
+- id: source_replay
+  kind: numerical_test
+  summary: Complete compact state/table arrays, analytic moments, balanced energies and unchanged archived
+    potentials reproduce the scoped comparison.
+  sources:
+  - tests/data/validation/h2s_source_review/20261104/states.npz
+  - tests/data/validation/h2s_source_review/20261104/state_inventory.json
+  - tests/data/validation/h2s_source_review/20261104/state_assignment_excerpt.txt
+  - tests/data/validation/h2s_source_review/20261104/comparison.json
+  - tests/data/validation/h2s_source_review/20261104/receipt.json
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+  subject: h2s_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/h2s_source_review/20261104/states.npz
+    sha256: b18f7ab9ec6bfef091e5db0c7f9fe126961dd3252854ae1b5d2fdcd130df7bc8
+  - source: tests/data/validation/h2s_source_review/20261104/state_inventory.json
+    sha256: 5a9f5d5f9cbdafa726cd29d6656e7c110a454c56c4f26c7ef33dfcbffc22c8dc
+  - source: tests/data/validation/h2s_source_review/20261104/state_assignment_excerpt.txt
+    sha256: 393d6e1d90b67d82973dbe038902258bb2420ea9e67ca7cce176615bc4bddf85
+  - source: tests/data/validation/h2s_source_review/20261104/comparison.json
+    sha256: 9a944cdda0ce04c57fb9093f9bd07e92e08f687060316715d566e6df967840a1
+  - source: tests/data/validation/h2s_source_review/20261104/receipt.json
+    sha256: b2a7dfb579796a2864f83841099e22d624e478dc8cf1eb676ddddaee6996a0a4
+  provenance:
+    role: primary
+    location: documents/mceg/h2s_source_review.rst
+    inspection: inspected
+    note: Source agreement and finite-state replay do not establish full physical completeness; individual
+      access limits are in sources.json.
+  result: passed
+- id: retention_reasoning
+  kind: theory
+  summary: The4000 K convergence claim is considered against boundary-shell populations and declining Cp. Current
+    NASA/JANAF disagreement remains unresolved; retention is provisional.
+  sources:
+  - tests/data/validation/h2s_source_review/20261104/literature.json
+  - documents/mceg/h2s_source_review.rst
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+  subject: h2s_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/h2s_source_review/20261104/literature.json
+    sha256: c9798f9f1ae37ff8862d7fbe5c2660cc90a06eecb68597cc8443087fa9983851
+  - source: documents/mceg/h2s_source_review.rst
+    sha256: 933ca01aa8b5a0a07d7ef9ae3db0ff2080c961ceb213ef85d83e23e8e2333d6d
+  provenance:
+    role: primary
+    location: documents/mceg/h2s_source_review.rst
+    inspection: inspected
+    note: Source agreement and finite-state replay do not establish full physical completeness; individual
+      access limits are in sources.json.
+subjects:
+- id: h2s_sources_20261104
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:3d24db1bc58d5813a72b0b3888c8f5f3a36d0762603cb5e275184a3fcd7d3877
+    entry_points:
+    - mceg/reviews/h2s_source_review.py
+  selected_files:
+    mceg/reviews/h2s_source_review.py: 3d24db1bc58d5813a72b0b3888c8f5f3a36d0762603cb5e275184a3fcd7d3877
+    documents/mceg/h2s_source_review.rst: 933ca01aa8b5a0a07d7ef9ae3db0ff2080c961ceb213ef85d83e23e8e2333d6d
+    tests/model_evidence/h2s_source_review_test.py: cf049051db0fd0583823ce307771721fb80d3b9fa300459c50cf89561ce91a6c
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/h2s_source_review/20261104/AYT2.def.json: 215d415c6a44f8ac12bd3e35556f8b8d1b56678a5510081cac424903cd86ac3a
+    tests/data/validation/h2s_source_review/20261104/AYT2.readme: 3aa90470cbbc64d097cce6a69a5a673ea4daec58072f2a935e88e2220c5019f1
+    tests/data/validation/h2s_source_review/20261104/README.rst: b49bcab952ab1c121eb7d890f6e1b791bf130cc776f3b47b32d0ceb987c76a79
+    tests/data/validation/h2s_source_review/20261104/literature.json: c9798f9f1ae37ff8862d7fbe5c2660cc90a06eecb68597cc8443087fa9983851
+    tests/data/validation/h2s_source_review/20261104/sources.json: 0e0bfbda46218fcaa09454219aa7b70ecabf04390c8b916fa1f70dbb1a02793f
+    tests/data/validation/h2s_source_review/20261104/state_assignment_excerpt.txt: 393d6e1d90b67d82973dbe038902258bb2420ea9e67ca7cce176615bc4bddf85
+    tests/data/validation/h2s_source_review/20261104/state_inventory.json: 5a9f5d5f9cbdafa726cd29d6656e7c110a454c56c4f26c7ef33dfcbffc22c8dc
+    tests/data/validation/h2s_source_review/20261104/states.npz: b18f7ab9ec6bfef091e5db0c7f9fe126961dd3252854ae1b5d2fdcd130df7bc8
+    tests/data/validation/h2s_source_review/20261104/comparison.json: 9a944cdda0ce04c57fb9093f9bd07e92e08f687060316715d566e6df967840a1
+    tests/data/validation/h2s_source_review/20261104/receipt.json: b2a7dfb579796a2864f83841099e22d624e478dc8cf1eb676ddddaee6996a0a4
+contexts:
+- id: source_review
+  scope: Neutral H2S; 2H(g)+S(g)->H2S(g), one bar; nine 300-4000 K source nodes, curated 1500-4000 K, 75 archived
+    gas-only endpoints. No planetary validation.
+  settings:
+    reaction: 2H(g)+S(g)->H2S(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT1.172
+    atomic_thermal: NASA; native JANAF difference separated
+    partition_normalization: Common ground zero, nuclear-spin product 4 removed once, no second symmetry division
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: h2s_sources_20261104
+  context: source_review
+  method:
+    id: review_h2s_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source construction, numerical state/thermal comparison, scoped retention and physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - ATcT D0=726.268 kJ/mol versus NASA 724.673796; correct native-R shift 192.23535753 K. Archived H2S potentials
+    reproduce below 2e-12; sulfur budget closes below 3e-12. The first H+SH threshold is 376.214 kJ/mol, not
+    total atomization.
+  status: supported
+  origin: reviewed
+- id: normalized_thermal_comparison_review
+  kind: evidence_support
+  claim: normalized_thermal_comparison
+  claim_revision: '1'
+  subject: h2s_sources_20261104
+  context: source_review
+  method:
+    id: review_h2s_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source construction, numerical state/thermal comparison, scoped retention and physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - 220630 states with common para-ground zero and spin product 4. Current versus original calculated energies
+    affect Q below 4.6 ppm; one inconsistent J/gtot row remains raw and has at most 1.70 ppm sensitivity. TIPS
+    shares the AYT2 state sum and is not an independent check.
+  status: supported
+  origin: reviewed
+- id: scoped_retention_review
+  kind: evidence_support
+  claim: scoped_retention
+  claim_revision: '1'
+  subject: h2s_sources_20261104
+  context: source_review
+  method:
+    id: review_h2s_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source construction, numerical state/thermal comparison, scoped retention and physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - AYT2/NASA normalized Q declines from 0.997749 at 1500 K to 0.891967 at 4000 K; Cp at 4000 K=43.370 versus
+    NASA 61.070/JANAF 59.509 J/mol/K. J40 alone carries 0.8507% of Q at 4000 K. These diagnostics challenge
+    reported4000 K convergence without proving an exact missing-state correction. Current production remains
+    unchanged.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: h2s_sources_20261104
+  context: source_review
+  method:
+    id: review_h2s_energy_thermal_and_scope
+    revision: '1'
+    description: Separate source construction, numerical state/thermal comparison, scoped retention and physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - High-J/vibrational completeness, molecular excited states, isotope mixtures, correlated ATcT uncertainty
+    and full atomic-level completeness are unbounded. No finite substitution, photochemistry, condensation,
+    transport or observational fit was performed.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: high_temperature_convergence
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Extend J/vibrational coverage and check Q, H, S and Cp convergence to 4000 K; reconcile TIPS2017
+    claim before fitting a candidate and performing finite substitution.
+  requires:
+  - AYT2 DOI 10.1093/mnras/stw1133 and TIPS2017 DOI 10.1016/j.jqsrt.2017.03.045 already inspected.
+  - First H+SH threshold and consistent atom-balanced energy; missing-state bounds, not an arbitrary numerical
+    patch.
+  completion: A converged derivative-consistent thermal candidate and sulfur-conserving finite-substitution
+    evidence; not required to merge this scoped source review.
+- id: distribution_reconciliation
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Reconcile row 76644 J/gtot, official metadata and PF/Cp generation constants.
+  requires:
+  - Original raw lines and same-version definition/readme archived with hashes.
+  - Optional Gurvich 1989 original pages to trace the legacy NASA/JANAF difference; no unconditional acquisition
+    gate.
+  completion: Record upstream or calculation-based resolution, retain prior source receipts and rerun affected
+    comparisons.
+limitations:
+- statement: AYT2, MARVEL and TIPS primary methods were inspected, but the historical Gurvich original and
+    ATcT network covariance were not reaudited.
+  evidence:
+  - literature
+- statement: AYT2 and TIPS share state ancestry. Reported 4000 K convergence conflicts with finite-list diagnostics;
+    their numerical agreement is not independent physical validation.
+  evidence:
+  - literature
+  - source_replay
+- statement: Natural-mass representative-isotope comparisons and archived sulfur allocations are scoped proxies,
+    not isotope-resolved reactions, finite substitution responses or planetary accuracy bounds.
+  evidence:
+  - source_replay

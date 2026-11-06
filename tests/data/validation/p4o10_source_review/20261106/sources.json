@@ -1,0 +1,39 @@
+{
+  "molecule": "P4O10",
+  "decision": "Retain gaseous P4O10 with an explicit gas-phase source gap; native source agreement contains cancellation between energy and thermal differences.",
+  "follow_up": "For oxidizing or cooler applications, reconstruct the gas/condensed phase-change energy cycle and inspect a gas-cage vibrational model before selecting a common-D0 thermal control. Keep molecular P4O10 distinct from empirical P2O5 and condensed phases. This finite source gap does not gate merging the bounded review.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/O-095.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Gurvich,1989 pt1 p419 pt2 p271. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "reference0",
+      "title": "Phosphorus combustion and P4O10/H3PO4 formation (1962)",
+      "doi": "10.1039/TF9625801916",
+      "url": "https://doi.org/10.1039/TF9625801916",
+      "inspection": "Primary RSC bibliographic record inspected; no condensed-to-gas cycle is inferred from metadata alone."
+    },
+    {
+      "id": "nist_gas",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C16752606&Mask=1",
+      "inspection": "Official gas-phase formation enthalpy, entropy and 1965 review date inspected; condensed data kept distinct."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}

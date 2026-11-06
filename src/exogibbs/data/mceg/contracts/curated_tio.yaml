@@ -1,0 +1,315 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.curated_tio.v1
+  name: Curated gas default with modern TiO thermochemistry
+  description: Versioned adoption of the reviewed TOTO/Jain TiO model on the unchanged C2H-corrected gas base.
+    Scientific selection and numerical implementation are supported within scope; complete physical accuracy
+    remains unknown.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_tio.chemsetup
+assumptions:
+- statement: Ideal gas formation Ti(g) + O(g) -> TiO(g), with standard pressure 1 bar and the existing NASA
+    neutral-atom gauge.
+  evidence:
+  - scientific_sources
+  - production_execution
+- statement: 48Ti16O internal states represent elemental TiO with molecular mass 63.8664 u; no extra nuclear
+    spin or ZPE correction. The central bound-state inventory and six-knot Gibbs representation are adopted
+    without refitting or duplicate high-state additions.
+  evidence:
+  - scientific_sources
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Continuous JAX thermochemistry on 1500-4000 K; production cold solves on the fixed five-temperature,
+    five-pressure, three-composition grid for both networks.
+  conditions:
+  - 'Five temperatures: 1500, 2000, 2500, 3000, 4000 K.'
+  - 'Five pressures: 1e-6, 1e-4, 0.01, 1, 100 bar.'
+  - 'C/O: 0.5888436553555908, 1, 1.5; other element/H ratios fixed.'
+  - No extrapolation; nonfinite or out-of-range temperatures return NaN.
+  evidence:
+  - scientific_sources
+  - production_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Source preference does not quantify full physical uncertainty or validate physical atmospheres;
+    isotope fractionation, condensation, rainout, transport and spectra are outside scope.
+  conditions: []
+  evidence:
+  - scientific_sources
+claims:
+- id: scientific_selection
+  revision: '1'
+  kind: theoretical
+  statement: TOTO/Jain is scientifically preferred over the preceding JANAF/BC TiO hybrid for the explicitly
+    scoped curated gas model.
+  scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
+    elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
+    atmosphere validation.
+- id: production_adoption
+  revision: '1'
+  kind: numerical_verification
+  statement: The public curated default implements the frozen TiO candidate, preserves non-TiO formation functions
+    and passes the saved ion-inclusive and neutral production checks.
+  scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
+    elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
+    atmosphere validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The adopted complete gas model has quantified thermochemical uncertainty and validated physical
+    atmospheric abundance accuracy.
+  scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
+    elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
+    atmosphere validation.
+evidence:
+- id: scientific_sources
+  kind: theory
+  summary: 'Adopt the fully specified TOTO/Jain candidate as a conditional source preference: modern states
+    replace the identified JANAF singlet assumption and the measured ground energy has a smaller quoted uncertainty.
+    The 0.045 eV energy shift lies within the legacy +/-0.061 eV uncertainty and does not disprove the old
+    value.'
+  sources:
+  - tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
+  - src/exogibbs/data/curated/tio_v1.json
+  - tests/data/validation/tio_source_review/20261103/literature.json
+  - tests/data/validation/tio_source_review/20261103/sources.json
+  - tests/data/validation/tio_candidate/20261103/candidate.json
+  - tests/data/validation/tio_candidate/20261103/scientific_scope.json
+  - tests/data/validation/tio_candidate/20261103/cutoff_sensitivity.json
+  - tests/data/validation/tio_candidate/20261103/validation.json
+  scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
+    elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
+    atmosphere validation.
+  subject: curated_tio_production_20261103
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
+    sha256: abd31e047887445bf07593b82c2b20f0c1aa6dfbfcb9c2f5bc932b5efa9b2e59
+  - source: src/exogibbs/data/curated/tio_v1.json
+    sha256: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+  - source: tests/data/validation/tio_source_review/20261103/literature.json
+    sha256: 761518caaccc4ce5539686b8a06b355092e2d6019c789110535af97285914100
+  - source: tests/data/validation/tio_source_review/20261103/sources.json
+    sha256: 8ab46dc6a06067a5a9aba07edb986ecb0525d7285cc195745ed0e8bae19be4ac
+  - source: tests/data/validation/tio_candidate/20261103/candidate.json
+    sha256: e4bcb67ff0bee98517d81f784a62a61099553865eedb79955862e5f099577662
+  - source: tests/data/validation/tio_candidate/20261103/scientific_scope.json
+    sha256: a3ceaec4a63a2432416d19037ea451bd68ce8e115a3721879c39fb2046e2cf00
+  - source: tests/data/validation/tio_candidate/20261103/cutoff_sensitivity.json
+    sha256: 8faff50c3bbc81292130cd11d2f89c564c71a80a4c6e745c65a6de7cadbc96fe
+  - source: tests/data/validation/tio_candidate/20261103/validation.json
+    sha256: 81d8bd1083f4356da7dfde4a9ff726761e7940f0eed2924102d92378000f1afc
+  provenance:
+    role: secondary
+    location: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
+    inspection: inspected
+    note: Scientific inference from inspected primary-source records and the finite-state model. Isotope and
+      upper-state sensitivities support a proportionate approximation, not a complete uncertainty bound. Missing
+      historical originals do not block this independently specified modern adoption.
+- id: production_execution
+  kind: numerical_test
+  summary: All 150 production cold solves pass, 75 per network. Only TiO thermochemistry changes from curated-c2h-v1;
+    species, formula matrices and elemental budgets are preserved. Ion-inclusive results replay the frozen
+    candidate with maximum absolute ln mole-fraction difference 2.5432515e-05.
+  sources:
+  - tests/data/validation/curated_tio_adoption/20261103/receipt.json
+  - tests/data/validation/curated_tio_adoption/20261103/summary.json
+  - tests/data/validation/curated_tio_adoption/20261103/ions.npz
+  - tests/data/validation/curated_tio_adoption/20261103/neutral.npz
+  - tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py
+  - tests/data/validation/curated_co2_adoption/20261104/source/tests/model_evidence/curated_tio_adoption_test.py
+  - tests/data/validation/curated_co2_adoption/20261104/source/tests/unittests/presets/curated_tio_test.py
+  scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
+    elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
+    atmosphere validation.
+  subject: curated_tio_production_20261103
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/curated_tio_adoption/20261103/receipt.json
+    sha256: cb4bf1df140cc46ea12b7b290668c7d63e1c7e63c8b0641d74b47050273d1180
+  - source: tests/data/validation/curated_tio_adoption/20261103/summary.json
+    sha256: 33366fe8b656aeae38b9a985f40d286dce67b01d25e463384df7e1fe08346154
+  - source: tests/data/validation/curated_tio_adoption/20261103/ions.npz
+    sha256: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+  - source: tests/data/validation/curated_tio_adoption/20261103/neutral.npz
+    sha256: 4fef69416723000ab214ac413d027f10f2bc9a13955f289b195099192f3f1816
+  - source: tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py
+    sha256: ffa5f13e38082efc7d295a001c7ec7ce742d458d79ae08fda16bf349dcfe03c1
+  - source: tests/data/validation/curated_co2_adoption/20261104/source/tests/model_evidence/curated_tio_adoption_test.py
+    sha256: 13aedd917c2e65bd453dccb17c9dbc18f5e092aa8d3307919866bc1e1d9606dd
+  - source: tests/data/validation/curated_co2_adoption/20261104/source/tests/unittests/presets/curated_tio_test.py
+    sha256: 9ec5e9c0e8109d51598c8ff4003946d780f4a782976306a5b9a21ec21233e3d8
+  provenance:
+    role: primary
+    location: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
+    inspection: inspected
+    note: A new execution of the public default, with retained all-species states and independently recomputable
+      closure and mass action. No new independent-solver comparison or observational validation is claimed
+      for production adoption.
+  result: passed
+subjects:
+- id: curated_tio_production_20261103
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_tio.chemsetup
+  selected_files:
+    tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst: abd31e047887445bf07593b82c2b20f0c1aa6dfbfcb9c2f5bc932b5efa9b2e59
+    mceg/reviews/build_tio_adoption.py: 44247b90a68c67993e4f793cd72d9d291d3b42799e3bcdb00d1e8bd9294529c2
+    tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py: ffa5f13e38082efc7d295a001c7ec7ce742d458d79ae08fda16bf349dcfe03c1
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    tests/data/validation/curated_co2_adoption/20261104/source/src/exogibbs/presets/curated.py: 647455085d3cf906928a2fbd74ddf7498a6e95b9997ee2bba0349ad712a40fb0
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/data/validation/curated_tio_adoption/20261103/neutral.npz: 4fef69416723000ab214ac413d027f10f2bc9a13955f289b195099192f3f1816
+    tests/data/validation/curated_tio_adoption/20261103/receipt.json: cb4bf1df140cc46ea12b7b290668c7d63e1c7e63c8b0641d74b47050273d1180
+    tests/data/validation/curated_tio_adoption/20261103/summary.json: 33366fe8b656aeae38b9a985f40d286dce67b01d25e463384df7e1fe08346154
+    tests/data/validation/tio_candidate/20261103/candidate.json: e4bcb67ff0bee98517d81f784a62a61099553865eedb79955862e5f099577662
+    tests/data/validation/tio_candidate/20261103/cutoff_sensitivity.json: 8faff50c3bbc81292130cd11d2f89c564c71a80a4c6e745c65a6de7cadbc96fe
+    tests/data/validation/tio_candidate/20261103/scientific_scope.json: a3ceaec4a63a2432416d19037ea451bd68ce8e115a3721879c39fb2046e2cf00
+    tests/data/validation/tio_candidate/20261103/validation.json: 81d8bd1083f4356da7dfde4a9ff726761e7940f0eed2924102d92378000f1afc
+    tests/data/validation/tio_equilibrium_impact/20261103/equilibria.npz: b36e225f0cb9feb2e9e3e223d8d0039633ae8af160eb2270d3ec588d25638c46
+    tests/data/validation/tio_source_review/20261103/literature.json: 761518caaccc4ce5539686b8a06b355092e2d6019c789110535af97285914100
+    tests/data/validation/tio_source_review/20261103/sources.json: 8ab46dc6a06067a5a9aba07edb986ecb0525d7285cc195745ed0e8bae19be4ac
+    tests/data/validation/curated_co2_adoption/20261104/source/tests/model_evidence/curated_tio_adoption_test.py: 13aedd917c2e65bd453dccb17c9dbc18f5e092aa8d3307919866bc1e1d9606dd
+    tests/data/validation/curated_co2_adoption/20261104/source/tests/unittests/presets/curated_tio_test.py: 9ec5e9c0e8109d51598c8ff4003946d780f4a782976306a5b9a21ec21233e3d8
+contexts:
+- id: production_gas_domain
+  scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
+    elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
+    atmosphere validation.
+  settings:
+    dataset: curated-tio-v1
+    base_dataset: curated-c2h-v1
+    temperature_min_K: 1500
+    temperature_max_K: 4000
+    pressure_min_bar: 1.0e-06
+    pressure_max_bar: 100
+    C_over_O: 0.5888436553555908, 1, 1.5
+    standard_pressure_bar: 1
+    D0_eV: 6.824
+    molecular_mass_u: 63.8664
+    nuclear_spin_factor: 1
+    network_modes: ions=True (537 species); ions=False (421 species)
+    cases_per_network: 75
+    solver_tolerance: 5.0e-14
+    production_adoption: true
+assessments:
+- id: scientific_selection_review
+  kind: evidence_support
+  claim: scientific_selection
+  claim_revision: '1'
+  subject: curated_tio_production_20261103
+  context: production_gas_domain
+  method:
+    id: curated_tio_adoption_review
+    revision: '1'
+    description: Separate scientific source preference, production numerical verification and unknown complete
+      physical accuracy.
+  evidence:
+  - scientific_sources
+  reasons:
+  - An identified obsolete thermal assumption is replaced by modern state-resolved thermodynamics and a more
+    precise, explicitly referenced measured ground energy. The representative-isotope approximation is declared
+    and checked; the legacy D0 is compatible within its quoted uncertainty. Full physical accuracy is not required
+    to prefer the better supported scoped source model.
+  status: supported
+  origin: reviewed
+- id: production_adoption_review
+  kind: evidence_support
+  claim: production_adoption
+  claim_revision: '1'
+  subject: curated_tio_production_20261103
+  context: production_gas_domain
+  method:
+    id: curated_tio_adoption_review
+    revision: '1'
+    description: Separate scientific source preference, production numerical verification and unknown complete
+      physical accuracy.
+  evidence:
+  - production_execution
+  reasons:
+  - All 150 cold solves pass. Maximum elemental residuals are 1.3478287e-06 with ions and 1.3415328e-06 without
+    ions; the adopted potentials reproduce the candidate while other species, budgets and both historical dataset
+    identities are retained.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: curated_tio_production_20261103
+  context: production_gas_domain
+  method:
+    id: curated_tio_adoption_review
+    revision: '1'
+    description: Separate scientific source preference, production numerical verification and unknown complete
+      physical accuracy.
+  evidence:
+  - scientific_sources
+  - production_execution
+  reasons:
+  - Numerical checks do not supply missing complete state, isotope or correlated thermochemical uncertainty,
+    nor validate condensation, cold traps, transport, nonideality, irradiation or observed spectra.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: physical_application_evidence
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Quantify source uncertainties or add physical validation when needed for a specific application;
+    this does not suspend adoption.
+  requires:
+  - Isotope and upper-state completeness appropriate to the application.
+  - Atmospheric omitted-physics and observational evidence when relevant.
+  completion: Add separately scoped physical evidence without relabeling numerical closure as atmospheric accuracy.
+limitations:
+- statement: The maximum 0.067% Ti-isotope Q sensitivity at common D0 is not a bound on all isotope effects;
+    oxygen isotopes and isotope-dependent D0 are not resolved.
+  evidence:
+  - scientific_sources
+- statement: Old D0 and new D0 are compatible within the old quoted uncertainty. The preference is a source/model
+    assessment, not a statistically significant rejection of the old value.
+  evidence:
+  - scientific_sources
+- statement: Production verification covers the saved cases, not every composition or atmosphere. Independent-solver
+    checks remain those of the earlier candidate study, not new production runs.
+  evidence:
+  - production_execution

@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-11-02"
+RECORD_VERSION = "2026-11-06"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -101,7 +101,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
     c2h_species["C2H1"] = {"id": "C2H1", "aliases": ["C2H", "CCH"]}
     catalog["models"].append({
         "id": "exogibbs.curated_c2h.v1",
-        "label": "Curated default with reviewed C2H correction (ion-inclusive lookup)",
+        "label": "Versioned curated C2H correction (ion-inclusive lookup)",
         "dataset": c2h_data["id"],
         "identity": {"data_sha256": c2h_digest, "settings": {"ions": True}},
         "species": [c2h_species[k] for k in sorted(c2h_species)],
@@ -111,7 +111,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "whole_mixture_accuracy_review", "default_adoption_review"],
             "artifacts": [c2h_summary, default_receipt, default_summary],
             "summary": (
-                "Default curated dataset: NASA C2H thermal functions and balanced ATcT 1.172 "
+                "Former curated default, retained as curated_c2h: NASA C2H thermal functions and balanced ATcT 1.172 "
                 "atomization energy supersede the 1967 JANAF estimate. Energy alignment alone "
                 "does not remove the old thermal discrepancy. curated_v1 preserves the original. "
                 "New cold solves pass in both networks (75 conditions each); ion-inclusive results "
@@ -123,6 +123,430 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "unquantified. The old HCN study does not validate this changed dataset. "
                 "Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/310"],
+        }],
+    })
+    tio_path = "src/exogibbs/data/curated/tio_v1.json"
+    tio_bytes = (ROOT / tio_path).read_bytes()
+    tio_data = json.loads(tio_bytes)
+    tio_digest = hashlib.sha256(tio_bytes).hexdigest()
+    tio_adoption = "tests/data/validation/curated_tio_adoption/20261103"
+    tio_execution = json.loads((ROOT / tio_adoption / "receipt.json").read_text())
+    if (tio_digest != tio_execution["selected_file_sha256"][tio_path]
+            or c2h_digest != tio_data["base_data_sha256"]):
+        raise ValueError("TiO data changed; review new evidence before rebinding the adoption")
+    tio_contract = copy("mceg/contracts/curated_tio.yaml", "contracts/curated_tio.yaml")
+    tio_receipt = copy(f"{tio_adoption}/receipt.json", "artifacts/tio_adoption_receipt.json")
+    tio_summary = copy(f"{tio_adoption}/summary.json", "artifacts/tio_adoption_summary.json")
+    if tio_summary["sha256"] != tio_execution["output_sha256"]["summary.json"]:
+        raise ValueError("TiO summary differs from the archived execution")
+    catalog["models"].append({
+        "id": "exogibbs.curated_tio.v1",
+        "label": "Versioned curated TOTO/Jain TiO (ion-inclusive lookup)",
+        "dataset": tio_data["id"],
+        "identity": {"data_sha256": tio_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "tio_adoption", **tio_contract, "species": ["*", "O1Ti1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [tio_receipt, tio_summary],
+            "summary": (
+                "Former default, retained as curated_tio: curated-tio-v1 replaces only TiO in curated-c2h-v1 with TOTO "
+                "state thermodynamics and Jain 2023 D0=6.824 +/- 0.010 eV, on 1500-4000 K. "
+                "The representative 48Ti16O internal partition uses NASA elemental mass "
+                "and atomic reference functions. C2H and all other functions are retained. "
+                "The obsolete JANAF low-singlet assumption motivates the thermal update; "
+                "the D0 difference is within the former quoted uncertainty. Both factory "
+                "modes pass 75 new cold solves, and ion-inclusive results reproduce the "
+                "reviewed candidate. Physical atmospheric accuracy and complete "
+                "thermochemical uncertainty remain unquantified. curated_c2h and curated_v1 "
+                "preserve earlier datasets. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/325"],
+        }],
+    })
+    co2_path = "src/exogibbs/data/curated/co2_v1.json"
+    co2_bytes = (ROOT / co2_path).read_bytes()
+    co2_data = json.loads(co2_bytes)
+    co2_digest = hashlib.sha256(co2_bytes).hexdigest()
+    co2_adoption = "tests/data/validation/curated_co2_adoption/20261104"
+    co2_execution = json.loads((ROOT / co2_adoption / "receipt.json").read_text())
+    if (co2_digest != co2_execution["selected_file_sha256"][co2_path]
+            or tio_digest != co2_data["base_data_sha256"]):
+        raise ValueError("CO2 data changed; review new evidence before rebinding the adoption")
+    co2_contract = copy("mceg/contracts/curated_co2.yaml", "contracts/curated_co2.yaml")
+    co2_receipt = copy(f"{co2_adoption}/receipt.json", "artifacts/co2_adoption_receipt.json")
+    co2_summary = copy(f"{co2_adoption}/summary.json", "artifacts/co2_adoption_summary.json")
+    if co2_summary["sha256"] != co2_execution["output_sha256"]["summary.json"]:
+        raise ValueError("CO2 summary differs from the archived execution")
+    catalog["models"].append({
+        "id": "exogibbs.curated_co2.v1",
+        "label": "Versioned curated NIST CO2 (ion-inclusive lookup)",
+        "dataset": co2_data["id"],
+        "identity": {"data_sha256": co2_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "co2_adoption", **co2_contract, "species": ["*", "C1O2"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [co2_receipt, co2_summary],
+            "summary": (
+                "Former default, retained as curated_co2: curated-co2-v1 adopts the exact reviewed NIST 626 thermal model "
+                "on curated-tio-v1 at 1500-4000 K. NASA molecular mass 44.0095 u, NASA "
+                "atomic functions and ATcT 1.172 total atomization 1598.180 kJ/mol are retained. "
+                "Only CO2 thermochemistry changes; TiO, C2H, all other species and budgets are preserved. "
+                "Both factory modes pass 75 new cold solves, and ion-inclusive results reproduce "
+                "the reviewed candidate. Scoped scientific selection and numerical adoption are "
+                "supported; complete isotope, continuum, high-temperature cutoff and atmospheric "
+                "physical accuracy remain unknown. The fixed-isotope-average diagnostic is not "
+                "adopted as a natural-isotope correction. curated_tio, curated_c2h and curated_v1 "
+                "preserve earlier datasets. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/329"],
+        }],
+    })
+    h2o_path = "src/exogibbs/data/curated/h2o_v1.json"
+    h2o_bytes = (ROOT / h2o_path).read_bytes()
+    h2o_data = json.loads(h2o_bytes)
+    h2o_digest = hashlib.sha256(h2o_bytes).hexdigest()
+    h2o_adoption = "tests/data/validation/curated_h2o_adoption/20261104"
+    h2o_execution = json.loads((ROOT / h2o_adoption / "receipt.json").read_text())
+    if (h2o_digest != h2o_execution["selected_file_sha256"][h2o_path]
+            or co2_digest != h2o_data["base_data_sha256"]):
+        raise ValueError("H2O data changed; review new evidence before rebinding the adoption")
+    h2o_contract = copy("mceg/contracts/curated_h2o.yaml", "contracts/curated_h2o.yaml")
+    h2o_receipt = copy(f"{h2o_adoption}/receipt.json", "artifacts/h2o_adoption_receipt.json")
+    h2o_summary = copy(f"{h2o_adoption}/summary.json", "artifacts/h2o_adoption_summary.json")
+    if h2o_summary["sha256"] != h2o_execution["output_sha256"]["summary.json"]:
+        raise ValueError("H2O summary differs from the archived execution")
+    catalog["models"].append({
+        "id": "exogibbs.curated_h2o.v1",
+        "label": "Versioned curated evaluated H2O and NIST CO2 (ion-inclusive lookup)",
+        "dataset": h2o_data["id"],
+        "identity": {"data_sha256": h2o_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "h2o_adoption", **h2o_contract, "species": ["*", "H2O1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [h2o_receipt, h2o_summary],
+            "summary": (
+                "Former default, retained as curated_h2o: curated-h2o-v1 adopts the exact reviewed evaluated-2025 water "
+                "Cp polynomial and analytic H/S integrals on curated-co2-v1 at 1500-4000 K. "
+                "The representative H2(16O) internal model uses NASA aggregate mass 18.01528 u, "
+                "NASA atoms and retained ATcT 1.172 total atomization 917.819 kJ/mol. "
+                "CO2, TiO, C2H and all other formation functions are preserved from the base. "
+                "Joint CO2/H2O production passes 150 new cold solves across both networks; "
+                "six tighter independently assembled candidate solves and two FastChem "
+                "comparisons check numerical response. Earlier single-species responses "
+                "are not relabeled as joint results. Scoped scientific selection and numerical "
+                "adoption are supported; scattering assignment, complete isotope treatment "
+                "and physical atmospheric accuracy remain unknown. Earlier versioned presets "
+                "and their evidence remain available. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/330"],
+        }],
+    })
+    oh_path = "src/exogibbs/data/curated/oh_v1.json"
+    oh_bytes = (ROOT / oh_path).read_bytes()
+    oh_data = json.loads(oh_bytes)
+    oh_digest = hashlib.sha256(oh_bytes).hexdigest()
+    oh_adoption = "tests/data/validation/curated_oh_adoption/20261105"
+    oh_execution = json.loads((ROOT / oh_adoption / "receipt.json").read_text())
+    if (oh_digest != oh_execution["selected_file_sha256"][oh_path]
+            or h2o_digest != oh_data["base_data_sha256"]):
+        raise ValueError("OH data changed; review new evidence before rebinding the adoption")
+    oh_contract = copy("mceg/contracts/curated_oh.yaml", "contracts/curated_oh.yaml")
+    oh_receipt = copy(f"{oh_adoption}/receipt.json", "artifacts/oh_adoption_receipt.json")
+    oh_summary = copy(f"{oh_adoption}/summary.json", "artifacts/oh_adoption_summary.json")
+    if oh_summary["sha256"] != oh_execution["output_sha256"]["summary.json"]:
+        raise ValueError("OH summary differs from the archived execution")
+    oh_species = {**c2h_species, "H1O1": {"id": "H1O1", "aliases": ["OH"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_oh.v1",
+        "label": "Curated default with NASA/ATcT OH (ion-inclusive lookup)",
+        "dataset": oh_data["id"],
+        "identity": {"data_sha256": oh_digest, "settings": {"ions": True}},
+        "species": [oh_species[k] for k in sorted(oh_species)],
+        "records": [{
+            "id": "oh_adoption", **oh_contract, "species": ["*", "H1O1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [oh_receipt, oh_summary],
+            "summary": (
+                "Former default, retained as curated_oh: curated-oh-v1 replaces the inherited JANAF OH electronic/caloric defect "
+                "with the exact NASA9 reaction and balanced ATcT 1.172 D0=425.604 kJ/mol, "
+                "on curated-h2o-v1 at 1500-4000 K. Only OH changes; H2O, CO2, TiO, C2H, "
+                "other formation functions, species and budgets are retained. MYTHOS is a "
+                "finite-state thermal control, differing by less than 0.098 percent in K; "
+                "it is not adopted. Both network modes pass 75 fresh cold solves, six tighter "
+                "candidate controls and two independent FastChem comparisons. Scoped source "
+                "selection and numerical adoption are supported; complete isotope, continuum, "
+                "energy covariance and atmospheric physical accuracy remain unknown. "
+                "Earlier versioned presets and immutable evidence remain available. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/334"],
+        }],
+    })
+    kh_path = "src/exogibbs/data/curated/kh_v1.json"
+    kh_bytes = (ROOT / kh_path).read_bytes()
+    kh_data = json.loads(kh_bytes)
+    kh_digest = hashlib.sha256(kh_bytes).hexdigest()
+    kh_adoption = "tests/data/validation/curated_kh_adoption/20261105"
+    kh_execution = json.loads((ROOT / kh_adoption / "receipt.json").read_text())
+    if (kh_digest != kh_execution["selected_file_sha256"][kh_path]
+            or oh_digest != kh_data["base_data_sha256"]):
+        raise ValueError("KH data changed; review new evidence before rebinding the adoption")
+    kh_contract = copy("mceg/contracts/curated_kh.yaml", "contracts/curated_kh.yaml")
+    kh_receipt = copy(f"{kh_adoption}/receipt.json", "artifacts/kh_adoption_receipt.json")
+    kh_summary = copy(f"{kh_adoption}/summary.json", "artifacts/kh_adoption_summary.json")
+    if kh_summary["sha256"] != kh_execution["output_sha256"]["summary.json"]:
+        raise ValueError("KH summary differs from the archived execution")
+    kh_species = {**oh_species, "H1K1": {"id": "H1K1", "aliases": ["KH"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_kh.v1",
+        "label": "Curated with spectroscopic KH energy (ion-inclusive lookup)",
+        "dataset": kh_data["id"],
+        "identity": {"data_sha256": kh_digest, "settings": {"ions": True}},
+        "species": [kh_species[k] for k in sorted(kh_species)],
+        "records": [{
+            "id": "kh_adoption", **kh_contract, "species": ["*", "H1K1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [kh_receipt, kh_summary],
+            "summary": (
+                "Former default, retained as curated_kh: curated-kh-v1 adopts spectroscopic KH D0=170857.838639 J/mol "
+                "on curated-oh-v1 at 1500-4000 K, reducing the inherited balanced energy "
+                "by 9532.161361 J/mol while retaining thermal functions, S/Cp and atomic "
+                "conventions. Only KH changes; OH, H2O, CO2, TiO, C2H, species and "
+                "budgets remain fixed. Both networks pass 75 fresh cold solves, six tighter "
+                "candidate controls and two FastChem comparisons. The 1988 abstract's "
+                "De uncertainty is not a D0 uncertainty. NASA thermal-reference controls "
+                "change molecular and atomic thermal functions and are not adopted. "
+                "Scoped source selection and numerical adoption are supported; complete "
+                "D0/thermal/isotope/continuum and atmospheric physical accuracy remain unknown. "
+                "Earlier versioned presets and immutable evidence remain available. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/339"],
+        }],
+    })
+    ho2_path = "src/exogibbs/data/curated/ho2_v1.json"
+    ho2_bytes = (ROOT / ho2_path).read_bytes()
+    ho2_data = json.loads(ho2_bytes)
+    ho2_digest = hashlib.sha256(ho2_bytes).hexdigest()
+    ho2_adoption = "tests/data/validation/curated_ho2_adoption/20261105"
+    ho2_execution = json.loads((ROOT / ho2_adoption / "receipt.json").read_text())
+    if (ho2_digest != ho2_execution["selected_file_sha256"][ho2_path]
+            or kh_digest != ho2_data["base_data_sha256"]):
+        raise ValueError("HO2 data changed; review new evidence before rebinding the adoption")
+    ho2_contract = copy("mceg/contracts/curated_ho2.yaml", "contracts/curated_ho2.yaml")
+    ho2_receipt = copy(f"{ho2_adoption}/receipt.json", "artifacts/ho2_adoption_receipt.json")
+    ho2_summary = copy(f"{ho2_adoption}/summary.json", "artifacts/ho2_adoption_summary.json")
+    if ho2_summary["sha256"] != ho2_execution["output_sha256"]["summary.json"]:
+        raise ValueError("HO2 summary differs from the archived execution")
+    ho2_species = {**kh_species, "H1O2": {"id": "H1O2", "aliases": ["HO2"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_ho2.v1",
+        "label": "Versioned curated with NASA/ATcT HO2 (ion-inclusive lookup)",
+        "dataset": ho2_data["id"],
+        "identity": {"data_sha256": ho2_digest, "settings": {"ions": True}},
+        "species": [ho2_species[k] for k in sorted(ho2_species)],
+        "records": [{
+            "id": "ho2_adoption", **ho2_contract, "species": ["*", "H1O2"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [ho2_receipt, ho2_summary],
+            "summary": (
+                "Former default, retained as curated_ho2: curated-ho2-v1 adopts the exact NASA HO2 thermal reaction and "
+                "balanced ATcT 1.172 D0=694662 J/mol on curated-kh-v1 at 1500-4000 K. "
+                "Only HO2 changes; KH, OH, H2O, CO2, TiO, C2H and all inventories are retained. "
+                "The obsolete JANAF formation energy is replaced without refitting. "
+                "Both networks pass 75 fresh cold solves, six tighter candidate-on-KH controls "
+                "and two FastChem comparisons. The old candidate abundances are not reused "
+                "as new-background results. JANAF original-node controls use the same energy "
+                "and atoms. Scoped selection and numerical verification are supported; full "
+                "physical accuracy remain unknown. Earlier versions and immutable evidence "
+                "remain available. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/342"],
+        }],
+    })
+    cos_path = "src/exogibbs/data/curated/cos_v1.json"
+    cos_bytes = (ROOT / cos_path).read_bytes()
+    cos_data = json.loads(cos_bytes)
+    cos_digest = hashlib.sha256(cos_bytes).hexdigest()
+    cos_adoption = "tests/data/validation/curated_cos_adoption/20261105"
+    cos_execution = json.loads((ROOT / cos_adoption / "receipt.json").read_text())
+    if (cos_digest != cos_execution["selected_file_sha256"][cos_path]
+            or ho2_digest != cos_data["base_data_sha256"]):
+        raise ValueError("COS data changed; review new evidence before rebinding the adoption")
+    cos_contract = copy("mceg/contracts/curated_cos.yaml", "contracts/curated_cos.yaml")
+    cos_receipt = copy(f"{cos_adoption}/receipt.json", "artifacts/cos_adoption_receipt.json")
+    cos_summary = copy(f"{cos_adoption}/summary.json", "artifacts/cos_adoption_summary.json")
+    if cos_summary["sha256"] != cos_execution["output_sha256"]["summary.json"]:
+        raise ValueError("COS summary differs from the archived execution")
+    cos_species = {**ho2_species, "C1O1S1": {"id": "C1O1S1", "aliases": ["COS"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_cos.v1",
+        "label": "Versioned curated with balanced ATcT COS energy (ion-inclusive lookup)",
+        "dataset": cos_data["id"],
+        "identity": {"data_sha256": cos_digest, "settings": {"ions": True}},
+        "species": [cos_species[k] for k in sorted(cos_species)],
+        "records": [{
+            "id": "cos_adoption", **cos_contract, "species": ["*", "C1O1S1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [cos_receipt, cos_summary],
+            "summary": (
+                "Former default, retained as curated_cos: curated-cos-v1 adopts ATcT 1.228 COS energy "
+                "on curated-ho2-v1 at 1500-4000 K. D0 rises from 1371.241 to 1376.853 "
+                "kJ/mol; the inherited JANAF molecular and NASA atomic thermal functions "
+                "are retained exactly. Only COS changes from that immediate base; no "
+                "refit, extra spin/isotope correction or TIPS/OYT8 thermal replacement. "
+                "Both networks pass 75 fresh cold solves, six tighter candidate-on-HO2 "
+                "controls and two FastChem comparisons. Background changes from KH/HO2 "
+                "are separated from reproduction of the earlier COS-only candidate. "
+                "Scoped selection and numerical adoption are supported; full physical "
+                "accuracy remains unknown, including correlated energy and thermal-state "
+                "uncertainty. Earlier versions and immutable evidence remain available. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/345"],
+        }],
+    })
+    # These layers have separate production receipts on their cumulative bases.
+    previous_digest, previous_species = cos_digest, cos_species
+    additions = (
+        ("cn", "CN", "C1N1", "curated_cn_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_cn_adoption",
+         "Versioned curated CN energy on the COS base", (
+             "curated-cn-v1 adopts the same-version ATcT 1.228 CN energy difference "
+             "of -4801 J/mol while retaining the literal inherited thermal fit, atomic "
+             "references and source-fit residual. The physical balanced source D0 "
+             "is distinct from the finite-fit constant. Only CN changes from curated-cos-v1. ")),
+        ("ps", "PS", "P1S1", "curated_ps",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "ps_curated_adoption",
+         "Versioned curated POPS PS thermals on the CN base", (
+             "curated-ps-v1 adds resolved POPS molecular thermals on curated-cn-v1, "
+             "retaining the Lodders energy, atomic references and source-fit residual. "
+             "A degree-18 Chebyshev log-partition representation preserves caloric "
+             "derivatives within the documented numerical tolerance. Only PS changes "
+             "from the immediate base. The adopted a4Pi component remains unrefined ab initio; "
+             "ground-only and full-distributed alternatives remain sensitivity controls. ")),
+        ("tio2", "TiO2", "O2Ti1", "curated_tio2_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_tio2_adoption",
+         "Versioned curated with measured TiO2 thermals on the CN/PS base", (
+             "Former default, retained as curated_tio2: curated-tio2-v1 adds measured ground-state rigid-rotor and "
+             "harmonic-oscillator TiO2 thermals on curated-ps-v1. Source D0=1267.776 "
+             "kJ/mol, atomic references and the inherited residual to the NASA thermal "
+             "proxy are retained. Only TiO2 changes from that base; H298-matched and "
+             "excited-state variants remain controls. Anharmonicity and full electronic "
+             "and isotope treatment remain outside the adopted approximation. ")),
+        ("hcp", "HCP", "C1H1P1", "curated_hcp_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_hcp_adoption",
+         "Versioned curated HCP energy on the TiO2 base", (
+             "curated-hcp-v1 applies the evaluated CCCBDB HCP correction: G/H increase "
+             "by 62308 J/mol while S/Cp, atomic references and the inherited fit residual "
+             "are retained. The independent 2001 theory remains a sensitivity; neither "
+             "solver agreement nor its narrower quoted width ranks the modern central "
+             "values. Only HCP changes from curated-tio2-v1. ")),
+        ("c2h2", "C2H2", "C2H2", "curated_c2h2_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_c2h2_adoption",
+         "Versioned curated acetylene energy on the HCP base", (
+             "curated-c2h2-v1 adopts the balanced ATcT 1.228 acetylene energy: G/H "
+             "increase by 1135 J/mol with unchanged S/Cp, atomic references and fit "
+             "residual. NASA thermals remain a control without established superior "
+             "full-range accuracy. Only acetylene changes from curated-hcp-v1. ")),
+        ("ch2", "CH2", "C1H2", "curated_ch2_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_ch2_adoption",
+         "Versioned curated with CH2 energy on the HCP/acetylene base", (
+             "Former default, retained as curated_ch2: curated-ch2-v1 adopts the balanced ATcT 1.228 CH2 energy: G/H "
+             "increase by 4948 J/mol with unchanged S/Cp, atomic references and fit "
+             "residual. The reconstructed RRHO sensitivity is not adopted because the "
+             "published component and combined caloric tables are inconsistent. Only "
+             "CH2 changes from curated-c2h2-v1. ")),
+    )
+    for key, label, species_id, contract_name, assessments, guide, title, synopsis in additions:
+        data_path = f"src/exogibbs/data/curated/{key}_v1.json"
+        data_bytes = (ROOT / data_path).read_bytes()
+        data_digest = hashlib.sha256(data_bytes).hexdigest()
+        data = json.loads(data_bytes)
+        adoption = f"tests/data/validation/curated_{key}_adoption/20261106"
+        execution = json.loads((ROOT / adoption / "receipt.json").read_text())
+        if (data_digest != execution["selected_file_sha256"][data_path]
+                or previous_digest != data["base_data_sha256"]):
+            raise ValueError(f"{label} data changed; review new evidence before rebinding the adoption")
+        contract = copy(f"mceg/contracts/{contract_name}.yaml", f"contracts/{contract_name}.yaml")
+        receipt_pin = copy(f"{adoption}/receipt.json", f"artifacts/{key}_adoption_receipt.json")
+        summary_pin = copy(f"{adoption}/summary.json", f"artifacts/{key}_adoption_summary.json")
+        if summary_pin["sha256"] != execution["output_sha256"]["summary.json"]:
+            raise ValueError(f"{label} summary differs from the archived execution")
+        adopted_species = {**previous_species, species_id: {"id": species_id, "aliases": [label]}}
+        catalog["models"].append({
+            "id": f"exogibbs.curated_{key}.v1",
+            "label": title + " (ion-inclusive lookup)",
+            "dataset": data["id"],
+            "identity": {"data_sha256": data_digest, "settings": {"ions": True}},
+            "species": [adopted_species[k] for k in sorted(adopted_species)],
+            "records": [{
+                "id": f"{key}_adoption", **contract, "species": ["*", species_id],
+                "assessments": assessments,
+                "artifacts": [receipt_pin, summary_pin],
+                "summary": synopsis + (
+                    "Production verification includes 75 fresh cold solves and three tighter "
+                    "candidate controls per network on the actual cumulative base; two selected "
+                    "ion-inclusive cases receive independent FastChem comparisons. "
+                    "Earlier candidate abundances are not relabeled as new-background "
+                    "results. Scoped source choice and numerical verification are supported; "
+                    "complete physical accuracy remains unknown. Earlier named presets and "
+                    "immutable evidence remain available. Your conditions have not been evaluated."),
+                "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
+                          f"documents/mceg/{guide}.rst"],
+            }],
+        })
+        previous_digest, previous_species = data_digest, adopted_species
+    data_path = "src/exogibbs/data/curated/gas_v2.json"
+    data_bytes = (ROOT / data_path).read_bytes()
+    data_digest = hashlib.sha256(data_bytes).hexdigest()
+    data = json.loads(data_bytes)
+    adoption = "tests/data/validation/curated_gas_v2_adoption/20261106"
+    execution = json.loads((ROOT / adoption / "receipt.json").read_text())
+    if (data_digest != execution["selected_file_sha256"][data_path]
+            or previous_digest != data["base_data_sha256"]):
+        raise ValueError("Gas-v2 data changed; review new evidence before rebinding the adoption")
+    contract = copy("mceg/contracts/curated_gas_v2_adoption.yaml", "contracts/curated_gas_v2_adoption.yaml")
+    receipt_pin = copy(f"{adoption}/receipt.json", "artifacts/gas_v2_adoption_receipt.json")
+    summary_pin = copy(f"{adoption}/summary.json", "artifacts/gas_v2_adoption_summary.json")
+    if summary_pin["sha256"] != execution["output_sha256"]["summary.json"]:
+        raise ValueError("Gas-v2 summary differs from the archived execution")
+    adopted_species = dict(previous_species)
+    for name, decision in data["decisions"].items():
+        adopted_species[name] = {"id": name, "aliases": [decision["name"]]}
+    catalog["models"].append({
+        "id": "exogibbs.curated_gas.v2",
+        "label": "Curated default with coordinated molecular updates (ion-inclusive lookup)",
+        "dataset": data["id"],
+        "identity": {"data_sha256": data_digest, "settings": {"ions": True}},
+        "species": [adopted_species[k] for k in sorted(adopted_species)],
+        "records": [{
+            "id": "gas_v2_adoption", **contract,
+            "species": ["*", *sorted(data["decisions"])],
+            "assessments": ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+            "artifacts": [receipt_pin, summary_pin],
+            "summary": (
+                "Default curated-gas-v2 combines 27 reviewed recommendations on curated-ch2-v1, "
+                "changing 28 species including coordinated cis/trans-HNO2 energies. HNCO/NCO and "
+                "NO2/N2O4 are coordinated as well. Existing thermal fits and their residuals are "
+                "retained except for the evaluated 2025 natural-isotope O2 thermal correction. "
+                "NaCN, KCN and C2N2 remain unchanged. The actual combined factory receives 150 "
+                "fresh equilibrium solves in the ion-inclusive and neutral networks, with tighter "
+                "independent-candidate, path and FastChem controls. Individual candidate responses "
+                "are not relabeled as combined-model results. Scoped source choice and numerical "
+                "verification are supported; complete physical accuracy remains unknown. Historical "
+                "named models remain available. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
+                      "documents/mceg/curated_gas_v2_adoption.rst"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")

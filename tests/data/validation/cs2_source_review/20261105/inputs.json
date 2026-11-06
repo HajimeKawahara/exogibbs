@@ -1,0 +1,22 @@
+{
+  "name": "CS2",
+  "species_id": "C1S2",
+  "composition": {
+    "C": 1,
+    "S": 2
+  },
+  "extra_nasa": {},
+  "literature_nodes": {},
+  "atct_1.228": {
+    "C": 711.37,
+    "S": 276.85,
+    "CS2": 115.17
+  },
+  "tips2025": {
+    "file": "TIPS2025.pf",
+    "mass_u": 75.944142,
+    "nuclear_spin": 1,
+    "recommended_max_K": 5000,
+    "cross_over_K": 2098
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "molecule": "HCO",
+  "canonical": "C1H1O1",
+  "max_mole_fraction": 3.7063298764610584e-07,
+  "max_mole_fraction_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 0.000475601276719865,
+  "max_element": "C",
+  "max_element_share_condition": {
+    "case_index": 24,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 0.5888436553555908
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 0.000475601276719865,
+      "maximum_share_percent": 0.0475601276719865,
+      "condition": {
+        "case_index": 24,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 0.5888436553555908
+      }
+    },
+    "H": {
+      "maximum_share": 2.3180309781698062e-07,
+      "maximum_share_percent": 2.3180309781698064e-05,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "O": {
+      "maximum_share": 0.00047328118050487237,
+      "maximum_share_percent": 0.047328118050487235,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}

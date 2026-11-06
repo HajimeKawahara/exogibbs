@@ -22,7 +22,7 @@ from scipy.special import logsumexp
 
 from c2h_equilibrium_impact import carbon_budget, independent_check, solve_cases
 from gas_source_comparison import file_hash
-from exogibbs.presets import curated
+from exogibbs.presets import curated_c2h
 
 
 DATA = ROOT / "tests/data/validation/vo2_equilibrium_impact/20261102"
@@ -62,9 +62,9 @@ def correction(temperature, kind: str, inputs: dict) -> dict:
 
 
 def models() -> tuple:
-    """Change only VO2; all diagnostics retain the curated network and budget."""
+    """Change only VO2 on the immutable curated-c2h-v1 network and budget."""
     inputs = json.loads(INPUT.read_text())
-    base = curated.chemsetup()
+    base = curated_c2h.chemsetup()
     index = base.species.index(inputs["species"])
     result = [base]
     for kind in KINDS[1:]:
@@ -166,7 +166,7 @@ def run(output: Path, executable: Path | None = None) -> None:
         (output / filename).write_text(json.dumps(value, indent=2, allow_nan=False)+"\n")
     paths = [Path(__file__), INPUT, PRIOR]
     paths += [ROOT / name for name in ("mceg/reviews/c2h_equilibrium_impact.py", "mceg/reviews/gas_source_comparison.py",
-              "examples/comparisons/compare_gas_thermochemistry.py", "src/exogibbs/presets/curated.py",
+              "examples/comparisons/compare_gas_thermochemistry.py",
               "src/exogibbs/presets/curated_c2h.py", "src/exogibbs/presets/curated_v1.py",
               "src/exogibbs/presets/fastchem4.py", "src/exogibbs/presets/fastchem.py", "src/exogibbs/thermo/standard.py",
               "src/exogibbs/data/curated/gas_v1.json", "src/exogibbs/data/curated/c2h_v1.json",

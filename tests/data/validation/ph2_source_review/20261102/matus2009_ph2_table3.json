@@ -1,0 +1,59 @@
+{
+  "source_url": "https://pubs.acs.org/doi/10.1021/jp811432s",
+  "doi": "10.1021/jp811432s",
+  "authors": [
+    "Myrna H. Matus",
+    "Minh Tho Nguyen",
+    "David A. Dixon"
+  ],
+  "journal": "Journal of Physical Chemistry A 113(5), 944 (2009)",
+  "relation": "Correction to 10.1021/jp067892v, Journal of Physical Chemistry A 111(9), 1726-1736 (2007).",
+  "inspection": "The supplied one-page publisher correction PDF is now read and visually checked. PH2 values and footnotes a-c agree with the earlier publisher-indexed transcription. The 2007 main article and its supporting data are not supplied by this file.",
+  "correction_scope": "The authors correct copied nitrogen-compound values; PH2 is retained in the replacement table. This is the same study, not an independent 2009 determination.",
+  "table_number": 3,
+  "reported_units": "kcal mol^-1",
+  "temperature_labels_K": [
+    0,
+    298
+  ],
+  "species": "PH2 (2B1)",
+  "calculated": {
+    "method": "CCSD(T)/CBS",
+    "Hf0_kcal_mol": 32.7,
+    "Hf298_kcal_mol": 31.8,
+    "estimated_error_bar_kcal_mol": 1.0,
+    "Hf0_kJ_mol": 136.8168,
+    "Hf298_kJ_mol": 133.0512,
+    "estimated_error_bar_kJ_mol": 4.184,
+    "uncertainty_convention": "Estimated error bar; not established as one standard deviation or 95% confidence."
+  },
+  "quoted_experiment": {
+    "Hf298_kcal_mol": 33.1,
+    "quoted_uncertainty_kcal_mol": 0.6,
+    "Hf298_kJ_mol": 138.4904,
+    "quoted_uncertainty_kJ_mol": 2.5104,
+    "footnote_b_reference": "Berkowitz, J. C., Journal of Chemical Physics 90, 1 (1989), as printed. Bibliographic resolution identifies J. Berkowitz and H. Cho, DOI10.1063/1.456522.",
+    "inspection_limit": "The experimental thermochemical cycle and uncertainty have not been verified in the original full paper."
+  },
+  "quoted_janaf_estimate": {
+    "Hf298_kcal_mol": 30.1,
+    "Hf0_kcal_mol": 30.7,
+    "quoted_uncertainty_kcal_mol": 23.0,
+    "qualification": "These quoted values follow the older energy family; they do not match the white-P-corrected 1998 printed PH2 page."
+  },
+  "phosphorus_reference_state": "The accessible correction does not explicitly identify white versus red-V phosphorus for its theory or quoted experiment. Do not treat these energies as confirmed on the JANAF white-P gauge. Original atomization-to-formation reference choices and the experimental cycle remain to be audited.",
+  "conversion": "1 kcal = 4.184 kJ exactly; no reference-state conversion has been applied.",
+  "inspection_history": "Publisher-indexed correction text and complete Table 3 returned by web search on 2026-11-02; direct HTML requests returned HTTP403. Numerical PH2 row and footnotes manually transcribed; no full publisher response bytes archived.",
+  "supplied_pdf": {
+    "local_file": "ref/refs_exogibbs_202611-2/jp811432s.pdf",
+    "doi": "10.1021/jp811432s",
+    "url": "https://doi.org/10.1021/jp811432s",
+    "sha256": "dcd97ee5f895b7ac70f1180d1bc61b35202c36fcdf09be426101de52ed4c0afa",
+    "bytes": 65168,
+    "pages": 1,
+    "provided_date_JST": "2026-11-02",
+    "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+    "location": "Printed p944, complete replacement Table 3, PH2 row and footnotes a-c; page image visually checked.",
+    "archived": false
+  }
+}

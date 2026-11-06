@@ -1,0 +1,62 @@
+[
+  {
+    "temperature_K": 1500.0,
+    "excluded_Q_fraction": 1.0362374530022962e-22,
+    "full_minus_bound_G_J_mol": 0.0,
+    "full_minus_bound_H_J_mol": 1.4551915228366852e-11,
+    "full_minus_bound_S_J_mol_K": 0.0,
+    "full_minus_bound_Cp_J_mol_K": 0.0,
+    "published_Q": 17784.2336,
+    "full_states_Q_over_published": 0.9999608279881315
+  },
+  {
+    "temperature_K": 2000.0,
+    "excluded_Q_fraction": 3.549380497269194e-17,
+    "full_minus_bound_G_J_mol": 0.0,
+    "full_minus_bound_H_J_mol": 4.3655745685100555e-11,
+    "full_minus_bound_S_J_mol_K": 0.0,
+    "full_minus_bound_Cp_J_mol_K": 4.192202140984591e-13,
+    "published_Q": 29885.8421,
+    "full_states_Q_over_published": 0.9999715238656094
+  },
+  {
+    "temperature_K": 2500.0,
+    "excluded_Q_fraction": 6.636993712834866e-14,
+    "full_minus_bound_G_J_mol": -1.3969838619232178e-09,
+    "full_minus_bound_H_J_mol": 4.124012775719166e-08,
+    "full_minus_bound_S_J_mol_K": 1.7053025658242404e-11,
+    "full_minus_bound_Cp_J_mol_K": 4.915321483167645e-10,
+    "published_Q": 45720.0133,
+    "full_states_Q_over_published": 0.9999782010343715
+  },
+  {
+    "temperature_K": 3000.0,
+    "excluded_Q_fraction": 9.302149928748796e-12,
+    "full_minus_bound_G_J_mol": -2.3201573640108109e-07,
+    "full_minus_bound_H_J_mol": 5.683206836692989e-06,
+    "full_minus_bound_S_J_mol_K": 1.9717276700248476e-09,
+    "full_minus_bound_Cp_J_mol_K": 4.620285665168922e-08,
+    "published_Q": 65760.0644,
+    "full_states_Q_over_published": 0.9999829797726855
+  },
+  {
+    "temperature_K": 3500.0,
+    "excluded_Q_fraction": 2.987713567781497e-10,
+    "full_minus_bound_G_J_mol": -8.6943618953228e-06,
+    "full_minus_bound_H_J_mol": 0.0001792261318769306,
+    "full_minus_bound_S_J_mol_K": 5.369162181523279e-08,
+    "full_minus_bound_Cp_J_mol_K": 1.0486897252803828e-06,
+    "published_Q": 90642.9927,
+    "full_states_Q_over_published": 0.9999866503700263
+  },
+  {
+    "temperature_K": 4000.0,
+    "excluded_Q_fraction": 3.835671979400119e-09,
+    "full_minus_bound_G_J_mol": -0.0001275662798434496,
+    "full_minus_bound_H_J_mol": 0.002254858292872086,
+    "full_minus_bound_S_J_mol_K": 5.956060817879916e-07,
+    "full_minus_bound_Cp_J_mol_K": 9.868517167888058e-06,
+    "published_Q": 121191.128,
+    "full_states_Q_over_published": 0.9999895649582079
+  }
+]

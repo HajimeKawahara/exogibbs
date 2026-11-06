@@ -1,0 +1,10 @@
+{
+  "original_doi": "10.1063/1.4978336",
+  "erratum_doi": "10.1063/5.0010035",
+  "original_CNC_hf298_kJ_mol": 676,
+  "corrected_CNC_hf298_kJ_mol": 678,
+  "uncertainty_kJ_mol": 12,
+  "energy_scale_error_meV": 21,
+  "inspection": "Original primary abstract and indexed text of published 2020 erratum inspected. Full erratum PDF download unavailable; no independent spectrum refit.",
+  "scope": "Corrected experimental corroboration; network provenance still labels Garcia2017, so propagation of every erratum change within ATcT is not asserted."
+}
