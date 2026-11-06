@@ -433,13 +433,39 @@ def build_catalog(output: Path = OUTPUT) -> None:
         ("tio2", "TiO2", "O2Ti1", "curated_tio2_adoption",
          ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
          "curated_tio2_adoption",
-         "Curated default with measured TiO2 thermals on the CN/PS base", (
-             "Default curated-tio2-v1 adds measured ground-state rigid-rotor and "
+         "Versioned curated with measured TiO2 thermals on the CN/PS base", (
+             "Former default, retained as curated_tio2: curated-tio2-v1 adds measured ground-state rigid-rotor and "
              "harmonic-oscillator TiO2 thermals on curated-ps-v1. Source D0=1267.776 "
              "kJ/mol, atomic references and the inherited residual to the NASA thermal "
              "proxy are retained. Only TiO2 changes from that base; H298-matched and "
              "excited-state variants remain controls. Anharmonicity and full electronic "
              "and isotope treatment remain outside the adopted approximation. ")),
+        ("hcp", "HCP", "C1H1P1", "curated_hcp_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_hcp_adoption",
+         "Versioned curated HCP energy on the TiO2 base", (
+             "curated-hcp-v1 applies the evaluated CCCBDB HCP correction: G/H increase "
+             "by 62308 J/mol while S/Cp, atomic references and the inherited fit residual "
+             "are retained. The independent 2001 theory remains a sensitivity; neither "
+             "solver agreement nor its narrower quoted width ranks the modern central "
+             "values. Only HCP changes from curated-tio2-v1. ")),
+        ("c2h2", "C2H2", "C2H2", "curated_c2h2_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_c2h2_adoption",
+         "Versioned curated acetylene energy on the HCP base", (
+             "curated-c2h2-v1 adopts the balanced ATcT 1.228 acetylene energy: G/H "
+             "increase by 1135 J/mol with unchanged S/Cp, atomic references and fit "
+             "residual. NASA thermals remain a control without established superior "
+             "full-range accuracy. Only acetylene changes from curated-hcp-v1. ")),
+        ("ch2", "CH2", "C1H2", "curated_ch2_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_ch2_adoption",
+         "Curated default with CH2 energy on the HCP/acetylene base", (
+             "Default curated-ch2-v1 adopts the balanced ATcT 1.228 CH2 energy: G/H "
+             "increase by 4948 J/mol with unchanged S/Cp, atomic references and fit "
+             "residual. The reconstructed RRHO sensitivity is not adopted because the "
+             "published component and combined caloric tables are inconsistent. Only "
+             "CH2 changes from curated-c2h2-v1. ")),
     )
     for key, label, species_id, contract_name, assessments, guide, title, synopsis in additions:
         data_path = f"src/exogibbs/data/curated/{key}_v1.json"

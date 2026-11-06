@@ -1,0 +1,64 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "KCN",
+      "file": "C-072.txt",
+      "url": "https://janaf.nist.gov/tables/C-072.txt",
+      "sha256": "31d3ca59072130cc89fa6afac3a4b805cb5baedb8ab7011f653bd28b336e07a8",
+      "bytes": 3771,
+      "header": "Potassium Cyanide (KCN)\tC1K1N1(g)"
+    },
+    {
+      "molecule": "K",
+      "file": "K-005.txt",
+      "url": "https://janaf.nist.gov/tables/K-005.txt",
+      "sha256": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+      "bytes": 3163,
+      "header": "Potassium (K)\tK1(g)"
+    },
+    {
+      "molecule": "C",
+      "file": "C-003.txt",
+      "url": "https://janaf.nist.gov/tables/C-003.txt",
+      "sha256": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+      "bytes": 3841,
+      "header": "Carbon (C)\tC1(g)"
+    },
+    {
+      "molecule": "N",
+      "file": "N-002.txt",
+      "url": "https://janaf.nist.gov/tables/N-002.txt",
+      "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+      "bytes": 3847,
+      "header": "Nitrogen (N)\tN1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  },
+  "primary_documents": [
+    {
+      "file": "janaf-carbon.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+      "bytes": 12474349
+    },
+    {
+      "file": "nacn2012.pdf",
+      "url": "https://arxiv.org/pdf/1201.0703",
+      "sha256": "305c906f29aaba88c3f0f33d45efca289d7d925a8cb0475ad3df04e5a7360561",
+      "bytes": 102913
+    },
+    {
+      "file": "kcn1980-thesis.pdf",
+      "url": "https://mbp.science.ru.nl/publ/theses/1983-JohanBekooij19Mei1983High-ResolutionMolecularBeamSpectroscopyatMicrowaveandOpticalFrequencies.pdf",
+      "sha256": "06d7099f7672e155ccd83924e03343c1a79fe6104f6ae0607e8124c99dee71fb",
+      "bytes": 4583652
+    }
+  ],
+  "primary_document_scope": "Full PDFs are inspected locally but not committed; literature.json pins compact relevant constants and inspection limits."
+}

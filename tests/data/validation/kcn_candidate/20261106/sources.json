@@ -1,0 +1,32 @@
+{
+  "main_frequencies_cm_inverse": [
+    2158,
+    293.0,
+    114.7
+  ],
+  "control_frequencies_cm_inverse": [
+    2158,
+    302.7,
+    119.7
+  ],
+  "new_primary_doi": "10.1063/1.442966",
+  "primary_url": "https://www.ucl.ac.uk/amopp/sites/amopp/files/12.pdf",
+  "control_doi": "10.1080/00268978200101101",
+  "inspection": "Full author PDFs read. Main low modes are close-coupling fundamentals at fixed CN=1.171Angstrom; control uses earlier Watson small-amplitude results. Both are harmonic surrogates, not exact harmonic frequencies. Gas CN2158 is reported in paperII; matrix-isolation2050/288/139 are not used.",
+  "source_file_sha256": {
+    "kcn-closecoupling1982.pdf": "cc382c89c13cfdba230ce82a79efc836754a2cdc77e81236be29f4319e85a920",
+    "kcn-tennyson1982.pdf": "3552cd72c85a35b255ce24de3768e7b19b8373fcdfc1f8456de7d4216d156af1"
+  },
+  "low_inversion_barrier_cm_inverse": 503.9,
+  "CN_distance_Angstrom": 1.171,
+  "scope": "Single T-shaped well, measured ground-state rotation plus three gas/variational fundamentals used as harmonic surrogates. Analytic1500-4000K sensitivity only. The1982paper explicitly establishes strong rovibrational coupling and small-amplitude breakdown near the503.9cm\u22121 barrier; low-lying states do not establish hot completeness.",
+  "shared_conventions": {
+    "rotational_doi": "10.1016/j.jms.2011.12.005",
+    "sigma": 1,
+    "electronic_weight": 1,
+    "nuclear_weight_added": 1,
+    "mean_mass": "Retained JANAF natural mean mass for translation; measured principal-isotope rotation is not a complete natural-isotope calculation.",
+    "energy": "JANAF physical D0 unchanged; no ZPE added.",
+    "finite_domain": "1500-4000K is a sensitivity domain, not primary-author high-temperature validation."
+  }
+}

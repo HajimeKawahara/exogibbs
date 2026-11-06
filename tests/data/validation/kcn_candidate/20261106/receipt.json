@@ -1,0 +1,29 @@
+{
+  "result": "passed",
+  "scope": "Continuous model and source-validation record; separate from equilibrium execution",
+  "selected_file_sha256": {
+    "mceg/reviews/kcn_candidate.py": "818840f5f61fc35fccf27e2a23816e567b193ecd18ba9654543a6e6119ea71d3",
+    "tests/data/validation/kcn_candidate/20261106/sources.json": "d6781ed71ec087420c6c77c0d67d56d6bf7d3b552f483290261e5fabf6562285",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "mceg/reviews/kcn_source_review.py": "fcebb136092be3fc55db0e882d0c77651faf221b0a26bd461948ebd93a29df2c",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/kcn_source_review/20261106/literature.json": "efabd32d0df371fa95b08d091ea8ef37b38e5e867679acc1cc8555ad6bcde81a",
+    "tests/data/validation/kcn_source_review/20261106/nasa-selected-records.txt": "4c6943c43e1b580f2575562f44fbf250df2ee5415df94060a2cf34a42b35c627",
+    "tests/data/validation/kcn_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/kcn_source_review/20261106/inputs.json": "b0d82223a372902b44b1e5c94a0b74f2dcb2f7614b9d1f4042021404d65c86b4",
+    "tests/data/validation/kcn_source_review/20261106/README.rst": "2dbaf921cb031f27f440944c38619ef391edc7017dade02446e62b7b216650e5",
+    "tests/data/validation/kcn_source_review/20261106/receipt.json": "df3aa6f16397a1cdcc91313765ed33a8d8b0e11a16f0be489c971247baa56e6e",
+    "tests/data/validation/kcn_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/kcn_source_review/20261106/comparison.json": "ceb4bdd8b69a1192004314943f0c7406daddad003ccf82c4deb391044a8ba37e",
+    "tests/data/validation/kcn_source_review/20261106/sources.json": "8859dbb92ce6000cde704e6f2f45ed2b937e9b9622d498d22e6f29d5d73a4857",
+    "tests/data/validation/kcn_source_review/20261106/C-072.txt": "31d3ca59072130cc89fa6afac3a4b805cb5baedb8ab7011f653bd28b336e07a8",
+    "tests/data/validation/kcn_source_review/20261106/K-005.txt": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+    "tests/data/validation/kcn_candidate/20261106/candidate.json": "ae1a0d387323b507ec5611ef695f85e880be0376c5edcd237e2047a8206c2589"
+  },
+  "output_sha256": {
+    "review.json": "407ec9db19b23e09c011d1343d028d897e13eed542465f2ba1f08fb6f437e35d",
+    "candidate.json": "ae1a0d387323b507ec5611ef695f85e880be0376c5edcd237e2047a8206c2589",
+    "validation.json": "59c1283e35e81b50944235c3ec8a670939550fb2db7c706ac82a6243322710a4",
+    "sources.json": "d6781ed71ec087420c6c77c0d67d56d6bf7d3b552f483290261e5fabf6562285"
+  }
+}

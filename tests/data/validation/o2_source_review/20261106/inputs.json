@@ -1,0 +1,177 @@
+{
+  "molecule": "O2",
+  "species_id": "O2",
+  "composition": {
+    "O": 2
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "O2": "O-029.txt",
+    "O": "O-001.txt"
+  },
+  "nasa9": {
+    "O2": {
+      "composition": {
+        "O": 2
+      },
+      "reference": "Ref-Elm. Gurvich,1989 pt1 p94 pt2 p9.",
+      "source_line_1based": 7943,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -34255.6342,
+            484.700097,
+            1.119010961,
+            0.00429388924,
+            -6.83630052e-07,
+            -2.0233727e-09,
+            1.039040018e-12,
+            -3391.45487,
+            18.4969947
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -1037939.022,
+            2344.830282,
+            1.819732036,
+            0.001267847582,
+            -2.188067988e-07,
+            2.053719572e-11,
+            -8.19346705e-16,
+            -16890.10929,
+            17.38716506
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            497529430.0,
+            -286610.6874,
+            66.9035225,
+            -0.00616995902,
+            3.016396027e-07,
+            -7.4214166e-12,
+            7.27817577e-17,
+            2293554.027,
+            -553.062161
+          ]
+        }
+      ],
+      "source_name": "O2",
+      "hf298_J_mol": 0.0,
+      "h298_minus_h0_J_mol": 8680.104,
+      "mass_u": 31.9988
+    },
+    "O": {
+      "composition": {
+        "O": 1
+      },
+      "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+      "source_line_1based": 7864,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -7953.6113,
+            160.7177787,
+            1.966226438,
+            0.00101367031,
+            -1.110415423e-06,
+            6.5175075e-10,
+            -1.584779251e-13,
+            28403.62437,
+            8.40424182
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            261902.0262,
+            -729.872203,
+            3.31717727,
+            -0.000428133436,
+            1.036104594e-07,
+            -9.43830433e-12,
+            2.725038297e-16,
+            33924.2806,
+            -0.667958535
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            177900426.4,
+            -108232.8257,
+            28.10778365,
+            -0.002975232262,
+            1.854997534e-07,
+            -5.79623154e-12,
+            7.191720164e-17,
+            889094.263,
+            -218.1728151
+          ]
+        }
+      ],
+      "source_name": "O",
+      "hf298_J_mol": 249175.003,
+      "h298_minus_h0_J_mol": 6725.403,
+      "mass_u": 15.9994
+    }
+  },
+  "decision": "Retain production for this source review; prioritize a 2025 natural-isotope thermal plus balanced ATcT 1.228 energy candidate and finite substitution as the next scoped step.",
+  "identity": {
+    "phase": "neutral ideal gas",
+    "state": "X 3Sigma_g- ground manifold, with thermal electronic excitation",
+    "not": "atomic singlet O, O2 singlet-only gas, or condensed oxygen",
+    "janaf_ref_meaning": "O2(ref) is the thermochemical elemental reference; in the reviewed 1500-4000 K range its ideal-gas thermals apply, and zero elemental formation enthalpy is not zero dissociation energy.",
+    "spin": "16O has nuclear spin zero; the published O2 state sum includes the allowed rotational/electronic statistical weights. No extra factor of three or division by a homonuclear symmetry number is applied.",
+    "isotope": "Use published natural-composition thermals for the candidate diagnostic; pure16O2 Q moments are a separate reconstruction control. No additional isotope mixing entropy is added."
+  },
+  "atct": {
+    "version": "1.228",
+    "O_hf0_kJ_mol": 246.843,
+    "O_hf298_kJ_mol": 249.229,
+    "O_uncertainty_kJ_mol": 0.0021,
+    "O2_hf0_kJ_mol": 0.0,
+    "O_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22",
+    "O2_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=6",
+    "scope": "Rounded balanced central value only; full covariance is not propagated. The separate singlet atom page species446 is excluded."
+  },
+  "follow_ups": [
+    "Construct derivative-consistent 2025 natural-isotope molecular thermals with balanced ATcT 1.228 D0, explicitly separating the existing fit residual and physical energy shift.",
+    "Run fixed-network finite substitution and independent numerical controls before any O2 curated adoption; the required 2025 tables and ATcT central anchors are already public.",
+    "Retain unbound-state, energy-covariance and atmospheric-validation limitations; ancestor access alone is not a source-review merge gate."
+  ],
+  "limitations": [
+    "The 15946 O2 levels are unchanged from 2019; this review uses published 2025 tables and does not independently resum all levels.",
+    "Natural-isotope tables already contain the Woolley correction and mass-translation entropy; no extra correction is applied.",
+    "Unbound-state uncertainty and complete ATcT covariance are not quantified.",
+    "Pointwise 2025/ATcT comparison is not a derivative-consistent candidate or a finite equilibrium response."
+  ]
+}
