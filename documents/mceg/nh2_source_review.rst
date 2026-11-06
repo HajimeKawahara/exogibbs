@@ -69,7 +69,7 @@ The final **curated-tio2-v1** archive contains 75 converged ion-inclusive endpoi
 These finite hot hydrogen-rich results do not bound cooler or oxidizing atmospheres, photochemistry, non-LTE populations, condensation or reaction kinetics. A small inventory here is not evidence that a molecule is unimportant in those settings.
 
 Decision, access needs and MCEG
-------------------------------
+-------------------------------
 
 Construct the two continuous NH2 candidates with fixed atoms and explicit physical energy/fit-residual bookkeeping; validate G/H/S/Cp and scalar/JAX derivatives, then run current-base network substitutions. Ask the 2026 dataset authors for the ground-spin/rotation convention only if pursuing that thermal alternative; it is not required for the ATcT energy candidate or source-review merge.
 
