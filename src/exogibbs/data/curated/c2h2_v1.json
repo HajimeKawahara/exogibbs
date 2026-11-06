@@ -1,0 +1,53 @@
+{
+  "id": "curated-c2h2-v1",
+  "species": "C2H2",
+  "reaction": "2 C(g) + 2 H(g) -> C2H2(g)",
+  "base_dataset": "curated-hcp-v1",
+  "base_data_sha256": "7a193d32ca1b2796924a9ad024ee09396382cff530083f6ad2f24947b9061249",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_D0_J_mol": 1627153.0,
+  "D0_J_mol": 1626018.0,
+  "candidate_ATcT_version": "1.228",
+  "candidate_hf0_kJ_mol": {
+    "C2H2": 228.79,
+    "C": 711.37,
+    "H": 216.034
+  },
+  "formal_fit_intercept_Ra_J_mol": 1633462.8729408728,
+  "delta_D0_J_mol": -1135,
+  "delta_D0_over_R_K": -136.50912297349407,
+  "representation": "Add only -delta(D0)/(RT) to the inherited formation G/(RT). Preserve all literal thermal coefficients, atomic gauge and source-fit residual. No thermal refit, added ZPE or extrapolation to zero K.",
+  "anchor_scope": "The balanced physical energy difference is separate from the formal R*a fit intercept; preserve their residual rather than relabeling the intercept as D0.",
+  "decision": {
+    "name": "C2H2",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "Retained literal JANAF-derived FastChem reaction thermal fit",
+    "energy_source": "ATcT 1.228 balanced 2C+2H-C2H2 physical atomization difference",
+    "reason": "Adopt the same-version ATcT balanced energy difference, retaining all literal thermal coefficients and source-fit residual. The NASA thermal alternative remains a sensitivity and is not adopted.",
+    "condition": "1500-4000 K, one-bar standard pressure. Marginal ATcT uncertainties do not specify correlated atomization uncertainty. Complete hot rovibrational state-sum convergence, isotope mixtures and atmospheric accuracy remain unquantified."
+  },
+  "sources": {
+    "candidate": "tests/data/validation/c2h2_candidate/20261106/candidate.json",
+    "review": "documents/mceg/c2h2_candidate.rst",
+    "adoption": "documents/mceg/curated_c2h2_adoption.rst",
+    "substitution": "tests/data/validation/c2h2_equilibrium_impact/20261106/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/c2h2_candidate/20261106/candidate.json": "e8e20c426962b909f8dbaaf47518e414d1a2ba735e3dd310fc441e030c454a45",
+    "tests/data/validation/c2h2_source_review/20261106/inputs.json": "d12d5f2b1283bf9136d7389fc0c77603f238744a050581482f5261b23365223b",
+    "tests/data/validation/c2h2_source_review/20261106/sources.json": "6a840cdae6606742953f7513f2af065a89d1d714f8882d4c705547590da78431",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/c2h2_source_review/20261106/nasa-selected.txt": "e566705afe8a73b7f370cca83ad87e6349f65e93d531f65c4f17e7e9b8708308",
+    "tests/data/validation/c2h2_source_review/20261106/comparison.json": "85da303dc8b11514cf472d2eff1612158e244b5ec94e9b05e0403f7c08e341d6",
+    "tests/data/validation/c2h2_source_review/20261106/C-127.txt": "efa4bd5c2bcf07ac1d799cd6245af46652042c1c77053ba620d6b4c0dab52c0b",
+    "tests/data/validation/c2h2_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/c2h2_source_review/20261106/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+  },
+  "interpretation": "C2H2 energy-only adoption on curated-hcp-v1. G/H increase by 1135 J/mol; S/Cp and other species potentials remain unchanged. Thermal candidates are not adopted. Numerical verification does not establish complete physical accuracy."
+}

@@ -1,0 +1,70 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "O2",
+      "file": "O-029.txt",
+      "url": "https://janaf.nist.gov/tables/O-029.txt",
+      "sha256": "47bd5d4d600e962b0ca18c30016364762ce9d4ff1a07f39ff300648635f7e648",
+      "bytes": 2937,
+      "header": "Oxygen (O2)\tO2(ref)"
+    },
+    {
+      "molecule": "O",
+      "file": "O-001.txt",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "bytes": 3807,
+      "header": "Oxygen (O)\tO1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  },
+  "modern_downloads": [
+    {
+      "file": "O2_NaturalThermo.csv",
+      "url": "https://ndownloader.figshare.com/files/54603050",
+      "sha256": "fef8311d791b5b4bbfd0ef3bd2dd5100599627102684764e06907b73b525d797",
+      "bytes": 264029,
+      "article": "https://api.figshare.com/v2/articles/29087348"
+    },
+    {
+      "file": "O2_ThermoFunctions.csv",
+      "url": "https://ndownloader.figshare.com/files/54602999",
+      "sha256": "210f80d1fe57c76681257d0b9ea8da71575c46bfee51701e4c22aac4136cc950",
+      "bytes": 265706,
+      "article": "https://api.figshare.com/v2/articles/29087336"
+    },
+    {
+      "file": "O2_PartitionFunctions.csv",
+      "url": "https://ndownloader.figshare.com/files/54602996",
+      "sha256": "65b2a1ee9f9db0acd0d7cc0b390717586c13baa4e08c89baff9d7231ed361b35",
+      "bytes": 252241,
+      "article": "https://api.figshare.com/v2/articles/29087333"
+    }
+  ],
+  "modern_text": {
+    "doi": "10.1063/5.0273661",
+    "url": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959474",
+    "sha256": "c322fe87d4d80783c1ca4d2931fe0b27629731a5cff027803ff4b9c5a8a1570c",
+    "inspection": "Full accepted manuscript, physical conventions, natural-isotope correction and uncertainty sections; official supplemental numeric rows inspected. Full paper and complete tables are not committed."
+  },
+  "atct_downloads": [
+    {
+      "file": "atct-o-ground-1228.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22",
+      "sha256": "e7c3f57b26fde9a4f5e02dd9666abf54276f8d7201d5d54674244a4149bc5ccd",
+      "inspection": "Ground gas species and enthalpy summary; covariance not recovered."
+    },
+    {
+      "file": "atct-o2-ground-1228.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=6",
+      "sha256": "1d9b440e23897b27c094ef0a8d4b2fb9b05344731da6c16fb47b253942652172",
+      "inspection": "Ground gas species and enthalpy summary; covariance not recovered."
+    }
+  ]
+}
