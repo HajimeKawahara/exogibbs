@@ -66,6 +66,7 @@ HCN differences with optional MCEG tooling.
    c2n2_source_review
    c3_source_review
    c4_source_review
+   c4n2_source_review
    ho2_source_review
    o3_source_review
    ho2_candidate
@@ -110,6 +111,7 @@ HCN differences with optional MCEG tooling.
    ps_candidate
    ps_curated_adoption
    phosphorus_cold_validation
+   p4o10_source_review
    po_source_review
    po2_source_review
    c5_source_review
