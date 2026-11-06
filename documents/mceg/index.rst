@@ -74,6 +74,8 @@ HCN differences with optional MCEG tooling.
    c2h2_candidate
    curated_c2h2_adoption
    fastchem_hcn_followup
+   c2n2_source_review
+   c2n2_candidate
    c3_source_review
    c4_source_review
    ho2_source_review

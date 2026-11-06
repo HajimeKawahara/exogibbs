@@ -1,0 +1,305 @@
+{
+  "id": "c2n2_bounded_candidates_20261106",
+  "slug": "c2n2",
+  "baseline_dataset": "curated-ch2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "native_NASA_R_J_mol_K": 8.31451,
+  "target_species": "C2N2",
+  "tracked_elements": [
+    "C",
+    "N"
+  ],
+  "primary_variant": "retained",
+  "variants": [
+    {
+      "name": "retained",
+      "replacements": {
+        "C2N2": {
+          "kind": "retained_energy",
+          "coefficients": [
+            248283.4548710501,
+            -2.845616943108439,
+            -27.762611594288956,
+            0.0011282589272390564,
+            -6.727805487163289e-08
+          ],
+          "delta_GH_J_mol": 294.0
+        }
+      }
+    },
+    {
+      "name": "nasa",
+      "replacements": {
+        "C2N2": {
+          "kind": "nasa9",
+          "coefficients": [
+            873739.6388,
+            -4127.035684400001,
+            3.128508952,
+            -0.0007875084261999999,
+            2.0340014529999996e-07,
+            -4.4201494909999993e-11,
+            3.067538949e-15,
+            -223479.74916332224,
+            -72.722570358
+          ],
+          "native_energy_removal_D0_over_R_K": 247383.0095820439,
+          "selected_energy_insertion_D0_over_R_K": 247340.09814536612
+        }
+      }
+    }
+  ],
+  "selected_variants": [],
+  "source_records": {
+    "c2n2": {
+      "slug": "c2n2",
+      "molecule": "C2N2",
+      "species": "C2N2",
+      "composition": {
+        "C": 2,
+        "N": 2
+      },
+      "janaf_fixed_reference_h0_J_mol": {
+        "C2N2": 296446,
+        "C": 710134,
+        "N": 466486
+      },
+      "same_version_hf0_J_mol": {
+        "C2N2": 307550,
+        "C": 711370,
+        "N": 470655
+      },
+      "janaf_D0_J_mol": 2056794.0,
+      "atct_D0_J_mol": 2056500.0,
+      "delta_D0_J_mol": -294.0,
+      "original_coefficients": [
+        248283.4548710501,
+        -2.845616943108439,
+        -27.762611594288956,
+        0.0011282589272390564,
+        -6.727805487163289e-08
+      ],
+      "formal_fit_intercept_Ra_J_mol": 2064343.504231283,
+      "nasa_same_identity": true,
+      "nasa_h0_J_mol": {
+        "C2N2": 296384.847,
+        "C": 710144.105,
+        "N": 466482.572
+      },
+      "nasa_D0_J_mol": 2056868.5069999998,
+      "nasa_records": {
+        "C2N2": {
+          "composition": {
+            "C": 2,
+            "N": 2
+          },
+          "reference": "Gurvich,1979 pt1 p195 pt2 p220.",
+          "source_line_1based": 3167,
+          "intervals": [
+            {
+              "bounds_K": [
+                300.0,
+                1000.0
+              ],
+              "coefficients": [
+                108240.4484,
+                -1928.137871,
+                15.53891898,
+                -0.01821159329,
+                2.77884084e-05,
+                -1.899434373e-08,
+                4.94967772e-12,
+                44490.9759,
+                -60.90964741
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                793442.372,
+                -3997.37627,
+                13.1449743,
+                -0.0008747782,
+                2.059156733e-07,
+                -2.200469389e-11,
+                9.97448577e-16,
+                58636.323,
+                -54.73201251
+              ]
+            }
+          ],
+          "source_name": "C2N2",
+          "hf298_J_mol": 309100.0,
+          "h298_minus_h0_J_mol": 12715.153,
+          "natural_mass_u": 52.0348
+        },
+        "C": {
+          "composition": {
+            "C": 1
+          },
+          "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+          "source_line_1based": 1936,
+          "intervals": [
+            {
+              "bounds_K": [
+                300.0,
+                1000.0
+              ],
+              "coefficients": [
+                649.503147,
+                -0.964901086,
+                2.504675479,
+                -1.281448025e-05,
+                1.980133654e-08,
+                -1.606144025e-11,
+                5.314483411e-15,
+                85457.6311,
+                4.747924288
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                -128913.6472,
+                171.9528572,
+                2.646044387,
+                -0.000335306895,
+                1.74209274e-07,
+                -2.902817829e-11,
+                1.642182385e-15,
+                84105.9785,
+                4.130047418
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                443252801.0,
+                -288601.8412,
+                77.3710832,
+                -0.00971528189,
+                6.64959533e-07,
+                -2.230078776e-11,
+                2.899388702e-16,
+                2355273.444,
+                -640.512316
+              ]
+            }
+          ],
+          "source_name": "C",
+          "hf298_J_mol": 716680.0,
+          "h298_minus_h0_J_mol": 6535.895,
+          "natural_mass_u": 12.0107
+        },
+        "N": {
+          "composition": {
+            "N": 1
+          },
+          "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+          "source_line_1based": 7051,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                0.0,
+                0.0,
+                2.5,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                56104.6378,
+                4.193905036
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                88765.0138,
+                -107.12315,
+                2.362188287,
+                0.0002916720081,
+                -1.7295151e-07,
+                4.01265788e-11,
+                -2.677227571e-15,
+                56973.5133,
+                4.865231506
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                547518105.0,
+                -310757.498,
+                69.1678274,
+                -0.00684798813,
+                3.8275724e-07,
+                -1.098367709e-11,
+                1.277986024e-16,
+                2550585.618,
+                -584.8769753
+              ]
+            }
+          ],
+          "source_name": "N",
+          "hf298_J_mol": 472680.0,
+          "h298_minus_h0_J_mol": 6197.428,
+          "natural_mass_u": 14.0067
+        }
+      },
+      "quoted_ATcT_marginal_uncertainties": {
+        "C2N2": "\u00b1 0.31",
+        "C": "\u00b1 0.038",
+        "N": "\u00b1 0.021"
+      },
+      "source_sha256": {
+        "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+        "tests/data/validation/c2n2_source_review/20261106/inputs.json": "4b668464be091d92867af4826ff1b9fd47b0f1cfca6643efb2afae25711b86fe",
+        "tests/data/validation/c2n2_source_review/20261106/comparison.json": "19bd84596738f213bc8e1e786cd520ede8602b7a8df9dbd658a96c836fef5a52",
+        "tests/data/validation/c2n2_source_review/20261106/sources.json": "19c02e98619ceaab004a873eb4b7348ad6edee6fc825a3edd4da96603f83ddb7",
+        "tests/data/validation/c2n2_source_review/20261106/nasa-selected.txt": "0681a580199b0b17e3ed97793a4391a7b47b999ca6793364412b78da4566c17d",
+        "tests/data/validation/c2n2_source_review/20261106/C-134.txt": "79718e230e0e58fd701dc372a5fd95c960a6d33798f2c5288302cb8eeeae86aa",
+        "tests/data/validation/c2n2_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+        "tests/data/validation/c2n2_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      }
+    }
+  },
+  "source_sha256": {
+    "mceg/reviews/pending_nitrogen_inputs.py": "a3f19aec5e64b281ca7e1ddb58e8c9ef7db49fe773f5e7b423866935aadf79d3",
+    "mceg/reviews/pending_thermal_gap_inputs.py": "3142bd58fbd5ab85cc38cbf0809533acd761012b6bfe63fcfc9594a1405a6d5d",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/c2n2_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/c2n2_source_review/20261106/C-134.txt": "79718e230e0e58fd701dc372a5fd95c960a6d33798f2c5288302cb8eeeae86aa",
+    "tests/data/validation/c2n2_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/c2n2_source_review/20261106/comparison.json": "19bd84596738f213bc8e1e786cd520ede8602b7a8df9dbd658a96c836fef5a52",
+    "tests/data/validation/c2n2_source_review/20261106/inputs.json": "4b668464be091d92867af4826ff1b9fd47b0f1cfca6643efb2afae25711b86fe",
+    "tests/data/validation/c2n2_source_review/20261106/nasa-selected.txt": "0681a580199b0b17e3ed97793a4391a7b47b999ca6793364412b78da4566c17d",
+    "tests/data/validation/c2n2_source_review/20261106/sources.json": "19c02e98619ceaab004a873eb4b7348ad6edee6fc825a3edd4da96603f83ddb7"
+  },
+  "scope": "The retained candidate changes only balanced physical ATcT-minus-JANAF D0. NASA is a separate thermal/gauge/fit-residual control at the same ATcT energy; native NASA energy is removed with its original R before SI-R insertion. No second ZPE. Solver agreement cannot establish either thermal model's physical superiority.",
+  "limitations": "No invented hot state sums, low-temperature partition extrapolation, independent-quadrature ATcT covariance or full physical uncertainty. The source gap remains documented after the finite substitution calculation.",
+  "production_change": "none"
+}

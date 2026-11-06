@@ -1,0 +1,49 @@
+{
+  "molecule": "C2N2",
+  "decision": "Retain the cyanogen function for this source review; resolve the high-temperature thermal discrepancy before proposing a replacement.",
+  "follow_up": "Compare the JANAF and Gurvich bending-mode frequencies, degeneracies and anharmonic corrections, then evaluate a thermal-only control at a common physical D0. The small ATcT energy refinement can be included as a separate control. Missing ancestral full text is not a gate for this bounded source review.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-134.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Gurvich,1979 pt1 p195 pt2 p220. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "inspection": "Versioned official numerical rows inspected and archived with same-version neutral atoms.",
+      "scope": "Ground energy cycle only; no full thermal source or reaction covariance is inferred."
+    },
+    {
+      "id": "reference0",
+      "title": "Cyanogen thermodynamic functions (1956)",
+      "doi": "10.1063/1.1700841",
+      "url": "https://doi.org/10.1063/1.1700841",
+      "inspection": "Primary publication metadata and 1000\u20134500 K equilibrium scope inspected; full numerical ancestry not reconstructed."
+    },
+    {
+      "id": "reference1",
+      "title": "Statistical thermodynamic functions of cyanogen and cyanopolyynes (1969)",
+      "doi": "10.1021/je60041a030",
+      "url": "https://doi.org/10.1021/je60041a030",
+      "inspection": "Primary publisher title and thermodynamic species scope inspected; full text not acquired."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}
