@@ -1,0 +1,35 @@
+{
+  "molecule": "HCP",
+  "species_id": "C1H1P1",
+  "composition": {
+    "C": 1,
+    "H": 1,
+    "P": 1
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "HCP": "C-056.txt",
+    "C": "C-003.txt",
+    "H": "H-001.txt",
+    "P": "P-008.txt"
+  },
+  "nasa9": {},
+  "nasa_comparison_status": "unavailable: no HCP neutral record in pinned official NASA thermo.inp; no isomer or surrogate substituted.",
+  "decision": "Retain production for this source review; prioritize an HCP energy candidate spanning the CCCBDB-adjusted and independent high-level theoretical anchors, then a separate 2024 line-list thermal candidate within its stated 3000 K limit.",
+  "follow_ups": [
+    "Evaluate HCP energy-only alternatives using the explicit common atomic reference and a finite fixed-network substitution; HCP holds nearly all phosphorus at some current endpoints, so do not postpone on abundance grounds.",
+    "Obtain the 2024 rovibrational states or Q/moment data and main paper (DOI 10.1021/acs.jpca.4c01823); the public SI contains PES/DMS routines only. Check nuclear-spin normalization, high-energy completeness and the 3000 K limit before a thermal candidate.",
+    "Resolve an updated balanced atomization-energy recommendation from the independent 2001 calculation and the CCCBDB CP-based correction; distinguish quoted Hf0, Hf298 and physical atomization D0."
+  ],
+  "limitations": [
+    "No NASA HCP record exists in the inspected official source; the frozen 93-species numerical screen is not extended with a fabricated comparison.",
+    "The CCCBDB energy is adjusted JANAF using modern CP thermochemistry, not an independent HCP experiment; the 2001 theoretical anchor uses a stated atomic reference and has its own uncertainty.",
+    "The 2024 primary abstract and public SI were inspected; full main text, 1.21-million-state list and numerical Q were not obtained. No line-list accuracy claim is extended to 4000 K.",
+    "No new equilibrium substitution or complete physical uncertainty estimate."
+  ]
+}

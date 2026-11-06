@@ -1,0 +1,38 @@
+{
+  "doi": "10.1063/1.1547435",
+  "source_url": "https://istina.msu.ru/media/publications/article/2c2/57d/1281832/2003_DOR_IOR_JPCRD_Three_molecules.pdf",
+  "raw_pdf_sha256": "2784a8d789e68feb16f44e6396df391bf4320d0847dedd7901a13c876f7c0748",
+  "table": "Table 1, pp.884-885",
+  "standard_pressure_Pa": 100000,
+  "hf298_J_mol": -134300,
+  "h298_minus_h0_J_mol": 11866,
+  "hf0_kJ_mol": -124.572,
+  "nodes": {
+    "1500": {
+      "Cp_J_mol_K": 97.984,
+      "S_J_mol_K": 395.432,
+      "heat_content_J_mol": 102579
+    },
+    "2000": {
+      "Cp_J_mol_K": 100.471,
+      "S_J_mol_K": 424.008,
+      "heat_content_J_mol": 152274
+    },
+    "3000": {
+      "Cp_J_mol_K": 102.362,
+      "S_J_mol_K": 465.177,
+      "heat_content_J_mol": 253872
+    },
+    "4000": {
+      "Cp_J_mol_K": 103.044,
+      "S_J_mol_K": 494.732,
+      "heat_content_J_mol": 356622
+    }
+  },
+  "source_uncertainty_examples": {
+    "hf298_kJ_mol": 0.5,
+    "Cp_at_3000_J_mol_K": 3,
+    "S_at_3000_J_mol_K": 3
+  },
+  "scope": "Factual selected numerical transcription only; coupled torsion/effective reduced inertia evaluation, excited states above30000cm-1 omitted; full primary paper retained outside repository."
+}

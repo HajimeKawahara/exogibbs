@@ -1,0 +1,14 @@
+{
+  "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+  "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+  "inspection": "Original printed page image inspected; selected factual numerical/identity transcription only.",
+  "printed_page": 677,
+  "connectivity": "cyclic O(CH2CH2), ethylene oxide",
+  "point_group": "C2v",
+  "rotational_symmetry": 2,
+  "ground_electronic_weight": 1,
+  "evaluation_date": "1965-09",
+  "hf298_kJ_mol": -52.635,
+  "listed_uncertainty_kJ_mol": 0.63,
+  "notes": "Gas cyclic molecule; not acetaldehyde, vinyl alcohol, or a condensed phase."
+}
