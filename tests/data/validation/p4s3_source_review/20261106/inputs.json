@@ -1,0 +1,34 @@
+{
+  "molecule": "P4S3",
+  "species_id": "P4S3",
+  "composition": {
+    "P": 4,
+    "S": 3
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "P4S3": "P-017.txt",
+    "P": "P-008.txt",
+    "S": "S-006.txt"
+  },
+  "nasa9": {},
+  "energy_alignment": "H298",
+  "nasa_comparison_status": "unavailable: no matching neutral P4S3 gas record in the inspected official NASA source; no condensed or other P4Sn surrogate.",
+  "decision": "Retain for this source review, then evaluate a 2019 cycle-based H298 energy candidate separately from a reconstructed cage thermal model. JANAF explicitly estimates all gas data and has no zero-K molecular anchor.",
+  "follow_ups": [
+    "Construct a fixed-network H298-energy sensitivity using the 2019 preferred cycle anchor -94.5 kJ/mol and transparently separate the less-converged atomization result and cycle spread; no new thermal claim is needed to run that sensitivity.",
+    "Obtain the complete gas-cage frequency/geometry inputs and normalize its rotational symmetry, nuclear-spin convention and electronic states before a thermal candidate; do not extrapolate the old constant Cp to zero kelvin.",
+    "Keep gas-phase and condensed formation enthalpies and white-P/rhombic-S elemental references explicit; do not convert an old red-phosphorus combustion number directly into the gas source."
+  ],
+  "limitations": [
+    "No NASA molecular comparator or JANAF molecular zero-K row exists; H298 alignment does not define physical D0.",
+    "The 2019 preferred cycle is not its separately reported atomization result; the latter TAE uncertainty is not the preferred-cycle confidence interval.",
+    "The old gas thermal function is an estimate with constant Cp, without a resolved isomer or electronic model; no complete high-temperature uncertainty is known.",
+    "No new equilibrium solve, production change or validated atmospheric abundance accuracy."
+  ]
+}

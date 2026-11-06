@@ -1,0 +1,59 @@
+{
+  "janaf_printed": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Phosphorus.pdf",
+    "page": 1833,
+    "evaluation": "December 1960",
+    "access": "Printed page visually inspected.",
+    "identity": "Neutral P4S3 ideal gas; legacy table specifies stoichiometry/phase but no structural-isomer model.",
+    "Hf298_J_mol": -151042.0,
+    "S298_J_mol_K": 319.265,
+    "constant_Cp_J_mol_K": 154.808,
+    "zero_K_molecular_anchor": null,
+    "construction": "Both formation enthalpy and heat capacity/entropy are explicitly estimated."
+  },
+  "kroeger_karton2019": {
+    "doi": "10.1007/s11224-019-01352-7",
+    "url": "https://api.research-repository.uwa.edu.au/ws/portalfiles/portal/108720002/ak122_SC_2019.pdf",
+    "access": "Complete accepted author manuscript inspected, Sections 3.2/3.3 and Tables 1/3/5.",
+    "pdf_sha256": "a13e3501182e554d310ecccacb27867d3a8f3701a276f75fb518bfffaf998bae",
+    "identity": "Isolated P4S3 molecular cage; no condensed lattice enthalpy.",
+    "preferred_Hf298_J_mol": -94500.0,
+    "preferred_cycle": "P4S3 + 0.5 S2 -> 2 P2S2, using W4 fragment anchors and W3lite-F12 reaction energy.",
+    "preferred_cycle_methods_Hf298_J_mol": [
+      -93800.0,
+      -95300.0,
+      -94500.0
+    ],
+    "cycles_3_to_9_Hf298_J_mol": [
+      -96700.0,
+      -97200.0,
+      -95800.0,
+      -92400.0,
+      -94500.0,
+      -94900.0,
+      -95500.0
+    ],
+    "atomization_route_Hf298_J_mol": -103900.0,
+    "atomization_route_TAE0_J_mol": 2182400.0,
+    "atomization_route_TAE0_uncertainty_J_mol": 6400.0,
+    "atomic_Hf0_J_mol": {
+      "P": 316060.0,
+      "S": 274930.0
+    },
+    "thermal_construction": "B3LYP-D3/Def2-TZVPP geometry and harmonic frequencies; zero-point energies scaled by 0.99. Detailed frequency/geometry supplement not acquired in this review.",
+    "caution": "Atomization route is explicitly less converged; its quoted uncertainty is not a preferred-cycle error bar. Cycle spread is method sensitivity, not a confidence interval."
+  },
+  "elemental_reference": {
+    "url": "https://cccbdb.nist.gov/refstatex.asp",
+    "access": "Official CODATA-based reference table inspected.",
+    "P": {
+      "phase": "white crystalline phosphorus",
+      "H298_minus_H0_J_mol": 5360.0
+    },
+    "S": {
+      "phase": "rhombic crystalline sulfur",
+      "H298_minus_H0_J_mol": 4412.0
+    },
+    "compatibility": "The 2019 paper uses CODATA elemental heat contents; the selected JANAF atomic tables imply the same phase-specific increments. The modern atomic Hf values differ and must not be silently mixed."
+  }
+}
