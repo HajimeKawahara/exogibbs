@@ -150,6 +150,8 @@ HCN differences with optional MCEG tooling.
    curated_ch2_adoption
 
    kh_source_review
+   k2_source_review
+   k2_candidate
    kh_candidate
    n2_source_review
    n2o_source_review
