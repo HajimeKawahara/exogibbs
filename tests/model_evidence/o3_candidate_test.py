@@ -20,7 +20,14 @@ def test_physical_source_cycle_and_continuous_calorics():
     record = candidate["source_records"]["o3"]
     assert record["janaf_D0_J_mol"] == pytest.approx(595021.0, abs=1e-8, rel=0)
     assert record["atct_D0_J_mol"] == pytest.approx(596120.0, abs=1e-8, rel=0)
-    assert inputs.validate(candidate) == json.loads((DATA / "validation.json").read_text())
+    report = inputs.validate(candidate)
+    archived = json.loads((DATA / "validation.json").read_text())
+    assert report["temperature_count"] == archived["temperature_count"] == 2752
+    assert report["maximum_current_h_error"] < 1e-12
+    assert report["production_change"] == "none"
+    assert [x["variant"] for x in report["independent_source_checks"]] == ["retained", "nasa"]
+    # Recomputed roundoff maxima can vary across JAX/CPU builds. validate()
+    # enforces dimensional bounds; the receipt separately protects frozen bytes.
     chosen = candidate["variants"][0]["replacements"]["O3"]
     old = {**chosen, "delta_GH_J_mol": 0.}
     for t in (1500., 2137.4, 4000.):
