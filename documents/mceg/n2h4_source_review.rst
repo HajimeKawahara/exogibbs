@@ -71,7 +71,7 @@ These finite hot hydrogen-rich results do not bound cooler or oxidizing atmosphe
 Decision, access needs and MCEG
 -------------------------------
 
-A retained-thermal ATcT candidate is directly calculable. For a full thermal replacement, reconcile the evaluated torsional/inversion models and density of accessible states before selecting NASA or constructing a new function; then run fixed-network substitutions. DOI10.1021/je 000301o is useful optional ancestry, not a prerequisite for merging this numerical source review.
+A retained-thermal ATcT candidate is directly calculable. For a full thermal replacement, reconcile the evaluated torsional/inversion models and density of accessible states before selecting NASA or constructing a new function; then run fixed-network substitutions. DOI 10.1021/je000301o is useful optional ancestry, not a prerequisite for merging this numerical source review.
 
 This review changes neither curated data nor runtime behavior. It is independently mergeable under the established source-review standard: source attribution, normalized numerical comparisons and the bounded decision are supported; complete physical accuracy and complete historical ancestry remain unknown. Missing historical full texts are recorded in MCEG and are not a mandatory hold on this scoped review. Candidate construction and fixed-network substitution, if recommended, are a separate follow-up.
 
