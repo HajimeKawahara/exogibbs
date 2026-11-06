@@ -1,0 +1,83 @@
+{
+  "molecule": "trans-HNO2",
+  "species_id": "H1N1O2trans",
+  "composition": {
+    "H": 1,
+    "N": 1,
+    "O": 2
+  },
+  "cas": "7782-77-6",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "tables": {
+    "trans-HNO2": "H-029.txt",
+    "H": "H-001.txt",
+    "N": "N-002.txt",
+    "O": "O-001.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "trans-HNO2": {
+      "hf0_kJ_mol": -72.92,
+      "hf298_kJ_mol": -79.063,
+      "uncertainty_95pct_kJ_mol": 0.075,
+      "atct_id": "7782-77-6*1",
+      "preferred_formula": "HONO  (g, trans)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=184"
+    },
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "uncertainty_95pct_kJ_mol": 0.0,
+      "atct_id": "12385-13-6*0",
+      "preferred_formula": "H  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0",
+      "preferred_formula": "N  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    },
+    "O": {
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "atct_id": "17778-80-2*0",
+      "preferred_formula": "O  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    }
+  },
+  "inherited_source": "Chase 1998 JANAF (FastChem fit) [U]",
+  "fastchem_record": {
+    "species": "H1N1O2trans",
+    "record_name": "Nitrous_Acid_Trans",
+    "source_file": "FastChem4/logK/logK.dat",
+    "record_line_number": 919,
+    "coefficient_line_number": 920,
+    "record_line": "H1N1O2trans Nitrous_Acid_Trans : H 1 N 1 O 2 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+    "coefficient_line": "   1.5153322969671874e+05  -4.0641183913438681e+00  -1.4954359973058217e+01   1.2855230929702810e-03  -6.9886058691388095e-08 ",
+    "coefficients": [
+      151533.22969671874,
+      -4.064118391343868,
+      -14.954359973058217,
+      0.001285523092970281,
+      -6.98860586913881e-08
+    ],
+    "selected_temperature_segment_index": null,
+    "selected_temperature_segment_upper_bound": null,
+    "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+    "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+    "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+  },
+  "current_model": "curated-tio2-v1",
+  "nasa_record_key": "HNO2",
+  "nasa_same_identity": false,
+  "exact_atct_id": "7782-77-6*1"
+}
