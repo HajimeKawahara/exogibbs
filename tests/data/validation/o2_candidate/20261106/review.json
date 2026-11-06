@@ -1,0 +1,27 @@
+{
+  "scope": "2O(g)->O2(g),1bar,1500-4000K; evaluated2025natural-isotope Cp integrated to H/S/G with ATcT1.228 physical energy, retaining literal fit residual relative to NASA thermal proxies; fixed curated-ch2-v1 networks; no adoption.",
+  "source_claim": "A continuous evaluated molecular model reproduces the inspected2025 natural-O2 calorics within the declared source precision and uses the balanced ATcT energy once.",
+  "source_summary": "All2501 source rows are pinned;251 Cp fit points and2250 withheld Cp points. Maximum G/H/S/Cp residuals3.895J,1.520J,0.001208J/K,0.005648J/K are below7.9% of published expandedH/S/Cp uncertainties. Source Cp quadrature independently closes rounded H/S within0.936J and0.001017J/K.",
+  "decision": "Prefer the evaluated2025 natural-isotope thermal construction plus same-version ATcT central energy for a separately authorized bounded O2 adoption, retaining the declared NASA-proxy fit residual and explicit uncertainty limits.",
+  "inspection_scope": "Full accepted primary manuscript and official numerical supplements inspected; numeric-source fidelity and numerical equilibrium verification are separate from complete unbound-state/reaction/atmospheric accuracy.",
+  "continuous_reason": "Physical deltaD0=+107J gives energy-only G/H−107J with unchanged S/Cp. The primary adds only2025-minus-NASA molecular thermals, preserving the NASA-proxy residual and atomic gauge. Both potentials pass2752-node scalar/JAX GHSCp including251offgrid nodes. No extra statistical, mass or zero-point factor.",
+  "finite_reason": "150fresh endpoints+12tighter+10path+4energy-only selected controls all converge. Four independentFastChem runs agreewithin1.38e-8dex. O2 ratio1.00280614–1.00823092; maximum oxygen allocation0.00489407903%→0.00492358498%. This is actual solved response oncurated-ch2-v1.",
+  "gibbs_reason": "Only14of75conditions pernetwork have both corrected same-model exchange signs above the displayed scale;61are unresolved. This diagnostic is not a rigorous bound or cross-model physical ranking.",
+  "physical_reason": "Unbound-state uncertainty, complete correlated reaction covariance, isotope-network accuracy and atmospheric observations/condensation/photochemistry remain unestablished.",
+  "assumptions": [
+    "ATcT1.228 ground O and reference O2 are balanced together;physicalD0 is not the empiricalfitintercept and receives no addedZPE.",
+    "The2025 natural-isotope table includes statistical weights and natural translation correction;no extra spin,symmetry,mass or mixing term.",
+    "The current full fit residual is defined relative to NASA molecular and atomic thermal proxies and physicalJANAFD0;only molecularthermal and physicaldeltaD0 change."
+  ],
+  "followup": "Consider a separately authorized production O2 update with the tested compact evaluated potential, explicit residual convention and finite regression verification.",
+  "required_inputs": [
+    "No new full paper is necessary for the bounded tested model.",
+    "Preserve unbound-state, covariance and atmospheric limits; do not claim full physical validation."
+  ],
+  "limitations": [
+    "Sourcefit weighting is numerical; source uncertainties are not independent covariance.",
+    "The proxy-relative candidate differs from the earlier direct-sourcepoint diagnostic; neither is a literal JANAF molecular-table interpolation.",
+    "61of75same-modelGibbs comparisons pernetwork are below the diagnostic scale.",
+    "Runtime and original source packets remain unchanged."
+  ]
+}
