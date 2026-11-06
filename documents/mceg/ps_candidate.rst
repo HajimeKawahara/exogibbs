@@ -1,5 +1,5 @@
 PS retained-energy POPS candidate and finite substitution
-========================================================
+=========================================================
 
 A POPS thermal update is a scientifically defensible **optional, scoped adoption**
 for 1500--4000 K. It includes resolved ground and excited levels and produces a
