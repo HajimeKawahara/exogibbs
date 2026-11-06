@@ -138,7 +138,7 @@ evidence:
   - source: mceg/reviews/pending_candidate.py
     sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
   - source: tests/model_evidence/p4s3_candidate_test.py
-    sha256: e08b326a3caebe2b22de969d54a2bd9fb6f03f7ce960acca206baa95e3ffd355
+    sha256: 560ae82a16a43657b974aca23525b46d8c360c1eaf1c30d4ebe2e2e8bb309042
   provenance:
     role: primary
     location: documents/mceg/p4s3_candidate.rst
@@ -183,7 +183,7 @@ evidence:
   - source: mceg/reviews/pending_equilibrium_impact.py
     sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
   - source: tests/model_evidence/p4s3_candidate_test.py
-    sha256: e08b326a3caebe2b22de969d54a2bd9fb6f03f7ce960acca206baa95e3ffd355
+    sha256: 560ae82a16a43657b974aca23525b46d8c360c1eaf1c30d4ebe2e2e8bb309042
   provenance:
     role: primary
     location: documents/mceg/p4s3_candidate.rst
@@ -329,7 +329,7 @@ subjects:
     tests/data/validation/p4s3_source_review/20261106/inputs.json: 20d6e65d05d5d9c3306b4a6bbf07ec6691e8747f02866ec4b76e0ca0f4ad84df
     tests/data/validation/p4s3_source_review/20261106/literature.json: bc672678611666038a9d1e8a056711ea8f1d9e408022cdc25ad405e1f1e3e5f9
     tests/data/validation/p4s3_source_review/20261106/sources.json: 1922d6e744835730e2b58482c39336824df4e82ad5a9a0b44cc352e686f9721c
-    tests/model_evidence/p4s3_candidate_test.py: e08b326a3caebe2b22de969d54a2bd9fb6f03f7ce960acca206baa95e3ffd355
+    tests/model_evidence/p4s3_candidate_test.py: 560ae82a16a43657b974aca23525b46d8c360c1eaf1c30d4ebe2e2e8bb309042
 contexts:
 - id: candidate_evaluation
   scope: Neutral P4S3 ideal gas; the old estimated table does not resolve cage isomers and has no molecular
