@@ -1,0 +1,40 @@
+{
+  "created_utc": "2026-11-06T07:28:54.897717+00:00",
+  "result": "passed",
+  "direct_callable_identity": true,
+  "new_equilibrium_solves": 0,
+  "networks": [
+    {
+      "ions": true,
+      "species": 537,
+      "dataset": "curated-gas-v2",
+      "temperature_K": [
+        1500.0,
+        1735.0,
+        2517.0,
+        3973.0,
+        4000.0
+      ],
+      "identical_metadata_matrix_budget_potential": true
+    },
+    {
+      "ions": false,
+      "species": 421,
+      "dataset": "curated-gas-v2",
+      "temperature_K": [
+        1500.0,
+        1735.0,
+        2517.0,
+        3973.0,
+        4000.0
+      ],
+      "identical_metadata_matrix_budget_potential": true
+    }
+  ],
+  "source_sha256": {
+    "src/exogibbs/presets/curated.py": "8ef26f1c4bdb4e19c30fc8dc6a092580ccc94a0c34e2478df2788f18d55b15d6",
+    "src/exogibbs/presets/curated_v2.py": "d17b0393cb94596082c650abe90d9bdf7c46a4185a23c48ab1e16f76e7817f66",
+    "src/exogibbs/data/curated/gas_v2.json": "8096a1dc9c0f6e15e222b7c6c9dc6d5693a1a6904913affb463a144034616261"
+  },
+  "method": "Direct imported curated.chemsetup is curated_v2.chemsetup plus exact metadata, matrix, budget and five-temperature potential comparisons; no catalog lookup or new equilibrium solve."
+}

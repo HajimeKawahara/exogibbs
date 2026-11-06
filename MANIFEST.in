@@ -53,6 +53,7 @@ include src/exogibbs/data/nasa9/NOTICE.txt
 
 # Versioned, reviewed gas thermochemistry
 include src/exogibbs/data/curated/gas_v1.json
+include src/exogibbs/data/curated/gas_v2.json
 include src/exogibbs/data/curated/c2h_v1.json
 include src/exogibbs/data/curated/tio_v1.json
 include src/exogibbs/data/curated/co2_v1.json

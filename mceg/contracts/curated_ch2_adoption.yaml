@@ -5,7 +5,7 @@ model:
   description: CH2 energy-only adoption on curated-c2h2-v1. G/H increase by 4948 J/mol; S/Cp and other species potentials
     remain unchanged. Thermal candidates are not adopted. Numerical verification does not establish complete physical
     accuracy.
-  implementation: &id001
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701
     entry_points:
@@ -163,12 +163,12 @@ evidence:
     and potentials at five temperatures. The archived fresh named-factory solves validate this same callable; no
     additional equilibrium solves are claimed.
   sources:
-  - src/exogibbs/presets/curated.py
+  - tests/data/validation/curated_gas_v2_adoption/20261106/source/src/exogibbs/presets/curated.py
   - src/exogibbs/presets/curated_ch2.py
   - src/exogibbs/data/curated/ch2_v1.json
-  - mceg/build_catalog.py
-  - tests/unittests/provenance_test.py
-  - tests/unittests/presets/curated_test.py
+  - tests/data/validation/curated_gas_v2_adoption/20261106/source/mceg/build_catalog.py
+  - tests/data/validation/curated_gas_v2_adoption/20261106/source/tests/unittests/provenance_test.py
+  - tests/data/validation/curated_gas_v2_adoption/20261106/source/tests/unittests/presets/curated_test.py
   - tests/data/validation/curated_ch2_adoption/20261106/default_validation.json
   scope: curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with
     unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories
@@ -176,24 +176,28 @@ evidence:
   subject: curated_ch2_production_20261106
   context: production_gas_domain
   artifacts:
-  - source: src/exogibbs/presets/curated.py
+  - source: tests/data/validation/curated_gas_v2_adoption/20261106/source/src/exogibbs/presets/curated.py
     sha256: 0785ab61c45116b73d645d1e4842b9c3325ed4b67db458ab451a59e5855c5c99
   - source: src/exogibbs/presets/curated_ch2.py
     sha256: 89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701
   - source: src/exogibbs/data/curated/ch2_v1.json
     sha256: a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536
-  - source: mceg/build_catalog.py
+  - source: tests/data/validation/curated_gas_v2_adoption/20261106/source/mceg/build_catalog.py
     sha256: 856a9bdf61bc7ea0ecdd857b7c939b151efb79e9d98b676294e5cc2f1f4bc20c
-  - source: tests/unittests/provenance_test.py
+  - source: tests/data/validation/curated_gas_v2_adoption/20261106/source/tests/unittests/provenance_test.py
     sha256: 48cc70543067c3f4149fa6b6a3eb2154cb0a8476210a0ad8b227e4c54aabea1f
-  - source: tests/unittests/presets/curated_test.py
+  - source: tests/data/validation/curated_gas_v2_adoption/20261106/source/tests/unittests/presets/curated_test.py
     sha256: ed50d7f422c70a06332a728fd9a64a5acb9cca40e236c403976b3a7199747ab6
   - source: tests/data/validation/curated_ch2_adoption/20261106/default_validation.json
     sha256: 1031114ddb895c081b01e0ba3e38c87bcded2f194a3649cb9f1f8ecc32f23fa4
   result: passed
 subjects:
 - id: curated_ch2_production_20261106
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701
+    entry_points:
+    - exogibbs.presets.curated_ch2.chemsetup
   selected_files:
     benchmarks/__init__.py: b1c18fc68440927cbfd4f278276efe1484336ceed8fd6012ff362494e695c0ec
     benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
@@ -318,10 +322,10 @@ subjects:
     tests/data/validation/curated_tio2_adoption/20261106/receipt.json: 35078166bd7a19aa891ee2f6d9b872cb4cee454d2f429cbdedfde79a921c993a
     tests/model_evidence/curated_ch2_adoption_test.py: ca56967df1c7b7c35618a6a3fdce2d62f0caa8842354bc85584f3c59b58ae80f
     tests/unittests/presets/curated_ch2_test.py: fd6a91b7b5bb2fba8cc9231e87377c2be83addb44e90ca687419e0460b0f3f81
-    src/exogibbs/presets/curated.py: 0785ab61c45116b73d645d1e4842b9c3325ed4b67db458ab451a59e5855c5c99
-    mceg/build_catalog.py: 856a9bdf61bc7ea0ecdd857b7c939b151efb79e9d98b676294e5cc2f1f4bc20c
-    tests/unittests/provenance_test.py: 48cc70543067c3f4149fa6b6a3eb2154cb0a8476210a0ad8b227e4c54aabea1f
-    tests/unittests/presets/curated_test.py: ed50d7f422c70a06332a728fd9a64a5acb9cca40e236c403976b3a7199747ab6
+    tests/data/validation/curated_gas_v2_adoption/20261106/source/src/exogibbs/presets/curated.py: 0785ab61c45116b73d645d1e4842b9c3325ed4b67db458ab451a59e5855c5c99
+    tests/data/validation/curated_gas_v2_adoption/20261106/source/mceg/build_catalog.py: 856a9bdf61bc7ea0ecdd857b7c939b151efb79e9d98b676294e5cc2f1f4bc20c
+    tests/data/validation/curated_gas_v2_adoption/20261106/source/tests/unittests/provenance_test.py: 48cc70543067c3f4149fa6b6a3eb2154cb0a8476210a0ad8b227e4c54aabea1f
+    tests/data/validation/curated_gas_v2_adoption/20261106/source/tests/unittests/presets/curated_test.py: ed50d7f422c70a06332a728fd9a64a5acb9cca40e236c403976b3a7199747ab6
     tests/data/validation/curated_ch2_adoption/20261106/default_validation.json: 1031114ddb895c081b01e0ba3e38c87bcded2f194a3649cb9f1f8ecc32f23fa4
 contexts:
 - id: production_gas_domain

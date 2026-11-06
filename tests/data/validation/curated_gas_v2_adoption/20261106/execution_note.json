@@ -1,0 +1,68 @@
+{
+  "reason": "Runtime docstring changed while initial process was in setup/dense checks. Numerical formulas and data unchanged; input pin captured final docstring, but import timing is ambiguous. Root requested a fresh process on final bytes. Keep this superseded execution separate from final production evidence.",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "joint_path_solves": 10,
+  "independent_fastchem_runs": 2,
+  "receipt_sha256": "0f881b7e5b608504b9029516094d41f1e13c764fba5f51524d2ca5b30548f941",
+  "result": "passed_superseded_for_execution_provenance",
+  "initial_receipt": "initial_execution_receipt.json",
+  "final_receipt": "receipt.json",
+  "counts_are_separate": true,
+  "array_comparison": {
+    "ions": {
+      "all_arrays_bitwise_equal": true,
+      "array_sha256": {
+        "ln_n": "479e4342e47e60a6d6f0932d6e550da6d8760abbc09931afe436a3ff401ca2d3",
+        "h": "286d65b89ba76a459d1d0381747365a1465fcf237e6b1cbdc48622c11a2cd8b9",
+        "species": "29b5993088893642e1cc12806f9844c21378dc50f91f9bf78a214dd06f19efea",
+        "elements": "44337e64f683cef68aa73873121d4a313abfc7d550f246602c560de9d5e5c7bb",
+        "formula_matrix": "fdcbe283ed2cb7c3297249e3eaaa4c06bf071b070c83c21efa113fa8f4c53611",
+        "budget": "0ebb5a297bd85ee771ede520c45dcbac16e164f04a30b02e0f6bd400345152af",
+        "temperature_K": "42a2587b7ae8e42e25292a8fae3f21e1548e59ad4572bb58269c32aad88032b1",
+        "pressure_bar": "c9ffb75cbc5b788b4aec21eab25d7c63b7198b721e0e60029eddb8c86f2050f9",
+        "C_over_O": "b91d5e39d4f427c26d1b04d7996d217bb4705cf0f7411632a5236f118118f92b",
+        "converged": "d67717c08947c9234faf18674a322d0ef4328bb90d6b2ef54933fd2cafb08d7c",
+        "tight_case_indices": "012643b05dc1fedfe0e762da47b77c77260cabebbabdac818cda778c8ac0d3df",
+        "tight_reference_ln_n": "86e3bea4ea3f19f3ee92ec36020c0e86978fe933ff98cd29edf8ac70667b93cb",
+        "path_case_index": "12718c7c46ba1149f7b0804516933e90db5cebc899232b898e210034eabb0e6a",
+        "lambda_values": "b775cb658293f2d9056d63a2bb64185bb77284c3a55650287f38ab52c8758828",
+        "lambda_ln_n": "be843bd9d802ac3be1c922215a5c2a80076210c335b84b414133ce156f5ed9e2",
+        "delta_g_raw": "61723b891d4799a71aeb4659e36630b6cf2ff2c9d2b94da59b31abb62899f6e0",
+        "delta_g_corrected": "5eb1e48206307bd7339b4d39afdd94ed2366a43c373865bf5cb2685a9b9f2250",
+        "gibbs_numerical_scale": "103cae4d4d39a7db24b7c7924c4586a46c26cb4af5141389026dcb40adeccede",
+        "gibbs_ordering_resolved": "d67717c08947c9234faf18674a322d0ef4328bb90d6b2ef54933fd2cafb08d7c"
+      },
+      "initial_npz_sha256": "0a88131c36d19e4c109b76f24174827d820b05a6cdc69f2cfc2e638c15d4fb3a",
+      "final_npz_sha256": "8754aeddcb307bcd082ad975e0ee6fcfdc1fb9c40e9b811a4a9e316d87c61a0a",
+      "note": "NPZ container bytes differ because archive metadata differs; all numerical, string and boolean arrays match exactly. The initial output archives remain ignored run artifacts, not duplicate committed datasets."
+    },
+    "neutral": {
+      "all_arrays_bitwise_equal": true,
+      "array_sha256": {
+        "ln_n": "c44302cd4ec24d0ebd9258ae6d432fdf053dc39636cc5950aa0ddddcd3f4d3e5",
+        "h": "bbaf17b72a90eac2da3d450a356ec1982b2a66680ce8cef170763ed0ccc5a555",
+        "species": "9eee5f466991b40da2ee415418c088fa76eff19ad91b6ae6f5e5c83365da7d96",
+        "elements": "5b79be3883a698c8c96f8f66a32f3ba80a9090a68dd51b973ca38ece47547f3a",
+        "formula_matrix": "8df39333f4fe8d48b669d6e6e7d08168e3b0e5bc1f149e68616cc8ba0184435e",
+        "budget": "aad1357dada990bb2ef58143486a1fd1b069e54498b4988308341ac872e95457",
+        "temperature_K": "42a2587b7ae8e42e25292a8fae3f21e1548e59ad4572bb58269c32aad88032b1",
+        "pressure_bar": "c9ffb75cbc5b788b4aec21eab25d7c63b7198b721e0e60029eddb8c86f2050f9",
+        "C_over_O": "b91d5e39d4f427c26d1b04d7996d217bb4705cf0f7411632a5236f118118f92b",
+        "converged": "d67717c08947c9234faf18674a322d0ef4328bb90d6b2ef54933fd2cafb08d7c",
+        "tight_case_indices": "012643b05dc1fedfe0e762da47b77c77260cabebbabdac818cda778c8ac0d3df",
+        "tight_reference_ln_n": "4bf2e0425a2d2f8ae387ec4b06b9259cb87ac323db2044cd030f0d5788abf6c6",
+        "path_case_index": "12718c7c46ba1149f7b0804516933e90db5cebc899232b898e210034eabb0e6a",
+        "lambda_values": "b775cb658293f2d9056d63a2bb64185bb77284c3a55650287f38ab52c8758828",
+        "lambda_ln_n": "dfb074a526b6845b90355f36e436cf18b20a156ef6910bfd56fc0651e686d431",
+        "delta_g_raw": "4908716f26cc40576c85e9e19237f2fb4e159b08980784b4c36be34b78b1af78",
+        "delta_g_corrected": "80a3103402bd5954b00ee72ecae428e43f2b6bc8312da17494f00773daaa64bc",
+        "gibbs_numerical_scale": "332fc8ba5edd2cd06773f5697551452c50c51b0e1f749f429ca64e8ec4c09a77",
+        "gibbs_ordering_resolved": "d67717c08947c9234faf18674a322d0ef4328bb90d6b2ef54933fd2cafb08d7c"
+      },
+      "initial_npz_sha256": "f60d432a1aa132bcc4f6218e54af7467c4caacb599fe8eb16ec6b2de7736e80d",
+      "final_npz_sha256": "c9f316844b74f8ba63e41d8f5c248f3724c84e26d828980876ef24429009a20f",
+      "note": "NPZ container bytes differ because archive metadata differs; all numerical, string and boolean arrays match exactly. The initial output archives remain ignored run artifacts, not duplicate committed datasets."
+    }
+  }
+}

@@ -15,7 +15,7 @@ import pytest
 
 from exogibbs.presets import (
     curated, curated_c2h, curated_c2h2, curated_ch2, curated_cn, curated_co2, curated_cos, curated_h2o, curated_hcp,
-    curated_ho2, curated_kh, curated_oh, curated_ps, curated_tio, curated_tio2, curated_v1,
+    curated_ho2, curated_kh, curated_oh, curated_ps, curated_tio, curated_tio2, curated_v1, curated_v2,
 )
 from exogibbs.provenance import describe, evidence_catalog
 
@@ -57,7 +57,7 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     corrected = curated_c2h.chemsetup()
     description = describe(corrected)
     assert description["model_id"] == "exogibbs.curated_c2h.v1"
-    assert describe(setup)["model_id"] == "exogibbs.curated_ch2.v1"
+    assert describe(setup)["model_id"] == "exogibbs.curated_gas.v2"
     assert describe(curated_v1.chemsetup())["model_id"] == "exogibbs.curated_gas.v1"
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
@@ -204,18 +204,34 @@ def test_new_adoptions_retain_separate_cumulative_evidence(module, key, species,
     assert "actual cumulative base" in record["summary"]
     assert any(s["id"] == species and alias in s["aliases"] for s in model["species"])
     assert describe(module.chemsetup(ions=False))["record_match"] == "no_matching_record"
-    assert curated.chemsetup is curated_ch2.chemsetup
+    assert curated.chemsetup is curated_v2.chemsetup
 
 
 def test_describe_identifies_only_declared_metadata(setup):
     description = describe(setup)
-    assert description["model_id"] == "exogibbs.curated_ch2.v1"
+    assert description["model_id"] == "exogibbs.curated_gas.v2"
     assert description["record_match"] == "declared_metadata"
     assert "does not verify a custom setup" in description["notice"]
     assert json.loads(json.dumps(description)) == description
     # Metadata alone cannot certify a changed callable: the report says so.
     modified = replace(setup, hvector_func=lambda temperature: None)
     assert describe(modified) == description
+
+
+def test_gas_v2_default_has_its_own_combined_production_evidence(setup):
+    assert curated.chemsetup is curated_v2.chemsetup
+    description = describe(setup)
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
+    assert model["id"] == "exogibbs.curated_gas.v2"
+    assert model["dataset"] == "curated-gas-v2"
+    record = model["records"][0]
+    assert record["id"] == "gas_v2_adoption"
+    assert len(record["species"]) == 29  # 28 updated species plus the whole-model marker.
+    assert {"H1N1O2cis", "H1N1O2trans", "N1O2", "N2O4", "C1H1N1O1", "C1N1O1"} <= set(record["species"])
+    assert "complete physical accuracy remains unknown" in record["summary"]
+    assert describe(curated_ch2.chemsetup())["model_id"] == "exogibbs.curated_ch2.v1"
+    assert describe(curated_v2.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
 
 def test_builder_does_not_rebind_historical_study_to_changed_data(tmp_path, monkeypatch):
@@ -262,7 +278,9 @@ def test_builder_does_not_rebind_historical_study_to_changed_data(tmp_path, monk
                                  "src/exogibbs/data/curated/c2h2_v1.json",
                                  "tests/data/validation/curated_c2h2_adoption/20261106/summary.json",
                                  "src/exogibbs/data/curated/ch2_v1.json",
-                                 "tests/data/validation/curated_ch2_adoption/20261106/summary.json"])
+                                 "tests/data/validation/curated_ch2_adoption/20261106/summary.json",
+                                 "src/exogibbs/data/curated/gas_v2.json",
+                                 "tests/data/validation/curated_gas_v2_adoption/20261106/summary.json"])
 def test_builder_rejects_changed_adoption_bytes(tmp_path, monkeypatch, name):
     builder = runpy.run_path(str(ROOT / "mceg/build_catalog.py"))["build_catalog"]
     original = Path.read_bytes
@@ -272,7 +290,7 @@ def test_builder_rejects_changed_adoption_bytes(tmp_path, monkeypatch, name):
         return content + b"\n" if path == ROOT / name else content
 
     monkeypatch.setattr(Path, "read_bytes", changed)
-    with pytest.raises(ValueError, match="CO2|H2O|OH|KH|HO2|COS|CN|PS|TiO2|HCP|C2H2|CH2"):
+    with pytest.raises(ValueError, match="CO2|H2O|OH|KH|HO2|COS|CN|PS|TiO2|HCP|C2H2|CH2|Gas-v2"):
         builder(tmp_path)
 
 

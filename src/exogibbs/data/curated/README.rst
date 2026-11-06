@@ -1,9 +1,12 @@
 Curated gas thermochemistry datasets
 ====================================
 
-The current default is ``curated-tio2-v1``, adding measured TiO2 thermals on
-the CN energy and PS thermal updates. It retains COS, KH/HO2/OH, evaluated
-2025 H2O, NIST 626 CO2, TiO and C2H updates. Earlier
+The current default is ``curated-gas-v2``: 27 reviewed recommendations update
+28 species on ``curated-ch2-v1``, including coordinated cis/trans-HNO2 energies.
+The existing thermal functions are retained except for evaluated 2025 O2
+thermals. HNCO/NCO and NO2/N2O4 energies are coordinated, while NaCN, KCN and
+C2N2 remain unchanged. It retains the preceding HCP, C2H2, CH2, TiO2, CN, PS,
+COS, KH/HO2/OH, evaluated 2025 H2O, NIST 626 CO2, TiO and C2H updates. Earlier
 JSON records and their named presets retain preceding models for explicit
 historical reproduction. All datasets use 1500--4000 K
 and a standard pressure of 1 bar.

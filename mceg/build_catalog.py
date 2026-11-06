@@ -460,8 +460,8 @@ def build_catalog(output: Path = OUTPUT) -> None:
         ("ch2", "CH2", "C1H2", "curated_ch2_adoption",
          ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
          "curated_ch2_adoption",
-         "Curated default with CH2 energy on the HCP/acetylene base", (
-             "Default curated-ch2-v1 adopts the balanced ATcT 1.228 CH2 energy: G/H "
+         "Versioned curated with CH2 energy on the HCP/acetylene base", (
+             "Former default, retained as curated_ch2: curated-ch2-v1 adopts the balanced ATcT 1.228 CH2 energy: G/H "
              "increase by 4948 J/mol with unchanged S/Cp, atomic references and fit "
              "residual. The reconstructed RRHO sensitivity is not adopted because the "
              "published component and combined caloric tables are inconsistent. Only "
@@ -506,6 +506,49 @@ def build_catalog(output: Path = OUTPUT) -> None:
             }],
         })
         previous_digest, previous_species = data_digest, adopted_species
+    data_path = "src/exogibbs/data/curated/gas_v2.json"
+    data_bytes = (ROOT / data_path).read_bytes()
+    data_digest = hashlib.sha256(data_bytes).hexdigest()
+    data = json.loads(data_bytes)
+    adoption = "tests/data/validation/curated_gas_v2_adoption/20261106"
+    execution = json.loads((ROOT / adoption / "receipt.json").read_text())
+    if (data_digest != execution["selected_file_sha256"][data_path]
+            or previous_digest != data["base_data_sha256"]):
+        raise ValueError("Gas-v2 data changed; review new evidence before rebinding the adoption")
+    contract = copy("mceg/contracts/curated_gas_v2_adoption.yaml", "contracts/curated_gas_v2_adoption.yaml")
+    receipt_pin = copy(f"{adoption}/receipt.json", "artifacts/gas_v2_adoption_receipt.json")
+    summary_pin = copy(f"{adoption}/summary.json", "artifacts/gas_v2_adoption_summary.json")
+    if summary_pin["sha256"] != execution["output_sha256"]["summary.json"]:
+        raise ValueError("Gas-v2 summary differs from the archived execution")
+    adopted_species = dict(previous_species)
+    for name, decision in data["decisions"].items():
+        adopted_species[name] = {"id": name, "aliases": [decision["name"]]}
+    catalog["models"].append({
+        "id": "exogibbs.curated_gas.v2",
+        "label": "Curated default with coordinated molecular updates (ion-inclusive lookup)",
+        "dataset": data["id"],
+        "identity": {"data_sha256": data_digest, "settings": {"ions": True}},
+        "species": [adopted_species[k] for k in sorted(adopted_species)],
+        "records": [{
+            "id": "gas_v2_adoption", **contract,
+            "species": ["*", *sorted(data["decisions"])],
+            "assessments": ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+            "artifacts": [receipt_pin, summary_pin],
+            "summary": (
+                "Default curated-gas-v2 combines 27 reviewed recommendations on curated-ch2-v1, "
+                "changing 28 species including coordinated cis/trans-HNO2 energies. HNCO/NCO and "
+                "NO2/N2O4 are coordinated as well. Existing thermal fits and their residuals are "
+                "retained except for the evaluated 2025 natural-isotope O2 thermal correction. "
+                "NaCN, KCN and C2N2 remain unchanged. The actual combined factory receives 150 "
+                "fresh equilibrium solves in the ion-inclusive and neutral networks, with tighter "
+                "independent-candidate, path and FastChem controls. Individual candidate responses "
+                "are not relabeled as combined-model results. Scoped source choice and numerical "
+                "verification are supported; complete physical accuracy remains unknown. Historical "
+                "named models remain available. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
+                      "documents/mceg/curated_gas_v2_adoption.rst"],
+        }],
+    })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
 
 
