@@ -1,0 +1,21 @@
+{
+  "name": "HNO3",
+  "HITRAN_molecule": 12,
+  "isotopologue": 1,
+  "nuclear_spin_divisor": 6,
+  "source_version": "HAPI TIPS_2025 arrays for HITRAN2024",
+  "source_url": "https://raw.githubusercontent.com/hitranonline/hapi/5353f4021d4b344eb9dd3484feeab9d483f30faa/hapi/hapi.py",
+  "source_sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+  "bounds_K": [
+    1.0,
+    3500.0
+  ],
+  "raw_Q_nodes": {
+    "1000.0": 19830800.0,
+    "1500.0": 228799200.0,
+    "2000.0": 1705435000.0,
+    "3000.0": 40427240000.0,
+    "3500.0": 147148000000.0
+  },
+  "scope": "Exact selected table nodes. No high-temperature extrapolation or caloric differentiation of this sparse selection; thermodynamic derivatives are evaluated only for JANAF/NASA/current fit."
+}
