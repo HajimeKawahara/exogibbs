@@ -1,0 +1,80 @@
+{
+  "molecule": "HNO3",
+  "species_id": "H1N1O3",
+  "composition": {
+    "H": 1,
+    "N": 1,
+    "O": 3
+  },
+  "cas": "7697-37-2",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "tables": {
+    "HNO3": "H-030.txt",
+    "H": "H-001.txt",
+    "N": "N-002.txt",
+    "O": "O-001.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "HNO3": {
+      "hf0_kJ_mol": -124.38,
+      "hf298_kJ_mol": -134.1,
+      "uncertainty_95pct_kJ_mol": 0.17,
+      "atct_id": "7697-37-2*0",
+      "preferred_formula": "HON(O)O  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=134"
+    },
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "uncertainty_95pct_kJ_mol": 0.0,
+      "atct_id": "12385-13-6*0",
+      "preferred_formula": "H  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0",
+      "preferred_formula": "N  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    },
+    "O": {
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "atct_id": "17778-80-2*0",
+      "preferred_formula": "O  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    }
+  },
+  "inherited_source": "Dorofeeva 2003 (FastChem fit) [U]",
+  "fastchem_record": {
+    "species": "H1N1O3",
+    "record_name": "Nitric_Acid",
+    "source_file": "FastChem4/logK/logK.dat",
+    "record_line_number": 922,
+    "coefficient_line_number": 923,
+    "record_line": "H1N1O3 Nitric_Acid : H 1 N 1 O 3 # Dorofeeva, O.V. et al., J. Phys. Chem. Ref. Data 32, 879-901, 2003.",
+    "coefficient_line": "   1.881177001250245e+05   -4.758829820181553e+00   -2.818447289213602e+01    1.708100642182134e-03   -9.851983674564140e-08",
+    "coefficients": [
+      188117.7001250245,
+      -4.758829820181553,
+      -28.18447289213602,
+      0.001708100642182134,
+      -9.85198367456414e-08
+    ],
+    "selected_temperature_segment_index": null,
+    "selected_temperature_segment_upper_bound": null,
+    "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+    "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+    "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+  },
+  "current_model": "curated-tio2-v1"
+}

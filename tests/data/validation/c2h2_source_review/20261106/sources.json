@@ -1,0 +1,52 @@
+{
+  "molecule": "C2H2",
+  "decision": "Prioritize an evaluated energy control for acetylene and keep thermal alternatives separate; its large carbon allocation warrants substitution testing before adoption.",
+  "follow_up": "Build an ATcT -1.135 kJ/mol retained-thermal D0 control preserving the fit residual, alongside a separate NASA-thermal/ATcT control. Test fixed-network substitution because the current grid allocates about 30 percent of carbon to acetylene. Do not adopt the incomplete aCeTY PF across 1500\u20134000 K.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-127.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Hf:TRC(10/93) w-3040. Gurvich,1991 pt1 p47 pt2 p39. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "inspection": "Versioned official numerical rows inspected and archived with same-version neutral atoms.",
+      "scope": "Ground energy cycle only; no full thermal source or reaction covariance is inferred."
+    },
+    {
+      "id": "reference0",
+      "title": "Chubb, Tennyson and Yurchenko, aCeTY (2020)",
+      "doi": "10.1093/mnras/staa229",
+      "url": "https://doi.org/10.1093/mnras/staa229",
+      "inspection": "Primary full-text completeness and nuclear-spin discussion, official definition and distributed PF inspected; direct five-million-level state replay not performed."
+    },
+    {
+      "id": "original_identity",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "inspection": "Original printed molecular page image inspected. Selected identity, electronic and vibrational facts pinned in identity_evidence.json."
+    },
+    {
+      "id": "acety_pf",
+      "url": "https://exomol.com/data/molecules/C2H2/12C2-1H2/aCeTY/",
+      "inspection": "Official definition and PF inspected. Four PF nodes and selected metadata pinned; no state-file replay or 4000 K completeness claim."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}
