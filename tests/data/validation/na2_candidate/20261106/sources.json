@@ -1,0 +1,46 @@
+{
+  "measured_energy": {
+    "doi": "10.1103/PhysRevA.54.R1006",
+    "D0_cm_inverse": 5942.688,
+    "reported_uncertainty_cm_inverse": 0.0049,
+    "reference": "v=0,J=0 to ground-atom asymptote; not De.",
+    "access": "Primary publisher abstract inspected; full original paper not obtained.",
+    "isotopologue": "23Na2"
+  },
+  "thermal_2025_doi": "10.1007/s10765-025-03628-z",
+  "correction_doi": "10.1007/s10765-025-03639-w",
+  "correction_scope": "Publisher-supplied first-page preview identifies replacement ground-state Figures2\u20137, not an assertion that every supplemental coefficient or thermal number was changed. Full correction pages were not obtained.",
+  "correction_preview_url": "https://www.researchgate.net/publication/395237361_Correction_Thermophysical_Properties_of_Alkali_Metals_A_Partition_Function_Theory_Approach_Including_Low-Lying_Electronic_States",
+  "official_2025_SI": [
+    {
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1007%2Fs10765-025-03628-z/MediaObjects/10765_2025_3628_MOESM1_ESM.ods",
+      "sha256": "bc52a83f907a372e0707c70c329d203a54361224bdeccb3db8a27834842c1100",
+      "inspection": "ODS parsed: four sheets Li2/Na/K/Rb with potential parameters, no tabulated thermochemical or complete rovibrational-state rows."
+    },
+    {
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1007%2Fs10765-025-03628-z/MediaObjects/10765_2025_3628_MOESM2_ESM.pdf",
+      "sha256": "e5b3243b59fc4f5064ecf4fc814a0d1ce17eabdb8ab97e274e3ac91c7b89709f",
+      "inspection": "Full supplement read: quantum construction includes bound states only; metastable/free and complex/double-well states are omitted. Approximate inequalities are argued, not a molecule-specific quantitative high-temperature uncertainty bound."
+    }
+  ],
+  "BC_audit": {
+    "version": "2016 molecular Q with October/November2022 atom/K correction; exact author revision pinned in original source packet.",
+    "listed_electronic_states": 8,
+    "missing_shallow_triplet": "a3Sigma_u+ is absent; listed a3Pi is a different state.",
+    "normalization": "Already divided by product of nuclear spin weights; do not divide again by16 or symmetry2.",
+    "thermal_nodes_K": [
+      1000,
+      1500,
+      2000,
+      3000,
+      4000,
+      5000
+    ],
+    "decision": "Sparse Q nodes do not uniquely validate continuous G/H/S/Cp; no Q interpolation adopted."
+  },
+  "pressure_audit": "2025 source uses1atm. Conversion S(1bar)=S(1atm)+Rln(1.01325) is required if using its absolute table; no such table is used here.",
+  "selected_control_name": "reported_D0_plus_uncertainty",
+  "selected_D0_cm_inverse": 5942.6929,
+  "selected_control_scope": "One reported measurement-uncertainty displacement, not propagated uncertainty of the inherited thermal model.",
+  "scope": "Measured ground v0J0 atomization anchor applied once to retained thermal fit; complete thermal state coverage remains unknown."
+}

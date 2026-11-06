@@ -1,0 +1,28 @@
+{
+  "result": "passed",
+  "scope": "Continuous model and source-validation record; separate from equilibrium execution",
+  "selected_file_sha256": {
+    "mceg/reviews/na2_candidate.py": "4dbaad5eae24a1e5c468e6073d1980966615a39e628d1e23dd9f22a05fef0d7b",
+    "tests/data/validation/na2_candidate/20261106/sources.json": "fff58397672bb74715a425050316516dd0503cbd3ab8779d2cb54abe8fb91d45",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "mceg/reviews/na2_source_review.py": "df959a3b33b8dc60a76389fbfedee04e1894414d5252783602c0e13492f55719",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/na2_source_review/20261106/Na-011.txt": "fb770370f6503812dd1a82e77785a8bae8e8f06d7e88de295b31bf45dc8fb88b",
+    "tests/data/validation/na2_source_review/20261106/literature.json": "16b33df4e86c320b1838ee9c2f46288fb48b6d9e72feecfb7eb2626c59c1554b",
+    "tests/data/validation/na2_source_review/20261106/bc-selected-rows.txt": "7a8fe64e8af6bab60b6b0fe78d6ceb7da702efac8a4ff449b15dc19af923cc79",
+    "tests/data/validation/na2_source_review/20261106/nasa-selected-records.txt": "eabce314d27af48e1635160880036b3c3c2b8d0e7a294c795d76e5cf3252a814",
+    "tests/data/validation/na2_source_review/20261106/inputs.json": "617aaa2cac6d88eed5005f652571b4e68e9d29d1ad5a2018d8b252998802aa13",
+    "tests/data/validation/na2_source_review/20261106/bc-state-input.txt": "2df28db617fec8c7787326b8e00ef3f9fdc0160e780501dc99ffcc9fc97225cd",
+    "tests/data/validation/na2_source_review/20261106/Na-005.txt": "56df39453bc3895f80161d7ca0146b344669da2d1a9918b27139e917d491c255",
+    "tests/data/validation/na2_source_review/20261106/receipt.json": "019b536933fde364669075bb6dd6b17379cff86da836bc78c6780f9a9da036e5",
+    "tests/data/validation/na2_source_review/20261106/comparison.json": "efc1487c881c23b8a8b972d3935a38bef53b8e71ab4163f807f9dce832ff0a93",
+    "tests/data/validation/na2_source_review/20261106/sources.json": "1090e67a6fa6e60077f95e54b6997a123bc234388b4276edff5834c21b95c6dc",
+    "tests/data/validation/na2_candidate/20261106/candidate.json": "13730be14309fa8a5a29f17e5686a477cb218c0f3706ab57b714b071349d84b1"
+  },
+  "output_sha256": {
+    "review.json": "3fc74b57193b3ab2a2099febc1cbfadbb2dfdf601b52c2528c27fc358074ecda",
+    "candidate.json": "13730be14309fa8a5a29f17e5686a477cb218c0f3706ab57b714b071349d84b1",
+    "validation.json": "489611f2856275b0fa0976ae9f71f74365f9fe98631ccdffb3ba12a70a7928ab",
+    "sources.json": "fff58397672bb74715a425050316516dd0503cbd3ab8779d2cb54abe8fb91d45"
+  }
+}
