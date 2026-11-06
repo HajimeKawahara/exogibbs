@@ -1,0 +1,32 @@
+{
+  "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+  "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+  "inspection": "Original printed page image inspected; selected factual numerical/identity transcription only.",
+  "printed_page": 605,
+  "connectivity": "bent HCH, CH2, triplet ground plus excited electronic states",
+  "point_group": "C2v",
+  "rotational_symmetry": 2,
+  "ground_electronic_weight": 3,
+  "evaluation_date": "1971-12",
+  "estimated_terms_cm-1_and_weights": [
+    [
+      0,
+      3
+    ],
+    [
+      2600,
+      1
+    ],
+    [
+      9700,
+      1
+    ],
+    [
+      29700,
+      1
+    ]
+  ],
+  "hf298_kJ_mol": 386.39,
+  "listed_uncertainty_kJ_mol": 4.2,
+  "notes": "Excited singlet term 2600 cm-1 is explicitly estimated; old fourth term 27100+2600."
+}

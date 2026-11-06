@@ -1,0 +1,41 @@
+{
+  "molecule": "CP",
+  "canonical": "C1P1",
+  "max_mole_fraction": 5.148459377270612e-10,
+  "max_mole_fraction_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 0.0013456737308604517,
+  "max_element": "P",
+  "max_element_share_condition": {
+    "case_index": 67,
+    "temperature_K": 3000.0,
+    "pressure_bar": 0.01,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 4.7081307534514046e-07,
+      "maximum_share_percent": 4.708130753451405e-05,
+      "condition": {
+        "case_index": 67,
+        "temperature_K": 3000.0,
+        "pressure_bar": 0.01,
+        "C_over_O": 1.5
+      }
+    },
+    "P": {
+      "maximum_share": 0.0013456737308604517,
+      "maximum_share_percent": 0.13456737308604516,
+      "condition": {
+        "case_index": 67,
+        "temperature_K": 3000.0,
+        "pressure_bar": 0.01,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}

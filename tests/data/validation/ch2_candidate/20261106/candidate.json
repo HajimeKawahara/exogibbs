@@ -1,0 +1,46 @@
+{
+  "id": "ch2_atct_and_reconstructed_rrho_candidates_v1",
+  "species": "C1H2",
+  "baseline_dataset": "curated-tio2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "original_source_D0_J_mol": 757340.0,
+  "evaluated_D0_J_mol": 752392.0,
+  "delta_D0_J_mol": -4948.0,
+  "ATcT_version": "1.228",
+  "original_logK_coefficients": [
+    91169.71484996856,
+    -3.7350318476311486,
+    1.0643297706315025,
+    0.0009790962388339097,
+    -4.9466163560058486e-08
+  ],
+  "formal_fit_1_over_T_energy_J_mol": 758027.1860277539,
+  "nasa_molecular_thermal_coefficients": [
+    2550418.031,
+    -7971.62539,
+    12.28924487,
+    -0.001699122922,
+    2.991728605e-07,
+    -2.767007492e-11,
+    1.05134174e-15,
+    50678.39085415004,
+    -60.9473991
+  ],
+  "nasa_h0_div_R_K": 45743.77804584996,
+  "source_sha256": {
+    "tests/data/validation/ch2_candidate/20261106/thermal_inputs.json": "352823e0983319d7efb8b7851cdacf7b0da588fd224d60fa6e2643b1f67ed659",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/ch2_source_review/20261106/inputs.json": "6ee75797a267bc3f36e7b6c7b19aae3512214669f0d98f68b0921370ddaa43b3",
+    "tests/data/validation/ch2_source_review/20261106/comparison.json": "a76bfc9fb587397266dda5714365fc04f654ce66ec95e109c33386cebc8b47d4",
+    "tests/data/validation/ch2_source_review/20261106/atct-selected.tsv": "458888d4238bbb2602b058235dbba1f0082658a5c9ea53e907d3387d7819a214",
+    "tests/data/validation/ch2_source_review/20261106/nasa-selected.txt": "ff98968625c8341f2b145344e1ca35b64267cee81bb954f1c7d67e91a41af795",
+    "tests/data/validation/ch2_source_review/20261106/sources.json": "dc40198155506232d2f5d6ef9eaccd7772d6b3de5ffb235da2125b4720aa1688"
+  },
+  "energy_scope": "Regular equilibrated CH2 ground energy; same-version neutral C/H atomization cycle. Marginal species uncertainties do not give reaction covariance.",
+  "thermal_scope": "The reconstructed three-state RRHO is not a reproduction of the IUPAC printed equilibrated table. It is a finite sensitivity, not recommended for adoption. Above3000K is explicit model extension.",
+  "residual_scope": "Keep the complete literal-fit residual relative to NASA molecular/atomic thermal functions combined with the JANAF physical D0. Neither the atomic gauge nor the residual is refitted.",
+  "production_adoption": false
+}

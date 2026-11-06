@@ -1,0 +1,29 @@
+{
+  "result": "passed",
+  "kind": "continuous CH2 model/table reconstruction and independent sums; separate from equilibrium execution",
+  "selected_file_sha256": {
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/ch2_candidate.py": "edd12923c6dc3722ff221f3ee216dcb13865ac08abc39ccd40166a90c24b486d",
+    "mceg/reviews/ch2_rrho_audit.py": "a76d1419758370f063d66a78998fc8f000c5b9358e21a2be1f9fd3d13ab5797d",
+    "mceg/reviews/ch2_source_review.py": "aad387ed7f5443b864377cff9161e06006ac313b0a8c031a569792cf5c9066b7",
+    "mceg/reviews/ph3_source_review.py": "246aacd6c10ab0718d70042acb60668a95e93c0e9c60e28f11abd82daff89ec8",
+    "mceg/reviews/phosphorus_diatomic_source_review.py": "cde4fc597d3048e84c4a089a2be3c4d0f0c60140f9ce408d03e669223611dd22",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/presets/curated_tio2.py": "876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f",
+    "tests/data/validation/ch2_candidate/20261106/sources.json": "b392ac1fb2b7bc0d9b5b31da6469f29361bb8483d0acc4e41042ba5f4590af3b",
+    "tests/data/validation/ch2_candidate/20261106/thermal_inputs.json": "352823e0983319d7efb8b7851cdacf7b0da588fd224d60fa6e2643b1f67ed659",
+    "tests/data/validation/ch2_source_review/20261106/atct-selected.tsv": "458888d4238bbb2602b058235dbba1f0082658a5c9ea53e907d3387d7819a214",
+    "tests/data/validation/ch2_source_review/20261106/comparison.json": "a76bfc9fb587397266dda5714365fc04f654ce66ec95e109c33386cebc8b47d4",
+    "tests/data/validation/ch2_source_review/20261106/inputs.json": "6ee75797a267bc3f36e7b6c7b19aae3512214669f0d98f68b0921370ddaa43b3",
+    "tests/data/validation/ch2_source_review/20261106/nasa-selected.txt": "ff98968625c8341f2b145344e1ca35b64267cee81bb954f1c7d67e91a41af795",
+    "tests/data/validation/ch2_source_review/20261106/sources.json": "dc40198155506232d2f5d6ef9eaccd7772d6b3de5ffb235da2125b4720aa1688"
+  },
+  "output_sha256": {
+    "candidate.json": "8caae4adfbb73910514f5273b012cb857231f14dea06045a72c3392e9495bddb",
+    "independent_rrho_audit.json": "8db636364014c1155c80802430f2863385bdab7308046caab92974f878acd5b9",
+    "sources.json": "b392ac1fb2b7bc0d9b5b31da6469f29361bb8483d0acc4e41042ba5f4590af3b",
+    "thermal_inputs.json": "352823e0983319d7efb8b7851cdacf7b0da588fd224d60fa6e2643b1f67ed659",
+    "validation.json": "0c862686654737f6f266b688d98897f50cfc1c6dca138bbaa96db64bb6a9642a"
+  }
+}
