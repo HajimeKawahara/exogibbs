@@ -37,11 +37,13 @@ HCN differences with optional MCEG tooling.
    tio_source_review
    tio_candidate
    so2_source_review
+   nco_source_review
    so3_source_review
    so3_candidate
    s2_source_review
    o2_source_review
    s4_source_review
+   s3_source_review
    tio2_source_review
    tio2_candidate
    curated_tio2_adoption
@@ -53,15 +55,18 @@ HCN differences with optional MCEG tooling.
    hno_source_review
    oh_candidate
    volatile_sources
+   cis_hno2_source_review
    ch4_source_review
    c2h4_source_review
    ch2o_source_review
    hco_source_review
    ch2o_candidate
+   oxirane_source_review
    new_fastchem_logk
    vo_source_review
    vn_source_review
    c3h_source_review
+   c2h2_source_review
    fastchem_hcn_followup
    c2n2_source_review
    c3_source_review
@@ -73,6 +78,7 @@ HCN differences with optional MCEG tooling.
    gas_source_comparison
    cs_source_review
    cn_source_review
+   cnn_source_review
    cn_candidate
    curated_cn_adoption
    cs_candidate
@@ -84,14 +90,18 @@ HCN differences with optional MCEG tooling.
    c2h_source_review
    c2_source_review
    h2s_source_review
+   hnco_source_review
    sh_source_investigation
    s2o_source_investigation
    s8_source_review
+   s7_source_review
    s8_candidate
    ohno_p3
    no2_source_review
    ph2_source_review
+   cis_h2n2_source_review
    ph_source_review
+   hcp_source_review
    ph3_source_review
    ph3_thermal_supplement_review
    p2_source_review
@@ -115,12 +125,14 @@ HCN differences with optional MCEG tooling.
    po_source_review
    po2_source_review
    c5_source_review
+   ncn_source_review
    cs2_source_review
    cs2_candidate
    h2so4_source_review
    hno3_source_review
    ch3_source_review
    h2o2_source_review
+   trans_hno2_source_review
    h2o2_candidate
    nh_source_review
    nh2_source_review
@@ -132,6 +144,7 @@ HCN differences with optional MCEG tooling.
    ko_source_review
    build
    ch_source_review
+   ch2_source_review
 
    kh_source_review
    k2_source_review
