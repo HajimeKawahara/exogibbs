@@ -75,6 +75,7 @@ HCN differences with optional MCEG tooling.
    c2h_source_review
    h2s_source_review
    hnco_source_review
+   hnco_candidate
    sh_source_investigation
    s2o_source_investigation
    s8_source_review
