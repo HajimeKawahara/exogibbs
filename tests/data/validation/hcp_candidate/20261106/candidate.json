@@ -1,0 +1,66 @@
+{
+  "id": "hcp_retained_thermal_two_energy_anchors_v1",
+  "species": "C1H1P1",
+  "reaction": "C(g) + H(g) + P(g) -> HCP(g)",
+  "composition": {
+    "C": 1,
+    "H": 1,
+    "P": 1
+  },
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_dataset": "curated-tio2-v1",
+  "base_Hf0_J_mol": 151192,
+  "base_D0_J_mol": 1091582,
+  "janaf_fixed_reference_offsets_J_mol": {
+    "HCP": 140547,
+    "C": 710134,
+    "H": 211802,
+    "P": 310193
+  },
+  "anchors": {
+    "cccbdb": {
+      "Hf0_J_mol": 213500.0,
+      "reported_uncertainty_J_mol": 20000.0,
+      "delta_Hf0_J_mol": 62308.0,
+      "common_JANAF_D0_J_mol": 1029274.0,
+      "source": "https://cccbdb.nist.gov/exp2x.asp?casno=6829523"
+    },
+    "theory_2001": {
+      "Hf0_J_mol": 225000.0,
+      "reported_uncertainty_J_mol": 8000.0,
+      "delta_Hf0_J_mol": 73808.0,
+      "common_JANAF_D0_J_mol": 1017774.0,
+      "source": "10.1039/B106927F"
+    }
+  },
+  "white_phosphorus_elemental_heat_J_mol": 5360.000000000011,
+  "theory_own_atomic_TAE0_J_mol": 1018000.0,
+  "original_record": "C1H1P1 Methinophosphide : C 1 H 1 P 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+  "original_coefficients": [
+    131798.57969534546,
+    -2.7193438264877727,
+    -9.152484434056987,
+    0.0009099596221876227,
+    -5.279363601455112e-08
+  ],
+  "formal_fit_intercept_Ra_J_mol": 1095834.3640026404,
+  "representation": "G_candidate = G_current + delta(Hf0); retain all thermal coefficients, atomic gauge and fit/source residual. No evaluation of the empirical fit at zero K.",
+  "energy_scope": "Both Hf0 alternatives use the selected JANAF elemental reference (white P). Physical D0 is a balanced atomization energy, not R*a, H298 or a single H-CP bond energy. The 2001 own-atom TAE0=1018 kJ/mol is a separate rounded-gauge control, not the adopted common-reference D0=1017.774 kJ/mol.",
+  "uncertainty_scope": "Reported +/-20 and +/-8 kJ/mol are separate source sensitivities, not independent Gaussian errors or a complete uncertainty/covariance. The 2001 body explicitly quotes +/-8 for HCP, distinct from its abstract's broader +/-10 wording. CCCBDB is a CP-based JANAF adjustment, not an independent HCP measurement.",
+  "thermal_scope": "Retained historical thermals only. The 2024 PES/DMS supplement does not supply states or Q; no 2024 thermal model or 4000 K validity claim is inferred.",
+  "source_sha256": {
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/hcp_source_review/20261106/inputs.json": "f31a84cf62082bee36023a0712069b81c57557cb1154b528849d47f068abd3d0",
+    "tests/data/validation/hcp_source_review/20261106/literature.json": "4234122e69f32d4594eab5dde3a873ec6004bba0b9941c2eae077f6143c6d610",
+    "tests/data/validation/hcp_source_review/20261106/sources.json": "413990e2a027acd572e74fc8621b435a55eb8f3832c36f0ed73521ddcb5ad1e0",
+    "tests/data/validation/hcp_source_review/20261106/C-056.txt": "d9f9b2ca6792df013ed4277ae11aa3756a6aa38ef14d9445d420ba189d629ba7",
+    "tests/data/validation/hcp_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/hcp_source_review/20261106/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/hcp_source_review/20261106/P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879"
+  }
+}
