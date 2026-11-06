@@ -22,12 +22,16 @@ HCN differences with optional MCEG tooling.
    _generated/catalog
    optional_inspection
    h2o_source_review
+   n2h4_source_review
    h2o_candidate
    sio_source_review
+   n2o5_source_review
    co2_source_review
    co2_candidate
    n3_source_review
+   no3_source_review
    n2o3_source_review
+   n2o4_source_review
    n2o3_candidate
    tio_source_review
    tio_candidate
@@ -45,6 +49,7 @@ HCN differences with optional MCEG tooling.
    s6_source_review
    s6_state_followup
    oh_source_review
+   hno_source_review
    oh_candidate
    volatile_sources
    ch4_source_review
@@ -107,6 +112,7 @@ HCN differences with optional MCEG tooling.
    cs2_source_review
    cs2_candidate
    h2so4_source_review
+   hno3_source_review
    ch3_source_review
    h2o2_source_review
    h2o2_candidate
@@ -115,12 +121,14 @@ HCN differences with optional MCEG tooling.
    ns_source_review
    no_source_review
    nah_source_review
+   na2_source_review
    nao_source_review
    ko_source_review
    build
    ch_source_review
 
    kh_source_review
+   k2_source_review
    kh_candidate
    n2_source_review
    n2o_source_review
