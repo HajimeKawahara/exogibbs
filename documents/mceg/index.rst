@@ -50,6 +50,7 @@ HCN differences with optional MCEG tooling.
    o2_source_review
    o2_candidate
    s4_source_review
+   s3_source_review
    tio2_source_review
    tio2_candidate
    curated_tio2_adoption
