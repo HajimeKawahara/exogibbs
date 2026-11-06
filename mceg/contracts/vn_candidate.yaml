@@ -138,7 +138,7 @@ evidence:
   - source: mceg/reviews/pending_candidate.py
     sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
   - source: tests/model_evidence/vn_candidate_test.py
-    sha256: 47eb3f4e0554429019ceaf0f289a2b70905fd439540c83d80d6f25e63f35a9fb
+    sha256: b1a597c24275d95c98eec6e69d6f368df6f64f0c2e11d6de1ed49fefd542c796
   provenance:
     role: primary
     location: documents/mceg/vn_candidate.rst
@@ -183,7 +183,7 @@ evidence:
   - source: mceg/reviews/pending_equilibrium_impact.py
     sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
   - source: tests/model_evidence/vn_candidate_test.py
-    sha256: 47eb3f4e0554429019ceaf0f289a2b70905fd439540c83d80d6f25e63f35a9fb
+    sha256: b1a597c24275d95c98eec6e69d6f368df6f64f0c2e11d6de1ed49fefd542c796
   provenance:
     role: primary
     location: documents/mceg/vn_candidate.rst
@@ -329,7 +329,7 @@ subjects:
     tests/data/validation/vn_source_review/20261106/literature.json: 43867fceff7d701cffc2252542fc630b5b2d6ed36beafaadf6d427c15df32dd1
     tests/data/validation/vn_source_review/20261106/nasa-selected-records.txt: 1e88ed59ac564065ac41f3999edf5c5228480d83223a678acecdc63a90c380cb
     tests/data/validation/vn_source_review/20261106/sources.json: db0a08ee2633e8a9f023e1cccea2ac7ecab68570ebe39b149977cba6ad2b3668
-    tests/model_evidence/vn_candidate_test.py: 47eb3f4e0554429019ceaf0f289a2b70905fd439540c83d80d6f25e63f35a9fb
+    tests/model_evidence/vn_candidate_test.py: b1a597c24275d95c98eec6e69d6f368df6f64f0c2e11d6de1ed49fefd542c796
 contexts:
 - id: candidate_evaluation
   scope: Neutral diatomic VN, N1V1, X3Delta, relative to neutral ground-state V+N; not VN+ or solid nitride.
