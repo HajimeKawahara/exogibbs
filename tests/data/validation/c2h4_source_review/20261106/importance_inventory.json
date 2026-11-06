@@ -1,0 +1,41 @@
+{
+  "molecule": "C2H4",
+  "canonical": "C2H4",
+  "max_mole_fraction": 1.079040617768588e-06,
+  "max_mole_fraction_condition": {
+    "case_index": 64,
+    "temperature_K": 2500.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 0.0017130503954873738,
+  "max_element": "C",
+  "max_element_share_condition": {
+    "case_index": 64,
+    "temperature_K": 2500.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 0.0017130503954873738,
+      "maximum_share_percent": 0.17130503954873738,
+      "condition": {
+        "case_index": 64,
+        "temperature_K": 2500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "H": {
+      "maximum_share": 2.517047400661365e-06,
+      "maximum_share_percent": 0.00025170474006613647,
+      "condition": {
+        "case_index": 64,
+        "temperature_K": 2500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}

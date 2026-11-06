@@ -1,0 +1,83 @@
+{
+  "molecule": "oxirane",
+  "canonical": "C2H4O1",
+  "composition": {
+    "C": 2,
+    "H": 4,
+    "O": 1
+  },
+  "max_mole_fraction": 4.233992128362103e-15,
+  "max_mole_fraction_condition": {
+    "case_index": 69,
+    "temperature_K": 3000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 6.764798972710723e-12,
+      "maximum_share_percent": 6.764798972710723e-10,
+      "condition": {
+        "case_index": 69,
+        "temperature_K": 3000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "H": {
+      "maximum_share": 9.939765762357397e-15,
+      "maximum_share_percent": 9.939765762357396e-13,
+      "condition": {
+        "case_index": 69,
+        "temperature_K": 3000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "O": {
+      "maximum_share": 5.073599229533043e-12,
+      "maximum_share_percent": 5.073599229533043e-10,
+      "condition": {
+        "case_index": 69,
+        "temperature_K": 3000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  },
+  "max_element": "C",
+  "max_element_share": 6.764798972710723e-12,
+  "max_element_share_percent": 6.764798972710723e-10,
+  "max_element_share_condition": {
+    "case_index": 69,
+    "temperature_K": 3000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "archive_vs_runtime_max_abs_h_error": 0.0,
+  "runtime_provenance": {
+    "status": "inherited_unreviewed",
+    "source_group": "FastChem4",
+    "record": {
+      "species": "C2H4O1",
+      "record_name": "Oxirane",
+      "source_file": "FastChem4/logK/logK.dat",
+      "record_line_number": 301,
+      "coefficient_line_number": 302,
+      "record_line": "C2H4O1 Oxirane : C 2 H 4 O 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "coefficient_line": "   3.1108283714501752e+05  -1.0756941398636172e+01  -1.4702822537369684e+01   3.8310829858227424e-03  -2.0308564075801255e-07 ",
+      "coefficients": [
+        311082.8371450175,
+        -10.756941398636172,
+        -14.702822537369684,
+        0.0038310829858227424,
+        -2.0308564075801255e-07
+      ],
+      "selected_temperature_segment_index": null,
+      "selected_temperature_segment_upper_bound": null,
+      "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+      "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+      "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+    }
+  }
+}

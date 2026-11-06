@@ -1,0 +1,1262 @@
+{
+  "baseline_dataset": "curated-tio2-v1",
+  "curated_update": "none",
+  "new_endpoint_solves": 300,
+  "reused_baseline_cases": 150,
+  "new_control_solves": 28,
+  "new_tighter_solves": 12,
+  "new_quoted_energy_edge_solves": 16,
+  "independent_fastchem_solves": 4,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "species": 537,
+      "cases": 75,
+      "anchors": [
+        {
+          "anchor": "cccbdb",
+          "HCP_ratio_min": 0.006765269074750786,
+          "HCP_ratio_max": 0.8710732768492371,
+          "highlighted_case": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "C1H1P1",
+            "x_before": 4.160693815702488e-07,
+            "x_after": 3.602149062680514e-08,
+            "ratio": 0.0865756823798468,
+            "phosphorus_share_before": 0.9428824324990098,
+            "phosphorus_share_after": 0.0816306441737192
+          },
+          "largest_absolute_response": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "H2",
+            "x_before": 0.8574448536698734,
+            "x_after": 0.8574444462839781,
+            "ratio": 0.9999995248838528,
+            "phosphorus_share_before": 0.0,
+            "phosphorus_share_after": 0.0
+          },
+          "phosphorus_carrier_extrema": [
+            {
+              "case_index": 25,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1e-06,
+              "C_over_O": 1.0,
+              "species": "P1",
+              "x_before": 5.5979318894989514e-08,
+              "x_after": 3.798096716918898e-07,
+              "ratio": 6.784821237363877,
+              "phosphorus_share_before": 0.1279557765670083,
+              "phosphorus_share_after": 0.8681573489580996
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1H1P1",
+              "x_before": 4.160693815702488e-07,
+              "x_after": 3.602149062680514e-08,
+              "ratio": 0.0865756823798468,
+              "phosphorus_share_before": 0.9428824324990098,
+              "phosphorus_share_after": 0.0816306441737192
+            },
+            {
+              "case_index": 68,
+              "temperature_K": 3000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1P1",
+              "x_before": 3.30828987067631e-10,
+              "x_after": 6.69570147200783e-10,
+              "ratio": 2.0239162025542323,
+              "phosphorus_share_before": 0.0008045251400478553,
+              "phosphorus_share_after": 0.0016282915871517055
+            },
+            {
+              "case_index": 63,
+              "temperature_K": 2500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H1P1",
+              "x_before": 1.1325105176251983e-08,
+              "x_after": 7.899388037564117e-08,
+              "ratio": 6.975112296642176,
+              "phosphorus_share_before": 0.025975843337381593,
+              "phosphorus_share_after": 0.18118443240500912
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "H2P1",
+              "x_before": 2.482622791348571e-08,
+              "x_after": 2.0189954677888708e-07,
+              "ratio": 8.132510000410269,
+              "phosphorus_share_before": 0.056327596290899576,
+              "phosphorus_share_after": 0.45808464979370433
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H3P1",
+              "x_before": 9.19534771051281e-09,
+              "x_after": 1.1757815018048926e-07,
+              "ratio": 12.786699740137626,
+              "phosphorus_share_before": 0.02083818757400844,
+              "phosphorus_share_after": 0.26645149806336343
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "N1P1",
+              "x_before": 5.666101536108783e-10,
+              "x_after": 4.606405895927706e-09,
+              "ratio": 8.129762353484354,
+              "phosphorus_share_before": 0.0012855673482954437,
+              "phosphorus_share_after": 0.010451354969878302
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O1P1",
+              "x_before": 2.0054979786041847e-08,
+              "x_after": 2.045894963860596e-08,
+              "ratio": 1.0201431194084412,
+              "phosphorus_share_before": 0.04548889469056067,
+              "phosphorus_share_after": 0.04640518328058124
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O2P1",
+              "x_before": 1.081415073038596e-11,
+              "x_after": 1.1031614797127576e-11,
+              "ratio": 1.0201092135816618,
+              "phosphorus_share_before": 2.4528758891332967e-05,
+              "phosphorus_share_after": 2.502201313284815e-05
+            },
+            {
+              "case_index": 28,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "P1S1",
+              "x_before": 1.8745868972433037e-10,
+              "x_after": 5.262198906171372e-10,
+              "ratio": 2.8071245531000786,
+              "phosphorus_share_before": 0.00042496398472750027,
+              "phosphorus_share_after": 0.0011929265249820047
+            },
+            {
+              "case_index": 27,
+              "temperature_K": 1500.0,
+              "pressure_bar": 0.01,
+              "C_over_O": 1.0,
+              "species": "P2",
+              "x_before": 3.6012609622301514e-11,
+              "x_after": 1.118468202487031e-07,
+              "ratio": 3105.7682689965286,
+              "phosphorus_share_before": 0.00016330736826257266,
+              "phosphorus_share_after": 0.5071947932189385
+            },
+            {
+              "case_index": 73,
+              "temperature_K": 4000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "P1+",
+              "x_before": 3.138806253349316e-12,
+              "x_after": 3.162008252331561e-12,
+              "ratio": 1.007391981890404,
+              "phosphorus_share_before": 1.1039575282472462e-05,
+              "phosphorus_share_after": 1.112117966210717e-05
+            }
+          ],
+          "max_phosphorus_share_before": 0.9996378571984883,
+          "max_phosphorus_share_after": 0.8707578148394416,
+          "gibbs_resolved_cases": 64,
+          "gibbs_scale_max": 1.9308260589059238e-16,
+          "gibbs_corrected_current_min": 4.337033048707639e-20,
+          "gibbs_corrected_candidate_max": 1.053208712811778e-18
+        },
+        {
+          "anchor": "theory_2001",
+          "HCP_ratio_min": 0.002690464835890891,
+          "HCP_ratio_max": 0.6356251683413087,
+          "highlighted_case": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "C1H1P1",
+            "x_before": 4.160693815702488e-07,
+            "x_after": 1.493135475791465e-08,
+            "ratio": 0.03588669442957713,
+            "phosphorus_share_before": 0.9428824324990098,
+            "phosphorus_share_after": 0.0338369137536045
+          },
+          "largest_absolute_response": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "H2",
+            "x_before": 0.8574448536698734,
+            "x_after": 0.8574444253432428,
+            "ratio": 0.9999995004615996,
+            "phosphorus_share_before": 0.0,
+            "phosphorus_share_after": 0.0
+          },
+          "phosphorus_carrier_extrema": [
+            {
+              "case_index": 56,
+              "temperature_K": 2000.0,
+              "pressure_bar": 0.0001,
+              "C_over_O": 1.5,
+              "species": "P1",
+              "x_before": 6.93611475078845e-08,
+              "x_after": 3.8269439750781405e-07,
+              "ratio": 5.517417333159201,
+              "phosphorus_share_before": 0.16901296002139962,
+              "phosphorus_share_after": 0.9325151919839386
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1H1P1",
+              "x_before": 4.160693815702488e-07,
+              "x_after": 1.493135475791465e-08,
+              "ratio": 0.03588669442957713,
+              "phosphorus_share_before": 0.9428824324990098,
+              "phosphorus_share_after": 0.0338369137536045
+            },
+            {
+              "case_index": 68,
+              "temperature_K": 3000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1P1",
+              "x_before": 3.30828987067631e-10,
+              "x_after": 6.930675191528096e-10,
+              "ratio": 2.0949419375126475,
+              "phosphorus_share_before": 0.0008045251400478553,
+              "phosphorus_share_after": 0.0016854335894313536
+            },
+            {
+              "case_index": 63,
+              "temperature_K": 2500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H1P1",
+              "x_before": 1.1325105176251983e-08,
+              "x_after": 9.112903895211575e-08,
+              "ratio": 8.046639526422013,
+              "phosphorus_share_before": 0.025975843337381593,
+              "phosphorus_share_after": 0.20901825878687263
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "H2P1",
+              "x_before": 2.482622791348571e-08,
+              "x_after": 2.1987417937864214e-07,
+              "ratio": 8.856527868223008,
+              "phosphorus_share_before": 0.056327596290899576,
+              "phosphorus_share_after": 0.4988668175041936
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H3P1",
+              "x_before": 9.19534771051281e-09,
+              "x_after": 1.2254691092071829e-07,
+              "ratio": 13.327055678450689,
+              "phosphorus_share_before": 0.02083818757400844,
+              "phosphorus_share_after": 0.2777115220169155
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "N1P1",
+              "x_before": 5.666101536108783e-10,
+              "x_after": 5.016319486521423e-09,
+              "ratio": 8.853211426857698,
+              "phosphorus_share_before": 0.0012855673482954437,
+              "phosphorus_share_after": 0.01138139705579406
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O1P1",
+              "x_before": 2.0054979786041847e-08,
+              "x_after": 2.0463914010779685e-08,
+              "ratio": 1.0203906575374588,
+              "phosphorus_share_before": 0.04548889469056067,
+              "phosphorus_share_after": 0.04641644352089034
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O2P1",
+              "x_before": 1.081415073038596e-11,
+              "x_after": 1.10342871093108e-11,
+              "ratio": 1.020356326115031,
+              "phosphorus_share_before": 2.4528758891332967e-05,
+              "phosphorus_share_after": 2.5028074498984816e-05
+            },
+            {
+              "case_index": 28,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "P1S1",
+              "x_before": 1.8745868972433037e-10,
+              "x_after": 5.296807850252059e-10,
+              "ratio": 2.825586724222464,
+              "phosphorus_share_before": 0.00042496398472750027,
+              "phosphorus_share_after": 0.0012007722773413213
+            },
+            {
+              "case_index": 27,
+              "temperature_K": 1500.0,
+              "pressure_bar": 0.01,
+              "C_over_O": 1.0,
+              "species": "P2",
+              "x_before": 3.6012609622301514e-11,
+              "x_after": 1.5230689906560127e-07,
+              "ratio": 4229.2658228045275,
+              "phosphorus_share_before": 0.00016330736826257266,
+              "phosphorus_share_after": 0.6906701835861676
+            },
+            {
+              "case_index": 73,
+              "temperature_K": 4000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "P1+",
+              "x_before": 3.138806253349316e-12,
+              "x_after": 3.163248624213834e-12,
+              "ratio": 1.0077871550174327,
+              "phosphorus_share_before": 1.1039575282472462e-05,
+              "phosphorus_share_after": 1.1125542207697394e-05
+            }
+          ],
+          "max_phosphorus_share_before": 0.9996378571984883,
+          "max_phosphorus_share_after": 0.6353949655821471,
+          "gibbs_resolved_cases": 65,
+          "gibbs_scale_max": 1.9308260589059238e-16,
+          "gibbs_corrected_current_min": 6.854633305372686e-20,
+          "gibbs_corrected_candidate_max": 1.2710688624941339e-18
+        }
+      ],
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.3817206211261533e-06,
+        "HCNOPS_element_relative_residual": 1.412750913226025e-10,
+        "phosphorus_relative_residual": 1.412750913226025e-10,
+        "mass_action_max_abs_ln": 1.4352963262354024e-12,
+        "charge_relative_residual": 1.7356287487415817e-14
+      },
+      "tight_case_indices": [
+        52,
+        53
+      ],
+      "tolerance_stability": {
+        "max_abs_delta_ln_x": 2.5863755581667647e-12,
+        "HCP_max_abs_delta_ln_x": 6.039613253960852e-14,
+        "visible_max_abs_delta_ln_x": 7.354117315117037e-13,
+        "max_absolute_delta_x": 1.1657341758564144e-15
+      },
+      "quoted_energy_controls": [
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": -20000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.9852202274058983,
+          "top_phosphorus_carriers": [
+            {
+              "species": "C1H1P1",
+              "share": 0.9852202274058983
+            },
+            {
+              "species": "H2P1",
+              "share": 0.0063065013410500415
+            },
+            {
+              "species": "P2",
+              "share": 0.004314091344957499
+            },
+            {
+              "species": "P1",
+              "share": 0.001989275846515232
+            },
+            {
+              "species": "H1P1",
+              "share": 0.0014703916589503196
+            }
+          ]
+        },
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": -20000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.3170745248359976,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.338792242839225
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.3170745248359976
+            },
+            {
+              "species": "H3P1",
+              "share": 0.2082448713862601
+            },
+            {
+              "species": "P2",
+              "share": 0.12459288860183636
+            },
+            {
+              "species": "H1P1",
+              "share": 0.007899614397748965
+            }
+          ]
+        },
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": 20000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.4175489013613306,
+          "top_phosphorus_carriers": [
+            {
+              "species": "P2",
+              "share": 0.4728797104538652
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.4175489013613306
+            },
+            {
+              "species": "H2P1",
+              "share": 0.06602663088876753
+            },
+            {
+              "species": "P1",
+              "share": 0.020826949975867898
+            },
+            {
+              "species": "H1P1",
+              "share": 0.015394432547826919
+            }
+          ]
+        },
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": 20000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.01735311552381131,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.4580612601699363
+            },
+            {
+              "species": "H3P1",
+              "share": 0.28155574047842075
+            },
+            {
+              "species": "P2",
+              "share": 0.22775802151227828
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.01735311552381131
+            },
+            {
+              "species": "H1P1",
+              "share": 0.010680609380736896
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": -8000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.8151258148484268,
+          "top_phosphorus_carriers": [
+            {
+              "species": "C1H1P1",
+              "share": 0.8151258148484268
+            },
+            {
+              "species": "P2",
+              "share": 0.12789145202775945
+            },
+            {
+              "species": "H2P1",
+              "share": 0.03433717586588847
+            },
+            {
+              "species": "P1",
+              "share": 0.010831063393187334
+            },
+            {
+              "species": "H1P1",
+              "share": 0.008005880710717738
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": -8000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.06269414005705855,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.44077988607234825
+            },
+            {
+              "species": "H3P1",
+              "share": 0.27093343060640734
+            },
+            {
+              "species": "P2",
+              "share": 0.2108968334363763
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.06269414005705855
+            },
+            {
+              "species": "H1P1",
+              "share": 0.010277659651585551
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": 8000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.4296262037429516,
+          "top_phosphorus_carriers": [
+            {
+              "species": "P2",
+              "share": 0.46206284541717124
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.4296262037429516
+            },
+            {
+              "species": "H2P1",
+              "share": 0.06526710081641282
+            },
+            {
+              "species": "P1",
+              "share": 0.02058736943693132
+            },
+            {
+              "species": "H1P1",
+              "share": 0.015217344383922178
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": 8000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.018052499405289062,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.45779655908265215
+            },
+            {
+              "species": "H3P1",
+              "share": 0.281393037158601
+            },
+            {
+              "species": "P2",
+              "share": 0.2274948670343927
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.018052499405289062
+            },
+            {
+              "species": "H1P1",
+              "share": 0.010674437346489199
+            }
+          ]
+        }
+      ],
+      "uncertainty_scope": "Only two selected conditions per network; source-reported widths, not confidence intervals or full thermal/network uncertainty.",
+      "gibbs_scope": "Same-model feasibility-corrected exchanges are resolved only above the displayed floating-point scale; unresolved trace cases are retained."
+    },
+    {
+      "network": "neutral",
+      "species": 421,
+      "cases": 75,
+      "anchors": [
+        {
+          "anchor": "cccbdb",
+          "HCP_ratio_min": 0.0067652690747528055,
+          "HCP_ratio_max": 0.8710732800525836,
+          "highlighted_case": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "C1H1P1",
+            "x_before": 4.160693816366529e-07,
+            "x_after": 3.6021490652714384e-08,
+            "ratio": 0.08657568242830088,
+            "phosphorus_share_before": 0.9428824325319987,
+            "phosphorus_share_after": 0.08163064422226256
+          },
+          "largest_absolute_response": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "H2",
+            "x_before": 0.8574448537760038,
+            "x_after": 0.8574444463901087,
+            "ratio": 0.9999995248838532,
+            "phosphorus_share_before": 0.0,
+            "phosphorus_share_after": 0.0
+          },
+          "phosphorus_carrier_extrema": [
+            {
+              "case_index": 25,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1e-06,
+              "C_over_O": 1.0,
+              "species": "P1",
+              "x_before": 5.597931390612674e-08,
+              "x_after": 3.798097015297966e-07,
+              "ratio": 6.784822375042144,
+              "phosphorus_share_before": 0.1279557530931548,
+              "phosphorus_share_after": 0.8681573352646794
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1H1P1",
+              "x_before": 4.160693816366529e-07,
+              "x_after": 3.6021490652714384e-08,
+              "ratio": 0.08657568242830088,
+              "phosphorus_share_before": 0.9428824325319987,
+              "phosphorus_share_after": 0.08163064422226256
+            },
+            {
+              "case_index": 68,
+              "temperature_K": 3000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1P1",
+              "x_before": 3.308297986585481e-10,
+              "x_after": 6.695731221980846e-10,
+              "ratio": 2.023920230018808,
+              "phosphorus_share_before": 0.0008045262623670978,
+              "phosphorus_share_after": 0.001628297098833369
+            },
+            {
+              "case_index": 63,
+              "temperature_K": 2500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H1P1",
+              "x_before": 1.1325093872721015e-08,
+              "x_after": 7.89938628652417e-08,
+              "ratio": 6.975117712314582,
+              "phosphorus_share_before": 0.025975812789714916,
+              "phosphorus_share_after": 0.18118436000809168
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "H2P1",
+              "x_before": 2.482619835099244e-08,
+              "x_after": 2.0189950571195626e-07,
+              "ratio": 8.132518030247882,
+              "phosphorus_share_before": 0.05632752852484529,
+              "phosphorus_share_after": 0.45808455098644196
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H3P1",
+              "x_before": 9.195347706634087e-09,
+              "x_after": 1.1757815019637144e-07,
+              "ratio": 12.786699747258428,
+              "phosphorus_share_before": 0.020838187562621856,
+              "phosphorus_share_after": 0.2664514980661551
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "N1P1",
+              "x_before": 5.666095993286859e-10,
+              "x_after": 4.606405946177899e-09,
+              "ratio": 8.129770395057776,
+              "phosphorus_share_before": 0.001285566074894502,
+              "phosphorus_share_after": 0.010451354955403539
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O1P1",
+              "x_before": 2.005498298070934e-08,
+              "x_after": 2.0458952820902086e-08,
+              "ratio": 1.0201431155828615,
+              "phosphorus_share_before": 0.04548890137919466,
+              "phosphorus_share_after": 0.04640518992992382
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O2P1",
+              "x_before": 1.081415437762677e-11,
+              "x_after": 1.1031618476451724e-11,
+              "ratio": 1.0201092097663098,
+              "phosphorus_share_before": 2.4528766863398808e-05,
+              "phosphorus_share_after": 2.502202117164015e-05
+            },
+            {
+              "case_index": 28,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "P1S1",
+              "x_before": 1.8745870391897845e-10,
+              "x_after": 5.262199224483993e-10,
+              "ratio": 2.807124510344619,
+              "phosphorus_share_before": 0.00042496401685466367,
+              "phosphorus_share_after": 0.0011929265969973948
+            },
+            {
+              "case_index": 27,
+              "temperature_K": 1500.0,
+              "pressure_bar": 0.01,
+              "C_over_O": 1.0,
+              "species": "P2",
+              "x_before": 3.601260297755833e-11,
+              "x_after": 1.1184681517692047e-07,
+              "ratio": 3105.76870121327,
+              "phosphorus_share_before": 0.0001633073379262371,
+              "phosphorus_share_after": 0.5071947695854778
+            }
+          ],
+          "max_phosphorus_share_before": 0.9996378572045223,
+          "max_phosphorus_share_after": 0.8707578180468591,
+          "gibbs_resolved_cases": 64,
+          "gibbs_scale_max": 1.9308260425354392e-16,
+          "gibbs_corrected_current_min": 1.828340906913792e-19,
+          "gibbs_corrected_candidate_max": 1.6839522636400432e-18
+        },
+        {
+          "anchor": "theory_2001",
+          "HCP_ratio_min": 0.002690464835890929,
+          "HCP_ratio_max": 0.6356251744346912,
+          "highlighted_case": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "C1H1P1",
+            "x_before": 4.160693816366529e-07,
+            "x_after": 1.4931354769052626e-08,
+            "ratio": 0.035886694450619185,
+            "phosphorus_share_before": 0.9428824325319987,
+            "phosphorus_share_after": 0.03383691377462865
+          },
+          "largest_absolute_response": {
+            "case_index": 53,
+            "temperature_K": 1500.0,
+            "pressure_bar": 1.0,
+            "C_over_O": 1.5,
+            "species": "H2",
+            "x_before": 0.8574448537760038,
+            "x_after": 0.8574444254493727,
+            "ratio": 0.9999995004615991,
+            "phosphorus_share_before": 0.0,
+            "phosphorus_share_after": 0.0
+          },
+          "phosphorus_carrier_extrema": [
+            {
+              "case_index": 56,
+              "temperature_K": 2000.0,
+              "pressure_bar": 0.0001,
+              "C_over_O": 1.5,
+              "species": "P1",
+              "x_before": 6.936115844613813e-08,
+              "x_after": 3.826945837426149e-07,
+              "ratio": 5.517419148063876,
+              "phosphorus_share_before": 0.169012899795184,
+              "phosphorus_share_after": 0.932515166433133
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1H1P1",
+              "x_before": 4.160693816366529e-07,
+              "x_after": 1.4931354769052626e-08,
+              "ratio": 0.035886694450619185,
+              "phosphorus_share_before": 0.9428824325319987,
+              "phosphorus_share_after": 0.03383691377462865
+            },
+            {
+              "case_index": 68,
+              "temperature_K": 3000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "C1P1",
+              "x_before": 3.308297986585481e-10,
+              "x_after": 6.930706941920379e-10,
+              "ratio": 2.094946395404246,
+              "phosphorus_share_before": 0.0008045262623670978,
+              "phosphorus_share_after": 0.001685439527116513
+            },
+            {
+              "case_index": 63,
+              "temperature_K": 2500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H1P1",
+              "x_before": 1.1325093872721015e-08,
+              "x_after": 9.112903144286345e-08,
+              "ratio": 8.04664689467765,
+              "phosphorus_share_before": 0.025975812789714916,
+              "phosphorus_share_after": 0.20901820437723967
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "H2P1",
+              "x_before": 2.482619835099244e-08,
+              "x_after": 2.1987415683750611e-07,
+              "ratio": 8.856537506424802,
+              "phosphorus_share_before": 0.05632752852484529,
+              "phosphorus_share_after": 0.49886676022824844
+            },
+            {
+              "case_index": 53,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.5,
+              "species": "H3P1",
+              "x_before": 9.195347706634087e-09,
+              "x_after": 1.2254691094053433e-07,
+              "ratio": 13.327055686227233,
+              "phosphorus_share_before": 0.020838187562621856,
+              "phosphorus_share_after": 0.2777115220272179
+            },
+            {
+              "case_index": 33,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "N1P1",
+              "x_before": 5.666095993286859e-10,
+              "x_after": 5.016320048080267e-09,
+              "ratio": 8.853221078540779,
+              "phosphorus_share_before": 0.001285566074894502,
+              "phosphorus_share_after": 0.0113813981899802
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O1P1",
+              "x_before": 2.005498298070934e-08,
+              "x_after": 2.0463917192910282e-08,
+              "ratio": 1.0203906536641938,
+              "phosphorus_share_before": 0.04548890137919466,
+              "phosphorus_share_after": 0.04641645016971961
+            },
+            {
+              "case_index": 8,
+              "temperature_K": 2000.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 0.5888436553555908,
+              "species": "O2P1",
+              "x_before": 1.081415437762677e-11,
+              "x_after": 1.1034290789022412e-11,
+              "ratio": 1.020356322252166,
+              "phosphorus_share_before": 2.4528766863398808e-05,
+              "phosphorus_share_after": 2.5028082538581464e-05
+            },
+            {
+              "case_index": 28,
+              "temperature_K": 1500.0,
+              "pressure_bar": 1.0,
+              "C_over_O": 1.0,
+              "species": "P1S1",
+              "x_before": 1.8745870391897845e-10,
+              "x_after": 5.296808169875567e-10,
+              "ratio": 2.825586680768315,
+              "phosphorus_share_before": 0.00042496401685466367,
+              "phosphorus_share_after": 0.0012007723496529215
+            },
+            {
+              "case_index": 27,
+              "temperature_K": 1500.0,
+              "pressure_bar": 0.01,
+              "C_over_O": 1.0,
+              "species": "P2",
+              "x_before": 3.601260297755833e-11,
+              "x_after": 1.5230689630196445e-07,
+              "ratio": 4229.26652641233,
+              "phosphorus_share_before": 0.0001633073379262371,
+              "phosphorus_share_after": 0.6906701701900655
+            }
+          ],
+          "max_phosphorus_share_before": 0.9996378572045223,
+          "max_phosphorus_share_after": 0.6353949716771446,
+          "gibbs_resolved_cases": 65,
+          "gibbs_scale_max": 1.9308260425354392e-16,
+          "gibbs_corrected_current_min": -4.951206511969281e-19,
+          "gibbs_corrected_candidate_max": 1.4480614668540804e-18
+        }
+      ],
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.489352355331151e-06,
+        "HCNOPS_element_relative_residual": 1.4124172748645527e-10,
+        "phosphorus_relative_residual": 1.4124172748645527e-10,
+        "mass_action_max_abs_ln": 1.0302869668521453e-12
+      },
+      "tight_case_indices": [
+        52,
+        53
+      ],
+      "tolerance_stability": {
+        "max_abs_delta_ln_x": 5.219224931352073e-06,
+        "HCP_max_abs_delta_ln_x": 8.881784197001252e-14,
+        "visible_max_abs_delta_ln_x": 5.219238268239224e-07,
+        "max_absolute_delta_x": 2.2086816079841536e-14
+      },
+      "quoted_energy_controls": [
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": -20000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.9852202277379015,
+          "top_phosphorus_carriers": [
+            {
+              "species": "C1H1P1",
+              "share": 0.9852202277379015
+            },
+            {
+              "species": "H2P1",
+              "share": 0.006306501224248162
+            },
+            {
+              "species": "P2",
+              "share": 0.004314091179879855
+            },
+            {
+              "species": "P1",
+              "share": 0.0019892758072113928
+            },
+            {
+              "species": "H1P1",
+              "share": 0.0014703916308079067
+            }
+          ]
+        },
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": -20000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.31707452497971217,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.33879224277409886
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.31707452497971217
+            },
+            {
+              "species": "H3P1",
+              "share": 0.20824487135913627
+            },
+            {
+              "species": "P2",
+              "share": 0.12459288853864069
+            },
+            {
+              "species": "H1P1",
+              "share": 0.00789961439574245
+            }
+          ]
+        },
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": 20000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.417548907083698,
+          "top_phosphorus_carriers": [
+            {
+              "species": "P2",
+              "share": 0.4728797050128744
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.417548907083698
+            },
+            {
+              "species": "H2P1",
+              "share": 0.06602663054928028
+            },
+            {
+              "species": "P1",
+              "share": 0.02082694984302106
+            },
+            {
+              "species": "H1P1",
+              "share": 0.015394432459153064
+            }
+          ]
+        },
+        {
+          "anchor": "cccbdb",
+          "offset_J_mol": 20000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.017353115534753313,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.45806126016268967
+            },
+            {
+              "species": "H3P1",
+              "share": 0.2815557404913895
+            },
+            {
+              "species": "P2",
+              "share": 0.2277580214770572
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.017353115534753313
+            },
+            {
+              "species": "H1P1",
+              "share": 0.010680609379907224
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": -8000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.815125819116892,
+          "top_phosphorus_carriers": [
+            {
+              "species": "C1H1P1",
+              "share": 0.815125819116892
+            },
+            {
+              "species": "P2",
+              "share": 0.12789144838854757
+            },
+            {
+              "species": "H2P1",
+              "share": 0.03433717539834034
+            },
+            {
+              "species": "P1",
+              "share": 0.010831063232310464
+            },
+            {
+              "species": "H1P1",
+              "share": 0.008005880596755258
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": -8000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.06269414009501204,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.440779886054371
+            },
+            {
+              "species": "H3P1",
+              "share": 0.2709334306121143
+            },
+            {
+              "species": "P2",
+              "share": 0.21089683339321763
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.06269414009501204
+            },
+            {
+              "species": "H1P1",
+              "share": 0.010277659650530088
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": 8000.0,
+          "case_index": 52,
+          "HCP_phosphorus_share": 0.4296262095447779,
+          "top_phosphorus_carriers": [
+            {
+              "species": "P2",
+              "share": 0.4620628399151863
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.4296262095447779
+            },
+            {
+              "species": "H2P1",
+              "share": 0.0652671004677426
+            },
+            {
+              "species": "P1",
+              "share": 0.020587369301481525
+            },
+            {
+              "species": "H1P1",
+              "share": 0.015217344293214578
+            }
+          ]
+        },
+        {
+          "anchor": "theory_2001",
+          "offset_J_mol": 8000.0,
+          "case_index": 53,
+          "HCP_phosphorus_share": 0.018052499416663915,
+          "top_phosphorus_carriers": [
+            {
+              "species": "H2P1",
+              "share": 0.45779655907520805
+            },
+            {
+              "species": "H3P1",
+              "share": 0.28139303717144226
+            },
+            {
+              "species": "P2",
+              "share": 0.22749486699907895
+            },
+            {
+              "species": "C1H1P1",
+              "share": 0.018052499416663915
+            },
+            {
+              "species": "H1P1",
+              "share": 0.010674437345655267
+            }
+          ]
+        }
+      ],
+      "uncertainty_scope": "Only two selected conditions per network; source-reported widths, not confidence intervals or full thermal/network uncertainty.",
+      "gibbs_scope": "Same-model feasibility-corrected exchanges are resolved only above the displayed floating-point scale; unresolved trace cases are retained."
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "anchor": "cccbdb",
+      "case_index": 53,
+      "comparisons": [
+        {
+          "dataset": "curated-tio2-v1",
+          "max_abs_delta_log10_x": 7.895302298255505e-09,
+          "element_relative_residual": 3.716008143180192e-11,
+          "charge_relative_residual": 1.1141608169149273e-12,
+          "mass_action_max_abs_ln": 2.9128699452485307e-10
+        },
+        {
+          "dataset": "review-hcp-cccbdb",
+          "max_abs_delta_log10_x": 7.90063464341456e-09,
+          "element_relative_residual": 2.8133286644042464e-11,
+          "charge_relative_residual": 4.9094932559936226e-14,
+          "mass_action_max_abs_ln": 9.387690624862444e-11
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "anchor": "theory_2001",
+      "case_index": 53,
+      "comparisons": [
+        {
+          "dataset": "curated-tio2-v1",
+          "max_abs_delta_log10_x": 7.895302298255505e-09,
+          "element_relative_residual": 3.716008143180192e-11,
+          "charge_relative_residual": 1.1141608169149273e-12,
+          "mass_action_max_abs_ln": 2.9128699452485307e-10
+        },
+        {
+          "dataset": "review-hcp-theory_2001",
+          "max_abs_delta_log10_x": 7.889895892747022e-09,
+          "element_relative_residual": 3.1375313902152555e-11,
+          "charge_relative_residual": 1.447696866434677e-12,
+          "mass_action_max_abs_ln": 3.340332455081807e-10
+        }
+      ]
+    }
+  ],
+  "scope": "Two independent HCP energy-only alternatives, each on the same 75-case ion and 75-case neutral baseline; no thermal replacement, adoption, condensation or full physical uncertainty."
+}
