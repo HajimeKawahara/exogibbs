@@ -1,0 +1,35 @@
+{
+  "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+  "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+  "inspection": "Original printed page image inspected; selected factual numerical/identity transcription only.",
+  "printed_page": 675,
+  "connectivity": "HCCH, linear acetylene",
+  "point_group": "D-infinity-h",
+  "rotational_symmetry": 2,
+  "ground_electronic_weight": 1,
+  "evaluation_date": "1961-03",
+  "B0_cm-1": 1.17684,
+  "fundamentals_cm-1_and_degeneracies": [
+    [
+      3373.7,
+      1
+    ],
+    [
+      1973.8,
+      1
+    ],
+    [
+      3281.9,
+      1
+    ],
+    [
+      611.6,
+      2
+    ],
+    [
+      729.3,
+      2
+    ]
+  ],
+  "thermal_method": "Rigid rotor/harmonic oscillator with explicit anharmonic and rotation-vibration corrections above 298.15 K."
+}
