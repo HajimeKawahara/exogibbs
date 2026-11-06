@@ -1,0 +1,8 @@
+{
+  "janaf_table_header": "Hydrogen Isocyanate (HNCO)\tC1H1N1O1(g)",
+  "nasa_reference": "Hf:East,1993. Jacox,1998 p236.",
+  "nasa_same_identity": true,
+  "atct_id": "75-13-8*0",
+  "printed_janaf_page": 601,
+  "decision": "Exact neutral molecular identity matches, so normalized source comparison is permitted."
+}
