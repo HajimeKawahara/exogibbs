@@ -7,7 +7,8 @@ the literal thermal fit, atomic reference and source-fit residual are retained.
 Only CH2 changes at this stage; species, inventories, charges and all other
 chemical potentials are identical to the preceding named preset. Earlier
 presets, source-review packets and candidate-execution receipts remain available.
-This named adoption does not itself switch the public ``curated`` alias.
+The public ``curated`` alias delegates to this named factory. Earlier named
+versions remain available with their original data and execution records.
 
 Scientific selection
 --------------------

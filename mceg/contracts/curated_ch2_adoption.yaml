@@ -28,7 +28,8 @@ domains:
   conditions:
   - 75 conditions per network at1500-4000K,1e-6-100bar and three C/O ratios.
   - 150 fresh production solves,6 tighter candidate references,2 independent ion-inclusive FastChem comparisons.
-  - Named preset adoption; public default is a separate cumulative switch.
+  - The public curated factory delegates directly to curated_ch2; exact potential and metadata identity is checked
+    separately without duplicate equilibrium solve counts.
   evidence:
   - scientific_sources
   - production_execution
@@ -54,7 +55,8 @@ claims:
   revision: '1'
   kind: numerical_verification
   statement: The named packaged factory adopts only the reviewed CH2 energy correction on its pinned preceding base
-    and passes fresh conserved response and independent solver checks.
+    and passes fresh conserved response and independent solver checks. The public curated entry point delegates
+    directly to this named factory.
   scope: curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with
     unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories
     are numerically verified; complete physical accuracy remains unknown.
@@ -86,7 +88,7 @@ evidence:
   context: production_gas_domain
   artifacts:
   - source: documents/mceg/curated_ch2_adoption.rst
-    sha256: 34d2683307496466c736f9f053518ea26a421a0ccff7dd77e508a5de9c78d857
+    sha256: e21683b440fbcd2bd0a7f5ae17db0d71d228e31d00e8a7ef245f1cb5bed4d696
   - source: src/exogibbs/data/curated/ch2_v1.json
     sha256: a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536
   - source: tests/data/validation/ch2_source_review/20261106/inputs.json
@@ -103,8 +105,8 @@ evidence:
     role: primary
     location: documents/mceg/curated_ch2_adoption.rst
     inspection: inspected
-    note: Original source/candidate records remain immutable. Named production verification and source selection
-      are separate from complete physical uncertainty and the later public-default switch.
+    note: Original source/candidate records remain immutable. Named production verification and the directly delegated
+      public default remain separate from complete physical uncertainty.
 - id: production_execution
   kind: numerical_test
   summary: 150 fresh cold production solves, six tighter independent references and two FastChem comparisons pass.
@@ -152,8 +154,42 @@ evidence:
     role: primary
     location: documents/mceg/curated_ch2_adoption.rst
     inspection: inspected
-    note: Original source/candidate records remain immutable. Named production verification and source selection
-      are separate from complete physical uncertainty and the later public-default switch.
+    note: Original source/candidate records remain immutable. Named production verification and the directly delegated
+      public default remain separate from complete physical uncertainty.
+  result: passed
+- id: default_binding
+  kind: numerical_test
+  summary: The public curated alias is the exact named curated_ch2 callable; both networks have identical metadata
+    and potentials at five temperatures. The archived fresh named-factory solves validate this same callable; no
+    additional equilibrium solves are claimed.
+  sources:
+  - src/exogibbs/presets/curated.py
+  - src/exogibbs/presets/curated_ch2.py
+  - src/exogibbs/data/curated/ch2_v1.json
+  - mceg/build_catalog.py
+  - tests/unittests/provenance_test.py
+  - tests/unittests/presets/curated_test.py
+  - tests/data/validation/curated_ch2_adoption/20261106/default_validation.json
+  scope: curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with
+    unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories
+    are numerically verified; complete physical accuracy remains unknown.
+  subject: curated_ch2_production_20261106
+  context: production_gas_domain
+  artifacts:
+  - source: src/exogibbs/presets/curated.py
+    sha256: 0785ab61c45116b73d645d1e4842b9c3325ed4b67db458ab451a59e5855c5c99
+  - source: src/exogibbs/presets/curated_ch2.py
+    sha256: 89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701
+  - source: src/exogibbs/data/curated/ch2_v1.json
+    sha256: a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536
+  - source: mceg/build_catalog.py
+    sha256: 856a9bdf61bc7ea0ecdd857b7c939b151efb79e9d98b676294e5cc2f1f4bc20c
+  - source: tests/unittests/provenance_test.py
+    sha256: 48cc70543067c3f4149fa6b6a3eb2154cb0a8476210a0ad8b227e4c54aabea1f
+  - source: tests/unittests/presets/curated_test.py
+    sha256: ed50d7f422c70a06332a728fd9a64a5acb9cca40e236c403976b3a7199747ab6
+  - source: tests/data/validation/curated_ch2_adoption/20261106/default_validation.json
+    sha256: 1031114ddb895c081b01e0ba3e38c87bcded2f194a3649cb9f1f8ecc32f23fa4
   result: passed
 subjects:
 - id: curated_ch2_production_20261106
@@ -163,7 +199,7 @@ subjects:
     benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
     benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
     benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
-    documents/mceg/curated_ch2_adoption.rst: 34d2683307496466c736f9f053518ea26a421a0ccff7dd77e508a5de9c78d857
+    documents/mceg/curated_ch2_adoption.rst: e21683b440fbcd2bd0a7f5ae17db0d71d228e31d00e8a7ef245f1cb5bed4d696
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
     examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
@@ -282,6 +318,11 @@ subjects:
     tests/data/validation/curated_tio2_adoption/20261106/receipt.json: 35078166bd7a19aa891ee2f6d9b872cb4cee454d2f429cbdedfde79a921c993a
     tests/model_evidence/curated_ch2_adoption_test.py: ca56967df1c7b7c35618a6a3fdce2d62f0caa8842354bc85584f3c59b58ae80f
     tests/unittests/presets/curated_ch2_test.py: fd6a91b7b5bb2fba8cc9231e87377c2be83addb44e90ca687419e0460b0f3f81
+    src/exogibbs/presets/curated.py: 0785ab61c45116b73d645d1e4842b9c3325ed4b67db458ab451a59e5855c5c99
+    mceg/build_catalog.py: 856a9bdf61bc7ea0ecdd857b7c939b151efb79e9d98b676294e5cc2f1f4bc20c
+    tests/unittests/provenance_test.py: 48cc70543067c3f4149fa6b6a3eb2154cb0a8476210a0ad8b227e4c54aabea1f
+    tests/unittests/presets/curated_test.py: ed50d7f422c70a06332a728fd9a64a5acb9cca40e236c403976b3a7199747ab6
+    tests/data/validation/curated_ch2_adoption/20261106/default_validation.json: 1031114ddb895c081b01e0ba3e38c87bcded2f194a3649cb9f1f8ecc32f23fa4
 contexts:
 - id: production_gas_domain
   scope: curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with
@@ -330,10 +371,13 @@ assessments:
   evidence:
   - scientific_sources
   - production_execution
+  - default_binding
   reasons:
   - All150 fresh endpoints, six tighter independent controls and two FastChem comparisons pass. Dense h error3.55e-15,
     target strict ln(x) error7.82e-14, solver difference1.78e-08dex. All non-target potentials equal the preceding
     base. Cumulative and incremental responses have distinct named baselines.
+  - The public curated alias delegates to the exact named factory; its metadata, potentials and packaged provenance
+    are checked against that factory. The 150 named-factory endpoints are not counted twice.
   status: supported
   origin: reviewed
 - id: physical_accuracy_review

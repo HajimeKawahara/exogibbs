@@ -1,0 +1,149 @@
+{
+  "dataset": "curated-hcp-v1",
+  "base_dataset": "curated-tio2-v1",
+  "species": "C1H1P1",
+  "energy_increase_J_mol": 62308,
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate_on_current_base": 2.1316282072803006e-14,
+      "tighter_case_indices": [
+        0,
+        45,
+        53
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3765649441666028e-05,
+        "max_target_abs_delta_ln_x": 3.907985046680551e-14,
+        "max_absolute_delta_x": 3.19138659676395e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3779208215872202e-06,
+        "HCNOPS_element_relative_residual": 1.2554816250006147e-10,
+        "phosphorus_relative_residual": 1.2554816250006147e-10,
+        "mass_action_max_abs_ln": 1.4210854715202004e-12,
+        "charge_relative_residual": 1.2881776780882661e-14
+      },
+      "incremental_response": {
+        "min_x_ratio": 0.006765269074750786,
+        "max_x_ratio": 0.8710732768492371,
+        "highlighted_case_index": 53,
+        "temperature_K": 1500.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 1.5,
+        "x_before": 4.160693815702488e-07,
+        "x_after": 3.602149062680514e-08,
+        "allocation_element": "P",
+        "element_share_before": 0.9428824324990098,
+        "element_share_after": 0.0816306441737192,
+        "maximum_element_share_after": 0.8707578148394416,
+        "maximum_element_share_after_case": 52
+      },
+      "cumulative_response_from_curated_tio2": {
+        "C1H1P1": {
+          "min_x_ratio": 0.006765269074750786,
+          "max_x_ratio": 0.8710732768492371,
+          "max_absolute_delta_x": 3.8004789094344365e-07
+        },
+        "C2H2": {
+          "min_x_ratio": 0.999999999999929,
+          "max_x_ratio": 1.1103139208066553,
+          "max_absolute_delta_x": 1.3035540609427124e-07
+        },
+        "C1H2": {
+          "min_x_ratio": 0.9999999999999076,
+          "max_x_ratio": 1.0537142234320616,
+          "max_absolute_delta_x": 3.7737517608643265e-09
+        }
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate_on_current_base": 2.1316282072803006e-14,
+      "tighter_case_indices": [
+        0,
+        21,
+        53
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.4679773869374912e-05,
+        "max_target_abs_delta_ln_x": 3.339550858072471e-13,
+        "max_absolute_delta_x": 3.3995141863295414e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.4691347768196545e-06,
+        "HCNOPS_element_relative_residual": 1.2556623178244928e-10,
+        "phosphorus_relative_residual": 1.2556623178244928e-10,
+        "mass_action_max_abs_ln": 1.3073986337985843e-12
+      },
+      "incremental_response": {
+        "min_x_ratio": 0.0067652690747528055,
+        "max_x_ratio": 0.8710732800525836,
+        "highlighted_case_index": 53,
+        "temperature_K": 1500.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 1.5,
+        "x_before": 4.160693816366529e-07,
+        "x_after": 3.6021490652714384e-08,
+        "allocation_element": "P",
+        "element_share_before": 0.9428824325319987,
+        "element_share_after": 0.08163064422226256,
+        "maximum_element_share_after": 0.8707578180468591,
+        "maximum_element_share_after_case": 52
+      },
+      "cumulative_response_from_curated_tio2": {
+        "C1H1P1": {
+          "min_x_ratio": 0.0067652690747528055,
+          "max_x_ratio": 0.8710732800525836,
+          "max_absolute_delta_x": 3.800478909839385e-07
+        },
+        "C2H2": {
+          "min_x_ratio": 0.9999999999998579,
+          "max_x_ratio": 1.1103139252179557,
+          "max_absolute_delta_x": 1.303554911136651e-07
+        },
+        "C1H2": {
+          "min_x_ratio": 0.9999999999999858,
+          "max_x_ratio": 1.0537142255255043,
+          "max_absolute_delta_x": 3.773808526037672e-09
+        }
+      }
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 0,
+      "comparisons": [
+        {
+          "dataset": "curated-hcp-v1",
+          "max_abs_delta_log10_x": 1.777549602161908e-08,
+          "element_relative_residual": 3.071660971287368e-11,
+          "charge_relative_residual": 4.316855244983032e-12,
+          "mass_action_max_abs_ln": 1.695639184617903e-10
+        }
+      ]
+    },
+    {
+      "case_index": 53,
+      "comparisons": [
+        {
+          "dataset": "curated-hcp-v1",
+          "max_abs_delta_log10_x": 7.90063464341456e-09,
+          "element_relative_residual": 2.8133286644042464e-11,
+          "charge_relative_residual": 4.9094932559936226e-14,
+          "mass_action_max_abs_ln": 9.387690624862444e-11
+        }
+      ]
+    }
+  ],
+  "scope": "Actual versioned production factory; selected energy only, unchanged thermals and source-fit residual. Incremental and cumulative responses use distinct baselines. Finite numerical verification does not establish complete physical accuracy."
+}
