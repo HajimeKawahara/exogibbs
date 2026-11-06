@@ -79,7 +79,7 @@ evidence:
   - source: tests/data/validation/c2_source_review/20261106/sources.json
     sha256: 7ecfa06e7e762dc9cda370457d9efd21e1442ee554ad30d2cb3094c560b4a2c7
   - source: documents/mceg/c2_source_review.rst
-    sha256: 8c426a65d836cd4ad8ee7f643740ccfded51b906cdcf29fef67c3229f29a6956
+    sha256: 81085f586072c0a436b95f1aa427f47064f59a7a3c1e5bbd7f727a11678d272d
   provenance:
     role: primary
     location: documents/mceg/c2_source_review.rst
@@ -103,7 +103,7 @@ evidence:
   - source: tests/data/validation/c2_source_review/20261106/comparison.json
     sha256: 7c7e9b33ce0e90a06ef79296846ef62a55527f4a8cdeb812bf98e6280f61f820
   - source: tests/data/validation/c2_source_review/20261106/receipt.json
-    sha256: 5f12ef195cb225fdf4b5fa4c17542db2aed0581328425e98fd69110d2f7a4dd7
+    sha256: dd817570bbec6d4f9da35651d46c7b6c9cd09eba01def731dab150cbfdc2b83f
   provenance:
     role: primary
     location: documents/mceg/c2_source_review.rst
@@ -126,7 +126,7 @@ evidence:
   - source: tests/data/validation/c2_source_review/20261106/sources.json
     sha256: 7ecfa06e7e762dc9cda370457d9efd21e1442ee554ad30d2cb3094c560b4a2c7
   - source: documents/mceg/c2_source_review.rst
-    sha256: 8c426a65d836cd4ad8ee7f643740ccfded51b906cdcf29fef67c3229f29a6956
+    sha256: 81085f586072c0a436b95f1aa427f47064f59a7a3c1e5bbd7f727a11678d272d
   provenance:
     role: primary
     location: documents/mceg/c2_source_review.rst
@@ -137,7 +137,7 @@ subjects:
 - id: c2_sources_20261106
   implementation: *id001
   selected_files:
-    documents/mceg/c2_source_review.rst: 8c426a65d836cd4ad8ee7f643740ccfded51b906cdcf29fef67c3229f29a6956
+    documents/mceg/c2_source_review.rst: 81085f586072c0a436b95f1aa427f47064f59a7a3c1e5bbd7f727a11678d272d
     mceg/reviews/c2_source_review.py: 1a9ac12c5b84e841b19389f6c8e7ea518d6432fc67f73a6e5106d4d1d065b5e1
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
