@@ -1,0 +1,140 @@
+{
+  "molecule": "Na2",
+  "species_id": "Na2",
+  "composition": {
+    "Na": 2
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "Na2": "Na-011.txt",
+    "Na": "Na-005.txt"
+  },
+  "nasa9": {
+    "Na2": {
+      "composition": {
+        "Na": 2
+      },
+      "reference": "Gurvich,1982 pt1 p314 pt2 p357.",
+      "source_line_1based": 7613,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            6848.62868,
+            -153.0836599,
+            5.32523039,
+            -0.001944906088,
+            2.657477888e-06,
+            -9.09684112e-10,
+            -2.44875673e-13,
+            16491.70574,
+            -2.653564394
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            19299407.58,
+            -62692.8012,
+            82.6768211,
+            -0.0456513781,
+            1.259515667e-05,
+            -1.560445735e-09,
+            7.02467717e-14,
+            409082.08,
+            -550.997089
+          ]
+        }
+      ],
+      "source_name": "Na2",
+      "hf298_J_mol": 142339.125,
+      "h298_minus_h0_J_mol": 10403.125,
+      "mass_u": 45.97954
+    },
+    "Na": {
+      "composition": {
+        "Na": 1
+      },
+      "reference": "Hf:Cox,1989. Martin,W.C.,1981. Gordon,1999.",
+      "source_line_1based": 7465,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            12183.82949,
+            4.24402818
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            952572.338,
+            -2623.807254,
+            5.16259662,
+            -0.001210218586,
+            2.306301844e-07,
+            -1.249597843e-11,
+            7.22677119e-16,
+            29129.63564,
+            -15.19717061
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            1592533392.0,
+            -971783.666,
+            223.8443963,
+            -0.02380930558,
+            1.352018117e-06,
+            -3.93697111e-11,
+            4.630689121e-16,
+            7748677.26,
+            -1939.615505
+          ]
+        }
+      ],
+      "source_name": "Na",
+      "hf298_J_mol": 107500.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 22.98977
+    }
+  },
+  "decision": "Retain Na2 production; review a measured-D0, finite-bound rovibronic thermal candidate separately rather than substitute NASA or Barklem-Collet wholesale.",
+  "follow_ups": [
+    "Construct Na2 partition moments with measured ground-state D0, explicit bound/quasibound convention, complete relevant electronic states and normalized nuclear-spin/isotope weights; preserve the source fit residual and test fixed-network substitutions.",
+    "Inspect the corrected 2025 thermal tables/supplement and, for K2, the 2026 direct-potential data; compare derivative-consistent G/H/S/Cp before adoption."
+  ],
+  "limitations": [
+    "Barklem-Collet tables are a spectroscopic compilation with shared old constants and approximate level truncation, not independent full physical validation.",
+    "Published Q and K nodes do not establish a derivative-consistent thermal candidate; molecular electronic and isotope completeness remain bounded.",
+    "The 2025 thermal preprint was inspected, but corrected final numerical tables and correction text were not obtained; no result is adopted from that preprint."
+  ]
+}
