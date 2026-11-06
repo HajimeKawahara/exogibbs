@@ -71,7 +71,7 @@ The final **curated-tio2-v1** archive contains 75 converged ion-inclusive endpoi
 These finite hot hydrogen-rich results do not bound cooler or oxidizing atmospheres, photochemistry, non-LTE populations, condensation or reaction kinetics. A small inventory here is not evidence that a molecule is unimportant in those settings.
 
 Decision, access needs and MCEG
-------------------------------
+-------------------------------
 
 Build a retained-thermal ATcT energy candidate and evaluate it on the current network before any adoption. If a later full XABC thermal representation is desired, validate continuous derivatives, bound/resonance policy, all isotope/spin conventions and compare against the 2024 thermodynamic tables. No unavailable paper is needed for the energy-only candidate or source-review merge.
 
