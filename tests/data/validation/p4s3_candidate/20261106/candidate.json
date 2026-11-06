@@ -1,0 +1,167 @@
+{
+  "id": "p4s3_bounded_candidates_20261106",
+  "slug": "p4s3",
+  "baseline_dataset": "curated-ch2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "native_NASA_R_J_mol_K": 8.31451,
+  "target_species": "P4S3",
+  "tracked_elements": [
+    "P",
+    "S"
+  ],
+  "primary_variant": "retained",
+  "variants": [
+    {
+      "name": "retained",
+      "replacements": {
+        "P4S3": {
+          "kind": "retained_energy",
+          "coefficients": [
+            270470.7407143345,
+            0.14492914018808278,
+            -102.10659211037546,
+            0.0005516093747306439,
+            -7.075661865045798e-08
+          ],
+          "delta_GH_J_mol": 56542.0
+        }
+      }
+    }
+  ],
+  "selected_variants": [
+    {
+      "name": "atomization_route_H298",
+      "replacements": {
+        "P4S3": {
+          "kind": "retained_energy",
+          "coefficients": [
+            270470.7407143345,
+            0.14492914018808278,
+            -102.10659211037546,
+            0.0005516093747306439,
+            -7.075661865045798e-08
+          ],
+          "delta_GH_J_mol": 47142.0
+        }
+      }
+    }
+  ],
+  "source_records": {
+    "p4s3": {
+      "slug": "p4s3",
+      "molecule": "P4S3",
+      "species": "P4S3",
+      "composition": {
+        "P": 4,
+        "S": 3
+      },
+      "anchor_type": "preferred_reaction_cycle_Hf298",
+      "janaf_fixed_reference_h0_J_mol": {
+        "P4S3": null,
+        "P": 310193,
+        "S": 270323
+      },
+      "janaf_D0_J_mol": null,
+      "selected_D0_J_mol": null,
+      "delta_D0_J_mol": null,
+      "delta_GH_J_mol": 56542.0,
+      "original_coefficients": [
+        270470.7407143345,
+        0.14492914018808278,
+        -102.10659211037546,
+        0.0005516093747306439,
+        -7.075661865045798e-08
+      ],
+      "formal_fit_intercept_Ra_J_mol": 2248818.8629735513,
+      "nasa_same_identity": true,
+      "nasa_h0_J_mol": {},
+      "nasa_D0_J_mol": null,
+      "nasa_records": {},
+      "source_details": {
+        "original_Hf298_J_mol": -151042,
+        "selected_Hf298_J_mol": -94500.0,
+        "preferred_cycle": {
+          "doi": "10.1007/s11224-019-01352-7",
+          "url": "https://api.research-repository.uwa.edu.au/ws/portalfiles/portal/108720002/ak122_SC_2019.pdf",
+          "access": "Complete accepted author manuscript inspected, Sections 3.2/3.3 and Tables 1/3/5.",
+          "pdf_sha256": "a13e3501182e554d310ecccacb27867d3a8f3701a276f75fb518bfffaf998bae",
+          "identity": "Isolated P4S3 molecular cage; no condensed lattice enthalpy.",
+          "preferred_Hf298_J_mol": -94500.0,
+          "preferred_cycle": "P4S3 + 0.5 S2 -> 2 P2S2, using W4 fragment anchors and W3lite-F12 reaction energy.",
+          "preferred_cycle_methods_Hf298_J_mol": [
+            -93800.0,
+            -95300.0,
+            -94500.0
+          ],
+          "cycles_3_to_9_Hf298_J_mol": [
+            -96700.0,
+            -97200.0,
+            -95800.0,
+            -92400.0,
+            -94500.0,
+            -94900.0,
+            -95500.0
+          ],
+          "atomization_route_Hf298_J_mol": -103900.0,
+          "atomization_route_TAE0_J_mol": 2182400.0,
+          "atomization_route_TAE0_uncertainty_J_mol": 6400.0,
+          "atomic_Hf0_J_mol": {
+            "P": 316060.0,
+            "S": 274930.0
+          },
+          "thermal_construction": "B3LYP-D3/Def2-TZVPP geometry and harmonic frequencies; zero-point energies scaled by 0.99. Detailed frequency/geometry supplement not acquired in this review.",
+          "caution": "Atomization route is explicitly less converged; its quoted uncertainty is not a preferred-cycle error bar. Cycle spread is method sensitivity, not a confidence interval."
+        },
+        "elemental_reference": {
+          "url": "https://cccbdb.nist.gov/refstatex.asp",
+          "access": "Official CODATA-based reference table inspected.",
+          "P": {
+            "phase": "white crystalline phosphorus",
+            "H298_minus_H0_J_mol": 5360.0
+          },
+          "S": {
+            "phase": "rhombic crystalline sulfur",
+            "H298_minus_H0_J_mol": 4412.0
+          },
+          "compatibility": "The 2019 paper uses CODATA elemental heat contents; the selected JANAF atomic tables imply the same phase-specific increments. The modern atomic Hf values differ and must not be silently mixed."
+        },
+        "D0_available": false,
+        "uncertainty_scope": "Method/cycle differences are sensitivities; atomization-route TAE0 uncertainty does not belong to the preferred cycle."
+      },
+      "source_sha256": {
+        "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+        "tests/data/validation/p4s3_source_review/20261106/P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+        "tests/data/validation/p4s3_source_review/20261106/P-017.txt": "38f5bc02c00d6b915defe5edb04b00b45aa361817b34c025688813ebe305fde6",
+        "tests/data/validation/p4s3_source_review/20261106/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+        "tests/data/validation/p4s3_source_review/20261106/comparison.json": "73c40772eaab737d606f8f162de5c59a98c9105f479d696a0c341a45ce4ea411",
+        "tests/data/validation/p4s3_source_review/20261106/inputs.json": "20d6e65d05d5d9c3306b4a6bbf07ec6691e8747f02866ec4b76e0ca0f4ad84df",
+        "tests/data/validation/p4s3_source_review/20261106/literature.json": "bc672678611666038a9d1e8a056711ea8f1d9e408022cdc25ad405e1f1e3e5f9",
+        "tests/data/validation/p4s3_source_review/20261106/sources.json": "1922d6e744835730e2b58482c39336824df4e82ad5a9a0b44cc352e686f9721c"
+      }
+    }
+  },
+  "special_controls": {
+    "alternate_Hf298_J_mol": -103900.0,
+    "scope": "Less-converged atomization-route central value at selected conditions only; its TAE0 uncertainty is not attached to the preferred reaction cycle. No zero-K anchor is invented."
+  },
+  "source_sha256": {
+    "mceg/reviews/pending_molecule_inputs.py": "131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/p4s3_source_review/20261106/P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+    "tests/data/validation/p4s3_source_review/20261106/P-017.txt": "38f5bc02c00d6b915defe5edb04b00b45aa361817b34c025688813ebe305fde6",
+    "tests/data/validation/p4s3_source_review/20261106/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+    "tests/data/validation/p4s3_source_review/20261106/comparison.json": "73c40772eaab737d606f8f162de5c59a98c9105f479d696a0c341a45ce4ea411",
+    "tests/data/validation/p4s3_source_review/20261106/inputs.json": "20d6e65d05d5d9c3306b4a6bbf07ec6691e8747f02866ec4b76e0ca0f4ad84df",
+    "tests/data/validation/p4s3_source_review/20261106/literature.json": "bc672678611666038a9d1e8a056711ea8f1d9e408022cdc25ad405e1f1e3e5f9",
+    "tests/data/validation/p4s3_source_review/20261106/sources.json": "1922d6e744835730e2b58482c39336824df4e82ad5a9a0b44cc352e686f9721c"
+  },
+  "retained_scope": "The explicit physical energy difference changes G/H equally and leaves S/Cp and the entire literal thermal/fit residual intact. No physical D0 is inferred from R*a.",
+  "NASA_scope": "When present, exact NASA molecular-minus-neutral-atoms thermal shape and atomic gauge replace the inherited fit residual. Native energy is removed with NASA R and chosen energy inserted with SI R exactly once. This is a separate thermal/reference sensitivity, not proof of greater accuracy.",
+  "physical_accuracy": "unknown",
+  "production_change": "none"
+}
