@@ -1,0 +1,51 @@
+{
+  "molecule": "linear CCO, X3Sigma triplet",
+  "janaf": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+    "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+    "printed_page": 684,
+    "inspection": "Original page image inspected; numerical and identity transcription only.",
+    "evaluation_year": 1966,
+    "point_group": "C-infinity-v",
+    "sigma": 1,
+    "ground_electronic_weight": 3,
+    "estimated_excited_terms_cm-1_and_weights": [
+      [
+        4050,
+        2
+      ],
+      [
+        6450,
+        1
+      ]
+    ],
+    "B0_cm-1": 0.408433,
+    "vibrations_cm-1_and_degeneracies": [
+      [
+        1074,
+        1
+      ],
+      [
+        381,
+        2
+      ],
+      [
+        1978,
+        1
+      ]
+    ],
+    "hf298_kJ_mol": 286.604,
+    "listed_uncertainty_kJ_mol": 63
+  },
+  "nist_jacox": {
+    "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C119754084&Mask=800",
+    "InChI": "InChI=1S/C2O/c1-2-3",
+    "gas_T0_cm-1": {
+      "a": 5276,
+      "b": 8205,
+      "A": 11651.182
+    },
+    "a_b_uncertainty_cm-1": 5,
+    "scope": "Electronic T0 refers to v=0 separation, not uncorrected electronic minima. No new partition function built."
+  }
+}
