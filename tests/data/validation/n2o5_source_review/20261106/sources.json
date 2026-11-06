@@ -1,0 +1,56 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "N2O5",
+        "file": "N-033.txt",
+        "url": "https://janaf.nist.gov/tables/N-033.txt",
+        "sha256": "a19cb63b1e43b5a65bcd61dcb58a116714afe8a8a85b3fc479e67372cff29424"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "O",
+        "file": "O-001.txt",
+        "url": "https://janaf.nist.gov/tables/O-001.txt",
+        "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+      }
+    ],
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Official cached CEA records and all selected coefficients/headers checked against frozen screening records."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact gas-phase CAS identifiers and selected tabulated 0/298 K formation enthalpies; rounded marginal uncertainties, not a reaction covariance."
+  },
+  "references": [
+    {
+      "doi": "10.1039/B709193A",
+      "url": "https://pubs.rsc.org/en/content/articlelanding/2007/cp/b709193a",
+      "title": "NO3 absorption and NO3+NO2/N2O5 equilibrium (Osthoff et al.2007)",
+      "access": "Primary publisher abstract and its ATcT provenance link inspected; full original paper not obtained",
+      "finding": "Concrete atmospheric-temperature equilibrium constraint; no hot thermal extrapolation is validated."
+    },
+    {
+      "doi": "10.1021/jp047912y",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=882",
+      "title": "ATcT1.228 dinitrogen pentoxide value and source-network provenance",
+      "access": "Current gas identity, formation values and listed provenance contributors inspected; DOI identifies ATcT methodology",
+      "finding": "Gas/condensed identity and network correlation are explicit; marginal uncertainty is not reaction covariance."
+    }
+  ],
+  "local_reference_scope": "The available refs_exogibbs_202611 and -2 collections were inventoried; relevant Gamache TIPS papers are used where indicated; no original Gurvich volume was present."
+}
