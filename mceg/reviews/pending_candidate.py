@@ -101,7 +101,7 @@ def validate_definition(definition: dict) -> dict:
     jax.config.update("jax_enable_x64", True)
     temperatures = np.unique(np.r_[np.arange(1500., 4001.), np.linspace(1500.137, 3999.813, 251)])
     rows = []
-    for variant in definition["variants"]:
+    for variant in definition["variants"]+definition.get("selected_variants", []):
         for species, spec in variant["replacements"].items():
             actual = np.array([list(reaction_properties(t, spec).values()) for t in temperatures])
             potential = lambda t: R*t*formation_h_jax(t, spec)

@@ -18,7 +18,7 @@ from c2h_equilibrium_impact import carbon_budget, independent_check
 from co2_equilibrium_impact import gibbs_ordering
 from curated_h2o_adoption import solve_cases
 from gas_source_comparison import ROOT, file_hash
-from pending_candidate import candidate_setup
+from pending_candidate import candidate_setup, formation_h
 
 PRIMARY_TOLERANCE, STRICT_TOLERANCE = 5e-14, 2e-14
 
@@ -76,6 +76,68 @@ def select_cases(logx, shares, targets, temperatures):
     if highlight == hot_case:
         edge_cases[1] = next(i for i in sorted(selected) if i != highlight)
     return effect, relative, highlight, np.array(sorted(selected)), np.array(edge_cases)
+
+
+def replay(definition_path: Path, output: Path) -> dict:
+    """Verify a frozen packet offline, without a new solve or FastChem binary."""
+    from curated_adoption_history import historical_source
+
+    definition = json.loads(definition_path.read_text())
+    summary = json.loads((output/"summary.json").read_text())
+    receipt = json.loads((output/"receipt.json").read_text())
+    for path, digest in receipt["selected_file_sha256"].items():
+        assert file_hash(historical_source(ROOT, path, digest)) == digest, path
+    for path, digest in receipt["output_sha256"].items():
+        assert file_hash(output/path) == digest, path
+    assert receipt["result"] == "passed" and summary["curated_update"] == "none"
+    variants, selected_variants = definition["variants"], definition.get("selected_variants", [])
+    assert summary["new_endpoint_solves"] == 150*len(variants)
+    assert summary["reused_baseline_cases"] == 150
+    assert summary["tighter_control_solves"] == 6*(len(variants)+1)
+    assert summary["path_control_solves"] == 10
+    assert summary["selected_variant_solves"] == 4*len(selected_variants)
+    assert summary["independent_fastchem_runs"] == 2*(len(variants)+1)
+    for filename, expected in (("diagnostics.json", summary["new_endpoint_solves"]),
+            ("selected_diagnostics.json", summary["tighter_control_solves"]+10+summary["selected_variant_solves"])):
+        rows = json.loads((output/filename).read_text())
+        assert len(rows) == expected and all(row["converged"] for row in rows)
+    baseline = ROOT/definition.get("baseline_archive", "tests/data/validation/curated_ch2_adoption/20261106")
+    tracked = definition["tracked_elements"]
+    for network in ("ions", "neutral"):
+        with np.load(output/f"{network}.npz") as a, np.load(baseline/f"{network}.npz") as original:
+            species, elements = list(a["species"]), list(a["elements"])
+            matrix, budget, t, p = (a[key] for key in ("formula_matrix", "budget", "temperature_K", "pressure_bar"))
+            for key in ("species", "elements", "formula_matrix", "budget", "temperature_K", "pressure_bar", "C_over_O"):
+                np.testing.assert_array_equal(a[key], original[key])
+            np.testing.assert_array_equal(a["ln_n"][0], original["ln_n"])
+            np.testing.assert_allclose(a["h"][0], original["h"], atol=1e-12, rtol=0)
+            assert a["converged"].all()
+            for vi, variant in enumerate(variants, 1):
+                columns = [species.index(s) for s in variant["replacements"]]
+                np.testing.assert_array_equal(np.delete(a["h"][vi]-a["h"][0], columns, axis=-1), 0)
+                for s, spec in variant["replacements"].items():
+                    np.testing.assert_allclose(a["h"][vi, :, species.index(s)], [formation_h(float(temp), spec) for temp in t], atol=2e-12, rtol=0)
+            constraints(matrix, elements, species, budget, a["ln_n"], a["h"], p, tracked)
+            selected = a["tight_case_indices"]
+            constraints(matrix, elements, species, budget[selected], a["tight_ln_n"], a["h"][:, selected], p[selected], tracked)
+            delta = log_fractions(a["tight_ln_n"])-log_fractions(a["ln_n"][:, selected])
+            targets = [species.index(s) for s in {s for v in variants+selected_variants for s in v["replacements"]}]
+            assert abs(delta).max() < 1e-4 and abs(delta[..., targets]).max() < 1e-8
+            assert abs(np.exp(log_fractions(a["tight_ln_n"]))-np.exp(log_fractions(a["ln_n"][:, selected]))).max() < 1e-9
+            pi, i = int(a["path_variant_index"]), int(a["path_case_index"])
+            ph = a["h"][0, i]+a["lambda_values"][:, None]*(a["h"][pi, i]-a["h"][0, i])
+            constraints(matrix, elements, species, np.broadcast_to(budget[i], (5, len(elements))), a["lambda_ln_n"], ph, np.repeat(p[i], 5), tracked)
+            assert np.max(np.diff(np.exp(a["lambda_ln_n"])@(a["h"][pi, i]-a["h"][0, i]))) < 1e-10
+            indices = a["selected_case_indices"]
+            for vi, variant in enumerate(selected_variants):
+                columns = [species.index(s) for s in variant["replacements"]]
+                np.testing.assert_allclose(np.delete(a["selected_h"][vi]-a["h"][0, indices], columns, axis=-1), 0., atol=1e-12, rtol=0)
+                for s, spec in variant["replacements"].items():
+                    np.testing.assert_allclose(a["selected_h"][vi, :, species.index(s)], [formation_h(float(temp), spec) for temp in t[indices]], atol=2e-12, rtol=0)
+                constraints(matrix, elements, species, budget[indices], a["selected_ln_n"][vi], a["selected_h"][vi], p[indices], tracked)
+            corrected, scale = a["delta_g_corrected"], a["gibbs_numerical_scale"]
+            np.testing.assert_array_equal(a["gibbs_ordering_resolved"], (corrected[:, 0] > scale) & (corrected[:, 1] < -scale))
+    return summary
 
 
 def run(definition_path: Path, output: Path, executable: Path) -> None:

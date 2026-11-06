@@ -77,9 +77,11 @@ def test_scalar_and_traced_domains_and_derivatives():
         with pytest.raises(ValueError):
             candidate.formation_h(t, spec)
     assert np.isnan(np.asarray(candidate.formation_h_jax(np.array([1499., 4001., np.nan]), spec))).all()
-    report = candidate.validate_definition({"variants": [{"name": "energy", "replacements": {"test": spec}}]})
+    report = candidate.validate_definition({"variants": [{"name": "energy", "replacements": {"test": spec}}],
+                                            "selected_variants": [{"name": "edge", "replacements": {"test": {**spec, "delta_GH_J_mol": 5000.}}}]})
     assert report["temperature_count"] == 2752
     assert report["offgrid_count"] == 251
+    assert [row["variant"] for row in report["models"]] == ["energy", "edge"]
 
 
 def test_custom_model_contract_does_not_add_an_implicit_energy(monkeypatch):
