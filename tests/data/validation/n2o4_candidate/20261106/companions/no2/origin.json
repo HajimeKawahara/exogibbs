@@ -1,0 +1,40 @@
+{
+  "scope": "Exact minimal companion source bytes copied for a self-contained joint candidate; not a dependency on a separate new candidate or its unmerged source PR.",
+  "files": [
+    {
+      "copied_file": "N-002.txt",
+      "original_path": "tests/data/validation/no2_source_review/20261106/N-002.txt",
+      "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+    },
+    {
+      "copied_file": "N-007.txt",
+      "original_path": "tests/data/validation/no2_source_review/20261106/N-007.txt",
+      "sha256": "b6ad15bebb6ab62cd7d4677c679696106f4a1c7d45eff6b4fe40a5559497c25b"
+    },
+    {
+      "copied_file": "O-001.txt",
+      "original_path": "tests/data/validation/no2_source_review/20261106/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+    },
+    {
+      "copied_file": "comparison.json",
+      "original_path": "tests/data/validation/no2_source_review/20261106/comparison.json",
+      "sha256": "8289b6110663eab1c1ea8a881510e88d0458b44c8d20b8ffb432236a7319e4c9"
+    },
+    {
+      "copied_file": "inputs.json",
+      "original_path": "tests/data/validation/no2_source_review/20261106/inputs.json",
+      "sha256": "3475eecec10e0798e6cf0d81cacb843f53851044d6b1050353a4dbbf20a0696a"
+    },
+    {
+      "copied_file": "nasa_records.json",
+      "original_path": "tests/data/validation/no2_source_review/20261106/nasa_records.json",
+      "sha256": "669e0a5cec765427698d5885b0395e5d481e0e356a919490b790e2060e628ffa"
+    },
+    {
+      "copied_file": "sources.json",
+      "original_path": "tests/data/validation/no2_source_review/20261106/sources.json",
+      "sha256": "31cd5c2969e60fb5f8db4d22da561370a669c1d4d8222cb5053eacd9dd5e9c9c"
+    }
+  ]
+}
