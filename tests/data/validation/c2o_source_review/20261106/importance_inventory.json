@@ -1,0 +1,41 @@
+{
+  "molecule": "C2O",
+  "canonical": "C2O1",
+  "max_mole_fraction": 5.030590114988584e-09,
+  "max_mole_fraction_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 8.565107829460301e-06,
+  "max_element": "C",
+  "max_element_share_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 8.565107829460301e-06,
+      "maximum_share_percent": 0.0008565107829460302,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "O": {
+      "maximum_share": 6.423830872095226e-06,
+      "maximum_share_percent": 0.0006423830872095226,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}

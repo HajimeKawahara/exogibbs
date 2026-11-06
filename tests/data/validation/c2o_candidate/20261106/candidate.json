@@ -1,0 +1,339 @@
+{
+  "id": "c2o_bounded_candidates_20261106",
+  "slug": "c2o",
+  "baseline_dataset": "curated-ch2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "native_NASA_R_J_mol_K": 8.31451,
+  "target_species": "C2O1",
+  "tracked_elements": [
+    "C",
+    "O"
+  ],
+  "primary_variant": "retained",
+  "variants": [
+    {
+      "name": "retained",
+      "replacements": {
+        "C2O1": {
+          "kind": "retained_energy",
+          "coefficients": [
+            167386.55787919965,
+            -2.2368309393791037,
+            -15.150416163457066,
+            0.0008991971481046857,
+            -5.2961274247280345e-08
+          ],
+          "delta_GH_J_mol": 94082.0
+        }
+      }
+    },
+    {
+      "name": "nasa",
+      "replacements": {
+        "C2O1": {
+          "kind": "nasa9",
+          "coefficients": [
+            -638880.3907999999,
+            1570.0995795999997,
+            -3.7300927039999996,
+            0.002856285999,
+            -8.477842344e-07,
+            1.0738646031e-10,
+            -5.1029117347e-15,
+            -166452.896815688,
+            -6.611232242
+          ],
+          "native_energy_removal_D0_over_R_K": 166237.68111410053,
+          "selected_energy_insertion_D0_over_R_K": 155452.37970978854
+        }
+      }
+    }
+  ],
+  "selected_variants": [],
+  "source_records": {
+    "c2o": {
+      "slug": "c2o",
+      "molecule": "C2O",
+      "species": "C2O1",
+      "composition": {
+        "C": 2,
+        "O": 1
+      },
+      "anchor_type": "ATcT1.228_balanced_D0",
+      "janaf_fixed_reference_h0_J_mol": {
+        "C2O": 276131,
+        "C": 710134,
+        "O": 242448
+      },
+      "janaf_D0_J_mol": 1386585.0,
+      "selected_D0_J_mol": 1292503.0,
+      "delta_D0_J_mol": -94082.0,
+      "delta_GH_J_mol": 94082.0,
+      "original_coefficients": [
+        167386.55787919965,
+        -2.2368309393791037,
+        -15.150416163457066,
+        0.0008991971481046857,
+        -5.2961274247280345e-08
+      ],
+      "formal_fit_intercept_Ra_J_mol": 1391729.2782679491,
+      "nasa_same_identity": true,
+      "nasa_h0_J_mol": {
+        "C2O": 280552.94800000003,
+        "C": 710144.105,
+        "O": 242449.6
+      },
+      "nasa_D0_J_mol": 1382184.862,
+      "nasa_records": {
+        "C2O": {
+          "composition": {
+            "C": 2,
+            "O": 1
+          },
+          "reference": "Hf:Gurvich,1991 pt1 p31. Jacox,1998.",
+          "source_line_1based": 3175,
+          "intervals": [
+            {
+              "bounds_K": [
+                300.0,
+                1000.0
+              ],
+              "coefficients": [
+                -3959.92942,
+                -111.7516348,
+                4.59396006,
+                0.00371060202,
+                -7.01476018e-07,
+                -1.371129839e-09,
+                7.123854e-13,
+                34101.0974,
+                0.46228056
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                -634805.659,
+                1184.133091,
+                4.87917334,
+                0.001757538773,
+                -3.95755227e-07,
+                3.98917994e-11,
+                -1.546043135e-15,
+                24898.03938,
+                0.980904059
+              ]
+            }
+          ],
+          "source_name": "C2O",
+          "hf298_J_mol": 291038.666,
+          "h298_minus_h0_J_mol": 10485.718,
+          "natural_mass_u": 40.0208
+        },
+        "C": {
+          "composition": {
+            "C": 1
+          },
+          "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+          "source_line_1based": 1936,
+          "intervals": [
+            {
+              "bounds_K": [
+                300.0,
+                1000.0
+              ],
+              "coefficients": [
+                649.503147,
+                -0.964901086,
+                2.504675479,
+                -1.281448025e-05,
+                1.980133654e-08,
+                -1.606144025e-11,
+                5.314483411e-15,
+                85457.6311,
+                4.747924288
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                -128913.6472,
+                171.9528572,
+                2.646044387,
+                -0.000335306895,
+                1.74209274e-07,
+                -2.902817829e-11,
+                1.642182385e-15,
+                84105.9785,
+                4.130047418
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                443252801.0,
+                -288601.8412,
+                77.3710832,
+                -0.00971528189,
+                6.64959533e-07,
+                -2.230078776e-11,
+                2.899388702e-16,
+                2355273.444,
+                -640.512316
+              ]
+            }
+          ],
+          "source_name": "C",
+          "hf298_J_mol": 716680.0,
+          "h298_minus_h0_J_mol": 6535.895,
+          "natural_mass_u": 12.0107
+        },
+        "O": {
+          "composition": {
+            "O": 1
+          },
+          "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+          "source_line_1based": 7864,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                -7953.6113,
+                160.7177787,
+                1.966226438,
+                0.00101367031,
+                -1.110415423e-06,
+                6.5175075e-10,
+                -1.584779251e-13,
+                28403.62437,
+                8.40424182
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                261902.0262,
+                -729.872203,
+                3.31717727,
+                -0.000428133436,
+                1.036104594e-07,
+                -9.43830433e-12,
+                2.725038297e-16,
+                33924.2806,
+                -0.667958535
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                177900426.4,
+                -108232.8257,
+                28.10778365,
+                -0.002975232262,
+                1.854997534e-07,
+                -5.79623154e-12,
+                7.191720164e-17,
+                889094.263,
+                -218.1728151
+              ]
+            }
+          ],
+          "source_name": "O",
+          "hf298_J_mol": 249175.003,
+          "h298_minus_h0_J_mol": 6725.403,
+          "natural_mass_u": 15.9994
+        }
+      },
+      "source_details": {
+        "version": "1.228",
+        "same_version_hf0_J_mol": {
+          "C2O": 377080,
+          "C": 711370,
+          "O": 246843
+        },
+        "original_ATcT_rows": {
+          "C2O": {
+            "label": "Dicarbon monoxide",
+            "formula": "CCO  (g)",
+            "hf0_kJ_mol": 377.08,
+            "hf298_kJ_mol": 381.13,
+            "uncertainty": "\u00b1 0.83",
+            "ATcT_id": "12071-23-7*0"
+          },
+          "C": {
+            "label": "Carbon",
+            "formula": "C  (g)",
+            "hf0_kJ_mol": 711.37,
+            "hf298_kJ_mol": 716.855,
+            "uncertainty": "\u00b1 0.038",
+            "ATcT_id": "7440-44-0*0"
+          },
+          "O": {
+            "label": "Oxygen atom",
+            "formula": "O  (g)",
+            "hf0_kJ_mol": 246.843,
+            "hf298_kJ_mol": 249.229,
+            "uncertainty": "\u00b1 0.0021",
+            "ATcT_id": "17778-80-2*0"
+          }
+        },
+        "uncertainty_scope": "Marginal source uncertainties are not independent reaction errors; covariance is unavailable."
+      },
+      "source_sha256": {
+        "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+        "tests/data/validation/c2o_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+        "tests/data/validation/c2o_source_review/20261106/C-136.txt": "83e09f23150265ffe55b70f5dcc59e1b333e576fb8b3b639312a20b3de5a7f24",
+        "tests/data/validation/c2o_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+        "tests/data/validation/c2o_source_review/20261106/atct-selected.tsv": "d153af41ceafc01d9670f27bae6644aec43c55e441a0ed9ef3ddc422a4783e7a",
+        "tests/data/validation/c2o_source_review/20261106/comparison.json": "9b830143fdb94a2308098e5ba27b14cacf765de97304cd6ac91898f0572453be",
+        "tests/data/validation/c2o_source_review/20261106/identity_evidence.json": "13654b929cea3c66f8d3f53d282befb6f0b3ce843868a36ac4b0eeb664a6c5a3",
+        "tests/data/validation/c2o_source_review/20261106/importance_inventory.json": "8a16ae005bbc4159d44cea88d55679fe8251f7cae702f304b1eb383bc4ede477",
+        "tests/data/validation/c2o_source_review/20261106/inputs.json": "5f62b7738ef27c801fa851aec5d5ed40be52c5300a2867a7ad235aafb1d103b0",
+        "tests/data/validation/c2o_source_review/20261106/nasa-selected.txt": "f400c8e24bf3f05cdf3a425cd9efe8e8a44f01ac8f7cbf3848066e8e1b5c7756",
+        "tests/data/validation/c2o_source_review/20261106/sources.json": "745cd74837cb532a36ed13522c458a7c1f7292aa18d0b4decb0687cf6696bdf3"
+      }
+    }
+  },
+  "special_controls": {},
+  "source_sha256": {
+    "mceg/reviews/pending_molecule_inputs.py": "131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/c2o_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/c2o_source_review/20261106/C-136.txt": "83e09f23150265ffe55b70f5dcc59e1b333e576fb8b3b639312a20b3de5a7f24",
+    "tests/data/validation/c2o_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/c2o_source_review/20261106/atct-selected.tsv": "d153af41ceafc01d9670f27bae6644aec43c55e441a0ed9ef3ddc422a4783e7a",
+    "tests/data/validation/c2o_source_review/20261106/comparison.json": "9b830143fdb94a2308098e5ba27b14cacf765de97304cd6ac91898f0572453be",
+    "tests/data/validation/c2o_source_review/20261106/identity_evidence.json": "13654b929cea3c66f8d3f53d282befb6f0b3ce843868a36ac4b0eeb664a6c5a3",
+    "tests/data/validation/c2o_source_review/20261106/importance_inventory.json": "8a16ae005bbc4159d44cea88d55679fe8251f7cae702f304b1eb383bc4ede477",
+    "tests/data/validation/c2o_source_review/20261106/inputs.json": "5f62b7738ef27c801fa851aec5d5ed40be52c5300a2867a7ad235aafb1d103b0",
+    "tests/data/validation/c2o_source_review/20261106/nasa-selected.txt": "f400c8e24bf3f05cdf3a425cd9efe8e8a44f01ac8f7cbf3848066e8e1b5c7756",
+    "tests/data/validation/c2o_source_review/20261106/sources.json": "745cd74837cb532a36ed13522c458a7c1f7292aa18d0b4decb0687cf6696bdf3"
+  },
+  "retained_scope": "The explicit physical energy difference changes G/H equally and leaves S/Cp and the entire literal thermal/fit residual intact. No physical D0 is inferred from R*a.",
+  "NASA_scope": "When present, exact NASA molecular-minus-neutral-atoms thermal shape and atomic gauge replace the inherited fit residual. Native energy is removed with NASA R and chosen energy inserted with SI R exactly once. This is a separate thermal/reference sensitivity, not proof of greater accuracy.",
+  "physical_accuracy": "unknown",
+  "production_change": "none"
+}
