@@ -65,6 +65,7 @@ HCN differences with optional MCEG tooling.
    gas_source_comparison
    cs_source_review
    cnc_source_review
+   cnc_candidate
    cn_source_review
    cn_candidate
    curated_cn_adoption
