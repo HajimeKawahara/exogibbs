@@ -1,0 +1,43 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "Na2SO4",
+      "file": "Na-026.txt",
+      "url": "https://janaf.nist.gov/tables/Na-026.txt",
+      "sha256": "4be59e973f88e41908b6f87afb78d91c98bc4ec973d3ea1313f54ec7e633ef6a",
+      "bytes": 4131,
+      "header": "Sodium Sulfate (Na2SO4)\tNa2O4S1(g)"
+    },
+    {
+      "molecule": "Na",
+      "file": "Na-005.txt",
+      "url": "https://janaf.nist.gov/tables/Na-005.txt",
+      "sha256": "56df39453bc3895f80161d7ca0146b344669da2d1a9918b27139e917d491c255",
+      "bytes": 3186,
+      "header": "Sodium (Na)\tNa1(g)"
+    },
+    {
+      "molecule": "S",
+      "file": "S-006.txt",
+      "url": "https://janaf.nist.gov/tables/S-006.txt",
+      "sha256": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+      "bytes": 3804,
+      "header": "Sulfur (S)\tS1(g)"
+    },
+    {
+      "molecule": "O",
+      "file": "O-001.txt",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "bytes": 3807,
+      "header": "Oxygen (O)\tO1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}
