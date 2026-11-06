@@ -1,0 +1,45 @@
+{
+  "review_date": "2026-11-06",
+  "primary_evaluation": {
+    "doi": "10.1063/5.0273661",
+    "authoritative_page": "https://www.nist.gov/publications/improved-partition-functions-and-related-thermochemical-quantities-16o2-and-h216o",
+    "full_text": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959474",
+    "inspection": "Full accepted manuscript and official numeric supplements inspected in source review; primary metadata and source availability rechecked for this candidate.",
+    "table_scope": "Natural, pure16 and Q source numeric rows1500-4000K extracted from original SHA-pinned5000K tables; nuclear/statistical and natural mass-translation corrections are already included.",
+    "limit": "Unbound-state uncertainty is not quantified; complete reaction covariance and atmospheric accuracy are not inferred."
+  },
+  "downloads": [
+    {
+      "file": "O2_NaturalThermo.csv",
+      "url": "https://ndownloader.figshare.com/files/54603050",
+      "sha256": "fef8311d791b5b4bbfd0ef3bd2dd5100599627102684764e06907b73b525d797",
+      "bytes": 264029,
+      "article": "https://api.figshare.com/v2/articles/29087348"
+    },
+    {
+      "file": "O2_ThermoFunctions.csv",
+      "url": "https://ndownloader.figshare.com/files/54602999",
+      "sha256": "210f80d1fe57c76681257d0b9ea8da71575c46bfee51701e4c22aac4136cc950",
+      "bytes": 265706,
+      "article": "https://api.figshare.com/v2/articles/29087336"
+    },
+    {
+      "file": "O2_PartitionFunctions.csv",
+      "url": "https://ndownloader.figshare.com/files/54602996",
+      "sha256": "65b2a1ee9f9db0acd0d7cc0b390717586c13baa4e08c89baff9d7231ed361b35",
+      "bytes": 252241,
+      "article": "https://api.figshare.com/v2/articles/29087333"
+    }
+  ],
+  "energy": {
+    "ATcT_version": "1.228",
+    "O_ground_species_number": 22,
+    "O2_species_number": 6,
+    "O_hf0_kJ_mol": 246.843,
+    "O2_hf0_kJ_mol": 0,
+    "D0_J_mol": 493686,
+    "JANAF_D0_J_mol": 493579,
+    "scope": "Physical atom-balanced ground energy; no extra ZPE. Formal fit intercept remains separate."
+  },
+  "model_scope": "Cp fit integrated once to H/S/G with1500Kanchors; NASA thermal proxy residual preserved explicitly; no production adoption."
+}

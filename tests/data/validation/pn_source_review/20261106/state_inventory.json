@@ -1,0 +1,24 @@
+{
+  "source_sha256": "9c28406bd6ea8dda4096431b67f795374e062d9f8fd074c369926a2aba77b422",
+  "source_file": "pn.states.bz2",
+  "rows": 30327,
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "electronic_label_index"
+  ],
+  "labels": [
+    "A1Pi",
+    "X1Sigma+"
+  ],
+  "energy_range_cm-1": [
+    0.0,
+    82498.772121
+  ],
+  "maximum_J": 210.0,
+  "weights_over_2Jplus1": [
+    6.0
+  ],
+  "partition_source_sha256": "bc0a76e7ab1a01d5d49d1c6a551a0b869659c70a1e8873cb9625c19eb09a972f"
+}
