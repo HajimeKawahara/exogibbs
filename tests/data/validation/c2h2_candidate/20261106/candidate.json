@@ -1,0 +1,74 @@
+{
+  "id": "c2h2_retained_and_nasa_atct1228_candidates_v1",
+  "species": "C2H2",
+  "reaction": "2 C(g) + 2 H(g) -> C2H2(g)",
+  "composition": {
+    "C": 2,
+    "H": 2
+  },
+  "baseline_dataset": "curated-tio2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_R_J_mol_K": 8.31451,
+  "atct_version": "1.228",
+  "same_version_hf0_kJ_mol": {
+    "C2H2": 228.79,
+    "C": 711.37,
+    "H": 216.034
+  },
+  "janaf_h0_J_mol": {
+    "C2H2": 216719,
+    "C": 710134,
+    "H": 211802
+  },
+  "retained_source_D0_J_mol": 1627153.0,
+  "D0_J_mol": 1626018.0,
+  "delta_D0_J_mol": -1135.0,
+  "delta_D0_over_R_K": -136.50912297349407,
+  "original_record": "C2H2 Ethyne : C 2 H 2 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+  "original_logK_coefficients": [
+    196460.42660345597,
+    -4.514291998261854,
+    -12.427863494177018,
+    0.0015177662181888874,
+    -7.454213998978464e-08
+  ],
+  "formal_fit_intercept_Ra_J_mol": 1633462.8729408728,
+  "nasa_h0_J_mol": {
+    "C2H2": 218194.161,
+    "C": 710144.105,
+    "H": 211801.40000000002
+  },
+  "nasa_D0_J_mol": 1625696.849,
+  "nasa_energy_shift_over_R_K": 39.739832116960315,
+  "nasa_control_coefficients": [
+    1971553.128915,
+    -6272.648503516601,
+    2.0687670220000003,
+    0.0008022777918728,
+    -4.847696486266e-07,
+    8.519428992911999e-11,
+    -4.5871130160394e-15,
+    -156535.63509211695,
+    -65.553317182
+  ],
+  "representation": "Retained: add physical delta(D0)/(RT) to the unchanged literal formation fit. NASA: exact acetylene-2C-2H NASA9, replace b1 energy once. Neither candidate is a new thermal fit.",
+  "energy_scope": "D0 is a balanced physical source anchor, not R times the fitted 1/T coefficient. Retain the JANAF/fit residual. No extra ZPE, isotope shift or extrapolation to zero K.",
+  "nasa_scope": "Remove NASA H0 with native R=8.314510, insert ATcT D0 with SI R. Retain NASA dimensionless molecular and atomic thermals and express all candidate calorics using SI R. This changes the thermal-reference model and fit residual as well as the molecular thermal shape.",
+  "aceTY_scope": "The source packet's four finite PF diagnostics remain limited controls; no aCeTY extrapolation or complete hot state-sum claim is used.",
+  "uncertainty_scope": "Same-version ATcT central values; marginal molecular uncertainties are not a balanced reaction covariance or a thermal uncertainty interval.",
+  "source_sha256": {
+    "tests/data/validation/c2h2_source_review/20261106/inputs.json": "d12d5f2b1283bf9136d7389fc0c77603f238744a050581482f5261b23365223b",
+    "tests/data/validation/c2h2_source_review/20261106/sources.json": "6a840cdae6606742953f7513f2af065a89d1d714f8882d4c705547590da78431",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/c2h2_source_review/20261106/nasa-selected.txt": "e566705afe8a73b7f370cca83ad87e6349f65e93d531f65c4f17e7e9b8708308",
+    "tests/data/validation/c2h2_source_review/20261106/comparison.json": "85da303dc8b11514cf472d2eff1612158e244b5ec94e9b05e0403f7c08e341d6",
+    "tests/data/validation/c2h2_source_review/20261106/C-127.txt": "efa4bd5c2bcf07ac1d799cd6245af46652042c1c77053ba620d6b4c0dab52c0b",
+    "tests/data/validation/c2h2_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/c2h2_source_review/20261106/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+  }
+}
