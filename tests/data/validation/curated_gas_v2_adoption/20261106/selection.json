@@ -1,0 +1,145 @@
+{
+  "id": "curated_gas_v2_combined_production_20261106",
+  "dataset": "curated-gas-v2",
+  "base_dataset": "curated-ch2-v1",
+  "review_count": 27,
+  "target_count": 28,
+  "selection": [
+    {
+      "path": "tests/data/validation/c2_candidate/20261106/candidate.json",
+      "sha256": "30396a88f535b41cb84b24cea4a625b750c622eb41fc001b0acee796273b8934",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/c2o_candidate/20261106/candidate.json",
+      "sha256": "b7927cb42f8f89dd74f5e93153036ff998ecf11041604210199aeb9db9e42131",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/c4n2_candidate/20261106/candidate.json",
+      "sha256": "e9673e8799a9884ae279b37771bcc20c21ba79b598b8e30c42d79561632e40f3",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/cis_h2n2_candidate/20261106/candidate.json",
+      "sha256": "022aca8794a50da7390828b796662de63a8edeb5e7e02e964b423c71e81415a1",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/cnc_candidate/20261106/candidate.json",
+      "sha256": "b0c838354f837efdb281667b545517fb84ead7363dd0638830e454e7df0d6985",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/cnn_candidate/20261106/candidate.json",
+      "sha256": "4a2c140189d3cfddabdf7b6ba58ff3d5295fa30b5b612f150cdccb7f9ef0f9f0",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/hco_candidate/20261106/candidate.json",
+      "sha256": "2c251d42eaa4d4a7116f07fbe689bbdaccbac1efb640d555be5a4e0474589575",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/hnco_candidate/20261106/candidate.json",
+      "sha256": "f14c5203e36f9d6c1e5e52e16bfcd7b425ac3d0fc3780cac417abc45ced2d26d",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/ncn_candidate/20261106/candidate.json",
+      "sha256": "880edeade830b910fb84ce60253bc89f80235f436c7a6b7e5467dd2caa4aa77b",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/nco_candidate/20261106/candidate.json",
+      "sha256": "823c82db7752e17b06a2026c74931f77fbbd5bc83389ccdd0fc8311bf66f791f",
+      "variant": "joint_hnco_nco"
+    },
+    {
+      "path": "tests/data/validation/nh2_candidate/20261106/candidate.json",
+      "sha256": "3d486440d9f75f5e3c6f7493f3d7db84032d2cb7f4463721a8dabd27aab5aa02",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/p4s3_candidate/20261106/candidate.json",
+      "sha256": "92e74fae09f0edf54d1f1129758fb0427558de5f33d1c17a572a02058505ac7f",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/vn_candidate/20261106/candidate.json",
+      "sha256": "438d114c087cd4ca317ffcbc3161a194a834c1c74913730e1b65daff64bd58ad",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/no_candidate/20261106/candidate.json",
+      "sha256": "d09ba2bb5dccb863a56ce5559bd32d83f4729d57a8dd6f042cc3f10d7b623081",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/n2o_candidate/20261106/candidate.json",
+      "sha256": "b3653aa73b92de3baced51e65337fe9ddba1b11352c060ef2a1b238839293d21",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/no2_candidate/20261106/candidate.json",
+      "sha256": "91fbc0b465ac2c3dbaf0668e9bfd692aecaeb3107e1df262d07231dbb95f27a1",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/hno_candidate/20261106/candidate.json",
+      "sha256": "ac2b0b9571d73ff788e5747a19fdc953215ce36b3734613c6c1e898198644d35",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/n2h4_candidate/20261106/candidate.json",
+      "sha256": "20fd1823894ac945c5a03cd71e93320a5bda3e9a3f6602b52aa520a4b2baf6df",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/no3_candidate/20261106/candidate.json",
+      "sha256": "a80765e4ae719ad46f49db8dd2cbdc84371f815c6b973f842c811c52429e7593",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/n2o4_candidate/20261106/candidate.json",
+      "sha256": "8a56a1b206dc2fbfa9fb975fa3d0c9072b89b1e73053ef3eff893c51481c12bb",
+      "variant": "joint_no2_n2o4_atct"
+    },
+    {
+      "path": "tests/data/validation/cis_hno2_candidate/20261106/candidate.json",
+      "sha256": "3188d8624841c43a80559549eaf277e9f879071762fad38d9525f436034e3fab",
+      "variant": "joint_cis_trans_atct"
+    },
+    {
+      "path": "tests/data/validation/n2o5_h298_candidate/20261106/candidate.json",
+      "sha256": "9d6493a1de48d5516b95da10a980e6f62feadfac21f1d159ca1680470e658ec4",
+      "variant": "retained_h298"
+    },
+    {
+      "path": "tests/data/validation/c3o2_candidate/20261106/candidate.json",
+      "sha256": "dbbd974c3927101a7965c97068ac7d788d630af59b95304e8973b0bf55119213",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/o3_candidate/20261106/candidate.json",
+      "sha256": "7c724f0f2a009edf0697fede0e961dc7c5925f607f4e6fbbfc1f4569d209f49e",
+      "variant": "retained"
+    },
+    {
+      "path": "tests/data/validation/o2_candidate/20261106/candidate.json",
+      "sha256": "47e1541d97041b903441e8184cad479f277bf67328c4f91690be6362d3da8863",
+      "variant": "evaluated_2025_atct"
+    },
+    {
+      "path": "tests/data/validation/na2_candidate/20261106/candidate.json",
+      "sha256": "13730be14309fa8a5a29f17e5686a477cb218c0f3706ab57b714b071349d84b1",
+      "variant": "measured_D0_retained_thermal"
+    },
+    {
+      "path": "tests/data/validation/k2_candidate/20261106/candidate.json",
+      "sha256": "69433be9d56ffb400e3aadfa21aa82d274d5fd265e8d046ff5ff2a8fd825501f",
+      "variant": "measured_D0_retained_thermal"
+    }
+  ],
+  "scope": "Independently assemble selected frozen candidate specifications, deduplicating equal joint companions. New production factory is compared against this reference, never against its own packaged energy map."
+}

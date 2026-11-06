@@ -3,11 +3,20 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The current dataset, ``curated-ch2-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-gas-v2``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
-The latest updates retain the existing thermal functions and change only
+The :doc:`gas-v2 adoption <../mceg/curated_gas_v2_adoption>` combines 27 reviewed
+recommendations, changing 28 species because cis/trans-HNO2 are updated together.
+It adopts bounded energy corrections while retaining existing thermal fits,
+except for O2, which uses the evaluated 2025 natural-isotope thermal model.
+HNCO/NCO and NO2/N2O4 are also updated together. NaCN, KCN and C2N2 retain their
+existing functions. The full combined model receives its own production
+equilibrium verification; individual candidate abundance changes are not
+treated as results for the combined model.
+
+The preceding updates retain the existing thermal functions and change only
 reviewed formation energies: :doc:`HCP <../mceg/curated_hcp_adoption>` uses the
 CCCBDB correction, followed by ATcT 1.228 energy updates for
 :doc:`acetylene <../mceg/curated_c2h2_adoption>` and
@@ -42,7 +51,8 @@ to reproduce the earlier datasets, or ``curated_oh.chemsetup`` for the preceding
 for those versions. ``curated_cn.chemsetup`` and ``curated_ps.chemsetup`` retain
 the intermediate CN and CN/PS stages. ``curated_tio2.chemsetup``,
 ``curated_hcp.chemsetup`` and ``curated_c2h2.chemsetup`` preserve their successive
-versions. Use ``curated_ch2.chemsetup`` to select the current version explicitly. Each supports
+versions. ``curated_ch2.chemsetup`` preserves the preceding default.
+Use ``curated_v2.chemsetup`` to select the current version explicitly. Each supports
 ``ions=False`` and retains its identity and historical evidence. Changing one
 formation function can alter coupled abundances throughout the network.
 See the adoption guides for source choices and cumulative
