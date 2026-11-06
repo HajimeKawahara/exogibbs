@@ -1,0 +1,41 @@
+{
+  "molecule": "P4",
+  "decision": "Retain gaseous P4; record the W5 atomization result as a low-priority energy control rather than an already validated replacement.",
+  "follow_up": "If P-rich regimes or percent-level energy refinements become important, test the +2.75984 kJ/mol W5 preliminary-2 retained-thermal D0 control. Preserve the fit residual, distinguish theoretical spread from uncertainty, and assess fixed-network impact before adoption.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/P-013.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Gurvich,1989 pt1 p402 pt2 p257. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "reference0",
+      "title": "Barman et al., W5 (2026)",
+      "doi": "10.1021/acs.jpca.6c00467",
+      "url": "https://doi.org/10.1021/acs.jpca.6c00467",
+      "inspection": "Full primary article and Table 4 inspected; P4 numerical atomization entries transcribed, ATcT column empty."
+    },
+    {
+      "id": "reference1",
+      "title": "Karton and Martin, W4 P2/P4 (2007)",
+      "doi": "10.1080/00268970701543572",
+      "url": "https://doi.org/10.1080/00268970701543572",
+      "inspection": "Primary abstract and thermochemical conclusion inspected; complete original calculation not rerun."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}
