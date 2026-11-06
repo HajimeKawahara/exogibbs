@@ -1,0 +1,332 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.p4s3_source_review.v1
+  name: P4S3 source review and next calculation
+  description: Retain for this source review, then evaluate a 2019 cycle-based H298 energy candidate separately
+    from a reconstructed cage thermal model. JANAF explicitly estimates all gas data and has no zero-K
+    molecular anchor.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:89410ffb9ec481ddc7665cbbe53375ba573de549ab55dad2d91b5d4e39522be9
+    entry_points:
+    - mceg/reviews/p4s3_source_review.py
+assumptions:
+- statement: Neutral gas and neutral atoms; one bar; no NASA molecular surrogate; physical D0 kept distinct
+    from fit intercepts, H298 anchors and De. JANAF molecular 0 K row is blank; energy alignment is H298
+    and molecular physical D0 remains unknown.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  conditions:
+  - Archived abundance is a finite hot H-rich inventory, not a substitution response or an oxidizing/cold/photochemical
+    validation.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty, missing-state bounds and planetary abundance accuracy remain
+    unestablished.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: Official numerical source records, native R and balanced energy/thermal decomposition are
+    explicit; the retained formation fit and calorics reproduce the named production model.
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+- id: modern_source_scope
+  revision: '1'
+  kind: numerical_verification
+  statement: Inspected primary modern evidence and access limitations are identified without equating
+    ancestry agreement or a bounded diagnostic with complete physical accuracy.
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+- id: provisional_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retain for this source review, then evaluate a 2019 cycle-based H298 energy candidate separately
+    from a reconstructed cage thermal model. JANAF explicitly estimates all gas data and has no zero-K
+    molecular anchor.
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: P4S3 has complete quantified physical uncertainty and validated planetary abundance accuracy.
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Pinned official source inputs and individually bounded modern evidence.
+  sources:
+  - tests/data/validation/p4s3_source_review/20261106/P-008.txt
+  - tests/data/validation/p4s3_source_review/20261106/P-017.txt
+  - tests/data/validation/p4s3_source_review/20261106/S-006.txt
+  - tests/data/validation/p4s3_source_review/20261106/inputs.json
+  - tests/data/validation/p4s3_source_review/20261106/literature.json
+  - tests/data/validation/p4s3_source_review/20261106/sources.json
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  subject: p4s3_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/p4s3_source_review/20261106/P-008.txt
+    sha256: a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879
+  - source: tests/data/validation/p4s3_source_review/20261106/P-017.txt
+    sha256: 38f5bc02c00d6b915defe5edb04b00b45aa361817b34c025688813ebe305fde6
+  - source: tests/data/validation/p4s3_source_review/20261106/S-006.txt
+    sha256: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+  - source: tests/data/validation/p4s3_source_review/20261106/inputs.json
+    sha256: 20d6e65d05d5d9c3306b4a6bbf07ec6691e8747f02866ec4b76e0ca0f4ad84df
+  - source: tests/data/validation/p4s3_source_review/20261106/literature.json
+    sha256: bc672678611666038a9d1e8a056711ea8f1d9e408022cdc25ad405e1f1e3e5f9
+  - source: tests/data/validation/p4s3_source_review/20261106/sources.json
+    sha256: 1922d6e744835730e2b58482c39336824df4e82ad5a9a0b44cc352e686f9721c
+  provenance:
+    role: primary
+    location: documents/mceg/p4s3_source_review.rst
+    inspection: inspected
+    note: Access and scientific limits are recorded per source; unavailable ancestors and unexecuted follow-ups
+      are not claimed as verified.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline energy/thermal/caloric replay and final named-model archived footprint.
+  sources:
+  - tests/data/validation/p4s3_source_review/20261106/comparison.json
+  - tests/data/validation/p4s3_source_review/20261106/receipt.json
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  subject: p4s3_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/p4s3_source_review/20261106/comparison.json
+    sha256: 73c40772eaab737d606f8f162de5c59a98c9105f479d696a0c341a45ce4ea411
+  - source: tests/data/validation/p4s3_source_review/20261106/receipt.json
+    sha256: 6a5cb839b2c926af6f63b2e5f966608f1dddec3804779a23ad48b57326e0b45f
+  provenance:
+    role: primary
+    location: documents/mceg/p4s3_source_review.rst
+    inspection: inspected
+    note: Access and scientific limits are recorded per source; unavailable ancestors and unexecuted follow-ups
+      are not claimed as verified.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Scoped provisional retention and actionable next calculation.
+  sources:
+  - documents/mceg/p4s3_source_review.rst
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  subject: p4s3_sources_20261106
+  context: source_review
+  artifacts:
+  - source: documents/mceg/p4s3_source_review.rst
+    sha256: 4a1f24f4859cebf8922f6e4bd67806b4173c1630861a5f34d744787e00ae70f9
+  provenance:
+    role: primary
+    location: documents/mceg/p4s3_source_review.rst
+    inspection: inspected
+    note: Access and scientific limits are recorded per source; unavailable ancestors and unexecuted follow-ups
+      are not claimed as verified.
+subjects:
+- id: p4s3_sources_20261106
+  implementation: *id001
+  selected_files:
+    mceg/reviews/p4s3_source_review.py: 89410ffb9ec481ddc7665cbbe53375ba573de549ab55dad2d91b5d4e39522be9
+    documents/mceg/p4s3_source_review.rst: 4a1f24f4859cebf8922f6e4bd67806b4173c1630861a5f34d744787e00ae70f9
+    tests/model_evidence/p4s3_source_review_test.py: dd1df78b669da4516e63a567031f2c39d4ffe174060345d0143efba5aea930a2
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/ykb4/gibbs_matrices.npz: 2a23ba342773165e384124ad1521b7e6ffdc89b8226bd0d1e4713c2547d03dbf
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/curated_tio2_adoption/20261106/ions.npz: 9333c4893a4abac147f6f9c12cee11027a617d305cbf638363a6e1ad73e49bb3
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_cn.py: 8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_ps.py: 73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_tio2.py: 876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/cn_v1.json: 28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/ps_v1.json: d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6
+    src/exogibbs/data/curated/tio2_v1.json: 7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    tests/data/validation/p4s3_source_review/20261106/P-008.txt: a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879
+    tests/data/validation/p4s3_source_review/20261106/P-017.txt: 38f5bc02c00d6b915defe5edb04b00b45aa361817b34c025688813ebe305fde6
+    tests/data/validation/p4s3_source_review/20261106/README.rst: eea81ef3430f4c0a28ea2b47756e7fe70d0b82b92adb4f26b47f2a5339cb6e7b
+    tests/data/validation/p4s3_source_review/20261106/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+    tests/data/validation/p4s3_source_review/20261106/inputs.json: 20d6e65d05d5d9c3306b4a6bbf07ec6691e8747f02866ec4b76e0ca0f4ad84df
+    tests/data/validation/p4s3_source_review/20261106/literature.json: bc672678611666038a9d1e8a056711ea8f1d9e408022cdc25ad405e1f1e3e5f9
+    tests/data/validation/p4s3_source_review/20261106/sources.json: 1922d6e744835730e2b58482c39336824df4e82ad5a9a0b44cc352e686f9721c
+    tests/data/validation/p4s3_source_review/20261106/comparison.json: 73c40772eaab737d606f8f162de5c59a98c9105f479d696a0c341a45ce4ea411
+    tests/data/validation/p4s3_source_review/20261106/receipt.json: 6a5cb839b2c926af6f63b2e5f966608f1dddec3804779a23ad48b57326e0b45f
+contexts:
+- id: source_review
+  scope: P4S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  settings:
+    standard_pressure_bar: 1
+    production_change: none
+    finite_substitution: not_run
+    current_grid_model: curated-tio2-v1
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: p4s3_sources_20261106
+  context: source_review
+  method:
+    id: review_p4s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Official numerical source records, native R and balanced energy/thermal decomposition are explicit;
+    the retained formation fit and calorics reproduce the named production model.
+  status: supported
+  origin: reviewed
+- id: modern_source_scope_review
+  kind: evidence_support
+  claim: modern_source_scope
+  claim_revision: '1'
+  subject: p4s3_sources_20261106
+  context: source_review
+  method:
+    id: review_p4s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Inspected primary modern evidence and access limitations are identified without equating ancestry
+    agreement or a bounded diagnostic with complete physical accuracy.
+  status: supported
+  origin: reviewed
+- id: provisional_retention_review
+  kind: evidence_support
+  claim: provisional_retention
+  claim_revision: '1'
+  subject: p4s3_sources_20261106
+  context: source_review
+  method:
+    id: review_p4s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Retain for this source review, then evaluate a 2019 cycle-based H298 energy candidate separately from
+    a reconstructed cage thermal model. JANAF explicitly estimates all gas data and has no zero-K molecular
+    anchor.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: p4s3_sources_20261106
+  context: source_review
+  method:
+    id: review_p4s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Full covariance, missing-state/continuum uncertainty and external atmospheric validation are not established.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: followup_1
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Construct a fixed-network H298-energy sensitivity using the 2019 preferred cycle anchor -94.5
+    kJ/mol and transparently separate the less-converged atomization result and cycle spread; no new thermal
+    claim is needed to run that sensitivity.
+  requires:
+  - Molecule-specific scope and inputs identified in the source packet; no unconditional ancestral-paper
+    merge gate.
+  completion: Document the calculation or source resolution, with a separate review before production
+    adoption.
+- id: followup_2
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Obtain the complete gas-cage frequency/geometry inputs and normalize its rotational symmetry,
+    nuclear-spin convention and electronic states before a thermal candidate; do not extrapolate the old
+    constant Cp to zero kelvin.
+  requires:
+  - Molecule-specific scope and inputs identified in the source packet; no unconditional ancestral-paper
+    merge gate.
+  completion: Document the calculation or source resolution, with a separate review before production
+    adoption.
+- id: followup_3
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Keep gas-phase and condensed formation enthalpies and white-P/rhombic-S elemental references
+    explicit; do not convert an old red-phosphorus combustion number directly into the gas source.
+  requires:
+  - Molecule-specific scope and inputs identified in the source packet; no unconditional ancestral-paper
+    merge gate.
+  completion: Document the calculation or source resolution, with a separate review before production
+    adoption.
+limitations:
+- statement: No NASA molecular comparator or JANAF molecular zero-K row exists; H298 alignment does not
+    define physical D0.
+  evidence:
+  - literature
+  - source_replay
+- statement: The 2019 preferred cycle is not its separately reported atomization result; the latter TAE
+    uncertainty is not the preferred-cycle confidence interval.
+  evidence:
+  - literature
+  - source_replay
+- statement: The old gas thermal function is an estimate with constant Cp, without a resolved isomer or
+    electronic model; no complete high-temperature uncertainty is known.
+  evidence:
+  - literature
+  - source_replay
+- statement: No new equilibrium solve, production change or validated atmospheric abundance accuracy.
+  evidence:
+  - literature
+  - source_replay
