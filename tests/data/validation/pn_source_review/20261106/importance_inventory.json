@@ -1,0 +1,41 @@
+{
+  "molecule": "PN",
+  "canonical": "N1P1",
+  "max_mole_fraction": 5.3113719918546175e-09,
+  "max_mole_fraction_condition": {
+    "case_index": 8,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1.0,
+    "C_over_O": 0.5888436553555908
+  },
+  "max_element_share": 0.012047304149766647,
+  "max_element": "P",
+  "max_element_share_condition": {
+    "case_index": 8,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1.0,
+    "C_over_O": 0.5888436553555908
+  },
+  "element_shares": {
+    "N": {
+      "maximum_share": 4.580257291989974e-05,
+      "maximum_share_percent": 0.004580257291989974,
+      "condition": {
+        "case_index": 8,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 0.5888436553555908
+      }
+    },
+    "P": {
+      "maximum_share": 0.012047304149766647,
+      "maximum_share_percent": 1.2047304149766647,
+      "condition": {
+        "case_index": 8,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 0.5888436553555908
+      }
+    }
+  }
+}
