@@ -83,7 +83,7 @@ evidence:
   - source: tests/data/validation/n2h4_source_review/20261106/sources.json
     sha256: f2116049c5bc1893d5a64ae72dc74143d9eb37d4e7f5f733862472a98097edf2
   - source: tests/data/validation/n2h4_source_review/20261106/literature.json
-    sha256: cd1ddc4b745d6748b9fe46b65f21173ebb5602098ac2b07d96b7fe71706f59c5
+    sha256: 212409f29521441e0e28acfeb519f25cad1fe860973efc3cfc025e899846ac9f
   provenance:
     role: primary
     location: documents/mceg/n2h4_source_review.rst
@@ -117,7 +117,7 @@ evidence:
   - source: tests/data/validation/n2h4_source_review/20261106/README.rst
     sha256: 0bda729fc087d2c9aff70b97f09ef0e1b3c028ae863d161630f4ec5b20a5e250
   - source: tests/data/validation/n2h4_source_review/20261106/receipt.json
-    sha256: 5e209ae788aa53bb44960aede0601c41639fe5f4965625a770dc7e185d7b5bb6
+    sha256: 1331476cfa91dfde3a6ff8856a45bcf3e371be2e0314f3d365c76b414f185231
   - source: tests/data/validation/n2h4_source_review/20261106/H-091.txt
     sha256: bd40213d2287501198647abecab9912fe9b5f9c44f7905e2a76151b34bd4fed1
   - source: tests/data/validation/n2h4_source_review/20261106/nasa_selected_records.txt
@@ -150,7 +150,7 @@ evidence:
   context: source_review
   artifacts:
   - source: documents/mceg/n2h4_source_review.rst
-    sha256: 2fa1f4e4f9aa5b47c5814e3dcbba4d0b008358c21c1185c154df6cb90012ce42
+    sha256: 69af259ddcd086e62c4c5d8508638b2d937be6c7185e03e616b37afe2b66f648
   provenance:
     role: primary
     location: documents/mceg/n2h4_source_review.rst
@@ -165,7 +165,7 @@ subjects:
     entry_points:
     - mceg/reviews/n2h4_source_review.py
   selected_files:
-    documents/mceg/n2h4_source_review.rst: 2fa1f4e4f9aa5b47c5814e3dcbba4d0b008358c21c1185c154df6cb90012ce42
+    documents/mceg/n2h4_source_review.rst: 69af259ddcd086e62c4c5d8508638b2d937be6c7185e03e616b37afe2b66f648
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
@@ -206,7 +206,7 @@ subjects:
     tests/data/validation/n2h4_source_review/20261106/N-002.txt: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
     tests/data/validation/n2h4_source_review/20261106/README.rst: 0bda729fc087d2c9aff70b97f09ef0e1b3c028ae863d161630f4ec5b20a5e250
     tests/data/validation/n2h4_source_review/20261106/inputs.json: 4db116faa03784b60a6113b2dcc0e1e30773deb19f5ddb0c88a97e1e6976ba12
-    tests/data/validation/n2h4_source_review/20261106/literature.json: cd1ddc4b745d6748b9fe46b65f21173ebb5602098ac2b07d96b7fe71706f59c5
+    tests/data/validation/n2h4_source_review/20261106/literature.json: 212409f29521441e0e28acfeb519f25cad1fe860973efc3cfc025e899846ac9f
     tests/data/validation/n2h4_source_review/20261106/nasa_records.json: f2ac7b93fd17fec65e5c92ac2a904e881565358f44e1407ff2b7377dd2a141d4
     tests/data/validation/n2h4_source_review/20261106/nasa_selected_records.txt: 2bfc183264496e793280859802bccc93ea1332702d43a7bfe82a6c6df1cdeec2
     tests/data/validation/n2h4_source_review/20261106/sources.json: f2116049c5bc1893d5a64ae72dc74143d9eb37d4e7f5f733862472a98097edf2
@@ -324,7 +324,7 @@ follow_ups:
   id: next_calculation
   action: A retained-thermal ATcT candidate is directly calculable. For a full thermal replacement, reconcile
     the evaluated torsional/inversion models and density of accessible states before selecting NASA or constructing
-    a new function; then run fixed-network substitutions. DOI10.1021/je 000301o is useful optional ancestry,
+    a new function; then run fixed-network substitutions. DOI 10.1021/je000301o is useful optional ancestry,
     not a prerequisite for merging this numerical source review.
   completion: Candidate or source-gap follow-up recorded with explicit normalization and finite conclusions.
 - target_kind: claim
