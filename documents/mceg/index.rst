@@ -79,6 +79,7 @@ HCN differences with optional MCEG tooling.
    ph2_source_review
    ph_source_review
    hcp_source_review
+   hcp_candidate
    ph3_source_review
    ph3_thermal_supplement_review
    p2_source_review
