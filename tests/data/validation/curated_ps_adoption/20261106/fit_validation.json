@@ -1,0 +1,192 @@
+{
+  "dataset": "curated-ps-v1",
+  "base_dataset": "curated-cn-v1",
+  "degree": 18,
+  "fit_nodes": 80,
+  "dense_points": 2501,
+  "off_grid_points": 257,
+  "validation_points": 2758,
+  "domain_K": [
+    1500,
+    4000
+  ],
+  "retained_levels": 223645,
+  "degree_convergence": [
+    {
+      "degree": 10,
+      "maximum_absolute_errors": {
+        "ln_Q": 4.9274753166628216e-09,
+        "G_J_mol": 0.00016387723728906333,
+        "H_J_mol": 0.042636485139490206,
+        "S_J_mol_K": 1.0700090594194816e-05,
+        "Cp_J_mol_K": 0.0009348514074920519
+      }
+    },
+    {
+      "degree": 12,
+      "maximum_absolute_errors": {
+        "ln_Q": 1.6113155254515732e-10,
+        "G_J_mol": 4.550940949344796e-06,
+        "H_J_mol": 0.0015201229654823868,
+        "S_J_mol_K": 4.444688917010522e-07,
+        "Cp_J_mol_K": 5.020747972737471e-05
+      }
+    },
+    {
+      "degree": 14,
+      "maximum_absolute_errors": {
+        "ln_Q": 8.022027486731531e-12,
+        "G_J_mol": 2.667953906409084e-07,
+        "H_J_mol": 0.00012431556017980752,
+        "S_J_mol_K": 3.11455888926121e-08,
+        "Cp_J_mol_K": 4.8433216758507224e-06
+      }
+    },
+    {
+      "degree": 16,
+      "maximum_absolute_errors": {
+        "ln_Q": 3.375077994860476e-14,
+        "G_J_mol": 1.0910489978645474e-09,
+        "H_J_mol": 6.57668952050986e-07,
+        "S_J_mol_K": 1.6468308815842498e-10,
+        "Cp_J_mol_K": 3.560166380212572e-08
+      }
+    },
+    {
+      "degree": 18,
+      "maximum_absolute_errors": {
+        "ln_Q": 1.4210854715202004e-14,
+        "G_J_mol": 1.9842759484392184e-10,
+        "H_J_mol": 6.859210685740277e-08,
+        "S_J_mol_K": 4.5609915617966965e-11,
+        "Cp_J_mol_K": 8.527964973435167e-09
+      }
+    },
+    {
+      "degree": 20,
+      "maximum_absolute_errors": {
+        "ln_Q": 2.3092638912203256e-14,
+        "G_J_mol": 2.880043244850373e-10,
+        "H_J_mol": 1.61204882085798e-07,
+        "S_J_mol_K": 1.0727791850754196e-10,
+        "Cp_J_mol_K": 2.4492383684731063e-08
+      }
+    },
+    {
+      "degree": 22,
+      "maximum_absolute_errors": {
+        "ln_Q": 3.375077994860476e-14,
+        "G_J_mol": 4.2092939732428525e-10,
+        "H_J_mol": 2.7212254755309796e-07,
+        "S_J_mol_K": 1.8113441210384913e-10,
+        "Cp_J_mol_K": 4.724701435341966e-08
+      }
+    },
+    {
+      "degree": 24,
+      "maximum_absolute_errors": {
+        "ln_Q": 3.197442310920451e-14,
+        "G_J_mol": 3.9877521851774394e-10,
+        "H_J_mol": 2.565980067544141e-07,
+        "S_J_mol_K": 1.707994876905976e-10,
+        "Cp_J_mol_K": 4.340004458983152e-08
+      }
+    }
+  ],
+  "maximum_absolute_fit_errors": {
+    "ln_Q": 1.4210854715202004e-14,
+    "G_J_mol": 1.9842759484392184e-10,
+    "H_J_mol": 6.859210685740277e-08,
+    "S_J_mol_K": 4.5609915617966965e-11,
+    "Cp_J_mol_K": 8.527964973435167e-09
+  },
+  "acceptance_limits": {
+    "ln_Q": 1e-12,
+    "G_J_mol": 5e-08,
+    "H_J_mol": 1e-06,
+    "S_J_mol_K": 1e-09,
+    "Cp_J_mol_K": 1e-07
+  },
+  "maximum_absolute_runtime_property_errors": {
+    "G_J_mol": 8.731149137020111e-10,
+    "H_J_mol": 6.845220923423767e-08,
+    "S_J_mol_K": 4.551736765279202e-11,
+    "Cp_J_mol_K": 8.528047601430444e-09
+  },
+  "maximum_absolute_runtime_h_error": 2.842170943040401e-14,
+  "reference_probes": [
+    {
+      "temperature_K": 1500.0,
+      "formation_h": -23.025790667558276,
+      "reaction_properties": {
+        "G_J_mol": -287170.6136382525,
+        "H_J_mol": -447847.73905198567,
+        "S_J_mol_K": -107.11808360915548,
+        "Cp_J_mol_K": -4.844868815600234
+      }
+    },
+    {
+      "temperature_K": 1831.25,
+      "formation_h": -16.51947223221927,
+      "reaction_properties": {
+        "G_J_mol": -251523.1660218589,
+        "H_J_mol": -449442.60026984056,
+        "S_J_mol_K": -108.07887194429036,
+        "Cp_J_mol_K": -4.815603789568486
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "formation_h": -14.026668038766445,
+      "reaction_properties": {
+        "G_J_mol": -233248.41413113687,
+        "H_J_mol": -450258.9124287205,
+        "S_J_mol_K": -108.5052491487919,
+        "Cp_J_mol_K": -4.865422511724362
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "formation_h": -8.59752365784067,
+      "reaction_properties": {
+        "G_J_mol": -178709.47265451087,
+        "H_J_mol": -452760.5553674397,
+        "S_J_mol_K": -109.62043308517156,
+        "Cp_J_mol_K": -5.1679220890181705
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "formation_h": -4.957269036968153,
+      "reaction_properties": {
+        "G_J_mol": -123651.08428800065,
+        "H_J_mol": -455433.5767581505,
+        "S_J_mol_K": -110.59416415671664,
+        "Cp_J_mol_K": -5.514757301466835
+      }
+    },
+    {
+      "temperature_K": 3679.125,
+      "formation_h": -1.5737177945101692,
+      "reaction_properties": {
+        "G_J_mol": -48139.94436768447,
+        "H_J_mol": -459304.94660316815,
+        "S_J_mol_K": -111.75619263696782,
+        "Cp_J_mol_K": -5.879649164929768
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "formation_h": -0.3668080652476138,
+      "reaction_properties": {
+        "G_J_mol": -12199.247786153597,
+        "H_J_mol": -461227.3365850424,
+        "S_J_mol_K": -112.25702219972221,
+        "Cp_J_mol_K": -6.1252043908345115
+      }
+    }
+  ],
+  "all_other_potentials_unchanged": true,
+  "delta_D0_J_mol": 0,
+  "scope": "Compact mathematical approximation of the reviewed fixed-cutoff sum; numerical fit errors are not physical uncertainty or extra energy alignment."
+}
