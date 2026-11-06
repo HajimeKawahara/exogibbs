@@ -115,6 +115,7 @@ HCN differences with optional MCEG tooling.
    nh_source_review
    ns_source_review
    no_source_review
+   no_candidate
    nah_source_review
    nao_source_review
    ko_source_review
