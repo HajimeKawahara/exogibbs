@@ -90,7 +90,7 @@ evidence:
   - source: tests/data/validation/hcp_source_review/20261106/inputs.json
     sha256: f31a84cf62082bee36023a0712069b81c57557cb1154b528849d47f068abd3d0
   - source: tests/data/validation/hcp_source_review/20261106/literature.json
-    sha256: f64dd9581afe942170a4b1a5e477862eda4aa96ab38283c8676abfe8c532b624
+    sha256: 4234122e69f32d4594eab5dde3a873ec6004bba0b9941c2eae077f6143c6d610
   - source: tests/data/validation/hcp_source_review/20261106/sources.json
     sha256: 413990e2a027acd572e74fc8621b435a55eb8f3832c36f0ed73521ddcb5ad1e0
   provenance:
@@ -113,7 +113,7 @@ evidence:
   - source: tests/data/validation/hcp_source_review/20261106/comparison.json
     sha256: 54438e43b64d43099568fe196c2bc9b8c285ac17906d668e9c4e9cf238605d14
   - source: tests/data/validation/hcp_source_review/20261106/receipt.json
-    sha256: ec5e32a02dbe1abefe9b005e5eacf19584aff670bd7378b1f0b78967ff89f7c9
+    sha256: bd873a6508737a92f10a667ca600058e363019e060047a07dc63ed8297accf33
   provenance:
     role: primary
     location: documents/mceg/hcp_source_review.rst
@@ -132,7 +132,7 @@ evidence:
   context: source_review
   artifacts:
   - source: documents/mceg/hcp_source_review.rst
-    sha256: 27707123e4be883d0c072602c5a73686fa8da0dac092af6a6cc6b5c35716a3f4
+    sha256: 1e01e61e08e4e324ac3bcd7bd6bc8ef2492cbb8d914855982014d9708be58361
   provenance:
     role: primary
     location: documents/mceg/hcp_source_review.rst
@@ -144,8 +144,8 @@ subjects:
   implementation: *id001
   selected_files:
     mceg/reviews/hcp_source_review.py: 47bdb7c5b09b0c2101fe9a870ed283bc8f1f3aab3cbba9c16dea2ffafacde571
-    documents/mceg/hcp_source_review.rst: 27707123e4be883d0c072602c5a73686fa8da0dac092af6a6cc6b5c35716a3f4
-    tests/model_evidence/hcp_source_review_test.py: 1e6be4cd75f01233b9ff3b29bc047e239b301480411095c79424c8bb8d6bc526
+    documents/mceg/hcp_source_review.rst: 1e01e61e08e4e324ac3bcd7bd6bc8ef2492cbb8d914855982014d9708be58361
+    tests/model_evidence/hcp_source_review_test.py: 3792131f06fadd4d58cc55afae31b1529338292db2f3d0e2bbeb42756c0d481d
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
@@ -182,10 +182,10 @@ subjects:
     tests/data/validation/hcp_source_review/20261106/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
     tests/data/validation/hcp_source_review/20261106/P-008.txt: a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879
     tests/data/validation/hcp_source_review/20261106/inputs.json: f31a84cf62082bee36023a0712069b81c57557cb1154b528849d47f068abd3d0
-    tests/data/validation/hcp_source_review/20261106/literature.json: f64dd9581afe942170a4b1a5e477862eda4aa96ab38283c8676abfe8c532b624
+    tests/data/validation/hcp_source_review/20261106/literature.json: 4234122e69f32d4594eab5dde3a873ec6004bba0b9941c2eae077f6143c6d610
     tests/data/validation/hcp_source_review/20261106/sources.json: 413990e2a027acd572e74fc8621b435a55eb8f3832c36f0ed73521ddcb5ad1e0
     tests/data/validation/hcp_source_review/20261106/comparison.json: 54438e43b64d43099568fe196c2bc9b8c285ac17906d668e9c4e9cf238605d14
-    tests/data/validation/hcp_source_review/20261106/receipt.json: ec5e32a02dbe1abefe9b005e5eacf19584aff670bd7378b1f0b78967ff89f7c9
+    tests/data/validation/hcp_source_review/20261106/receipt.json: bd873a6508737a92f10a667ca600058e363019e060047a07dc63ed8297accf33
 contexts:
 - id: source_review
   scope: HCP neutral gas; native and common-D0 source diagnostics at 1500/2000/3000/4000 K, literal production
