@@ -25,6 +25,7 @@ HCN differences with optional MCEG tooling.
    h2o_candidate
    sio_source_review
    n2o5_source_review
+   n2o5_candidate
    co2_source_review
    co2_candidate
    n3_source_review
