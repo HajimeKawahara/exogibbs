@@ -1,0 +1,30 @@
+{
+  "source_sha256": "d63229ec3639301f7682c4f1aaea15271c540eaad0bab094d243add57b71e858",
+  "source_file": "c2.states.bz2",
+  "rows": 44189,
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "electronic_label_index"
+  ],
+  "labels": [
+    "A(1PIu)",
+    "B'(1SIGMA+g)",
+    "B(1DELTAg)",
+    "X(1SIGMA+g)",
+    "a(3PIu)",
+    "b(3SIGMA-g)",
+    "c(3SIGMA+u)",
+    "d(3PIg)"
+  ],
+  "energy_range_cm-1": [
+    0.0,
+    50810.821319
+  ],
+  "maximum_J": 190.0,
+  "weights_over_2Jplus1": [
+    1.0
+  ],
+  "partition_source_sha256": "f71f6f4b4be4fc8ce64dc11148d640737d01122d7197a33e0d37225968b108f2"
+}

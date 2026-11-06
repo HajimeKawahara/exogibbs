@@ -1,0 +1,53 @@
+{
+  "molecule": "C2",
+  "decision": "Prioritize a same-version ATcT energy candidate retaining the literal current thermal fit and residual; leave curated unchanged until fixed-network substitution.",
+  "follow_up": "Build the +9.691 kJ/mol physical D0 energy candidate with unchanged thermal fit and residual, then fixed-network substitution; keep a distinct 8states thermal control.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-113.html",
+      "inspection": "Fresh official C2 and neutral carbon numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Gurvich1991; ancestral full source is not independently audited."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "inspection": "Versioned evaluated table and molecule provenance inspected; exact same-version molecule and atom rows archived.",
+      "scope": "D0 balance only; correlated uncertainty is not reconstructed."
+    },
+    {
+      "id": "borsovszky2021",
+      "doi": "10.1073/pnas.2113315118",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8719853/",
+      "inspection": "Full primary article, photofragment analysis and ground-level conversion inspected.",
+      "D0_kJ_mol": 602.804,
+      "uncertainty_kJ_mol": 0.029
+    },
+    {
+      "id": "8states",
+      "doi": "10.1093/mnras/sty2050",
+      "update_doi": "10.1093/mnras/staa1954",
+      "url": "https://www.exomol.com/data/molecules/C2/12C2/8states/",
+      "inspection": "Primary article and official dataset description inspected; all distributed energy/weight/J/label columns and four separate PF nodes archived.",
+      "data_url": "https://www.exomol.com/db/C2/12C2/8states/12C2__8states.states.bz2",
+      "partition_url": "https://www.exomol.com/db/C2/12C2/8states/12C2__8states.pf",
+      "scope": "Eight explicit manifolds with MARVEL updates; finite-state numerical completeness is not full thermochemical validation."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "The proposed physical D0 shift is not a fit-anchor replacement.",
+    "Finite state-tail diagnostics do not bound omitted manifolds or define dissociation-state treatment.",
+    "Isotope translation is controlled but natural isotopic mixing is not a new production model.",
+    "ATcT marginal uncertainty is not reaction covariance.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation."
+  ]
+}

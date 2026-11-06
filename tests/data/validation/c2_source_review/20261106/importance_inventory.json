@@ -1,0 +1,31 @@
+{
+  "molecule": "C2",
+  "canonical": "C2",
+  "max_mole_fraction": 2.873663699624479e-06,
+  "max_mole_fraction_condition": {
+    "case_index": 61,
+    "temperature_K": 2500.0,
+    "pressure_bar": 0.0001,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 0.007674899925010576,
+  "max_element": "C",
+  "max_element_share_condition": {
+    "case_index": 61,
+    "temperature_K": 2500.0,
+    "pressure_bar": 0.0001,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 0.007674899925010576,
+      "maximum_share_percent": 0.7674899925010575,
+      "condition": {
+        "case_index": 61,
+        "temperature_K": 2500.0,
+        "pressure_bar": 0.0001,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}
