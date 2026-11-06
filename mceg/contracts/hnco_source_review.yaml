@@ -108,7 +108,7 @@ evidence:
   - tests/data/validation/hnco_source_review/20261106/H-001.txt
   - tests/data/validation/hnco_source_review/20261106/nasa_records.json
   - mceg/reviews/hnco_source_review.py
-  - tests/model_evidence/hnco_source_review_test.py
+  - tests/data/validation/hnco_source_review/ci-revalidation-20261106/source/hnco_source_review_test.py
   scope: Neutral HNCO, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
     grid; source review only.
   subject: hnco_sources_20261106
@@ -140,7 +140,7 @@ evidence:
     sha256: 2e8703e4e42d21165f023262a8ea625a311f442f3a5e7afdbba4500945700317
   - source: mceg/reviews/hnco_source_review.py
     sha256: 06d1d9decb5d55d30f6a07d19d578f039ececaf42cbf1ddfb2a360c18711520b
-  - source: tests/model_evidence/hnco_source_review_test.py
+  - source: tests/data/validation/hnco_source_review/ci-revalidation-20261106/source/hnco_source_review_test.py
     sha256: 199ae7c156388699bca3b69dea43ef10dbde149a3c9c0880aaa701a78a28da6f
   provenance:
     role: primary
@@ -167,6 +167,32 @@ evidence:
     inspection: inspected
     note: Individual source access limits remain explicit; numerical checks do not certify full source ancestry
       or physical accuracy.
+- id: ci_revalidation
+  kind: numerical_test
+  summary: Revalidate the original packet with a dimensional cancellation tolerance confined to curated-minus-JANAF
+    Gibbs energy. Preserve the original execution and reject a changed energy.
+  sources:
+  - tests/model_evidence/hnco_source_review_test.py
+  - tests/data/validation/hnco_source_review/ci-revalidation-20261106/revalidation.json
+  - tests/data/validation/hnco_source_review/ci-revalidation-20261106/source/hnco_source_review_test.py
+  scope: Test-only platform replay amendment; no change to numerical source values, scientific claims, production
+    or original receipt.
+  subject: hnco_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/model_evidence/hnco_source_review_test.py
+    sha256: 3ea6ae4c324a8930a993af42e6c4c920cc995452bfe7f05db814ed35598706d9
+  - source: tests/data/validation/hnco_source_review/ci-revalidation-20261106/revalidation.json
+    sha256: 063b719ab27ebd2d3409759a6ec0780be1245f6352747d1c0c52b46a4a1de39f
+  - source: tests/data/validation/hnco_source_review/ci-revalidation-20261106/source/hnco_source_review_test.py
+    sha256: 199ae7c156388699bca3b69dea43ef10dbde149a3c9c0880aaa701a78a28da6f
+  result: passed
+  provenance:
+    role: primary
+    location: tests/data/validation/hnco_source_review/ci-revalidation-20261106/revalidation.json
+    inspection: inspected
+    note: The historical test snapshot and old receipt remain exact; this is a separately recorded validation
+      of the current test.
 subjects:
 - id: hnco_sources_20261106
   implementation:
@@ -223,8 +249,10 @@ subjects:
     tests/data/validation/hnco_source_review/20261106/nasa_records.json: 2e8703e4e42d21165f023262a8ea625a311f442f3a5e7afdbba4500945700317
     tests/data/validation/hnco_source_review/20261106/nasa_selected_records.txt: df5c7533acd57d0554326dba693fb2f7d8378f5c480a5360de620628f1f19b74
     tests/data/validation/hnco_source_review/20261106/sources.json: eaa39a3076927dd5b720705e17b9c778f41029d94e8a63d2cbc2c159e23dcdff
-    tests/model_evidence/hnco_source_review_test.py: 199ae7c156388699bca3b69dea43ef10dbde149a3c9c0880aaa701a78a28da6f
     tests/data/validation/hnco_source_review/20261106/comparison.json: 08d1976e4f5f4e41b875e8d338570791fe03a10aaf17d0ff5d48b4f561ec4922
+    tests/data/validation/hnco_source_review/ci-revalidation-20261106/source/hnco_source_review_test.py: 199ae7c156388699bca3b69dea43ef10dbde149a3c9c0880aaa701a78a28da6f
+    tests/model_evidence/hnco_source_review_test.py: 3ea6ae4c324a8930a993af42e6c4c920cc995452bfe7f05db814ed35598706d9
+    tests/data/validation/hnco_source_review/ci-revalidation-20261106/revalidation.json: 063b719ab27ebd2d3409759a6ec0780be1245f6352747d1c0c52b46a4a1de39f
 contexts:
 - id: source_review
   scope: Neutral HNCO, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
@@ -248,6 +276,7 @@ assessments:
   - literature
   - source_replay
   - decision_reasoning
+  - ci_revalidation
   reasons:
   - Pinned source checks and current baseline accounting support only the stated bounded claim.
   status: supported
@@ -267,6 +296,7 @@ assessments:
   - literature
   - source_replay
   - decision_reasoning
+  - ci_revalidation
   reasons:
   - Pinned source checks and current baseline accounting support only the stated bounded claim.
   status: supported
@@ -286,6 +316,7 @@ assessments:
   - literature
   - source_replay
   - decision_reasoning
+  - ci_revalidation
   reasons:
   - Prioritize a retained-thermal ATcT energy candidate for HNCO. The major discrepancy is an obsolete energy
     anchor; the available evidence does not require replacing the inherited thermal function at the same time.
@@ -306,6 +337,7 @@ assessments:
   - literature
   - source_replay
   - decision_reasoning
+  - ci_revalidation
   reasons:
   - Uncertainty or original historical reconstruction is not complete.
   status: unknown
@@ -325,6 +357,7 @@ assessments:
   - literature
   - source_replay
   - decision_reasoning
+  - ci_revalidation
   reasons:
   - Uncertainty or original historical reconstruction is not complete.
   status: unknown
