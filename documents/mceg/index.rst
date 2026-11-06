@@ -81,6 +81,7 @@ HCN differences with optional MCEG tooling.
    ohno_p3
    ph2_source_review
    cis_h2n2_source_review
+   cis_h2n2_candidate
    ph_source_review
    hcp_source_review
    hcp_candidate
