@@ -68,6 +68,7 @@ HCN differences with optional MCEG tooling.
    vn_source_review
    c3h_source_review
    c2h2_source_review
+   c2h2_candidate
    fastchem_hcn_followup
    c2n2_source_review
    c3_source_review
@@ -104,6 +105,7 @@ HCN differences with optional MCEG tooling.
    cis_h2n2_source_review
    ph_source_review
    hcp_source_review
+   hcp_candidate
    ph3_source_review
    ph3_thermal_supplement_review
    p2_source_review
@@ -151,6 +153,7 @@ HCN differences with optional MCEG tooling.
    build
    ch_source_review
    ch2_source_review
+   ch2_candidate
 
    kh_source_review
    k2_source_review
