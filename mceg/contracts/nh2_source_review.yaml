@@ -1,0 +1,360 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.nh2_source_review.v1
+  name: NH2 source review
+  description: 'Prioritize a bounded NH2 candidate comparison: retain the literal inherited thermal fit and
+    its residual while applying the balanced ATcT-minus-JANAF physical D0 shift; compare a NASA-thermal/ATcT
+    alternative separately. Do not silently combine the energy and thermal changes. Keep curated unchanged
+    in this source-review PR.'
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d6959f62cdf6549f223162d10b654664f266b13cc12db0ce1249e8c02713954c
+    entry_points:
+    - mceg/reviews/nh2_source_review.py
+assumptions:
+- statement: Balance neutral atoms within each source and retain native NASA R; the fitted intercept is not
+    physical D0.
+  evidence:
+  - source_replay
+- statement: Existing hot H-rich grid importance does not validate all atmosphere regimes.
+  evidence:
+  - source_replay
+  - decision_reasoning
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot
+    H-rich grid; source review only.
+  conditions:
+  - No candidate or production substitution is performed.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty and atmospheric accuracy remain outside this review.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: Current source attribution and exact gas identity are documented with explicit access limits.
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+- id: normalized_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: Source-specific atomic/molecular gauges and analytic calorics are compared reproducibly; the final
+    current-grid footprint is verified.
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+- id: scoped_decision
+  revision: '1'
+  kind: theoretical
+  statement: 'Prioritize a bounded NH2 candidate comparison: retain the literal inherited thermal fit and its
+    residual while applying the balanced ATcT-minus-JANAF physical D0 shift; compare a NASA-thermal/ATcT alternative
+    separately. Do not silently combine the energy and thermal changes. Keep curated unchanged in this source-review
+    PR.'
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Complete molecular and atmospheric physical accuracy is established.
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+- id: historical_source_completeness
+  revision: '1'
+  kind: numerical_verification
+  statement: All ancestral source derivations and original fitting procedures are independently recovered.
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary numerical sources, modern literature and explicit access limits.
+  sources:
+  - tests/data/validation/nh2_source_review/20261106/sources.json
+  - tests/data/validation/nh2_source_review/20261106/literature.json
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+  subject: nh2_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nh2_source_review/20261106/sources.json
+    sha256: 0c962fda3beae22ca7c241f3364f581680eb0d9db8cfe73cb534f6f85f3b5025
+  - source: tests/data/validation/nh2_source_review/20261106/literature.json
+    sha256: b6da602825e0cb4caf80d0ab98657ad58f9a7770f43bc08ebca6c89763bd0ab4
+  provenance:
+    role: primary
+    location: documents/mceg/nh2_source_review.rst
+    inspection: inspected
+    note: Individual source access limits remain explicit; numerical checks do not certify full source ancestry
+      or physical accuracy.
+- id: source_replay
+  kind: numerical_test
+  summary: Pinned offline source decomposition, calorics and current archived elemental accounting.
+  sources:
+  - tests/data/validation/nh2_source_review/20261106/N-002.txt
+  - tests/data/validation/nh2_source_review/20261106/inputs.json
+  - tests/data/validation/nh2_source_review/20261106/README.rst
+  - tests/data/validation/nh2_source_review/20261106/receipt.json
+  - tests/data/validation/nh2_source_review/20261106/nasa_selected_records.txt
+  - tests/data/validation/nh2_source_review/20261106/comparison.json
+  - tests/data/validation/nh2_source_review/20261106/H-001.txt
+  - tests/data/validation/nh2_source_review/20261106/modern_rrho_inputs.json
+  - tests/data/validation/nh2_source_review/20261106/H-060.txt
+  - tests/data/validation/nh2_source_review/20261106/nasa_records.json
+  - mceg/reviews/nh2_source_review.py
+  - tests/model_evidence/nh2_source_review_test.py
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+  subject: nh2_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/nh2_source_review/20261106/N-002.txt
+    sha256: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
+  - source: tests/data/validation/nh2_source_review/20261106/inputs.json
+    sha256: 34006072476e9560d542dbd564ce17a5c4b99343ee53f4af763889b50306dc86
+  - source: tests/data/validation/nh2_source_review/20261106/README.rst
+    sha256: 187f5eb10f71135161ecaeb2c1ea0ac92368fa6a8dd537fba6fb94b8f88c1cf0
+  - source: tests/data/validation/nh2_source_review/20261106/receipt.json
+    sha256: aa91280d7f39f668033f3d67a11af08cab216c8fd4902b906187a9f9858f62d9
+  - source: tests/data/validation/nh2_source_review/20261106/nasa_selected_records.txt
+    sha256: d743f2fafd5f3fd341bfe4bf66973f3e455a5b304860ed5dfd92b72591c0406f
+  - source: tests/data/validation/nh2_source_review/20261106/comparison.json
+    sha256: eedec00824e40a31ad8dce0229cf06c482ff3b47b78fddce70efc5e9d244682e
+  - source: tests/data/validation/nh2_source_review/20261106/H-001.txt
+    sha256: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+  - source: tests/data/validation/nh2_source_review/20261106/modern_rrho_inputs.json
+    sha256: 6ee2258aae6bc7d7cc241a6857c47bed68eae7e31c848df2e567230f6bcf5d5e
+  - source: tests/data/validation/nh2_source_review/20261106/H-060.txt
+    sha256: ecb2a5ef41810d98cd2da7d70d2dc6e55b0c0b8296a3abcc9e06f30edac783fd
+  - source: tests/data/validation/nh2_source_review/20261106/nasa_records.json
+    sha256: fa8de23d32e222aaa359c4f4e7cc7d97c7e97674b2c5d55b2e8a1b12fe169a04
+  - source: mceg/reviews/nh2_source_review.py
+    sha256: d6959f62cdf6549f223162d10b654664f266b13cc12db0ce1249e8c02713954c
+  - source: tests/model_evidence/nh2_source_review_test.py
+    sha256: 77bd6f2701c517640dd260355d6f1d0064880deb46c4410d7ccc151021b89758
+  provenance:
+    role: primary
+    location: documents/mceg/nh2_source_review.rst
+    inspection: inspected
+    note: Individual source access limits remain explicit; numerical checks do not certify full source ancestry
+      or physical accuracy.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Finite scientifically motivated recommendation separated from global physical accuracy.
+  sources:
+  - documents/mceg/nh2_source_review.rst
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+  subject: nh2_sources_20261106
+  context: source_review
+  artifacts:
+  - source: documents/mceg/nh2_source_review.rst
+    sha256: c872564b7eb0619cb716d261b2bbc73911882930aad4b07e3444bde4bf6acae2
+  provenance:
+    role: primary
+    location: documents/mceg/nh2_source_review.rst
+    inspection: inspected
+    note: Individual source access limits remain explicit; numerical checks do not certify full source ancestry
+      or physical accuracy.
+subjects:
+- id: nh2_sources_20261106
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d6959f62cdf6549f223162d10b654664f266b13cc12db0ce1249e8c02713954c
+    entry_points:
+    - mceg/reviews/nh2_source_review.py
+  selected_files:
+    documents/mceg/nh2_source_review.rst: c872564b7eb0619cb716d261b2bbc73911882930aad4b07e3444bde4bf6acae2
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/curated_tio_history.py: dba777198ec0777d647bbc340952abf3a1954672bef1a87d73adb0e5a8c65ef0
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/nh2_source_review.py: d6959f62cdf6549f223162d10b654664f266b13cc12db0ce1249e8c02713954c
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/cn_v1.json: 28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/ps_v1.json: d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6
+    src/exogibbs/data/curated/tio2_v1.json: 7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_cn.py: 8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_ps.py: 73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_tio2.py: 876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    tests/data/validation/curated_tio2_adoption/20261106/ions.npz: 9333c4893a4abac147f6f9c12cee11027a617d305cbf638363a6e1ad73e49bb3
+    tests/data/validation/curated_tio2_adoption/20261106/receipt.json: 35078166bd7a19aa891ee2f6d9b872cb4cee454d2f429cbdedfde79a921c993a
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/nh2_source_review/20261106/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/nh2_source_review/20261106/H-060.txt: ecb2a5ef41810d98cd2da7d70d2dc6e55b0c0b8296a3abcc9e06f30edac783fd
+    tests/data/validation/nh2_source_review/20261106/N-002.txt: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
+    tests/data/validation/nh2_source_review/20261106/README.rst: 187f5eb10f71135161ecaeb2c1ea0ac92368fa6a8dd537fba6fb94b8f88c1cf0
+    tests/data/validation/nh2_source_review/20261106/inputs.json: 34006072476e9560d542dbd564ce17a5c4b99343ee53f4af763889b50306dc86
+    tests/data/validation/nh2_source_review/20261106/literature.json: b6da602825e0cb4caf80d0ab98657ad58f9a7770f43bc08ebca6c89763bd0ab4
+    tests/data/validation/nh2_source_review/20261106/modern_rrho_inputs.json: 6ee2258aae6bc7d7cc241a6857c47bed68eae7e31c848df2e567230f6bcf5d5e
+    tests/data/validation/nh2_source_review/20261106/nasa_records.json: fa8de23d32e222aaa359c4f4e7cc7d97c7e97674b2c5d55b2e8a1b12fe169a04
+    tests/data/validation/nh2_source_review/20261106/nasa_selected_records.txt: d743f2fafd5f3fd341bfe4bf66973f3e455a5b304860ed5dfd92b72591c0406f
+    tests/data/validation/nh2_source_review/20261106/sources.json: 0c962fda3beae22ca7c241f3364f581680eb0d9db8cfe73cb534f6f85f3b5025
+    tests/model_evidence/nh2_source_review_test.py: 77bd6f2701c517640dd260355d6f1d0064880deb46c4410d7ccc151021b89758
+    tests/data/validation/nh2_source_review/20261106/comparison.json: eedec00824e40a31ad8dce0229cf06c482ff3b47b78fddce70efc5e9d244682e
+contexts:
+- id: source_review
+  scope: Neutral NH2, one bar, source knots 1500/2000/3000/4000 K, current curated-tio2-v1 75-case hot H-rich
+    grid; source review only.
+  settings:
+    model: curated-tio2-v1
+    production_change: none
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: nh2_sources_20261106
+  context: source_review
+  method:
+    id: review_nh2_sources
+    revision: '1'
+    description: Separate source identity, normalized source comparisons, scoped next action and unresolved
+      full accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Pinned source checks and current baseline accounting support only the stated bounded claim.
+  status: supported
+  origin: reviewed
+- id: normalized_comparison_review
+  kind: evidence_support
+  claim: normalized_comparison
+  claim_revision: '1'
+  subject: nh2_sources_20261106
+  context: source_review
+  method:
+    id: review_nh2_sources
+    revision: '1'
+    description: Separate source identity, normalized source comparisons, scoped next action and unresolved
+      full accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Pinned source checks and current baseline accounting support only the stated bounded claim.
+  status: supported
+  origin: reviewed
+- id: scoped_decision_review
+  kind: evidence_support
+  claim: scoped_decision
+  claim_revision: '1'
+  subject: nh2_sources_20261106
+  context: source_review
+  method:
+    id: review_nh2_sources
+    revision: '1'
+    description: Separate source identity, normalized source comparisons, scoped next action and unresolved
+      full accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - 'Prioritize a bounded NH2 candidate comparison: retain the literal inherited thermal fit and its residual
+    while applying the balanced ATcT-minus-JANAF physical D0 shift; compare a NASA-thermal/ATcT alternative
+    separately. Do not silently combine the energy and thermal changes. Keep curated unchanged in this source-review
+    PR.'
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: nh2_sources_20261106
+  context: source_review
+  method:
+    id: review_nh2_sources
+    revision: '1'
+    description: Separate source identity, normalized source comparisons, scoped next action and unresolved
+      full accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Uncertainty or original historical reconstruction is not complete.
+  status: unknown
+  origin: reviewed
+- id: historical_source_completeness_review
+  kind: evidence_support
+  claim: historical_source_completeness
+  claim_revision: '1'
+  subject: nh2_sources_20261106
+  context: source_review
+  method:
+    id: review_nh2_sources
+    revision: '1'
+    description: Separate source identity, normalized source comparisons, scoped next action and unresolved
+      full accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Uncertainty or original historical reconstruction is not complete.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  id: next_calculation
+  action: Construct the two continuous NH2 candidates with fixed atoms and explicit physical energy/fit-residual
+    bookkeeping; validate G/H/S/Cp and scalar/JAX derivatives, then run current-base network substitutions.
+    Ask the 2026 dataset authors for the ground-spin/rotation convention only if pursuing that thermal alternative;
+    it is not required for the ATcT energy candidate or source-review merge.
+  completion: Candidate or source-gap follow-up recorded with explicit normalization and finite conclusions.
+- target_kind: claim
+  target: historical_source_completeness
+  revision: '1'
+  id: ancestral_sources
+  action: Recover original book/fit derivations only if broader ancestry claims are needed; individual literature
+    URLs/DOIs and access needs are recorded.
+  completion: Original derivations inspected; not a prerequisite for this scoped source-review merge.
+limitations:
+- statement: No new equilibrium replacement response is computed.
+  evidence:
+  - literature
+  - source_replay
+- statement: ATcT marginal uncertainties are not a reaction covariance.
+  evidence:
+  - literature
+  - source_replay
+- statement: The hot H-rich grid is not an all-atmosphere importance bound.
+  evidence:
+  - literature
+  - source_replay
+- statement: Full ancestral thermal derivations and fit construction remain incomplete.
+  evidence:
+  - literature
+  - source_replay
