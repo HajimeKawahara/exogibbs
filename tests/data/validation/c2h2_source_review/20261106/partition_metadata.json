@@ -1,0 +1,19 @@
+{
+  "url": "https://exomol.com/db/C2H2/12C2-1H2/aCeTY/12C2-1H2__aCeTY.pf",
+  "full_pf_sha256": "ff8fd2f81a1dbfde8f3efb667942056cea1ee1a2a4192600cf0e78a09adfaea3",
+  "definition_url": "https://exomol.com/db/C2H2/12C2-1H2/aCeTY/12C2-1H2__aCeTY.def",
+  "full_definition_sha256": "f9e9e8591aeb23e8c66429b1f32a44d8c3bd133c7b089b0d1148fd60bfe992c2",
+  "definition_version": 20220918,
+  "isotope_mass_u": 26.01565006,
+  "nuclear_spin_divisor": 4,
+  "ortho_para_weights": [
+    3,
+    1
+  ],
+  "states_count": 5160803,
+  "line_list_temperature_K": 2200,
+  "maximum_J": 99,
+  "state_upper_cutoff_cm-1": 22000,
+  "lower_state_cutoff_cm-1": 12000,
+  "inspection": "Official definition and distributed PF inspected, primary publication completeness discussion inspected. Five-million-state file not downloaded; no direct state-sum or caloric derivative claim."
+}
