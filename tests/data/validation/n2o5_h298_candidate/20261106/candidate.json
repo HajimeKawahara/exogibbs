@@ -1,0 +1,297 @@
+{
+  "id": "n2o5_retained_h298_candidate_20261106",
+  "baseline_dataset": "curated-ch2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "tracked_elements": [
+    "N",
+    "O"
+  ],
+  "primary_variant": "retained_h298",
+  "variants": [
+    {
+      "name": "retained_h298",
+      "replacements": {
+        "N2O5": {
+          "kind": "retained_energy",
+          "coefficients": [
+            261545.41738849517,
+            -3.821451318784284,
+            -68.49395669433306,
+            0.0016829523333878882,
+            -1.0347847387837242e-07
+          ],
+          "delta_GH_J_mol": 3613.0,
+          "energy_reference_temperature_K": 298.15,
+          "physical_JANAF_D0_J_mol": null
+        }
+      }
+    }
+  ],
+  "selected_variants": [],
+  "source_record": {
+    "slug": "n2o5",
+    "molecule": "N2O5",
+    "species": "N2O5",
+    "composition": {
+      "N": 2,
+      "O": 5
+    },
+    "atct_version": "1.228",
+    "same_version_hf0_J_mol": {
+      "N2O5": 24430,
+      "N": 470655,
+      "O": 246843
+    },
+    "janaf_fixed_reference_h0_J_mol": {
+      "N2O5": null,
+      "N": 466486,
+      "O": 242448
+    },
+    "janaf_D0_J_mol": null,
+    "atct_D0_J_mol": 2151095.0,
+    "delta_D0_J_mol": null,
+    "original_coefficients": [
+      261545.41738849517,
+      -3.821451318784284,
+      -68.49395669433306,
+      0.0016829523333878882,
+      -1.0347847387837242e-07
+    ],
+    "formal_fit_intercept_Ra_J_mol": 2174609.595825929,
+    "nasa_same_identity": true,
+    "nasa_h0_J_mol": {
+      "N2O5": -7497.424999999999,
+      "N": 466482.572,
+      "O": 242449.6
+    },
+    "nasa_D0_J_mol": 2152710.5689999997,
+    "nasa_records": {
+      "N2O5": {
+        "composition": {
+          "N": 2,
+          "O": 5
+        },
+        "reference": "Gurvich,1989 pt1 p343 pt2 p213.",
+        "source_line_1based": 7441,
+        "intervals": [
+          {
+            "bounds_K": [
+              200.0,
+              1000.0
+            ],
+            "coefficients": [
+              40078.2817,
+              -876.967512,
+              10.55932981,
+              0.01394613859,
+              -8.88434692e-06,
+              8.50043115e-10,
+              7.79155091e-13,
+              3038.962037,
+              -23.8683186
+            ]
+          },
+          {
+            "bounds_K": [
+              1000.0,
+              6000.0
+            ],
+            "coefficients": [
+              -53255.7896,
+              -3109.277389,
+              20.36088958,
+              -0.000995990114,
+              2.401398635e-07,
+              -3.057161911e-11,
+              1.495915511e-15,
+              13369.57281,
+              -82.98623341
+            ]
+          }
+        ],
+        "source_name": "N2O5",
+        "mass_u": 108.0104,
+        "hf298_J_mol": 13300.0,
+        "h298_minus_h0_J_mol": 20797.425
+      },
+      "N": {
+        "composition": {
+          "N": 1
+        },
+        "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+        "source_line_1based": 7051,
+        "intervals": [
+          {
+            "bounds_K": [
+              200.0,
+              1000.0
+            ],
+            "coefficients": [
+              0.0,
+              0.0,
+              2.5,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              56104.6378,
+              4.193905036
+            ]
+          },
+          {
+            "bounds_K": [
+              1000.0,
+              6000.0
+            ],
+            "coefficients": [
+              88765.0138,
+              -107.12315,
+              2.362188287,
+              0.0002916720081,
+              -1.7295151e-07,
+              4.01265788e-11,
+              -2.677227571e-15,
+              56973.5133,
+              4.865231506
+            ]
+          },
+          {
+            "bounds_K": [
+              6000.0,
+              20000.0
+            ],
+            "coefficients": [
+              547518105.0,
+              -310757.498,
+              69.1678274,
+              -0.00684798813,
+              3.8275724e-07,
+              -1.098367709e-11,
+              1.277986024e-16,
+              2550585.618,
+              -584.8769753
+            ]
+          }
+        ],
+        "source_name": "N",
+        "mass_u": 14.0067,
+        "hf298_J_mol": 472680.0,
+        "h298_minus_h0_J_mol": 6197.428
+      },
+      "O": {
+        "composition": {
+          "O": 1
+        },
+        "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+        "source_line_1based": 7864,
+        "intervals": [
+          {
+            "bounds_K": [
+              200.0,
+              1000.0
+            ],
+            "coefficients": [
+              -7953.6113,
+              160.7177787,
+              1.966226438,
+              0.00101367031,
+              -1.110415423e-06,
+              6.5175075e-10,
+              -1.584779251e-13,
+              28403.62437,
+              8.40424182
+            ]
+          },
+          {
+            "bounds_K": [
+              1000.0,
+              6000.0
+            ],
+            "coefficients": [
+              261902.0262,
+              -729.872203,
+              3.31717727,
+              -0.000428133436,
+              1.036104594e-07,
+              -9.43830433e-12,
+              2.725038297e-16,
+              33924.2806,
+              -0.667958535
+            ]
+          },
+          {
+            "bounds_K": [
+              6000.0,
+              20000.0
+            ],
+            "coefficients": [
+              177900426.4,
+              -108232.8257,
+              28.10778365,
+              -0.002975232262,
+              1.854997534e-07,
+              -5.79623154e-12,
+              7.191720164e-17,
+              889094.263,
+              -218.1728151
+            ]
+          }
+        ],
+        "source_name": "O",
+        "mass_u": 15.9994,
+        "hf298_J_mol": 249175.003,
+        "h298_minus_h0_J_mol": 6725.403
+      }
+    },
+    "quoted_ATcT_marginal_uncertainties_kJ_mol": {
+      "N2O5": 0.29,
+      "N": 0.021,
+      "O": 0.0021
+    },
+    "source_sha256": {
+      "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+      "tests/data/validation/n2o5_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+      "tests/data/validation/n2o5_source_review/20261106/N-033.txt": "a19cb63b1e43b5a65bcd61dcb58a116714afe8a8a85b3fc479e67372cff29424",
+      "tests/data/validation/n2o5_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "tests/data/validation/n2o5_source_review/20261106/comparison.json": "d7262fe2c88e4dbf9912aea444a17c0a20dd75279f97e59630dbfe588fa5449e",
+      "tests/data/validation/n2o5_source_review/20261106/inputs.json": "346004d21e9606a6f7d38a44d51b2711ff6799c80daf4fb62e6546f8ea2f8803",
+      "tests/data/validation/n2o5_source_review/20261106/literature.json": "b8f5af24517fc8cfb8d96511bf39027fbcc0749a52472c4e38c7659ccbdbfca3",
+      "tests/data/validation/n2o5_source_review/20261106/nasa_records.json": "fded907dca402b1ce99016e69a48a09cc730ff5be5dfc5e645e93736a0fc974a",
+      "tests/data/validation/n2o5_source_review/20261106/sources.json": "73235dfb44cdac7babcb07df37480930481aea6cd1ea2b92f1008a5ff7e0a8e9"
+    }
+  },
+  "energy_ledger": {
+    "reference_temperature_K": 298.15,
+    "JANAF_Hf298_J_mol": {
+      "N2O5": 11297,
+      "N": 472683,
+      "O": 249173
+    },
+    "ATcT_1_228_Hf298_J_mol": {
+      "N2O5": 14860,
+      "N": 472518,
+      "O": 249229
+    },
+    "JANAF_atomization_H298_J_mol": 2179934.0,
+    "ATcT_atomization_H298_J_mol": 2176321.0,
+    "delta_formation_GH_J_mol": 3613.0,
+    "physical_JANAF_D0_J_mol": null,
+    "scope": "Balanced reaction H298 anchor, not D0; unchanged source thermal shape and fit residual."
+  },
+  "source_sha256": {
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/n2o5_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/n2o5_source_review/20261106/N-033.txt": "a19cb63b1e43b5a65bcd61dcb58a116714afe8a8a85b3fc479e67372cff29424",
+    "tests/data/validation/n2o5_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/n2o5_source_review/20261106/comparison.json": "d7262fe2c88e4dbf9912aea444a17c0a20dd75279f97e59630dbfe588fa5449e",
+    "tests/data/validation/n2o5_source_review/20261106/inputs.json": "346004d21e9606a6f7d38a44d51b2711ff6799c80daf4fb62e6546f8ea2f8803",
+    "tests/data/validation/n2o5_source_review/20261106/literature.json": "b8f5af24517fc8cfb8d96511bf39027fbcc0749a52472c4e38c7659ccbdbfca3",
+    "tests/data/validation/n2o5_source_review/20261106/nasa_records.json": "fded907dca402b1ce99016e69a48a09cc730ff5be5dfc5e645e93736a0fc974a",
+    "tests/data/validation/n2o5_source_review/20261106/sources.json": "73235dfb44cdac7babcb07df37480930481aea6cd1ea2b92f1008a5ff7e0a8e9",
+    "mceg/reviews/n2o5_h298_candidate.py": "d55d493a89505319655e395b3224f31f50d485923fe862efa9361e42e7f5d191"
+  },
+  "scope": "Retained JANAF-derived reaction thermals with the available H298 energy correction; no production adoption or invented zero-K energy."
+}
