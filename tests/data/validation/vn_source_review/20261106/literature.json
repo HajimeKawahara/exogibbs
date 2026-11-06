@@ -1,0 +1,37 @@
+{
+  "identity": "Neutral gas VN, ground X 3Delta, separated ground-state neutral V + N; not VN solid or VN+.",
+  "neutral_2016": {
+    "doi": "10.1063/1.4953782",
+    "url": "https://digitalcommons.georgiasouthern.edu/chem-facpubs/96/",
+    "access": "Author-institution abstract inspected; full original paper not obtained.",
+    "D0_eV": 4.9968,
+    "reported_uncertainty_eV": 0.002,
+    "cation_D0_eV_excluded": 4.6871
+  },
+  "theory_2023": {
+    "doi": "10.1080/00268976.2023.2248292",
+    "url": "https://par.nsf.gov/servlets/purl/10486899",
+    "access": "Full author manuscript inspected, section 3.3 and Table 5.",
+    "method": "s-ccCA, including high-order correlation, scalar relativity and spin-orbit treatment.",
+    "D0_J_mol": 481890.0,
+    "scope": "Independent theoretical central value, not an experimental uncertainty or full thermal function."
+  },
+  "cycle_2026": {
+    "doi": "10.1063/5.0349800",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/?term=10.1063%2F5.0349800",
+    "access": "Primary indexed abstract inspected; complete original paper not obtained.",
+    "cation_D0_eV": 4.688,
+    "reported_uncertainty_eV": 0.012,
+    "neutral_adoption": false,
+    "scope": "VN/VN+ ionization cycle closes within 12 meV; quoted 4.688 eV belongs to cation."
+  },
+  "thermal_2025": {
+    "doi": "10.1038/s41598-025-17514-z",
+    "url": "https://www.nature.com/articles/s41598-025-17514-z",
+    "access": "Full publisher HTML inspected; no numerical thermal candidate adopted.",
+    "De_cm_inverse": 48000.0,
+    "standard_pressure_Pa": 101325,
+    "scope": "Kratzer potential model. De is not D0; comparison against NIST/JANAF is evaluated-source agreement, not new calorimetry."
+  },
+  "eV_to_J_mol": 96485.33212331001
+}
