@@ -1,0 +1,41 @@
+{
+  "molecule": "C3O2",
+  "canonical": "C3O2",
+  "max_mole_fraction": 2.542971431530567e-14,
+  "max_mole_fraction_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "max_element_share": 6.494513770879669e-11,
+  "max_element": "C",
+  "max_element_share_condition": {
+    "case_index": 74,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 6.494513770879669e-11,
+      "maximum_share_percent": 6.494513770879669e-09,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    },
+    "O": {
+      "maximum_share": 6.494513770879669e-11,
+      "maximum_share_percent": 6.494513770879669e-09,
+      "condition": {
+        "case_index": 74,
+        "temperature_K": 4000.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.5
+      }
+    }
+  }
+}
