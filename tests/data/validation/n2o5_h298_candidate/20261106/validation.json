@@ -1,0 +1,94 @@
+{
+  "temperature_count": 2752,
+  "maximum_current_h_error": 4.263256414560601e-14,
+  "independent_source_property_errors": {
+    "G_J_mol": 1.1641532182693481e-10,
+    "H_J_mol": 1.862645149230957e-09,
+    "S_J_mol_K": 0.0,
+    "Cp_J_mol_K": 2.0761170560490427e-14
+  },
+  "retained_source_fit_residuals": [
+    {
+      "temperature_K": 1500,
+      "old_fit_minus_JANAF_ln_K": 0.021906961748371145,
+      "preservation_error_ln_K": 0.0
+    },
+    {
+      "temperature_K": 2000,
+      "old_fit_minus_JANAF_ln_K": -0.012122160142013172,
+      "preservation_error_ln_K": 0.0
+    },
+    {
+      "temperature_K": 3000,
+      "old_fit_minus_JANAF_ln_K": -0.019105751107685087,
+      "preservation_error_ln_K": 8.881784197001252e-16
+    },
+    {
+      "temperature_K": 4000,
+      "old_fit_minus_JANAF_ln_K": 0.008840304223998174,
+      "preservation_error_ln_K": 0.0
+    }
+  ],
+  "jax_derivative_checks": {
+    "temperature_count": 2752,
+    "offgrid_count": 251,
+    "range_K": [
+      1500,
+      4000
+    ],
+    "models": [
+      {
+        "variant": "retained_h298",
+        "species": "N2O5",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 5.820766091346741e-10,
+          "H_J_mol": 1.3969838619232178e-09,
+          "S_J_mol_K": 4.547473508864641e-13,
+          "Cp_J_mol_K": 7.442935157087049e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -996793.2169218012,
+            "H_J_mol": -2192980.150781625,
+            "S_J_mol_K": -797.4579559065489,
+            "Cp_J_mol_K": -1.4097480332734342
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -598092.4215052956,
+            "H_J_mol": -2192337.733489353,
+            "S_J_mol_K": -797.1226559920287,
+            "Cp_J_mol_K": 3.549233250938555
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -199792.8384177917,
+            "H_J_mol": -2189861.101482109,
+            "S_J_mol_K": -796.0273052257271,
+            "Cp_J_mol_K": 5.927110826614724
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": 197935.56216012998,
+            "H_J_mol": -2186840.806614161,
+            "S_J_mol_K": -794.9254562580969,
+            "Cp_J_mol_K": 5.723884693755063
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 992260.9904839854,
+            "H_J_mol": -2184331.435713224,
+            "S_J_mol_K": -794.1481065493023,
+            "Cp_J_mol_K": -2.4258786975717066
+          }
+        ]
+      }
+    ],
+    "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks."
+  },
+  "energy_reference_temperature_K": 298.15,
+  "physical_JANAF_D0_J_mol": null,
+  "production_change": "none",
+  "physical_accuracy": "unknown"
+}
