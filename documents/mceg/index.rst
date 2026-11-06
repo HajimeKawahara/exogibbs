@@ -54,6 +54,7 @@ HCN differences with optional MCEG tooling.
    ch2o_candidate
    new_fastchem_logk
    vo_source_review
+   vn_source_review
    c3h_source_review
    fastchem_hcn_followup
    c3_source_review
