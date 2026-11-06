@@ -136,7 +136,7 @@ evidence:
   - source: mceg/reviews/pending_candidate.py
     sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
   - source: tests/model_evidence/cis_h2n2_candidate_test.py
-    sha256: f6b3fa453f3d69dcf856aeeefa49602d8c722a0491e7f5dfdfb0edf3a0c0820f
+    sha256: 83c79c17a3961b7632becbd2caf8c864d1b45191650578cab918b62312165ad0
   provenance:
     role: primary
     location: documents/mceg/cis_h2n2_candidate.rst
@@ -181,7 +181,7 @@ evidence:
   - source: mceg/reviews/pending_equilibrium_impact.py
     sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
   - source: tests/model_evidence/cis_h2n2_candidate_test.py
-    sha256: f6b3fa453f3d69dcf856aeeefa49602d8c722a0491e7f5dfdfb0edf3a0c0820f
+    sha256: 83c79c17a3961b7632becbd2caf8c864d1b45191650578cab918b62312165ad0
   provenance:
     role: primary
     location: documents/mceg/cis_h2n2_candidate.rst
@@ -329,7 +329,7 @@ subjects:
     tests/data/validation/curated_ch2_adoption/20261106/ions.npz: 2b8b5cf2275e5177c90a11dbd604989362f04a39efcf80f5a45294c5a0832b84
     tests/data/validation/curated_ch2_adoption/20261106/neutral.npz: c93f8ed204949b0921e19c8bf2ab60abe80120101ccc4b9df9ce9dc9b612d320
     tests/data/validation/curated_ch2_adoption/20261106/receipt.json: 693d76930fa681883e25f91c494ab6cd87e0db6f78fae1f8f305797ab80239b2
-    tests/model_evidence/cis_h2n2_candidate_test.py: f6b3fa453f3d69dcf856aeeefa49602d8c722a0491e7f5dfdfb0edf3a0c0820f
+    tests/model_evidence/cis_h2n2_candidate_test.py: 83c79c17a3961b7632becbd2caf8c864d1b45191650578cab918b62312165ad0
 contexts:
 - id: candidate_evaluation
   scope: Neutral single cis-HNNH (Z-diazene), H2N2; neither trans nor H2NN nor their equilibrium mixture. 1

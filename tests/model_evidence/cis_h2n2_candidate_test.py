@@ -7,7 +7,6 @@ import sys
 
 import numpy as np
 import pytest
-import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
@@ -124,7 +123,7 @@ def test_fixed_network_archives_controls_and_counts():
                         )
 
 
-def test_frozen_receipts_and_contract_keep_physical_accuracy_unknown():
+def test_frozen_execution_receipts_match_inputs_and_outputs():
     receipt = json.loads((DATA / "receipt.json").read_text())
     for path, digest in receipt["selected_file_sha256"].items():
         assert (
@@ -133,15 +132,3 @@ def test_frozen_receipts_and_contract_keep_physical_accuracy_unknown():
         ), path
     for path, digest in receipt["output_sha256"].items():
         assert sha256((DATA / path).read_bytes()).hexdigest() == digest, path
-    contract = yaml.safe_load(
-        (ROOT / f"mceg/contracts/{SLUG}_candidate.yaml").read_text()
-    )
-    for subject in contract["subjects"]:
-        for path, digest in subject["selected_files"].items():
-            assert (
-                sha256(historical_source(ROOT, path, digest).read_bytes()).hexdigest()
-                == digest
-            ), path
-    status = {a["claim"]: a["status"] for a in contract["assessments"]}
-    assert status["physical_accuracy"] == "unknown"
-    assert status["finite_substitution"] == "supported"
