@@ -36,6 +36,7 @@ HCN differences with optional MCEG tooling.
    so3_candidate
    s2_source_review
    o2_source_review
+   o2_candidate
    s4_source_review
    tio2_source_review
    tio2_candidate
