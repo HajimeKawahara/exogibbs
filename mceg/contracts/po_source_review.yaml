@@ -102,7 +102,7 @@ evidence:
   - source: tests/data/validation/po_source_review/20261106/comparison.json
     sha256: 9e981756b7f8faa5659649a12e9ad13f7723f1b3eafdae0eafe9aadd82c8d8f4
   - source: tests/data/validation/po_source_review/20261106/receipt.json
-    sha256: 89ab872c24a56e5324c3dc285123807684b79915cd1abfe2c73599f28ba6f4b0
+    sha256: 431986f4720fdd66a0184965e8fde7c79f54fdcab0c184b159932817845402cc
   provenance:
     role: primary
     location: documents/mceg/po_source_review.rst
@@ -329,8 +329,8 @@ subjects:
     tests/data/validation/po_source_review/20261106/state_inventory.json: 1df2673901e850380b64fd9b934a9e460fe39c6e026c9e8f8593371c52914ebb
     tests/data/validation/po_source_review/20261106/states.npz: 8f3159ac4f75b6e40ad327ab5969c4658b583c76e0218a52b8339e95da48c11b
     tests/data/validation/s2o_source_investigation/20261102/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
-    tests/model_evidence/po_source_review_test.py: 3742a59e601088b7b6cec0b86b7d33a98afe42b6e3e526e660723aaa1beadb18
-    tests/data/validation/po_source_review/20261106/receipt.json: 89ab872c24a56e5324c3dc285123807684b79915cd1abfe2c73599f28ba6f4b0
+    tests/model_evidence/po_source_review_test.py: b7b1db5923dbbeb684bb2dcdf48ba1c736e587b9205b02749b578aac5df2894f
+    tests/data/validation/po_source_review/20261106/receipt.json: 431986f4720fdd66a0184965e8fde7c79f54fdcab0c184b159932817845402cc
 contexts:
 - id: source_review
   scope: Neutral PO, balanced gas atoms, 1 bar, 300-4000 K source nodes and 1500-4000 K curated; saved 75-case allocation

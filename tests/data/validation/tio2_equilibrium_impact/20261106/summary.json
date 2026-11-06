@@ -1,0 +1,300 @@
+{
+  "baseline_dataset": "curated-cos-v1",
+  "curated_update": "none",
+  "primary_variant": "rrho",
+  "control_variant": "h298",
+  "reused_baseline_cases": 75,
+  "new_endpoint_solves": 75,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "species": 537,
+      "cases": 75,
+      "TiO2_ratio_min": 0.8932125888587138,
+      "TiO2_ratio_max": 0.9519297903732235,
+      "highlighted_case": {
+        "case_index": 4,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 0.5888436553555908,
+        "species": "O2Ti1",
+        "x_before": 8.031709850270692e-08,
+        "x_after": 7.645623874106735e-08,
+        "delta_x": -3.860859761639574e-09,
+        "ratio": 0.9519297903732235,
+        "titanium_share_before": 0.5008719050496409,
+        "titanium_share_after": 0.47679488763379
+      },
+      "largest_absolute_response": {
+        "case_index": 29,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 1.0,
+        "species": "O2Ti1",
+        "x_before": 7.986775797352188e-08,
+        "x_after": 7.600679573723997e-08,
+        "delta_x": -3.86096223628191e-09,
+        "ratio": 0.9516580615977487,
+        "titanium_share_before": 0.4979070161675523,
+        "titanium_share_after": 0.47383722596186895
+      },
+      "species_extrema": [
+        {
+          "case_index": 29,
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.0,
+          "species": "O2Ti1",
+          "x_before": 7.986775797352188e-08,
+          "x_after": 7.600679573723997e-08,
+          "delta_x": -3.86096223628191e-09,
+          "ratio": 0.9516580615977487,
+          "titanium_share_before": 0.4979070161675523,
+          "titanium_share_after": 0.47383722596186895
+        },
+        {
+          "case_index": 4,
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "O1Ti1",
+          "x_before": 7.850244150607108e-08,
+          "x_after": 8.229062064287979e-08,
+          "delta_x": 3.7881791368087065e-09,
+          "ratio": 1.048255558223826,
+          "titanium_share_before": 0.489555376889874,
+          "titanium_share_after": 0.5131791449434957
+        },
+        {
+          "case_index": 9,
+          "temperature_K": 2000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "Ti1",
+          "x_before": 8.468099840783361e-09,
+          "x_after": 8.514577654522245e-09,
+          "delta_x": 4.647781373888366e-11,
+          "ratio": 1.0054885764944623,
+          "titanium_share_before": 0.052845516363881316,
+          "titanium_share_after": 0.05313556304120207
+        },
+        {
+          "case_index": 11,
+          "temperature_K": 2500.0,
+          "pressure_bar": 0.0001,
+          "C_over_O": 0.5888436553555908,
+          "species": "Ti1+",
+          "x_before": 1.5447203799229194e-09,
+          "x_after": 1.544973075759297e-09,
+          "delta_x": 2.526958363776047e-13,
+          "ratio": 1.0001635867822178,
+          "titanium_share_before": 0.01623450226517105,
+          "titanium_share_after": 0.016237158015477617
+        },
+        {
+          "case_index": 19,
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "Ti1-",
+          "x_before": 8.125250383426484e-15,
+          "x_after": 8.126165680150052e-15,
+          "delta_x": 9.152967235680734e-19,
+          "ratio": 1.0001126484330176,
+          "titanium_share_before": 5.1091774060519114e-08,
+          "titanium_share_after": 5.1097529468878275e-08
+        },
+        {
+          "case_index": 14,
+          "temperature_K": 2500.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "H1Ti1",
+          "x_before": 2.5692226405921506e-09,
+          "x_after": 2.5709036014880373e-09,
+          "delta_x": 1.6809608958867247e-12,
+          "ratio": 1.000654268286963,
+          "titanium_share_before": 0.01605588165697157,
+          "titanium_share_after": 0.016066386511520443
+        },
+        {
+          "case_index": 9,
+          "temperature_K": 2000.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "N1Ti1",
+          "x_before": 1.0223429524337341e-12,
+          "x_after": 1.0279541639946136e-12,
+          "delta_x": 5.6112115608795015e-15,
+          "ratio": 1.0054885804685423,
+          "titanium_share_before": 6.37997215882351e-06,
+          "titanium_share_after": 6.414989151621844e-06
+        },
+        {
+          "case_index": 5,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "H1O1",
+          "x_before": 3.1888120961266235e-05,
+          "x_after": 3.1888193871591595e-05,
+          "delta_x": 7.291032536017265e-11,
+          "ratio": 1.0000022864415703,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        },
+        {
+          "case_index": 4,
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "H2O1",
+          "x_before": 0.0007625422470336052,
+          "x_after": 0.0007625460139575336,
+          "delta_x": 3.7669239283822514e-09,
+          "ratio": 1.0000049399544,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        },
+        {
+          "case_index": 5,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "O1",
+          "x_before": 7.693831465533143e-05,
+          "x_after": 7.693849059921537e-05,
+          "delta_x": 1.7594388394674178e-10,
+          "ratio": 1.0000022868174945,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        },
+        {
+          "case_index": 5,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "O2",
+          "x_before": 1.3208034139596592e-08,
+          "x_after": 1.320809454839288e-08,
+          "delta_x": 6.040879628766618e-14,
+          "ratio": 1.000004573640229,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        },
+        {
+          "case_index": 5,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "H1",
+          "x_before": 0.7157219874216392,
+          "x_after": 0.7157219871525645,
+          "delta_x": -2.690746514488751e-10,
+          "ratio": 0.9999999996240514,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        },
+        {
+          "case_index": 4,
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "H2",
+          "x_before": 0.8573079434990969,
+          "x_after": 0.8573079397966543,
+          "delta_x": -3.702442574748943e-09,
+          "ratio": 0.9999999956813155,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        },
+        {
+          "case_index": 11,
+          "temperature_K": 2500.0,
+          "pressure_bar": 0.0001,
+          "C_over_O": 0.5888436553555908,
+          "species": "e1-",
+          "x_before": 2.8480353891084656e-06,
+          "x_after": 2.8480355831453895e-06,
+          "delta_x": 1.9403692392869578e-13,
+          "ratio": 1.0000000681300958,
+          "titanium_share_before": 0.0,
+          "titanium_share_after": 0.0
+        }
+      ],
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.4589423859629291e-06,
+        "mass_action_max_abs_ln": 1.6484591469634324e-12,
+        "titanium_relative_residual": 5.426696910001979e-10,
+        "major_element_relative_residual": 2.2720612637169303e-13,
+        "charge_relative_residual": 1.9516399694714846e-14
+      },
+      "tight_case_indices": [
+        4,
+        46,
+        70
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 1.4575859665910684e-05,
+        "TiO2_delta_ln_x": 7.815970093361102e-14,
+        "visible_delta_ln_x": 1.4575858990895085e-06,
+        "absolute_delta_x": 3.3784489600048046e-14
+      },
+      "h298_control_TiO2_ratio_min": 0.992879822785022,
+      "h298_control_TiO2_ratio_max": 0.9949068983507009,
+      "h298_control_max_absolute_delta_x": 5.4438196902704e-10,
+      "gibbs_ordering_resolved_cases": 36,
+      "gibbs_numerical_scale_max": 1.930826058977736e-16,
+      "gibbs_interpretation": "Same-model feasibility-corrected exchanges, resolved only above the displayed floating-point scale; no physical model selection from absolute G across different models.",
+      "gibbs_corrected_current_min": -2.406192272897774e-18,
+      "gibbs_corrected_candidate_max": 1.4583330069172396e-18
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "case_index": 4,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 6.759191851196336e-09,
+          "element_relative_residual": 3.125379239278787e-11,
+          "charge_relative_residual": 2.6189885620545224e-12,
+          "mass_action_max_abs_ln": 1.6484591469634324e-10
+        },
+        {
+          "dataset": "review-tio2-rrho-candidate",
+          "max_abs_delta_log10_x": 6.7498602471679935e-09,
+          "element_relative_residual": 2.5957379299463666e-11,
+          "charge_relative_residual": 1.2263868924373946e-12,
+          "mass_action_max_abs_ln": 2.6424373800182366e-10
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "case_index": 46,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 5.0220322949359405e-09,
+          "element_relative_residual": 5.5608999528029244e-11,
+          "charge_relative_residual": 5.755820323978496e-12,
+          "mass_action_max_abs_ln": 1.1794476506565843e-10
+        },
+        {
+          "dataset": "review-tio2-rrho-candidate",
+          "max_abs_delta_log10_x": 5.021908861020221e-09,
+          "element_relative_residual": 5.5608999528029244e-11,
+          "charge_relative_residual": 5.755820323978496e-12,
+          "mass_action_max_abs_ln": 1.1794476506565843e-10
+        }
+      ]
+    }
+  ],
+  "new_selected_cold_solves": 14,
+  "scope": "Fixed element-aggregated ideal gas, 1500-4000 K; no condensation, transport, opacity or full physical uncertainty validation.",
+  "thermal_control_scope": "Same RRHO thermal function but fixed molecular H298 instead of fixed D0; selected anchor sensitivity, not an energy reevaluation or physical uncertainty interval."
+}

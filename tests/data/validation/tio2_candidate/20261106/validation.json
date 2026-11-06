@@ -1,0 +1,215 @@
+{
+  "temperature_count": 2501,
+  "maximum_absolute_reconstruction_error": {
+    "current_h": 1.4210854715202004e-14,
+    "rrho_h": 4.263256414560601e-14,
+    "h298_h": 1.4210854715202004e-14
+  },
+  "jax_float64_derivative_errors": {
+    "current": {
+      "G_J_mol": 0.0,
+      "H_J_mol": 2.3283064365386963e-10,
+      "S_J_mol_K": 1.1368683772161603e-13,
+      "Cp_J_mol_K": 1.3500311979441904e-13
+    },
+    "rrho": {
+      "G_J_mol": 1.1641532182693481e-10,
+      "H_J_mol": 2.3283064365386963e-10,
+      "S_J_mol_K": 1.7053025658242404e-13,
+      "Cp_J_mol_K": 1.8474111129762605e-13
+    },
+    "h298": {
+      "G_J_mol": 1.1641532182693481e-10,
+      "H_J_mol": 6.984919309616089e-10,
+      "S_J_mol_K": 2.8421709430404007e-13,
+      "Cp_J_mol_K": 1.8474111129762605e-13
+    }
+  },
+  "samples": [
+    {
+      "temperature_K": 1500.0,
+      "K_over_current": {
+        "current": 1.0,
+        "rrho": 0.9081040175055136,
+        "h298": 0.8958227952310678
+      },
+      "properties": {
+        "current": {
+          "G_J_mol": -896656.7068405909,
+          "H_J_mol": -1290258.5869270246,
+          "S_J_mol_K": -262.4012533909558,
+          "Cp_J_mol_K": -8.139102039358633
+        },
+        "rrho": {
+          "G_J_mol": -895454.4810649721,
+          "H_J_mol": -1290513.8978820418,
+          "S_J_mol_K": -263.37294454471316,
+          "Cp_J_mol_K": -8.159789354021356
+        },
+        "h298": {
+          "G_J_mol": -895284.6626325836,
+          "H_J_mol": -1290344.0794496534,
+          "S_J_mol_K": -263.37294454471316,
+          "Cp_J_mol_K": -8.159789354021356
+        }
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "K_over_current": {
+        "current": 1.0,
+        "rrho": 0.9033876933164443,
+        "h298": 0.8942090362064852
+      },
+      "properties": {
+        "current": {
+          "G_J_mol": -764845.8543204233,
+          "H_J_mol": -1294319.7480346588,
+          "S_J_mol_K": -264.7369468571178,
+          "Cp_J_mol_K": -8.287955663144864
+        },
+        "rrho": {
+          "G_J_mol": -763156.2976729643,
+          "H_J_mol": -1294584.1042730166,
+          "S_J_mol_K": -265.7139033000261,
+          "Cp_J_mol_K": -8.301406208777586
+        },
+        "h298": {
+          "G_J_mol": -762986.4792405759,
+          "H_J_mol": -1294414.2858406282,
+          "S_J_mol_K": -265.7139033000261,
+          "Cp_J_mol_K": -8.301406208777586
+        }
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "K_over_current": {
+        "current": 1.0,
+        "rrho": 0.9004755229362115,
+        "h298": 0.8931488010343204
+      },
+      "properties": {
+        "current": {
+          "G_J_mol": -631979.9600438918,
+          "H_J_mol": -1298728.9558621359,
+          "S_J_mol_K": -266.6995983272977,
+          "Cp_J_mol_K": -9.531288918729741
+        },
+        "rrho": {
+          "G_J_mol": -629800.8995204875,
+          "H_J_mol": -1299005.4556401942,
+          "S_J_mol_K": -267.6818224478828,
+          "Cp_J_mol_K": -9.583969798965294
+        },
+        "h298": {
+          "G_J_mol": -629631.081088099,
+          "H_J_mol": -1298835.6372078059,
+          "S_J_mol_K": -267.6818224478828,
+          "Cp_J_mol_K": -9.583969798965294
+        }
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "K_over_current": {
+        "current": 1.0,
+        "rrho": 0.898314230737117,
+        "h298": 0.8922191405761984
+      },
+      "properties": {
+        "current": {
+          "G_J_mol": -498151.2751530179,
+          "H_J_mol": -1304033.4502253553,
+          "S_J_mol_K": -268.6273916907791,
+          "Cp_J_mol_K": -11.869101806113273
+        },
+        "rrho": {
+          "G_J_mol": -495476.462250733,
+          "H_J_mol": -1304376.0455511878,
+          "S_J_mol_K": -269.63319443348496,
+          "Cp_J_mol_K": -12.112774894503389
+        },
+        "h298": {
+          "G_J_mol": -495306.6438183445,
+          "H_J_mol": -1304206.2271187995,
+          "S_J_mol_K": -269.63319443348496,
+          "Cp_J_mol_K": -12.112774894503389
+        }
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "K_over_current": {
+        "current": 1.0,
+        "rrho": 0.8932125888588495,
+        "h298": 0.888663366349331
+      },
+      "properties": {
+        "current": {
+          "G_J_mol": -227408.14527711697,
+          "H_J_mol": -1319517.257822617,
+          "S_J_mol_K": -273.027278136375,
+          "Cp_J_mol_K": -19.828166476276277
+        },
+        "rrho": {
+          "G_J_mol": -223652.31410658525,
+          "H_J_mol": -1320548.0318242589,
+          "S_J_mol_K": -274.22392942941843,
+          "Cp_J_mol_K": -21.115310228068246
+        },
+        "h298": {
+          "G_J_mol": -223482.4956741968,
+          "H_J_mol": -1320378.2133918705,
+          "S_J_mol_K": -274.22392942941843,
+          "Cp_J_mol_K": -21.115310228068246
+        }
+      }
+    }
+  ],
+  "thermal_sensitivity": [
+    {
+      "temperature_K": 1500.0,
+      "bend_316_over_322_K": 1.0162082466249407,
+      "bend_328_over_322_K": 0.9843893560254938,
+      "legacy_triplet_equal_rovib_over_ground_weight": 4.095496960310551e-08,
+      "A_singlet_equal_rotation_weight": 1.8571752395716837e-07,
+      "A_singlet_equal_rotation_K_multiplier": 1.000000185717524
+    },
+    {
+      "temperature_K": 2000.0,
+      "bend_316_over_322_K": 1.0168744302244006,
+      "bend_328_over_322_K": 0.9837456334337276,
+      "legacy_triplet_equal_rovib_over_ground_weight": 3.7888749308070574e-06,
+      "A_singlet_equal_rotation_weight": 1.3738604402185755e-05,
+      "A_singlet_equal_rotation_K_multiplier": 1.0000137386044021
+    },
+    {
+      "temperature_K": 2500.0,
+      "bend_316_over_322_K": 1.017283255019447,
+      "bend_328_over_322_K": 0.9833508339086366,
+      "legacy_triplet_equal_rovib_over_ground_weight": 5.731027160184756e-05,
+      "A_singlet_equal_rotation_weight": 0.0001821291666543404,
+      "A_singlet_equal_rotation_K_multiplier": 1.0001821291666544
+    },
+    {
+      "temperature_K": 3000.0,
+      "bend_316_over_322_K": 1.0175596158901914,
+      "bend_328_over_322_K": 0.9830840614720733,
+      "legacy_triplet_equal_rovib_over_ground_weight": 0.0003505209106591453,
+      "A_singlet_equal_rotation_weight": 0.0010211392198428296,
+      "A_singlet_equal_rotation_K_multiplier": 1.001021139219843
+    },
+    {
+      "temperature_K": 4000.0,
+      "bend_316_over_322_K": 1.0179093641073538,
+      "bend_328_over_322_K": 0.9827465751684898,
+      "legacy_triplet_equal_rovib_over_ground_weight": 0.003371442538798663,
+      "A_singlet_equal_rotation_weight": 0.008819334810843373,
+      "A_singlet_equal_rotation_K_multiplier": 1.0088193348108434
+    }
+  ],
+  "sensitivity_scope": "Bend interval and selected electronic approximations only, not a physical uncertainty interval. A-state harmonic constants and origin come from Zhuang2010 primary abstract, DOI10.1039/C0CP00861C; equal rotation is assumed. Fundamentals used as ground-state harmonic frequencies remain an approximation.",
+  "production_change": "none",
+  "energy_replacement": false
+}

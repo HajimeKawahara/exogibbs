@@ -198,9 +198,19 @@
     "tests/data/validation/po_source_review/20261106/state_inventory.json": "1df2673901e850380b64fd9b934a9e460fe39c6e026c9e8f8593371c52914ebb",
     "tests/data/validation/po_source_review/20261106/states.npz": "8f3159ac4f75b6e40ad327ab5969c4658b583c76e0218a52b8339e95da48c11b",
     "tests/data/validation/s2o_source_investigation/20261102/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
-    "tests/model_evidence/po_source_review_test.py": "3742a59e601088b7b6cec0b86b7d33a98afe42b6e3e526e660723aaa1beadb18"
+    "tests/model_evidence/po_source_review_test.py": "b7b1db5923dbbeb684bb2dcdf48ba1c736e587b9205b02749b578aac5df2894f"
   },
   "curated_change": "none",
   "new_equilibrium_solves": 0,
-  "numerical_tolerance": "2e-11 absolute,2e-12 relative; selected hashes refer to bytes, not worktree paths"
+  "numerical_tolerance": "2e-11 absolute,2e-12 relative, except modern.samples[*].delta_Hthermal_J_mol:1e-8 J/mol absolute with zero relative tolerance (see test-only verification amendment); selected hashes refer to bytes, not worktree paths",
+  "verification_amendment": {
+    "date": "2026-11-06",
+    "kind": "test_only_revalidation",
+    "prior_receipt_sha256": "89ab872c24a56e5324c3dc285123807684b79915cd1abfe2c73599f28ba6f4b0",
+    "reason": "CI platform state-moment reduction changed a cancelling thermal-enthalpy difference by 5.82e-11 J/mol; restrict a 1e-8 J/mol absolute replay tolerance to delta_Hthermal_J_mol only. All other fields retain the existing strict comparator.",
+    "regression": "A 1e-5 J/mol perturbation must fail.",
+    "scientific_data": "Raw sources, frozen comparison values, source interpretation and production coefficients are unchanged; no new scientific execution is claimed.",
+    "comparison_sha256": "9e981756b7f8faa5659649a12e9ad13f7723f1b3eafdae0eafe9aadd82c8d8f4",
+    "targeted_validation": "PO, PS and TiO2 source/candidate/impact tests:25 passed in6.38s."
+  }
 }
