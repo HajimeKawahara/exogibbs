@@ -138,7 +138,7 @@ evidence:
   - source: mceg/reviews/pending_candidate.py
     sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
   - source: tests/model_evidence/c2_candidate_test.py
-    sha256: c78d815886335da010da39b44733ba495a8f0ebdf9737f987ffc2983b4bb1a6b
+    sha256: 52328e813d6068f8ce1780c243d7d72401e4dcd36ccc668de5e89ec961ff2c1d
   provenance:
     role: primary
     location: documents/mceg/c2_candidate.rst
@@ -183,7 +183,7 @@ evidence:
   - source: mceg/reviews/pending_equilibrium_impact.py
     sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
   - source: tests/model_evidence/c2_candidate_test.py
-    sha256: c78d815886335da010da39b44733ba495a8f0ebdf9737f987ffc2983b4bb1a6b
+    sha256: 52328e813d6068f8ce1780c243d7d72401e4dcd36ccc668de5e89ec961ff2c1d
   provenance:
     role: primary
     location: documents/mceg/c2_candidate.rst
@@ -331,7 +331,7 @@ subjects:
     tests/data/validation/curated_ch2_adoption/20261106/ions.npz: 2b8b5cf2275e5177c90a11dbd604989362f04a39efcf80f5a45294c5a0832b84
     tests/data/validation/curated_ch2_adoption/20261106/neutral.npz: c93f8ed204949b0921e19c8bf2ab60abe80120101ccc4b9df9ce9dc9b612d320
     tests/data/validation/curated_ch2_adoption/20261106/receipt.json: 693d76930fa681883e25f91c494ab6cd87e0db6f78fae1f8f305797ab80239b2
-    tests/model_evidence/c2_candidate_test.py: c78d815886335da010da39b44733ba495a8f0ebdf9737f987ffc2983b4bb1a6b
+    tests/model_evidence/c2_candidate_test.py: 52328e813d6068f8ce1780c243d7d72401e4dcd36ccc668de5e89ec961ff2c1d
 contexts:
 - id: candidate_evaluation
   scope: Neutral equilibrated carbon dimer with X1Sigma+g ground level and thermally accessible triplet manifolds;
