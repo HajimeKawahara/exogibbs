@@ -331,6 +331,9 @@ follow_ups:
   - For a separate energy update, inspect complete Hildenbrand1976 DOI10.1016/0009-2614(76)80510-6 and Balducci1985
     DOI10.1063/1.449377 cycles; these are not evidence-merge prerequisites.
   completion: A bounded candidate/substitution and adoption or retention decision.
+    Completed 2026-11-06 in mceg/contracts/curated_tio2_adoption.yaml.
+    The measured-input retained-energy RRHO candidate and finite substitution are recorded in tio2_candidate; the bounded production adoption is recorded separately.
+    Original claims and receipts retain their historical scope; complete physical accuracy remains unknown.
 limitations:
 - statement: A2022 DFT result calibrated on JANAF is not independent energy confirmation. Its4kJ/mol selection tolerance
     cannot substitute for printed JANAF12.6kJ/mol Hf uncertainty.

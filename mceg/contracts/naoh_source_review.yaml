@@ -131,7 +131,7 @@ subjects:
   selected_files:
     mceg/reviews/naoh_source_review.py: 1076affaf49add6ab39ddec7b6b0cea4dc9f207b8e8225481be88f53fcc471ea
     documents/mceg/naoh_source_review.rst: 2d77849b863c596bc69ea9087d40d5014ef5addf4ac3226c217aaa3eaf115af6
-    tests/model_evidence/naoh_source_review_test.py: 250cccaeb0ee7f68de41ec51dfb38154d588215b614ecc510f1a13666c03eee5
+    tests/data/validation/curated_tio2_adoption/20261106/source/tests/model_evidence/naoh_source_review_test.py: 250cccaeb0ee7f68de41ec51dfb38154d588215b614ecc510f1a13666c03eee5
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
@@ -257,7 +257,7 @@ subjects:
     src/exogibbs/optimize/vjpgibbs.py: d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3
     src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     src/exogibbs/presets/_condensate.py: f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf
-    src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
+    tests/data/validation/curated_tio2_adoption/20261106/source/src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f

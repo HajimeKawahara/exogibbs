@@ -437,6 +437,9 @@ follow_ups:
   - No new legacy full text is mandatory for this bounded energy calculation.
   - Retain covariance, thermal-state and physical-applicability limits.
   completion: Explicit scoped adoption or retention decision; this packet leaves production unchanged.
+    Completed 2026-11-06 in mceg/contracts/curated_cn_adoption.yaml.
+    The authorized CN energy correction is now a named curated_cn layer with fresh production verification.
+    Original claims and receipts retain their historical scope; complete physical accuracy remains unknown.
 - id: broader_thermal_and_uncertainty
   target_kind: claim
   target: physical_accuracy

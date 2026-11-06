@@ -11,6 +11,7 @@ import pytest
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"mceg/reviews"))
+from curated_adoption_history import historical_source
 import h2o2_candidate as candidate
 import h2o2_equilibrium_impact as impact
 
@@ -115,6 +116,6 @@ def test_candidate_and_impact_execution_receipts():
     for data in [candidate.DATA,DATA]:
         receipt=json.loads((data/"receipt.json").read_text())
         assert receipt["result"]=="passed" and receipt["dtype"]=="float64"
-        for p,h in receipt["selected_file_sha256"].items():assert sha256((ROOT/p).read_bytes()).hexdigest()==h,p
+        for p,h in receipt["selected_file_sha256"].items():assert sha256(historical_source(ROOT,p,h).read_bytes()).hexdigest()==h,p
         for p,h in receipt["output_sha256"].items():assert sha256((data/p).read_bytes()).hexdigest()==h,p
     assert len(json.loads((DATA/"receipt.json").read_text())["fastchem_binary_sha256"])==64

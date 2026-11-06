@@ -313,6 +313,9 @@ follow_ups:
     adoption. Any thermal alternative additionally needs validated Q, H, S and Cp, bound-state and energy/J-cutoff
     completeness over 1500-4000 K.
   completion: Recorded consistent candidate and fixed-network equilibrium evaluation with bounded conclusions.
+    Completed 2026-11-06 in mceg/contracts/curated_cn_adoption.yaml.
+    The retained-thermal ATcT candidate and finite substitution are recorded in cn_candidate; the bounded production adoption is recorded separately.
+    Original claims and receipts retain their historical scope; complete physical accuracy remains unknown.
   requires:
   - No mandatory unavailable paper blocks numerical candidate construction.
 - target_kind: claim

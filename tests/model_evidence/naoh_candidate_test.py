@@ -10,6 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"mceg/reviews"))
+from curated_adoption_history import historical_source
 import naoh_candidate as candidate
 
 
@@ -32,7 +33,7 @@ def test_balanced_energy_uses_printed_heat_content_and_atomic_references():
         assert sha256((ROOT/path).read_bytes()).hexdigest() == digest,path
     receipt = json.loads((candidate.DATA/"receipt.json").read_text())
     for path,digest in receipt["input_sha256"].items():
-        assert sha256((ROOT/path).read_bytes()).hexdigest() == digest,path
+        assert sha256(historical_source(ROOT,path,digest).read_bytes()).hexdigest() == digest,path
     for path,digest in receipt["output_sha256"].items():
         assert sha256((candidate.DATA/path).read_bytes()).hexdigest() == digest,path
     assert "src/exogibbs/presets/curated_cos.py" in receipt["input_sha256"]

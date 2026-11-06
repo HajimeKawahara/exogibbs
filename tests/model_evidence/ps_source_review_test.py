@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"mceg/reviews"))
+from curated_adoption_history import historical_source
 import phosphorus_diatomic_source_review as study
 from gas_source_comparison import check_equal
 SLUG="ps"
@@ -32,7 +33,7 @@ def test_pinned_replay(report):
     assert_replay_equal(report,json.loads((DATA/"comparison.json").read_text()))
     receipt=json.loads((DATA/"receipt.json").read_text())
     for path,expected in receipt["selected_input_sha256"].items():
-        assert sha256((ROOT/path).read_bytes()).hexdigest()==expected,path
+        assert sha256(historical_source(ROOT,path,expected).read_bytes()).hexdigest()==expected,path
     assert report["JANAF_frozen_nodes_matched"]==4
     assert report["curated_change"]=="none" and report["new_equilibrium_solves"]==0
     assert report["physical_accuracy"]=="unknown"

@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-11-05"
+RECORD_VERSION = "2026-11-06"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -384,7 +384,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
     cos_species = {**ho2_species, "C1O1S1": {"id": "C1O1S1", "aliases": ["COS"]}}
     catalog["models"].append({
         "id": "exogibbs.curated_cos.v1",
-        "label": "Curated default with balanced ATcT COS energy (ion-inclusive lookup)",
+        "label": "Versioned curated with balanced ATcT COS energy (ion-inclusive lookup)",
         "dataset": cos_data["id"],
         "identity": {"data_sha256": cos_digest, "settings": {"ions": True}},
         "species": [cos_species[k] for k in sorted(cos_species)],
@@ -394,7 +394,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "physical_accuracy_review"],
             "artifacts": [cos_receipt, cos_summary],
             "summary": (
-                "Default curated-cos-v1 adopts the same-version ATcT 1.228 COS energy "
+                "Former default, retained as curated_cos: curated-cos-v1 adopts ATcT 1.228 COS energy "
                 "on curated-ho2-v1 at 1500-4000 K. D0 rises from 1371.241 to 1376.853 "
                 "kJ/mol; the inherited JANAF molecular and NASA atomic thermal functions "
                 "are retained exactly. Only COS changes from that immediate base; no "
@@ -409,6 +409,77 @@ def build_catalog(output: Path = OUTPUT) -> None:
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/345"],
         }],
     })
+    # These layers have separate production receipts on their cumulative bases.
+    previous_digest, previous_species = cos_digest, cos_species
+    additions = (
+        ("cn", "CN", "C1N1", "curated_cn_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_cn_adoption",
+         "Versioned curated CN energy on the COS base", (
+             "curated-cn-v1 adopts the same-version ATcT 1.228 CN energy difference "
+             "of -4801 J/mol while retaining the literal inherited thermal fit, atomic "
+             "references and source-fit residual. The physical balanced source D0 "
+             "is distinct from the finite-fit constant. Only CN changes from curated-cos-v1. ")),
+        ("ps", "PS", "P1S1", "curated_ps",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "ps_curated_adoption",
+         "Versioned curated POPS PS thermals on the CN base", (
+             "curated-ps-v1 adds resolved POPS molecular thermals on curated-cn-v1, "
+             "retaining the Lodders energy, atomic references and source-fit residual. "
+             "A degree-18 Chebyshev log-partition representation preserves caloric "
+             "derivatives within the documented numerical tolerance. Only PS changes "
+             "from the immediate base. The adopted a4Pi component remains unrefined ab initio; "
+             "ground-only and full-distributed alternatives remain sensitivity controls. ")),
+        ("tio2", "TiO2", "O2Ti1", "curated_tio2_adoption",
+         ["scientific_selection_review", "production_adoption_review", "physical_accuracy_review"],
+         "curated_tio2_adoption",
+         "Curated default with measured TiO2 thermals on the CN/PS base", (
+             "Default curated-tio2-v1 adds measured ground-state rigid-rotor and "
+             "harmonic-oscillator TiO2 thermals on curated-ps-v1. Source D0=1267.776 "
+             "kJ/mol, atomic references and the inherited residual to the NASA thermal "
+             "proxy are retained. Only TiO2 changes from that base; H298-matched and "
+             "excited-state variants remain controls. Anharmonicity and full electronic "
+             "and isotope treatment remain outside the adopted approximation. ")),
+    )
+    for key, label, species_id, contract_name, assessments, guide, title, synopsis in additions:
+        data_path = f"src/exogibbs/data/curated/{key}_v1.json"
+        data_bytes = (ROOT / data_path).read_bytes()
+        data_digest = hashlib.sha256(data_bytes).hexdigest()
+        data = json.loads(data_bytes)
+        adoption = f"tests/data/validation/curated_{key}_adoption/20261106"
+        execution = json.loads((ROOT / adoption / "receipt.json").read_text())
+        if (data_digest != execution["selected_file_sha256"][data_path]
+                or previous_digest != data["base_data_sha256"]):
+            raise ValueError(f"{label} data changed; review new evidence before rebinding the adoption")
+        contract = copy(f"mceg/contracts/{contract_name}.yaml", f"contracts/{contract_name}.yaml")
+        receipt_pin = copy(f"{adoption}/receipt.json", f"artifacts/{key}_adoption_receipt.json")
+        summary_pin = copy(f"{adoption}/summary.json", f"artifacts/{key}_adoption_summary.json")
+        if summary_pin["sha256"] != execution["output_sha256"]["summary.json"]:
+            raise ValueError(f"{label} summary differs from the archived execution")
+        adopted_species = {**previous_species, species_id: {"id": species_id, "aliases": [label]}}
+        catalog["models"].append({
+            "id": f"exogibbs.curated_{key}.v1",
+            "label": title + " (ion-inclusive lookup)",
+            "dataset": data["id"],
+            "identity": {"data_sha256": data_digest, "settings": {"ions": True}},
+            "species": [adopted_species[k] for k in sorted(adopted_species)],
+            "records": [{
+                "id": f"{key}_adoption", **contract, "species": ["*", species_id],
+                "assessments": assessments,
+                "artifacts": [receipt_pin, summary_pin],
+                "summary": synopsis + (
+                    "Production verification includes 75 fresh cold solves and three tighter "
+                    "candidate controls per network on the actual cumulative base; two selected "
+                    "ion-inclusive cases receive independent FastChem comparisons. "
+                    "Earlier candidate abundances are not relabeled as new-background "
+                    "results. Scoped source choice and numerical verification are supported; "
+                    "complete physical accuracy remains unknown. Earlier named presets and "
+                    "immutable evidence remain available. Your conditions have not been evaluated."),
+                "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
+                          f"documents/mceg/{guide}.rst"],
+            }],
+        })
+        previous_digest, previous_species = data_digest, adopted_species
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
 
 

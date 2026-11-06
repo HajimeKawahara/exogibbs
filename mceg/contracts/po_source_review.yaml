@@ -269,7 +269,7 @@ subjects:
     src/exogibbs/optimize/vjpgibbs.py: d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3
     src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     src/exogibbs/presets/_condensate.py: f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf
-    src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
+    tests/data/validation/curated_tio2_adoption/20261106/source/src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
@@ -329,7 +329,7 @@ subjects:
     tests/data/validation/po_source_review/20261106/state_inventory.json: 1df2673901e850380b64fd9b934a9e460fe39c6e026c9e8f8593371c52914ebb
     tests/data/validation/po_source_review/20261106/states.npz: 8f3159ac4f75b6e40ad327ab5969c4658b583c76e0218a52b8339e95da48c11b
     tests/data/validation/s2o_source_investigation/20261102/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
-    tests/model_evidence/po_source_review_test.py: b7b1db5923dbbeb684bb2dcdf48ba1c736e587b9205b02749b578aac5df2894f
+    tests/data/validation/curated_tio2_adoption/20261106/source/tests/model_evidence/po_source_review_test.py: b7b1db5923dbbeb684bb2dcdf48ba1c736e587b9205b02749b578aac5df2894f
     tests/data/validation/po_source_review/20261106/receipt.json: 431986f4720fdd66a0184965e8fde7c79f54fdcab0c184b159932817845402cc
 contexts:
 - id: source_review

@@ -12,6 +12,7 @@ from scipy.special import logsumexp
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_adoption_history import historical_source
 import naoh_candidate as candidate
 
 DATA = ROOT / "tests/data/validation/naoh_equilibrium_impact/20261105"
@@ -129,7 +130,7 @@ def test_execution_receipt_convergence_and_independent_solver():
     assert receipt["result"] == "passed" and receipt["dtype"] == "float64"
     assert receipt["fastchem_binary_sha256"]
     for path, digest in receipt["selected_file_sha256"].items():
-        assert sha256((ROOT/path).read_bytes()).hexdigest() == digest, path
+        assert sha256(historical_source(ROOT,path,digest).read_bytes()).hexdigest() == digest, path
     for path, digest in receipt["output_sha256"].items():
         assert sha256((DATA/path).read_bytes()).hexdigest() == digest, path
     rows = json.loads((DATA/"diagnostics.json").read_text())
