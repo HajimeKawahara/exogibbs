@@ -1,0 +1,156 @@
+{
+  "dataset": "curated-cn-v1",
+  "base_dataset": "curated-cos-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate_on_cos": 2.1316282072803006e-14,
+      "tighter_case_indices": [
+        0,
+        61,
+        70
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.4545783074026986e-05,
+        "max_cn_abs_delta_ln_x": 1.0658141036401503e-13,
+        "max_absolute_delta_x": 3.371477782895951e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.4559347576207963e-06,
+        "mass_action_max_abs_ln": 1.1937117960769683e-12,
+        "HCNOS_element_relative_residual": 2.941307053148574e-12,
+        "charge_relative_residual": 1.3523773852079093e-14
+      },
+      "cn_incremental_response": {
+        "min_x_ratio": 0.6804834907148196,
+        "max_x_ratio": 0.8721351488231017,
+        "highlighted_case_index": 61,
+        "temperature_K": 2500.0,
+        "pressure_bar": 0.0001,
+        "C_over_O": 1.5,
+        "x_before": 5.98336882346156e-06,
+        "x_after": 4.812140663331931e-06,
+        "nitrogen_share_before": 0.08682481958655447,
+        "nitrogen_share_after": 0.06982908581730429
+      },
+      "cumulative_response_from_curated_cos": {
+        "C1N1": {
+          "production_over_old_cos_min": 0.6804834907148196,
+          "production_over_old_cos_max": 0.8721351488231017,
+          "max_absolute_delta_x": 1.1712281601296295e-06
+        },
+        "N2": {
+          "production_over_old_cos_min": 1.0000000000000107,
+          "production_over_old_cos_max": 1.020325923313605,
+          "max_absolute_delta_x": 4.857585691963283e-07
+        },
+        "C1H1N1_hcn": {
+          "production_over_old_cos_min": 0.9999999999999858,
+          "production_over_old_cos_max": 1.013215670592957,
+          "max_absolute_delta_x": 2.133609234737584e-07
+        },
+        "N1": {
+          "production_over_old_cos_min": 0.9999999999999751,
+          "production_over_old_cos_max": 1.0101118370326867,
+          "max_absolute_delta_x": 4.809999230417587e-08
+        }
+      },
+      "background_effect_relative_to_old_cn_only_candidate": {
+        "CN_ratio_min": 0.9999999999999929,
+        "CN_ratio_max": 1.000000000003297,
+        "max_absolute_delta_x_all_species": 1.1102230246251565e-15,
+        "scope": "No background adoption changes: the fresh production result reproduces the original CN-only candidate within numerical controls."
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate_on_cos": 2.1316282072803006e-14,
+      "tighter_case_indices": [
+        0,
+        21,
+        61
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.373572450802385e-05,
+        "max_cn_abs_delta_ln_x": 1.0480505352461478e-13,
+        "max_absolute_delta_x": 3.180892948440644e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3747296183542974e-06,
+        "mass_action_max_abs_ln": 1.5916157281026244e-12,
+        "HCNOS_element_relative_residual": 2.9358764336781963e-12
+      },
+      "cn_incremental_response": {
+        "min_x_ratio": 0.6804834907146988,
+        "max_x_ratio": 0.8721352755910784,
+        "highlighted_case_index": 61,
+        "temperature_K": 2500.0,
+        "pressure_bar": 0.0001,
+        "C_over_O": 1.5,
+        "x_before": 5.983400020989375e-06,
+        "x_after": 4.812165866715501e-06,
+        "nitrogen_share_before": 0.08682500669275277,
+        "nitrogen_share_after": 0.06982923793310357
+      },
+      "cumulative_response_from_curated_cos": {
+        "C1N1": {
+          "production_over_old_cos_min": 0.6804834907146988,
+          "production_over_old_cos_max": 0.8721352755910784,
+          "max_absolute_delta_x": 1.1712341542738736e-06
+        },
+        "N2": {
+          "production_over_old_cos_min": 0.9999999999999947,
+          "production_over_old_cos_max": 1.0203259573558154,
+          "max_absolute_delta_x": 4.857617190602429e-07
+        },
+        "C1H1N1_hcn": {
+          "production_over_old_cos_min": 0.999999999999865,
+          "production_over_old_cos_max": 1.013215694317384,
+          "max_absolute_delta_x": 2.1336603244416117e-07
+        },
+        "N1": {
+          "production_over_old_cos_min": 0.999999999999897,
+          "production_over_old_cos_max": 1.010111853883428,
+          "max_absolute_delta_x": 4.8101337802493937e-08
+        }
+      },
+      "background_effect_relative_to_old_cn_only_candidate": "not_available: prior CN candidate solved the ion-inclusive network only"
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 0,
+      "comparisons": [
+        {
+          "dataset": "curated-cn-v1",
+          "max_abs_delta_log10_x": 1.6162091309258375e-08,
+          "element_relative_residual": 3.735848332908095e-11,
+          "charge_relative_residual": 7.714895619068729e-12,
+          "mass_action_max_abs_ln": 1.1796430499089183e-10
+        }
+      ]
+    },
+    {
+      "case_index": 67,
+      "comparisons": [
+        {
+          "dataset": "curated-cn-v1",
+          "max_abs_delta_log10_x": 1.048631349782253e-07,
+          "element_relative_residual": 5.0533567776664553e-11,
+          "charge_relative_residual": 4.72446415872142e-12,
+          "mass_action_max_abs_ln": 4.834461719838146e-10
+        }
+      ]
+    }
+  ],
+  "scope": "Exact reviewed CN energy correction with retained thermal fit on unchanged COS base; fixed 1500-4000 K ideal-gas networks. No background model change from the earlier CN-only candidate. Full physical accuracy remains unknown."
+}
