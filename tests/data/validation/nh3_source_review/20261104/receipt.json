@@ -1,0 +1,28 @@
+{
+  "command": "python mceg/reviews/nh3_source_review.py --output tests/data/validation/nh3_source_review/20261104/comparison.json",
+  "scope": "Offline source replay only; no new equilibrium substitution or production change.",
+  "selected_input_sha256": {
+    "mceg/reviews/nh3_source_review.py": "02ea709cbb642668b0e798ff8e138aaefe1aec5b39e050c2d7c6606c29909899",
+    "documents/mceg/nh3_source_review.rst": "53d4a73fa621fe6a0c857fd4efd52da281329b78d74886aea5841a5efcafe89d",
+    "tests/model_evidence/nh3_source_review_test.py": "de4ba341f274b5f8c24f9b975b2d552cdf7dfa860ae198cab05def00c0c9255c",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_h2o_adoption/20261104/ions.npz": "c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/nh3_source_review/20261104/CoYuTe.def": "0ff5897c999ecb0230233b67771314c0a36cad553a0bda0f9c3513e674d5124a",
+    "tests/data/validation/nh3_source_review/20261104/CoYuTe.pf": "671bcb85a59500feaee1898f49c64e590c5cb0bbe565b12bf00df0e460627b68",
+    "tests/data/validation/nh3_source_review/20261104/README.rst": "9abf500fe68adb32c77f101704e61a0e22da6df58e8774628ddb1cf007033bfc",
+    "tests/data/validation/nh3_source_review/20261104/hapi_tips2021_nh3.txt": "358c2a6830bc59fbd276a47b41cf257e3e2ffa0286e86fe8cfc1fcb6d0b5bb5d",
+    "tests/data/validation/nh3_source_review/20261104/hapi_tips2025_nh3.txt": "f7640cb661c11b30bf4d4184a5008ad747972d8327e7ac434db04434f18de024",
+    "tests/data/validation/nh3_source_review/20261104/literature.json": "156674c60311de6e1849e99f821b82c7fbb08bfbbb3bcd01c6fa5505c94391da",
+    "tests/data/validation/nh3_source_review/20261104/sources.json": "06539462af3fbc60467c590a3b6cc499eca2934262c28846381abdc89e5d93ef"
+  },
+  "output_sha256": {
+    "tests/data/validation/nh3_source_review/20261104/comparison.json": "ebc3a542c30f4492e139dbc787e5f78fc1f67c20c9aa97e49f81241d2b1422c3"
+  }
+}
