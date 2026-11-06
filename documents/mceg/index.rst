@@ -123,6 +123,8 @@ HCN differences with optional MCEG tooling.
    nh_source_review
    ns_source_review
    nah_source_review
+   na2_source_review
+   na2_candidate
    nao_source_review
    ko_source_review
    build
