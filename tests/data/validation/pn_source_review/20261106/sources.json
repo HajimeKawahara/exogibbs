@@ -1,0 +1,49 @@
+{
+  "molecule": "PN",
+  "decision": "Retain the already evaluated Lodders PN function; modern PaiN calorics do not justify replacement and the raw JANAF energy is obsolete.",
+  "follow_up": "Revisit a candidate only with an improved balanced atomization evaluation or justified complete thermal source; preserve atomic references, ground ZPE and spin weights, then run fixed-network substitution.",
+  "sources": [
+    {
+      "id": "lodders1999",
+      "doi": "10.1063/1.556046",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.556046.pdf",
+      "inspection": "Full publisher PDF text, Table 2 and section 2.3 inspected via browser; full PDF is not archived.",
+      "facts": {
+        "adopted_hf298_kJ_mol": 171.488,
+        "reported_uncertainty_kJ_mol": 15,
+        "raw_janaf_hf298_kJ_mol": 104.78,
+        "white_reference_only_hf298_kJ_mol": 87.32
+      },
+      "scope": "Selection follows Gurvich/Gingerich, not merely a phosphorus phase-reference shift."
+    },
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/N-010.html",
+      "inspection": "Fresh official numerical PN, N and P tables archived; JANAF PN remains an uncorrected diagnostic."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Gurvich1989, pt1 p446, pt2 p299; ancestral full source is not independently audited."
+    },
+    {
+      "id": "pain2025",
+      "doi": "10.1093/mnras/stae2610",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/24SeElYu.pdf",
+      "inspection": "Full author manuscript inspected, especially potential, partition and completeness discussion. Numerical states and four independent partition nodes downloaded from ExoMol.",
+      "data_url": "https://exomol.com/db/PN/31P-14N/PaiN/31P-14N__PaiN.states.bz2",
+      "partition_url": "https://exomol.com/db/PN/31P-14N/PaiN/31P-14N__PaiN.pf",
+      "scope": "Two explicit electronic states; model De is fixed, dark states remain incomplete; no new measured thermochemical anchor."
+    }
+  ],
+  "limitations": [
+    "No new equilibrium solve or curated change.",
+    "Uncorrected JANAF source is diagnostic only; no second phosphorus-reference correction.",
+    "Finite state-tail convergence does not bound missing dark electronic states or establish a dissociation convention.",
+    "The retained evaluation has reported 15 kJ/mol uncertainty; ancestral experimental evidence is not independently re-evaluated.",
+    "Saved hot hydrogen-rich grid is not a physical validation of cold, oxidizing or photochemical atmospheres."
+  ]
+}
