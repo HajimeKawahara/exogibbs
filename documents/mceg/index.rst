@@ -121,6 +121,7 @@ HCN differences with optional MCEG tooling.
    ch_source_review
    ch2_source_review
    ch2_candidate
+   curated_ch2_adoption
 
    kh_source_review
    kh_candidate
