@@ -7,6 +7,11 @@ The current dataset, ``curated-gas-v2``, covers **1500--4000 K** and uses a stan
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
+:doc:`Gas curation v0.1 <../mceg/gas_curation_release_0_1>` (canonical version
+``0.1.0``) records this scientific snapshot separately from the software
+version. It retains the dataset, ``curated_v2`` factory and numerical model;
+the release manifest pins its sources and evidence.
+
 The :doc:`gas-v2 adoption <../mceg/curated_gas_v2_adoption>` combines 27 reviewed
 recommendations, changing 28 species because cis/trans-HNO2 are updated together.
 It adopts bounded energy corrections while retaining existing thermal fits,
@@ -265,14 +270,19 @@ The model combines :doc:`../atomic_ion_adoption` and
   difference. PS adds the resolved POPS thermal difference while retaining its
   source energy and fit residual. TiO2 adds measured rigid-rotor/harmonic-oscillator
   thermals, retaining its JANAF energy and fit residual.
-* 421 other species retain pinned FastChem4 constants and are marked
-  ``inherited_unreviewed``. The 27 atoms and electron define the zero reference
+* HCP, C2H2 and CH2 retain their thermal functions with the adopted energy
+  corrections described above. Gas-v2 adds the 28-species correction ledger
+  and the evaluated O2 thermal difference.
+* Other retained FastChem choices remain identified in per-species provenance.
+  ``inherited_unreviewed`` is a policy metadata label, not proof that no later
+  source review exists. The 27 atoms and electron define the zero reference
   gauge. This is not a claim that all 537 species have been independently audited.
 
 For known thermochemical differences and optional MCEG inspection, see
 :doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
-provides a record lookup without requiring MCEG. The default matches the TiO2
-adoption record and retains all preceding curated updates. The earlier HCN comparison belongs to
+provides a record lookup without requiring MCEG. The default matches
+``exogibbs.curated_gas.v2`` and retains all preceding curated updates.
+The earlier HCN comparison belongs to
 ``curated_v1``; it is not evidence for the changed default.
 
 Use ``setup.metadata["species_provenance"][species]`` for a species decision,
@@ -313,7 +323,11 @@ Diagonal regularization of signed constraints scales with their own matrix diago
 a fixed absolute shift previously overwhelmed weakly ionized cases.
 
 The current default's cumulative verification and scope are recorded in
-:doc:`../mceg/curated_tio2_adoption`. The preceding CN and PS stages remain in
+:doc:`../mceg/curated_gas_v2_adoption`. The preceding HCP, C2H2 and CH2 stages
+remain in :doc:`../mceg/curated_hcp_adoption`,
+:doc:`../mceg/curated_c2h2_adoption` and :doc:`../mceg/curated_ch2_adoption`.
+The preceding TiO2, CN and PS stages remain in
+:doc:`../mceg/curated_tio2_adoption`,
 :doc:`../mceg/curated_cn_adoption` and :doc:`../mceg/ps_curated_adoption`.
 The preceding COS stage remains in :doc:`curated_cos`; KH/HO2 and OH remain in
 :doc:`curated_kh`, :doc:`curated_ho2` and :doc:`curated_oh`. The preceding combined CO2/H2O execution remains in
@@ -457,7 +471,8 @@ and :download:`the inverted column <../../tests/data/validation/curated_atmosphe
 Artifacts and reproduction
 --------------------------
 
-Current default evidence is in :doc:`../mceg/curated_tio2_adoption`. The artifacts
+Current default evidence is in :doc:`../mceg/curated_gas_v2_adoption` and the
+:doc:`Gas curation v0.1 record <../mceg/gas_curation_release_0_1>`. The artifacts
 below belong to **curated-gas-v1**; the reproduction scripts explicitly select
 ``curated_v1`` and preserve their original numerical scope.
 
