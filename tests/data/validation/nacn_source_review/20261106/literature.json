@@ -1,0 +1,46 @@
+{
+  "janaf_printed": {
+    "page": 634,
+    "evaluation": "March1966",
+    "geometry": "linear",
+    "B0_cm_inverse": 0.182724,
+    "mass_u": 49.00747,
+    "vibrational_frequencies_expanded_cm_inverse": [
+      400,
+      239,
+      239,
+      2176
+    ],
+    "sigma": 1,
+    "electronic_weight": 1,
+    "hf298_kJ_mol": 94.266,
+    "printed_hf298_uncertainty_kJ_mol": 2.1,
+    "inspection": "Printed official PDF page inspected visually; table and heat-capacity/entropy rationale read."
+  },
+  "modern_rotation": {
+    "source_doi": "10.1016/j.jms.2011.12.005",
+    "table": "1, combined NaCN fit or KCN reference4 column as applicable",
+    "A_minus_mean_BC_MHz": 50101.74547,
+    "mean_BC_MHz": 7820.189927,
+    "B_minus_C_over4_MHz": 274.1524216,
+    "scope": "Measured principal-isotope ground-vibrational rotational parameters; low rotational spectrum is not a high-temperature complete molecular state sum."
+  },
+  "literature": [
+    {
+      "doi": "10.1063/1.440016",
+      "scope": "Full 1980 gas-phase KCN paper inspected in the author thesis chapter; T-shaped structure established."
+    },
+    {
+      "doi": "10.1016/j.jms.2011.12.005",
+      "scope": "Full 2012 NaCN author manuscript with Table1 also tabulating KCN constants; correct Hamiltonian diagonalization and reliable rotational prediction scope."
+    },
+    {
+      "doi": "10.1063/1.2749504",
+      "scope": "Publisher-indexed abstract only; group1/group11 cyanide potential topology. Numerical energy/frequency tables not inspected."
+    },
+    {
+      "doi": "10.1111/j.1365-2966.2011.20132.x",
+      "scope": "Identified primary potential/vibrational follow-up; full numerical tables not yet inspected, not an ancestral-text merge gate."
+    }
+  ]
+}
