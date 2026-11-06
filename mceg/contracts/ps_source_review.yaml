@@ -269,7 +269,7 @@ subjects:
     src/exogibbs/optimize/vjpgibbs.py: d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3
     src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     src/exogibbs/presets/_condensate.py: f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf
-    src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
+    tests/data/validation/curated_tio2_adoption/20261106/source/src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
@@ -328,7 +328,7 @@ subjects:
     tests/data/validation/ps_source_review/20261106/state_inventory.json: dda7153c98aba828f34ade1dc57a21171acc7db3be3d076872f51260aeb39a6b
     tests/data/validation/ps_source_review/20261106/states.npz: 8d6b3c12d64da9b1dc0cbb85b521dd60ad6899bbb6608eb7156679c9869ed65b
     tests/data/validation/s2o_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
-    tests/model_evidence/ps_source_review_test.py: 851f904883045aff709cb91e45080762c256938ce26d7684d92ccfbe778fa1aa
+    tests/data/validation/curated_tio2_adoption/20261106/source/tests/model_evidence/ps_source_review_test.py: 851f904883045aff709cb91e45080762c256938ce26d7684d92ccfbe778fa1aa
     tests/data/validation/ps_source_review/20261106/receipt.json: 4fe38a285da5201d9699750ce0af838f04512a2d4f393c22a626bc5f2b2e0efe
 contexts:
 - id: source_review
@@ -451,3 +451,6 @@ follow_ups:
   - Separate absolute energy from thermal functions; preserve balanced references and spin/zero conventions.
   completion: Candidate diagnostics and fixed-network substitution, if warranted; no requirement to recover every
     ancestral paper before merging this bounded review.
+    Completed 2026-11-06 in mceg/contracts/curated_ps.yaml.
+    The resolved-POPS retained-energy candidate and finite substitution are recorded in ps_candidate; the bounded production adoption is recorded separately.
+    Original claims and receipts retain their historical scope; complete physical accuracy remains unknown.

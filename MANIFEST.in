@@ -63,6 +63,7 @@ include src/exogibbs/data/curated/ho2_v1.json
 include src/exogibbs/data/curated/cos_v1.json
 include src/exogibbs/data/curated/cn_v1.json
 include src/exogibbs/data/curated/ps_v1.json
+include src/exogibbs/data/curated/tio2_v1.json
 include src/exogibbs/data/curated/README.rst
 
 # Optional scientific records; reading them never requires MCEG at runtime.

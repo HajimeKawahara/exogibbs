@@ -11,6 +11,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_adoption_history import historical_source
 import koh_source_review as study
 
 
@@ -102,7 +103,9 @@ def test_saved_replay_and_selected_input_hashes(report):
     receipt = json.loads((study.DATA / "receipt.json").read_text())
     for group in ("selected_input_sha256", "output_sha256"):
         for name, expected_hash in receipt[group].items():
-            assert sha256((ROOT / name).read_bytes()).hexdigest() == expected_hash, name
+            source = (historical_source(ROOT, name, expected_hash)
+                      if group == "selected_input_sha256" else ROOT / name)
+            assert sha256(source.read_bytes()).hexdigest() == expected_hash, name
 
 
 def test_definition_conflict_is_resolved_using_state_evidence(report):

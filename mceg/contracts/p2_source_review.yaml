@@ -269,7 +269,7 @@ subjects:
     src/exogibbs/optimize/vjpgibbs.py: d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3
     src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     src/exogibbs/presets/_condensate.py: f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf
-    src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
+    tests/data/validation/curated_tio2_adoption/20261106/source/src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
@@ -323,7 +323,7 @@ subjects:
     tests/data/validation/p2_source_review/20261106/nasa-selected.txt: 9961e0d7ae5b1368371b8e92637dfd71ff0fe7dbd002efa60b3bcd0a02d83abd
     tests/data/validation/p2_source_review/20261106/sources.json: be610c3fd1439fcfaad0e7c5ecb4bce277f6d22b060f97310e7944575ee3e117
     tests/data/validation/ph2_source_review/20261102/P-008.txt: a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879
-    tests/model_evidence/p2_source_review_test.py: df7664ad0e29629df87f9bc543e498f723f31470630c2082b8110a27dab1c82a
+    tests/data/validation/curated_tio2_adoption/20261106/source/tests/model_evidence/p2_source_review_test.py: df7664ad0e29629df87f9bc543e498f723f31470630c2082b8110a27dab1c82a
     tests/data/validation/p2_source_review/20261106/receipt.json: 76c590d34c8b0d15e53e67199e7d8dd2985737d3346870f35b3ced27bd0f395d
 contexts:
 - id: source_review

@@ -450,6 +450,9 @@ follow_ups:
   requires:
   - Separate adoption authorization; no requirement to obtain every ancestral full text.
   completion: An explicit curated update with the same physical scope and runtime regression checks.
+    Completed 2026-11-06 in mceg/contracts/curated_ps.yaml.
+    The authorized resolved-POPS model is now the named curated_ps layer with a validated compact partition representation and fresh production verification.
+    Original claims and receipts retain their historical scope; complete physical accuracy remains unknown.
 - id: a_state_precision
   target_kind: claim
   target: physical_accuracy

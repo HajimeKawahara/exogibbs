@@ -30,7 +30,9 @@ python -m pip install exogibbs
 Enable JAX float64 before constructing a chemical setup. This gas-only example
 uses the [curated preset](documents/presets/curated.rst), evaluated on
 1500–4000 K with ions included by default. Temperature is in K, pressure in bar,
-and `result.x` contains mole fractions in `chem.species` order.
+and `result.x` contains mole fractions in `chem.species` order. The current
+`curated-tio2-v1` includes the reviewed CN energy and PS/TiO2 thermal updates;
+named earlier presets remain available for reproducing previous models.
 
 ```python
 import jax
@@ -58,7 +60,8 @@ tools; the native solvers and packaged data do not require `pyfastchem`.
 To inspect scientific support and known thermochemical differences, start with
 [`exogibbs.provenance.describe(chem)`](documents/mceg/optional_inspection.rst).
 MCEG is optional: calculations and provenance lookup work without it, while
-its species-level report explains the bundled HCN comparison and open questions.
+its species-level report explains each version’s adoption and open questions.
+The bundled HCN comparison belongs to the original `curated_v1` dataset.
 
 ## Learn more
 

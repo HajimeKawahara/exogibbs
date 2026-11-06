@@ -38,6 +38,7 @@ HCN differences with optional MCEG tooling.
    s4_source_review
    tio2_source_review
    tio2_candidate
+   curated_tio2_adoption
    s4_state_followup
    s5_source_review
    s6_source_review

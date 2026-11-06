@@ -200,7 +200,7 @@ subjects:
     mceg/reviews/cos_candidate.py: b61c944744076b64f5340dbd89c4d8faaf7b48d7352f56a76c8a06b7993d73f4
     mceg/reviews/cos_equilibrium_impact.py: 02c3cbca460f648d2d790c787a7bfd53f6b36a37f27dfc18cd89ee9c0290cd46
     mceg/reviews/cos_source_review.py: ae6bb88a83512f8951c73ccd7b90d457fc668afd87d5f9d76a04c73ed0787163
-    mceg/reviews/curated_cos_adoption.py: 0568ceeeacfa32dff7c15c3b3f2872af44d4f52a98ef4435085fb23abd0b5229
+    tests/data/validation/curated_tio2_adoption/20261106/source/mceg/reviews/curated_cos_adoption.py: 0568ceeeacfa32dff7c15c3b3f2872af44d4f52a98ef4435085fb23abd0b5229
     mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
@@ -337,7 +337,7 @@ subjects:
     src/exogibbs/optimize/vjpgibbs.py: d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3
     src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     src/exogibbs/presets/_condensate.py: f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf
-    src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
+    tests/data/validation/curated_tio2_adoption/20261106/source/src/exogibbs/presets/curated.py: 24bcccc8021a174d1a2204dcfb784b83ac36e4c1f02f8fbccc11e05e1019add6
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
@@ -414,8 +414,8 @@ subjects:
     tests/data/validation/naoh_source_review/20261105/nasa_selected.txt: e6a1e94016dca83afeb15437d16d6ac027732d690aa7bc06f9e3a629088a8e94
     tests/data/validation/naoh_source_review/20261105/receipt.json: ffb2a254b493079d266e6c60fca3d2e10125f2795e47e6fbe3c5866cdf8c02ca
     tests/data/validation/naoh_source_review/20261105/sources.json: 328b83c7cb5342889cda6870530186526b1ef2d9681e51f18c648ce99c696380
-    tests/model_evidence/naoh_candidate_test.py: 3abff1b632c86937c167db43243b00c1c6f7a6803caa8d87942e1893fa4c2f72
-    tests/model_evidence/naoh_equilibrium_impact_test.py: 67c6e5f8156aafcc6babe09278e864456c91c4eb51294c12b7aa24bfefc8ba7e
+    tests/data/validation/curated_tio2_adoption/20261106/source/tests/model_evidence/naoh_candidate_test.py: 3abff1b632c86937c167db43243b00c1c6f7a6803caa8d87942e1893fa4c2f72
+    tests/data/validation/curated_tio2_adoption/20261106/source/tests/model_evidence/naoh_equilibrium_impact_test.py: 67c6e5f8156aafcc6babe09278e864456c91c4eb51294c12b7aa24bfefc8ba7e
 contexts:
 - id: candidate_evaluation
   scope: NaOH neutral monomer, one-bar formation reaction, 1500-4000 K; curated-cos-v1 fixed 537-species/75-condition

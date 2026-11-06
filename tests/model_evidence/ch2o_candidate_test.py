@@ -12,6 +12,7 @@ import pytest
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'mceg/reviews'))
+from curated_adoption_history import historical_source
 import ch2o_candidate as candidate
 
 
@@ -110,5 +111,5 @@ def test_nasa_control_uses_the_same_D0_and_native_reference_constant():
 def test_candidate_sources_and_real_receipt_are_pinned():
     receipt=json.loads((candidate.DATA/'receipt.json').read_text())
     assert receipt['result']=='passed'
-    for name,expected in receipt['selected_file_sha256'].items():assert sha256((ROOT/name).read_bytes()).hexdigest()==expected
+    for name,expected in receipt['selected_file_sha256'].items():assert sha256(historical_source(ROOT,name,expected).read_bytes()).hexdigest()==expected
     for name,expected in receipt['output_sha256'].items():assert sha256((candidate.DATA/name).read_bytes()).hexdigest()==expected

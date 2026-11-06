@@ -445,6 +445,9 @@ follow_ups:
     uncertainty.
   completion: Record explicit scoped adoption or retention. Missing ancestral energy papers are not a merge prerequisite
     for this completed candidate evaluation.
+    Completed 2026-11-06 in mceg/contracts/curated_tio2_adoption.yaml.
+    The authorized measured-input RRHO model is now the named curated_tio2 layer and final public default, with fresh cumulative production verification.
+    Original claims and receipts retain their historical scope; complete physical accuracy remains unknown.
 - id: physical_scope
   target_kind: claim
   target: physical_accuracy
