@@ -1,5 +1,5 @@
 C2 source, energy and thermal review
-===================================
+====================================
 
 Prioritize an ATcT energy candidate while retaining the current C2 thermal
 function and its fit residual. The source evidence supports a changed physical
