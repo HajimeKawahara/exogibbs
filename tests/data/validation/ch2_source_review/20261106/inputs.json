@@ -1,0 +1,230 @@
+{
+  "name": "CH2",
+  "species_id": "C1H2",
+  "composition": {
+    "C": 1,
+    "H": 2
+  },
+  "reaction": "1 C(g) + 2 H(g) -> CH2(g)",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "nasa_records": {
+    "CH2": {
+      "source_name": "CH2",
+      "source_line_1based": 2377,
+      "composition": {
+        "C": 1,
+        "H": 2
+      },
+      "reference": "D0(H2C-H): Ruscic,1999. Bunker,1983. Jacox,1998.",
+      "hf298_J_mol": 390364.517,
+      "h298_minus_h0_J_mol": 10027.417,
+      "natural_mass_u": 14.02658,
+      "intervals": [
+        {
+          "bounds_K": [
+            300.0,
+            1000.0
+          ],
+          "coefficients": [
+            32189.2173,
+            -287.7601815,
+            4.20358382,
+            0.00345540596,
+            -6.74619334e-06,
+            7.65457164e-09,
+            -2.870328419e-12,
+            47336.2471,
+            -2.143628603
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            2550418.031,
+            -7971.62539,
+            12.28924487,
+            -0.001699122922,
+            2.991728605e-07,
+            -2.767007492e-11,
+            1.05134174e-15,
+            96422.1689,
+            -60.9473991
+          ]
+        }
+      ]
+    },
+    "C": {
+      "source_name": "C",
+      "source_line_1based": 1954,
+      "composition": {
+        "C": 1
+      },
+      "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+      "hf298_J_mol": 716680.0,
+      "h298_minus_h0_J_mol": 6535.895,
+      "natural_mass_u": 12.0107,
+      "intervals": [
+        {
+          "bounds_K": [
+            300.0,
+            1000.0
+          ],
+          "coefficients": [
+            649.503147,
+            -0.964901086,
+            2.504675479,
+            -1.281448025e-05,
+            1.980133654e-08,
+            -1.606144025e-11,
+            5.314483411e-15,
+            85457.6311,
+            4.747924288
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -128913.6472,
+            171.9528572,
+            2.646044387,
+            -0.000335306895,
+            1.74209274e-07,
+            -2.902817829e-11,
+            1.642182385e-15,
+            84105.9785,
+            4.130047418
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            443252801.0,
+            -288601.8412,
+            77.3710832,
+            -0.00971528189,
+            6.64959533e-07,
+            -2.230078776e-11,
+            2.899388702e-16,
+            2355273.444,
+            -640.512316
+          ]
+        }
+      ]
+    },
+    "H": {
+      "source_name": "H",
+      "source_line_1based": 5372,
+      "composition": {
+        "H": 1
+      },
+      "reference": "D0(H2):Herzberg,1970. Moore,1972. Gordon,1999.",
+      "hf298_J_mol": 217998.828,
+      "h298_minus_h0_J_mol": 6197.428,
+      "natural_mass_u": 1.00794,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            25473.70801,
+            -0.446682853
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            60.7877425,
+            -0.1819354417,
+            2.500211817,
+            -1.226512864e-07,
+            3.73287633e-11,
+            -5.68774456e-15,
+            3.410210197e-19,
+            25474.86398,
+            -0.448191777
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            217375769.4,
+            -131203.5403,
+            33.991742,
+            -0.00381399968,
+            2.432854837e-07,
+            -7.69427554e-12,
+            9.64410563e-17,
+            1067638.086,
+            -274.2301051
+          ]
+        }
+      ]
+    }
+  },
+  "janaf_files": {
+    "CH2": "C-057.txt",
+    "C": "C-003.txt",
+    "H": "H-001.txt"
+  },
+  "identity_scope": "Issue308 identity appendix; exact source label and connectivity, not formula-only matching.",
+  "atct": {
+    "version": "1.228",
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+    "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "species": {
+      "CH2": {
+        "label": "Methylene",
+        "formula": "CH2  (g)",
+        "hf0_kJ_mol": 391.046,
+        "hf298_kJ_mol": 391.592,
+        "uncertainty": "\u00b1 0.089",
+        "ATcT_id": "2465-56-7*0"
+      },
+      "C": {
+        "label": "Carbon",
+        "formula": "C  (g)",
+        "hf0_kJ_mol": 711.37,
+        "hf298_kJ_mol": 716.855,
+        "uncertainty": "\u00b1 0.038",
+        "ATcT_id": "7440-44-0*0"
+      },
+      "H": {
+        "label": "Hydrogen atom",
+        "formula": "H  (g)",
+        "hf0_kJ_mol": 216.034,
+        "hf298_kJ_mol": 217.998,
+        "uncertainty": "\u00b1 0.000",
+        "ATcT_id": "12385-13-6*0"
+      }
+    }
+  }
+}
