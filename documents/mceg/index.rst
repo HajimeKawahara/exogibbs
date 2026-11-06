@@ -87,6 +87,7 @@ HCN differences with optional MCEG tooling.
    koh_source_review
    koh_candidate
    ps_source_review
+   cp_source_review
    ps_candidate
    ps_curated_adoption
    phosphorus_cold_validation
