@@ -148,6 +148,8 @@ HCN differences with optional MCEG tooling.
    nh2_source_review
    nh2_candidate
    ns_source_review
+   no_source_review
+   no_candidate
    nah_source_review
    na2_source_review
    na2_candidate
