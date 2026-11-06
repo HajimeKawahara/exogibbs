@@ -1,0 +1,319 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.s3_source_review.v1
+  name: S3 source review and next calculation
+  description: Retain S3 for this source-only review; prioritize a state-resolved, energy-aligned sulfur-isomer
+    thermal candidate only when its individual-species inputs are assembled. The current hot H-rich footprint
+    is trace.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:6004fa6e118aca0974146a8b4595c73914c40b92c1e6c2ffbefdba6bff949392
+    entry_points:
+    - mceg/reviews/s3_source_review.py
+assumptions:
+- statement: Neutral gas and neutral atoms; one bar; source-native NASA R retained, physical D0 kept distinct
+    from fit intercepts, H298 anchors and De. JANAF molecular 0 K row is blank; energy alignment is H298
+    and molecular physical D0 remains unknown.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal
+    production fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  conditions:
+  - Archived abundance is a finite hot H-rich inventory, not a substitution response or an oxidizing/cold/photochemical
+    validation.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty, missing-state bounds and planetary abundance accuracy remain
+    unestablished.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: Official numerical source records, native R and balanced energy/thermal decomposition are
+    explicit; the retained formation fit and calorics reproduce the named production model.
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+- id: modern_source_scope
+  revision: '1'
+  kind: numerical_verification
+  statement: Inspected primary modern evidence and access limitations are identified without equating
+    ancestry agreement or a bounded diagnostic with complete physical accuracy.
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+- id: provisional_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retain S3 for this source-only review; prioritize a state-resolved, energy-aligned sulfur-isomer
+    thermal candidate only when its individual-species inputs are assembled. The current hot H-rich footprint
+    is trace.
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: S3 has complete quantified physical uncertainty and validated planetary abundance accuracy.
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Pinned official source inputs and individually bounded modern evidence.
+  sources:
+  - tests/data/validation/s3_source_review/20261106/S-006.txt
+  - tests/data/validation/s3_source_review/20261106/S-016.txt
+  - tests/data/validation/s3_source_review/20261106/inputs.json
+  - tests/data/validation/s3_source_review/20261106/literature.json
+  - tests/data/validation/s3_source_review/20261106/nasa-selected-records.txt
+  - tests/data/validation/s3_source_review/20261106/sources.json
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  subject: s3_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/s3_source_review/20261106/S-006.txt
+    sha256: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+  - source: tests/data/validation/s3_source_review/20261106/S-016.txt
+    sha256: e981c1f231b321e6e593237b3d4f35252d7007898d9a448e9b6f4a1d03661dbd
+  - source: tests/data/validation/s3_source_review/20261106/inputs.json
+    sha256: 6c3623d936e013540c1e3ef39ffced98290410b17bcf4af5e62b37e5f497533a
+  - source: tests/data/validation/s3_source_review/20261106/literature.json
+    sha256: 0ecb2275895e9af8f4b5f31e7f5de4c204d15bc26e232f9798890edf9e2a2868
+  - source: tests/data/validation/s3_source_review/20261106/nasa-selected-records.txt
+    sha256: 3a7f58e3c5a14e981113bb0f4ac766d96c390420f6c49c0599160136c83a335e
+  - source: tests/data/validation/s3_source_review/20261106/sources.json
+    sha256: 049765b548543eead9c531a80d3825b389019c654ee04e7bfedec130bb649af7
+  provenance:
+    role: primary
+    location: documents/mceg/s3_source_review.rst
+    inspection: inspected
+    note: Access and scientific limits are recorded per source; unavailable ancestors and unexecuted follow-ups
+      are not claimed as verified.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline energy/thermal/caloric replay and final named-model archived footprint.
+  sources:
+  - tests/data/validation/s3_source_review/20261106/comparison.json
+  - tests/data/validation/s3_source_review/20261106/receipt.json
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  subject: s3_sources_20261106
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/s3_source_review/20261106/comparison.json
+    sha256: e80e26aa2bc940907ec147eeacb8a08b057aed490341be45d22e67b044ba415d
+  - source: tests/data/validation/s3_source_review/20261106/receipt.json
+    sha256: dfc7a881a1d628540b8ea6afdb3b9191fb9523a5ebd0ca7cedbc687866ee5842
+  provenance:
+    role: primary
+    location: documents/mceg/s3_source_review.rst
+    inspection: inspected
+    note: Access and scientific limits are recorded per source; unavailable ancestors and unexecuted follow-ups
+      are not claimed as verified.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Scoped provisional retention and actionable next calculation.
+  sources:
+  - documents/mceg/s3_source_review.rst
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  subject: s3_sources_20261106
+  context: source_review
+  artifacts:
+  - source: documents/mceg/s3_source_review.rst
+    sha256: 8b6549720c80c92aea2b110aea262dfa8633b27f7bb00a01eb2841fc98127c9e
+  provenance:
+    role: primary
+    location: documents/mceg/s3_source_review.rst
+    inspection: inspected
+    note: Access and scientific limits are recorded per source; unavailable ancestors and unexecuted follow-ups
+      are not claimed as verified.
+subjects:
+- id: s3_sources_20261106
+  implementation: *id001
+  selected_files:
+    mceg/reviews/s3_source_review.py: 6004fa6e118aca0974146a8b4595c73914c40b92c1e6c2ffbefdba6bff949392
+    documents/mceg/s3_source_review.rst: 8b6549720c80c92aea2b110aea262dfa8633b27f7bb00a01eb2841fc98127c9e
+    tests/model_evidence/s3_source_review_test.py: 287e218d678a31c89b7b4ecd633848eb29c1e8035c02579755f0910ed8d32a84
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/ykb4/gibbs_matrices.npz: 2a23ba342773165e384124ad1521b7e6ffdc89b8226bd0d1e4713c2547d03dbf
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/curated_tio2_adoption/20261106/ions.npz: 9333c4893a4abac147f6f9c12cee11027a617d305cbf638363a6e1ad73e49bb3
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_cn.py: 8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_ps.py: 73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_tio2.py: 876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/cn_v1.json: 28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/ps_v1.json: d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6
+    src/exogibbs/data/curated/tio2_v1.json: 7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    tests/data/validation/s3_source_review/20261106/README.rst: b43f6a03f07ce8b61c56a9e45c737c97086ac3e2ba8770ff89017acc1e148ea6
+    tests/data/validation/s3_source_review/20261106/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+    tests/data/validation/s3_source_review/20261106/S-016.txt: e981c1f231b321e6e593237b3d4f35252d7007898d9a448e9b6f4a1d03661dbd
+    tests/data/validation/s3_source_review/20261106/inputs.json: 6c3623d936e013540c1e3ef39ffced98290410b17bcf4af5e62b37e5f497533a
+    tests/data/validation/s3_source_review/20261106/literature.json: 0ecb2275895e9af8f4b5f31e7f5de4c204d15bc26e232f9798890edf9e2a2868
+    tests/data/validation/s3_source_review/20261106/nasa-selected-records.txt: 3a7f58e3c5a14e981113bb0f4ac766d96c390420f6c49c0599160136c83a335e
+    tests/data/validation/s3_source_review/20261106/sources.json: 049765b548543eead9c531a80d3825b389019c654ee04e7bfedec130bb649af7
+    tests/data/validation/s3_source_review/20261106/comparison.json: e80e26aa2bc940907ec147eeacb8a08b057aed490341be45d22e67b044ba415d
+    tests/data/validation/s3_source_review/20261106/receipt.json: dfc7a881a1d628540b8ea6afdb3b9191fb9523a5ebd0ca7cedbc687866ee5842
+contexts:
+- id: source_review
+  scope: S3 neutral gas; native and common-H298 source diagnostics at 1500/2000/3000/4000 K, literal production
+    fit and 75 archived curated-tio2-v1 endpoints. No production change or new finite substitution.
+  settings:
+    standard_pressure_bar: 1
+    production_change: none
+    finite_substitution: not_run
+    current_grid_model: curated-tio2-v1
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: s3_sources_20261106
+  context: source_review
+  method:
+    id: review_s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Official numerical source records, native R and balanced energy/thermal decomposition are explicit;
+    the retained formation fit and calorics reproduce the named production model.
+  status: supported
+  origin: reviewed
+- id: modern_source_scope_review
+  kind: evidence_support
+  claim: modern_source_scope
+  claim_revision: '1'
+  subject: s3_sources_20261106
+  context: source_review
+  method:
+    id: review_s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Inspected primary modern evidence and access limitations are identified without equating ancestry
+    agreement or a bounded diagnostic with complete physical accuracy.
+  status: supported
+  origin: reviewed
+- id: provisional_retention_review
+  kind: evidence_support
+  claim: provisional_retention
+  claim_revision: '1'
+  subject: s3_sources_20261106
+  context: source_review
+  method:
+    id: review_s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Retain S3 for this source-only review; prioritize a state-resolved, energy-aligned sulfur-isomer thermal
+    candidate only when its individual-species inputs are assembled. The current hot H-rich footprint
+    is trace.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: s3_sources_20261106
+  context: source_review
+  method:
+    id: review_s3_sources
+    revision: '1'
+    description: Separate source construction, numerical diagnostics, scoped scientific selection and
+      complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Full covariance, missing-state/continuum uncertainty and external atmospheric validation are not established.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: followup_1
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Construct individual-species RRHO/isomer thermodynamics from the 2016 and 2023 structures and
+    frequency inputs; keep the mixed-vapor chemical potential separate.
+  requires:
+  - Molecule-specific scope and inputs identified in the source packet; no unconditional ancestral-paper
+    merge gate.
+  completion: Document the calculation or source resolution, with a separate review before production
+    adoption.
+- id: followup_2
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Choose one balanced formation-energy reference and assess missing isomers, anharmonicity and
+    the high-temperature extrapolation before any finite-network substitution.
+  requires:
+  - Molecule-specific scope and inputs identified in the source packet; no unconditional ancestral-paper
+    merge gate.
+  completion: Document the calculation or source resolution, with a separate review before production
+    adoption.
+limitations:
+- statement: JANAF has no numerical zero-K molecular row; H298 alignment is not physical-D0 alignment.
+  evidence:
+  - literature
+  - source_replay
+- statement: The isolated printed 298.15 K free-energy-function cell is inconsistent with H298=0 and S298;
+    it is not used in H/S reconstruction.
+  evidence:
+  - literature
+  - source_replay
+- statement: The 2016 mixed-vapor potential and 2023 finite-composition stability indicators are not standalone
+    species formation functions.
+  evidence:
+  - literature
+  - source_replay
+- statement: No production change, fresh equilibrium solve, complete physical uncertainty or general atmosphere
+    validation.
+  evidence:
+  - literature
+  - source_replay
