@@ -114,7 +114,7 @@ evidence:
   - source: tests/data/validation/k2_source_review/20261106/comparison.json
     sha256: 8d7d1ea4a2e94b9c0f931396b4f576bdf65bc7bf794503d5de44dbfd06c5292a
   - source: tests/data/validation/k2_source_review/20261106/receipt.json
-    sha256: 1feba8bac646241df40fba76d4fb7fc2f0303d921acb6045f9e5775c8f0e1b15
+    sha256: 6d929fba82654851c62465de01729f4ade8ca8aa11199907a74c1eab078bbab8
   provenance:
     role: primary
     location: documents/mceg/k2_source_review.rst
@@ -146,7 +146,7 @@ subjects:
   selected_files:
     mceg/reviews/k2_source_review.py: ee04744e470155d871e15916071a52d1213f7ea536a58b2a458bfe40c6132357
     documents/mceg/k2_source_review.rst: 61ee5b98d9bc7b8c25efcb09f3160ae2a86d59bbddb8c999e17e6ab26ebb46a5
-    tests/model_evidence/k2_source_review_test.py: 8e1065378e8a464f04fb4715a6a645be5d66f2501b7f40fcaef1eec534648b19
+    tests/model_evidence/k2_source_review_test.py: 94b250a24bd94a0e27c60f2b1d0c55de1a04646a27c3b19d7a3175d0cbed2d36
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
@@ -187,7 +187,7 @@ subjects:
     tests/data/validation/k2_source_review/20261106/nasa-selected-records.txt: 4ba469e11021488a1e76f8191cb9431b1315d324bb1e62b71506639347744bd8
     tests/data/validation/k2_source_review/20261106/sources.json: f89774722f9eff6b04874794ac0820b73bdddc63d27aea5bedc709979fe746cf
     tests/data/validation/k2_source_review/20261106/comparison.json: 8d7d1ea4a2e94b9c0f931396b4f576bdf65bc7bf794503d5de44dbfd06c5292a
-    tests/data/validation/k2_source_review/20261106/receipt.json: 1feba8bac646241df40fba76d4fb7fc2f0303d921acb6045f9e5775c8f0e1b15
+    tests/data/validation/k2_source_review/20261106/receipt.json: 6d929fba82654851c62465de01729f4ade8ca8aa11199907a74c1eab078bbab8
 contexts:
 - id: source_review
   scope: K2 neutral gas; native and common-D0 source diagnostics at 1500/2000/3000/4000 K, literal production
