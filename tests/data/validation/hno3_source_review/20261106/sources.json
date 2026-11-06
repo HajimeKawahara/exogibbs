@@ -1,0 +1,69 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "HNO3",
+        "file": "H-030.txt",
+        "url": "https://janaf.nist.gov/tables/H-030.txt",
+        "sha256": "3f2e215063103783237344be754a021a9a9624903bd8ae5c5e7ab1980e89577c"
+      },
+      {
+        "name": "H",
+        "file": "H-001.txt",
+        "url": "https://janaf.nist.gov/tables/H-001.txt",
+        "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "O",
+        "file": "O-001.txt",
+        "url": "https://janaf.nist.gov/tables/O-001.txt",
+        "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+      }
+    ],
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Official cached CEA records and all selected coefficients/headers checked against frozen screening records."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact gas-phase CAS identifiers and selected tabulated 0/298 K formation enthalpies; rounded marginal uncertainties, not a reaction covariance."
+  },
+  "references": [
+    {
+      "doi": "10.1063/1.1547435",
+      "url": "https://istina.msu.ru/media/publications/article/2c2/57d/1281832/2003_DOR_IOR_JPCRD_Three_molecules.pdf",
+      "title": "NIST-JANAF II: HNO3, H2SO4 and H2O2 (Dorofeeva et al.2003)",
+      "access": "Complete primary author-hosted paper inspected; Table1 selected numerical transcription pinned",
+      "finding": "Actual inherited molecular source, explicit internal rotation, energy anchors and uncertainty estimates."
+    },
+    {
+      "doi": "10.1016/j.jqsrt.2025.109568",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+      "title": "Partition sums for HITRAN2024 (Gamache et al., 2025)",
+      "access": "Complete author PDF and pinned official HAPI TIPS_2025 numerical arrays inspected",
+      "finding": "Source-specific calculation methods and maximum temperatures are retained; an opacity partition table is not automatically a complete caloric replacement."
+    },
+    {
+      "doi": "10.1093/mnras/stv1376",
+      "url": "https://arxiv.org/abs/1507.02276",
+      "title": "ExoMol XI: spectrum of nitric acid (2015)",
+      "access": "Author abstract and stated500K applicability inspected; full line list not downloaded",
+      "finding": "An opacity line list for cooler conditions is not evidence for complete hot thermochemistry."
+    }
+  ],
+  "local_reference_scope": "The available refs_exogibbs_202611 and -2 collections were inventoried; relevant Gamache TIPS papers are used where indicated; no original Gurvich volume was present."
+}
