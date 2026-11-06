@@ -1,0 +1,10 @@
+{
+  "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C1071983&Mask=1",
+  "identity": "linear NC4N, CAS 1071-98-3",
+  "JANAF_hf298_kJ_mol": 533.46,
+  "JANAF_last_review": "1961-03",
+  "corrected_hf298_kJ_mol": 529.3,
+  "correction_doi": "10.1021/j100806a601",
+  "original_doi": "10.1021/j100840a514",
+  "inspection": "NIST numerical evaluation and ACS correction metadata inspected; full correction text not reanalyzed."
+}

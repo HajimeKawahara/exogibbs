@@ -84,6 +84,8 @@ HCN differences with optional MCEG tooling.
    c2n2_candidate
    c3_source_review
    c4_source_review
+   c4n2_source_review
+   c4n2_candidate
    ho2_source_review
    o3_source_review
    o3_candidate
