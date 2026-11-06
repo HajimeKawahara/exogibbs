@@ -1,0 +1,38 @@
+{
+  "janaf_printed": {
+    "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Sulfur.pdf",
+    "local_full_pdf_sha256": "ef272d0bfa94b30e5c51ebd2de2c4226f58c752af5028f1fe5686a19793ebf4f",
+    "printed_page": 1878,
+    "evaluation": "September 1977",
+    "phase": "neutral gas",
+    "identity": "Effective S7 stoichiometry in a sulfur-vapor equilibrium model; no resolved isomer ensemble.",
+    "Hf298_kJ_mol": 113.679,
+    "Hf298_uncertainty_kJ_mol": 8.0,
+    "S298_J_mol_K": 407.673,
+    "S298_uncertainty_J_mol_K": 4.0,
+    "printed_free_energy_function_298_J_mol_K": 617.165,
+    "zero_K_molecular_table": "blank, not inferred",
+    "thermal_construction": "Estimated vibrational heat capacity per vibrational degree of freedom from S/S2/S8; third-law energy fit to sulfur-vapor measurements."
+  },
+  "jackson2016": {
+    "doi": "10.1039/C5SC03088A",
+    "access": "full author manuscript inspected",
+    "url": "https://arxiv.org/html/1509.00722",
+    "pdf_sha256": "fabf31e4cecdcfc853bfe2274b6ff34d89771f484c194025f76e8d09cbcaf614",
+    "method": "Global search and calibrated harmonic individual-gas thermodynamics, with an S8 energy reference; mixture chemical potential is a separate equilibrium result.",
+    "identity": "Cs ring and compact branched Cs alternative; the mentioned 1 eV early-search advantage is not a final ring/branched energy gap.",
+    "illustrative_gap_eV": null
+  },
+  "fedyaeva2023": {
+    "doi": "10.1039/D2CP05498A",
+    "access": "full author manuscript inspected",
+    "url": "https://uspex-team.org/static/file/Fedyaeva2023_ChemPhys2023_Stability%20of%20sulfur%20molecules%20and%20insights%20into%20sulfur%20allotropy_with_pages.pdf",
+    "pdf_sha256": "59b3a8f497041f36ecf598d5915f68181e0829f55b15c1d573d281bbd42cd199",
+    "scope": "USPEX/PBE search and B3LYP/6-311+G(d,p) refinement; ozone-like S3 and closed helical rings for stable n>=5. Finite-temperature calculations stop at 1500 K. S7 second-composition free-energy difference becomes positive above about 900 K; this is not a formation-energy anchor."
+  },
+  "rau1973": {
+    "doi": "10.1016/S0021-9614(73)80045-X",
+    "access": "primary abstract and JANAF attribution; original complete text not obtained",
+    "scope": "Sulfur vapor measurements at 823-1273 K, not independent verification throughout 1500-4000 K."
+  }
+}

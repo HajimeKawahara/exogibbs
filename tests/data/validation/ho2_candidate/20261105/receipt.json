@@ -1,0 +1,22 @@
+{
+  "created_utc": "2026-11-05T01:26:58.622275+00:00",
+  "command": "mceg/reviews/ho2_candidate.py --build --output tests/data/validation/ho2_candidate/20261105/validation.json",
+  "result": "passed",
+  "selected_file_sha256": {
+    "tests/data/validation/ho2_source_review/20261105/nasa_records.json": "95b4aa2c8d061b5cc1209c5af0d66cd0516eb90136e7351cceb1f8f54b8c045d",
+    "tests/data/validation/ho2_source_review/20261105/atct_nodes.json": "f38f1d012a895574d1128769e1c3e2d59150563d4541d955e75c2090b04f4eab",
+    "tests/data/validation/ho2_source_review/20261105/sources.json": "2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd",
+    "tests/data/validation/ho2_source_review/20261105/H-043.txt": "92a340244deaa3d2d32e19a25acdff3765b78b33f5abda37fd477fb9fd88f6ac",
+    "tests/data/validation/oh_source_review/20261105/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "mceg/reviews/ho2_candidate.py": "10d772922c4cb01871a6407552f87dd81f881f82430d641c3eb675d6b1434289",
+    "mceg/reviews/ho2_source_review.py": "b65f9b4be21c52086923f935e4f643a4990be01dbbf3de41da4ef73ef9f025ac",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c"
+  },
+  "output_sha256": {
+    "candidate.json": "b04c3146c88d2d688d1ea284815c85f4e1990d1cf8305b2534813a86f45be34d",
+    "validation.json": "cd62402ad16aa07b8ee9bdac47f4105393e5870e792164d5239069f33dec0130"
+  }
+}

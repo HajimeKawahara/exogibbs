@@ -1,10 +1,14 @@
 Curated gas thermochemistry datasets
 ====================================
 
-The current default is ``curated-h2o-v1``, adding evaluated 2025 H2O
-thermodynamics to the NIST 626 CO2, TiO and C2H updates. ``gas_v1.json``,
-``c2h_v1.json``, ``tio_v1.json`` and ``co2_v1.json`` retain the preceding
-models for explicit historical reproduction. All datasets use 1500--4000 K
+The current default is ``curated-gas-v2``: 27 reviewed recommendations update
+28 species on ``curated-ch2-v1``, including coordinated cis/trans-HNO2 energies.
+The existing thermal functions are retained except for evaluated 2025 O2
+thermals. HNCO/NCO and NO2/N2O4 energies are coordinated, while NaCN, KCN and
+C2N2 remain unchanged. It retains the preceding HCP, C2H2, CH2, TiO2, CN, PS,
+COS, KH/HO2/OH, evaluated 2025 H2O, NIST 626 CO2, TiO and C2H updates. Earlier
+JSON records and their named presets retain preceding models for explicit
+historical reproduction. All datasets use 1500--4000 K
 and a standard pressure of 1 bar.
 
 Original curated-gas-v1
@@ -144,7 +148,7 @@ finite response, high-temperature and isotope limits are in
 H2O adoption
 -------------
 
-``h2o_v1.json`` pins the current ``curated-h2o-v1`` default, also selected
+``h2o_v1.json`` pins the former ``curated-h2o-v1`` default, selected
 explicitly through ``exogibbs.presets.curated_h2o.chemsetup()``. Only H2O1
 changes relative to ``curated-co2-v1``. The exact reviewed evaluated 2025
 degree-8 Cp/R polynomial and analytical H/S integrals retain the ATcT 1.172
@@ -164,3 +168,67 @@ See ``documents/presets/curated_h2o.rst`` and
 ``mceg/contracts/curated_h2o.yaml`` for the scientific choice, joint response,
 scattering-assignment and isotope limitations. Complete physical accuracy
 remains unquantified.
+
+OH adoption
+------------
+
+``oh_v1.json`` pins the former ``curated-oh-v1`` default, also selected
+explicitly through ``exogibbs.presets.curated_oh.chemsetup()``. Only H1O1
+changes relative to ``curated-h2o-v1``. The exact reviewed NASA9 OH-H-O
+reaction receives balanced ATcT 1.172 D0=425.604 kJ/mol once, replacing
+the inherited JANAF electronic/caloric defect. No new fit or additional
+spin, symmetry, ZPE or atomic correction is applied. MYTHOS remains a
+thermal sensitivity control, with less than 0.098 percent difference in K.
+
+Rebuild with ``python mceg/reviews/build_oh_adoption.py --output /tmp/oh_v1.json``.
+The production packet contains 150 new cold solves, six tighter candidate
+controls and two FastChem comparisons in
+``tests/data/validation/curated_oh_adoption/20261105``. Earlier default-dependent
+sources are preserved in its ``source/`` directory and historical receipts
+are unchanged. See ``documents/presets/curated_oh.rst`` and
+``mceg/contracts/curated_oh.yaml`` for the scientific rationale, finite response,
+isotope/continuum and energy-covariance limitations. Full physical accuracy
+remains unknown.
+
+
+KH, HO2 and COS adoption sequence
+---------------------------------
+
+``kh_v1.json`` preserves the inherited KH thermals and adopts the reviewed
+spectroscopic D0 on ``curated-oh-v1``. ``ho2_v1.json`` adds exact NASA thermal
+functions and balanced ATcT 1.172 energy for HO2 on that KH base. The versioned
+``cos_v1.json`` then increases COS D0 by 5612 J/mol using the same-version
+ATcT 1.228 atoms and molecule, preserving the inherited thermal functions.
+Each layer changes only its named molecule and pins its immediate base.
+
+The former default remains ``curated_cos.chemsetup``; ``curated_kh`` and
+``curated_ho2`` also remain explicit historical versions. Each production packet
+under ``tests/data/validation/curated_<molecule>_adoption/20261105`` records
+150 fresh cold solves, six tighter candidate controls and two FastChem
+comparisons. Earlier OH-only candidates are not relabeled as cumulative
+composition results. See the corresponding preset guides and production
+MCEG contracts for source choices, scope and physical uncertainty limits.
+
+
+CN, PS and TiO2 adoption sequence
+----------------------------------
+
+``cn_v1.json`` applies the reviewed ATcT 1.228 difference of -4801 J/mol to
+CN D0 on ``curated-cos-v1``, retaining the literal thermal fit and its residual.
+``ps_v1.json`` adds the resolved POPS molecular thermal difference on that CN
+base, retaining the Lodders energy and source-fit residual. Its degree-18
+Chebyshev log-partition representation needs no runtime state file.
+``tio2_v1.json`` then adds measured rigid-rotor/harmonic-oscillator thermals
+on the PS base, retaining JANAF energy and the inherited fit residual.
+The H298-matched and excited-state variants remain sensitivity controls.
+
+The public default is ``curated_tio2.chemsetup``; ``curated_cn`` and
+``curated_ps`` preserve the intermediate versions. Each layer changes only
+its target molecule and pins its immediate base. Separate 20261106 production
+packets under ``tests/data/validation/curated_<molecule>_adoption`` record
+fresh solves on both networks and controls on each actual cumulative base.
+Earlier source/candidate receipts retain their original models and hashes.
+See ``documents/mceg/curated_cn_adoption.rst``,
+``documents/mceg/ps_curated_adoption.rst`` and
+``documents/mceg/curated_tio2_adoption.rst`` with their linked MCEG contracts
+for numerical checks, source choices and physical limits.

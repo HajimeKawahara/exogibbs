@@ -1,0 +1,34 @@
+{
+  "molecule": "Na2C2N2",
+  "species_id": "C2N2Na2",
+  "composition": {
+    "C": 2,
+    "N": 2,
+    "Na": 2
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "Na2C2N2": "C-135.txt",
+    "C": "C-003.txt",
+    "N": "N-002.txt",
+    "Na": "Na-005.txt"
+  },
+  "nasa9": {},
+  "nasa_comparison_status": "unavailable: no neutral Na2C2N2 dimer in the inspected official NASA file; no Na2CN or monomer surrogate.",
+  "decision": "Retain Na2C2N2 pending a focused dimer thermal/energy follow-up; the exact gas identity is resolved, but monomer evidence or a different stoichiometry is not a replacement dimer model.",
+  "monomer_table": "C-086.txt",
+  "follow_ups": [
+    "Obtain a modern gas-phase dimer geometry/frequency or electronic-structure model and reinterpret the 1961 dimer-dissociation measurement with consistent monomer and dimer thermal functions.",
+    "Keep dimer dissociation into two monomers distinct from total atomization into six neutral atoms; compute a finite-network candidate only after assembling both thermal and balanced energy inputs."
+  ],
+  "limitations": [
+    "A six-atom neutral dimer is not the three-atom monomer or four-atom hypervalent M2CN; condensed crystal geometry alone is not a measured gas dimer structure.",
+    "Source RRHO reconstruction or near-identical JANAF/NASA ancestry does not establish modern physical accuracy.",
+    "No curated change, new equilibrium solve or complete physical uncertainty."
+  ]
+}

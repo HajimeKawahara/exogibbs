@@ -202,7 +202,7 @@ subjects:
   implementation: *implementation
   selected_files:
     src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
-    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     tests/data/validation/ohno_p3/native_manifest.json: feda8e6f0175029ee5087882e0d7e19c754e2f59d08f542a2a5f7e4b24eab356
     tests/data/validation/ohno_p3/native27_manifest.json: 559ea22f73f10bf3c2633cff69447d739b21383212a219848afd7157d724c3bc

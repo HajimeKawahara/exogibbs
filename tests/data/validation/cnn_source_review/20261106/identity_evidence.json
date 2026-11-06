@@ -1,0 +1,29 @@
+{
+  "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+  "full_pdf_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+  "inspection": "Original printed page image inspected; selected factual numerical/identity transcription only.",
+  "printed_page": 636,
+  "connectivity": "linear C-N-N",
+  "point_group": "C-infinity-v",
+  "rotational_symmetry": 1,
+  "ground_electronic_weight": 3,
+  "evaluation_date": "1966-06",
+  "B0_cm-1": 0.450392,
+  "fundamentals_cm-1_and_degeneracies": [
+    [
+      1241,
+      1
+    ],
+    [
+      393,
+      2
+    ],
+    [
+      2847,
+      1
+    ]
+  ],
+  "hf298_kJ_mol_rounded": 585,
+  "listed_uncertainty_kJ_mol": 126,
+  "notes": "The old 2847 cm-1 mode is distinct from modern roughly 1425 cm-1 assignment; no automatic JANAF/NASA thermal equivalence."
+}

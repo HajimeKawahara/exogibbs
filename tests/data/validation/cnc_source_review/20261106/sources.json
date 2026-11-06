@@ -1,0 +1,67 @@
+{
+  "molecule": "CNC",
+  "decision": "Prioritize an ATcT energy candidate for CNC after resolving its identity; audit its strongly coupled thermal spectrum separately before adoption.",
+  "follow_up": "Build the -120.167 kJ/mol ATcT retained-thermal physical D0 control while preserving the fit residual, alongside a separately justified NASA-thermal or state-resolved thermal control. Audit Renner\u2013Teller state weighting and the 2020 energy-scale correction explicitly, then assess fixed-network substitution. Do not substitute CCN parameters or duplicate the ground-state orbital factor.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-133.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "CNC radical. Gurvich,1991 pt1 p221 pt2 p209. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "inspection": "Versioned official numerical rows inspected and archived with same-version neutral atoms.",
+      "scope": "Ground energy cycle only; no full thermal source or reaction covariance is inferred."
+    },
+    {
+      "id": "reference0",
+      "title": "Merer and Travis, CNC absorption (1966)",
+      "doi": "10.1139/p66-029",
+      "url": "https://doi.org/10.1139/p66-029",
+      "inspection": "Original JANAF ancestry and primary-paper bibliographic/abstract context inspected; no complete new Renner\u2013Teller thermal model derived."
+    },
+    {
+      "id": "reference1",
+      "title": "Garcia et al., threshold photoelectron spectroscopy (2017)",
+      "doi": "10.1063/1.4978336",
+      "url": "https://doi.org/10.1063/1.4978336",
+      "inspection": "Primary abstract and distinct CNC/CCN assignment inspected; its formation enthalpy must be read with the 2020 erratum."
+    },
+    {
+      "id": "reference2",
+      "title": "Garcia et al., corrected energy scale (2020)",
+      "doi": "10.1063/5.0010035",
+      "url": "https://doi.org/10.1063/5.0010035",
+      "inspection": "Indexed text of the published erratum inspected, including corrected CNC Hf298=678 +/-12 kJ/mol. Full PDF download unavailable; spectra not refitted."
+    },
+    {
+      "id": "original_identity",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "inspection": "Original printed page 681 image inspected; exact low electronic splitting and weights pinned in identity_evidence.json."
+    },
+    {
+      "id": "atct_provenance",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=1116",
+      "full_html_sha256": "7d9d11ea5708e95b6626ff08f2e717b5a0095e18879f7b6ec4e0693817d00ceb",
+      "inspection": "Current network provenance inspected; theoretical and Garcia2017 components distinguished from the 2020 correction."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}

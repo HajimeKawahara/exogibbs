@@ -1,0 +1,26 @@
+{
+  "review_date": "2026-11-05",
+  "command": "PYTHONPATH=src python mceg/reviews/cs_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/cs_source_review.py": "08d85d5497a81546ce0d0c17fe91665616716740463ac6b177d88726546d23ae",
+    "documents/mceg/cs_source_review.rst": "0aacc8e545c0353b290f80eb1a8ceb5dc6bdd0546122b24a21e33af9ae9cd17b",
+    "tests/model_evidence/cs_source_review_test.py": "cc0df0c302fc005b1511ce103f5f6dd86f0999f1035e492ca5c24d798991e59a",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_h2o_adoption/20261104/ions.npz": "c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532",
+    "tests/data/validation/cs_source_review/20261105/README.rst": "8863d843a2e9781ee05ca2ecf8dbd20792fe8bc4de4b09673b4a37decd16a2be",
+    "tests/data/validation/cs_source_review/20261105/literature.json": "3e90477a1b032b7dc4111ae36f1ed494b228bdde3f9cc7ca329ebc1ad1568557",
+    "tests/data/validation/cs_source_review/20261105/sources.json": "04734c1b48be4ec633e98c35250ca0682311826733aefe694b995c5a04623c64",
+    "tests/data/validation/cs_source_review/20261105/state_inventory.json": "65efcbecb9b6f24205b6a9d6a0ca00a3d454bf27149c8020646764ae4dd8ab0e",
+    "tests/data/validation/cs_source_review/20261105/states.npz": "aac9ea0264fd81d830b648633a478c8dbe6fb8a1469b5cf1d9b051c63ff5c1b1"
+  },
+  "output_sha256": {
+    "tests/data/validation/cs_source_review/20261105/comparison.json": "8fd1e87c86e252c18ba704ec2d3b0b33005b77028ee75423494a12a3d55ae2ef"
+  },
+  "scope": "CS; nine 300-4000 K nodes, curated 1500-4000 K, all 11497 distributed JnK states, 75 saved current cases; no production change or equilibrium substitution."
+}

@@ -3,7 +3,7 @@ Curated gas with modern TiO thermochemistry
 
 ``exogibbs.presets.curated_tio.chemsetup()`` selects the versioned
 **curated-tio-v1** model. The public default selected this model at its
-2026-11-03 adoption; the current default is described in :doc:`curated_h2o`.
+2026-11-03 adoption; the current default is described in :doc:`curated_oh`.
 This version adopts the reviewed
 ExoMol TOTO internal-state model and Jain et al.'s measured dissociation energy
 for TiO. Only TiO's formation function changes from **curated-c2h-v1**; the

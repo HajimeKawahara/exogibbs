@@ -1,0 +1,75 @@
+{
+  "review_date": "2026-11-05",
+  "scope": "Selected source inspection and offline derived numerical facts; no full papers committed.",
+  "download_hash_policy": "Hashes identify inspected public full-document bytes kept outside the repository; they do not claim that inaccessible sources or supporting information were inspected.",
+  "sources": [
+    {
+      "id": "janaf_molecule",
+      "url": "https://janaf.nist.gov/tables/S-021.html",
+      "access": "Official HTML rows inspected through web tool; selected numerical facts transcribed, not a byte-for-byte full table download.",
+      "evaluation": "September 1977; converted from 1 atm to 1 bar as labelled by NIST.",
+      "local_facts": "tests/data/validation/s8_source_review/20261105/inputs.json",
+      "limitations": "Original printed evaluation notes not read. PDF access did not yield a locally inspectable table; do not infer whether anomalies originated in print."
+    },
+    {
+      "id": "janaf_atom",
+      "url": "https://janaf.nist.gov/tables/S-006.html",
+      "access": "Previously archived official atomic table reused as a pinned numerical input.",
+      "local_file": "tests/data/validation/s2o_source_investigation/20261102/S-006.txt",
+      "facts": "Hf0=274.735 kJ/mol; Hf298=276.980 kJ/mol; H298-H0=6.657 kJ/mol; S298=167.828 J/mol/K."
+    },
+    {
+      "id": "nasa_glenn",
+      "url": "https://ntrs.nasa.gov/citations/20020085330",
+      "download_url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "access": "Public full report reused from a prior download; relevant printed page 185 rendered and visually inspected in this review. All 18 numerical coefficients match the frozen screening record.",
+      "download_sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "local_excerpt": "tests/data/validation/s8_source_review/20261105/nasa-record.txt",
+      "attribution": "Gurvich 1989 volume 1 part 1 page 284, part 2 page 172.",
+      "limitations": "Original Gurvich evaluation not obtained; no verified DOI. Polynomial range 200-6000 K is not an accuracy guarantee."
+    },
+    {
+      "id": "rau1973",
+      "doi": "10.1016/S0021-9614(73)80045-X",
+      "url": "https://www.sciencedirect.com/science/article/pii/S002196147380045X",
+      "access": "Primary publisher abstract and metadata only.",
+      "facts": "Sulfur vapour density analysis of an S2-S8 mixture, 823-1273 K, with real-gas treatment.",
+      "limitations": "Original fitting assumptions and covariance not inspected; no individual-species numerical values taken from abstract."
+    },
+    {
+      "id": "jackson2016",
+      "doi": "10.1039/C5SC03088A",
+      "url": "https://arxiv.org/html/1509.00722",
+      "download_url": "https://arxiv.org/pdf/1509.00722",
+      "access": "Full author manuscript HTML and a previously downloaded PDF inspected.",
+      "download_sha256": "fabf31e4cecdcfc853bfe2274b6ff34d89771f484c194025f76e8d09cbcaf614",
+      "facts": "DFT/RRHO sulfur vapour model, calibrated vibrational scaling, S8 experimental reference; a mixture chemical potential is not a one-species standard function.",
+      "data_doi": "10.6084/m9.figshare.1513736",
+      "code_doi": "10.5281/zenodo.28536",
+      "limitations": "Code/data not reproduced; inspected finite-temperature model does not establish 4000 K accuracy."
+    },
+    {
+      "id": "fedyaeva2023",
+      "doi": "10.1039/D2CP05498A",
+      "url": "https://uspex-team.org/static/file/Fedyaeva2023_ChemPhys2023_Stability%20of%20sulfur%20molecules%20and%20insights%20into%20sulfur%20allotropy_with_pages.pdf",
+      "access": "Full published article on author host inspected, including methods and structure discussion on printed page 9295.",
+      "download_sha256": "59b3a8f497041f36ecf598d5915f68181e0829f55b15c1d573d281bbd42cd199",
+      "facts": "USPEX/PBE structure search then B3LYP/6-311+G(d,p) refinement; S4 chain, S6 armchair below boat by 0.53 eV, S8 crown; comparisons through 1500 K.",
+      "limitations": "Supporting coordinates/frequencies not reproduced; negative atomization energy per atom is not positive D0 per molecule."
+    },
+    {
+      "id": "karton2021",
+      "doi": "10.1016/j.chphi.2021.100047",
+      "url": "https://rune.une.edu.au/server/api/core/bitstreams/539a2a19-322b-4bb7-bf08-ff29ca5a9820/content",
+      "access": "Full published open article downloaded; Table 2 and adjacent text on page 3 visually inspected.",
+      "download_sha256": "125a648e990b4f69ee8cd143da7dfc8be6ec763a54a82a5e554121a34ec15507",
+      "facts": "W4L S8 ring direct TAE0 505.67 kcal/mol; TAEe 513.45; ZPVE 7.77. Rounded S Hf0 66.26, S8 Hf0 24.44 and Hf298 23.51 kcal/mol.",
+      "limitations": "Direct TAE0 is used over rounded enthalpy conversions; no 4000 K thermal validation or quantitative atmospheric uncertainty follows."
+    }
+  ],
+  "follow_ups": [
+    "Build an energy-only S8 candidate from the already inspected direct W4L TAE0 (10.1016/j.chphi.2021.100047), with a single balanced delta(D0)/(RT) correction and retained thermal terms. No additional full text is required for this scoped calculation.",
+    "Compare the candidate with the actual inherited fit, document its 298 K energy anchor rather than assuming an exact JANAF D0, and run the fixed-network substitution with conservation, mass-action and sulfur allocation checks.",
+    "Review S8 excited/isomer thermal contributions separately using Jackson 2016 (10.1039/C5SC03088A) and Fedyaeva 2023 (10.1039/D2CP05498A); include cooler and sulfur-rich regimes if they become intended applications."
+  ]
+}

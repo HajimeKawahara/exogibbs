@@ -1,0 +1,49 @@
+{
+  "molecule": "C3O2",
+  "decision": "Retain carbon suboxide while recording a thermal source gap and a modest evaluated energy refinement; a soft-bending model needs explicit validation.",
+  "follow_up": "Audit the nu7 bending potential and partition convention, then compare a common-D0 thermal control and the -1.698 kJ/mol ATcT retained-thermal control separately. Production substitution is lower priority for this hot hydrogen-rich grid but may matter in other compositions.",
+  "sources": [
+    {
+      "id": "janaf",
+      "doi": "10.18434/T42S31",
+      "url": "https://janaf.nist.gov/tables/C-142.html",
+      "inspection": "Fresh official molecular and neutral-atom numerical tables archived."
+    },
+    {
+      "id": "nasa",
+      "url": "https://github.com/nasa/cea/blob/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "full_file_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official numerical record headers and every coefficient inspected; selected records archived.",
+      "ancestry": "Hf:Chase,1998 p690 6/68. Shimanouchi,1977 p1083. Full ancestral re-evaluation not performed."
+    },
+    {
+      "id": "atct",
+      "version": "1.228",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "full_html_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "inspection": "Versioned official numerical rows inspected and archived with same-version neutral atoms.",
+      "scope": "Ground energy cycle only; no full thermal source or reaction covariance is inferred."
+    },
+    {
+      "id": "reference0",
+      "title": "Carbon suboxide nu7 bending potential (1980)",
+      "doi": "10.1016/0022-2852(80)90297-0",
+      "url": "https://doi.org/10.1016/0022-2852(80)90297-0",
+      "inspection": "Primary author-repository abstract and vibrational-potential scope inspected; full numerical potential not reconstructed."
+    },
+    {
+      "id": "reference1",
+      "title": "Heats of formation and polymerization of carbon suboxide (1965)",
+      "doi": "10.1021/j100894a060",
+      "url": "https://doi.org/10.1021/j100894a060",
+      "inspection": "Primary publisher metadata inspected; no independent calorimetric reanalysis."
+    }
+  ],
+  "limitations": [
+    "No curated change or new equilibrium solve.",
+    "Source labels and independently replayed numbers do not establish complete ancestral physical uncertainty.",
+    "Standard-pressure and spin conventions are retained; no new isomer or isotope mixing model is supplied.",
+    "Saved hot hydrogen-rich allocation is not general planetary validation.",
+    "Candidate adoption requires its own scoped evidence and fixed-network substitution."
+  ]
+}

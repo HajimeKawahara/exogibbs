@@ -1,0 +1,449 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.ho2_candidate.v1
+  name: HO2 NASA/ATcT candidate and finite substitution
+  description: Verify the exact bounded energy update and single-species response; retain physical and
+    photochemical applicability limits.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:10d772922c4cb01871a6407552f87dd81f881f82430d641c3eb675d6b1434289
+    entry_points:
+    - mceg/reviews/ho2_candidate.py
+    - mceg/reviews/ho2_equilibrium_impact.py
+assumptions:
+- statement: Balance H+2O->HO2 using ATcT 1.172 D0=694662 J/mol and native NASA D0=694682.762 J/mol with
+    R=8.314510. Caloric outputs use modern SI R; no molecular-only reaction uncertainty.
+  evidence:
+  - source_scope
+  - candidate_validation
+- statement: Only HO2 changes; all other potentials, elemental budgets, species, ideal-gas standard state
+    and charge treatment remain fixed. JANAF controls use original knots at the same D0 and NASA atoms.
+  evidence:
+  - candidate_validation
+  - finite_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Bounded continuous candidate and fixed-network finite response.
+  conditions:
+  - 1500-4000 K, 1 bar standard state, within NASA 1000-6000 K source segment.
+  - 75 cases each for 537 ion-inclusive and 421 neutral species; 1e-6-100 bar, three C/O ratios, curated-oh-v1.
+  evidence:
+  - candidate_validation
+  - finite_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Total physical uncertainty and low-temperature photochemical/kinetic radical abundances
+    are not established.
+  conditions: []
+  evidence:
+  - source_scope
+  - finite_execution
+claims:
+- id: continuous_thermodynamics
+  revision: '1'
+  kind: numerical_verification
+  statement: The bounded NASA/ATcT model reconstructs the exact reaction, balances same-version energy
+    and supplies derivative-consistent scalar/JAX thermodynamics.
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+- id: finite_substitution
+  revision: '1'
+  kind: numerical_verification
+  statement: Changing only HO2 gives conserved, stable finite equilibrium endpoints on both fixed current
+    networks; some trace-species and Gibbs differences remain below numerical resolution.
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+- id: candidate_direction
+  revision: '1'
+  kind: theoretical
+  statement: Prefer the exact NASA thermal plus balanced ATcT candidate for a separately authorized bounded
+    adoption because the inherited formation energy is obsolete.
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete HO2 model has quantified physical uncertainty and accurate planetary radical
+    abundances across the intended applications.
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+evidence:
+- id: source_scope
+  kind: literature
+  summary: Inspected Burgess and ATcT evaluations supersede the inherited JANAF formation energy; source
+    bytes and same-version transcriptions retain their inspection limits.
+  sources:
+  - tests/data/validation/ho2_source_review/20261105/sources.json
+  - tests/data/validation/ho2_source_review/20261105/atct_nodes.json
+  - tests/data/validation/ho2_source_review/20261105/comparison.json
+  - documents/mceg/ho2_candidate.rst
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/ho2_source_review/20261105/sources.json
+    sha256: 2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd
+  - source: tests/data/validation/ho2_source_review/20261105/atct_nodes.json
+    sha256: f38f1d012a895574d1128769e1c3e2d59150563d4541d955e75c2090b04f4eab
+  - source: tests/data/validation/ho2_source_review/20261105/comparison.json
+    sha256: 1a6a3064367ccc72948f23a20403d7fcebc2e9407886b7122525c45112eed425
+  - source: documents/mceg/ho2_candidate.rst
+    sha256: 78ea4e3ce6be23830a080eb915f4d5630fb83836c8054c7f3a102f8305b52fd6
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_candidate.rst
+    inspection: partial
+    note: Source inspection limits are inherited explicitly; numerical agreement does not establish total
+      physical accuracy.
+- id: candidate_validation
+  kind: numerical_test
+  summary: Exact reaction reconstruction, native R normalization, dense independent calorics, JAX derivatives
+    and source-knot thermal controls.
+  sources:
+  - tests/data/validation/ho2_candidate/20261105/candidate.json
+  - tests/data/validation/ho2_candidate/20261105/validation.json
+  - tests/data/validation/ho2_candidate/20261105/receipt.json
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/ho2_candidate/20261105/candidate.json
+    sha256: b04c3146c88d2d688d1ea284815c85f4e1990d1cf8305b2534813a86f45be34d
+  - source: tests/data/validation/ho2_candidate/20261105/validation.json
+    sha256: cd62402ad16aa07b8ee9bdac47f4105393e5870e792164d5239069f33dec0130
+  - source: tests/data/validation/ho2_candidate/20261105/receipt.json
+    sha256: b56645246e02d86a5df19432c5c6a7cd044c39af9841932e3c42529a57e6338a
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_candidate.rst
+    inspection: inspected
+    note: Source inspection limits are inherited explicitly; numerical agreement does not establish total
+      physical accuracy.
+  result: passed
+- id: finite_execution
+  kind: numerical_test
+  summary: 150 fresh endpoints, 12 tighter cold controls, 10 interpolation points, six JANAF-node controls
+    and four FastChem comparisons preserve fixed networks and report conservation and same-model Gibbs
+    checks.
+  sources:
+  - tests/data/validation/ho2_equilibrium_impact/20261105/ions.npz
+  - tests/data/validation/ho2_equilibrium_impact/20261105/neutral.npz
+  - tests/data/validation/ho2_equilibrium_impact/20261105/summary.json
+  - tests/data/validation/ho2_equilibrium_impact/20261105/diagnostics.json
+  - tests/data/validation/ho2_equilibrium_impact/20261105/selected_diagnostics.json
+  - tests/data/validation/ho2_equilibrium_impact/20261105/receipt.json
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/ions.npz
+    sha256: dfd921c5f18c17a4edac1a734a61e10e126e7f79488715aba72f5f5c6b27c7d6
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/neutral.npz
+    sha256: 48a31ddb20ecf9f7f1c29124633f4c1f28aa8a1dfab648bae1ee0f750ac5e5ad
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/summary.json
+    sha256: 208d0f9d3108478ac99cb945e4c4368a4a0a5d1a19aa561467933271d49ab657
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/diagnostics.json
+    sha256: 354e432a80dd4ad092034202aec23116ffb87ee0e1979de904e4af20938bbdb7
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/selected_diagnostics.json
+    sha256: 8474d21692529a1a9ce43ba7540646c1e846aa10d2657f6444d8f4c8f63be26d
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/receipt.json
+    sha256: 8e61d7551aaa20bf8affa8aa8b466d52f2ecfc00fba9ee80d927a23807ec3d86
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_candidate.rst
+    inspection: inspected
+    note: Source inspection limits are inherited explicitly; numerical agreement does not establish total
+      physical accuracy.
+  result: passed
+- id: scientific_reasoning
+  kind: theory
+  summary: Correct the obsolete formation energy with the exact bounded candidate; tiny bulk composition
+    response does not remove the scientific motivation. Same-energy thermal contrast is not a physical
+    uncertainty band.
+  sources:
+  - documents/mceg/ho2_candidate.rst
+  - tests/data/validation/ho2_candidate/20261105/validation.json
+  - tests/data/validation/ho2_equilibrium_impact/20261105/summary.json
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  artifacts:
+  - source: documents/mceg/ho2_candidate.rst
+    sha256: 78ea4e3ce6be23830a080eb915f4d5630fb83836c8054c7f3a102f8305b52fd6
+  - source: tests/data/validation/ho2_candidate/20261105/validation.json
+    sha256: cd62402ad16aa07b8ee9bdac47f4105393e5870e792164d5239069f33dec0130
+  - source: tests/data/validation/ho2_equilibrium_impact/20261105/summary.json
+    sha256: 208d0f9d3108478ac99cb945e4c4368a4a0a5d1a19aa561467933271d49ab657
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_candidate.rst
+    inspection: inspected
+    note: Source inspection limits are inherited explicitly; numerical agreement does not establish total
+      physical accuracy.
+subjects:
+- id: ho2_candidate_and_finite_substitution_20261105
+  implementation: *id001
+  selected_files:
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    documents/mceg/ho2_candidate.rst: 78ea4e3ce6be23830a080eb915f4d5630fb83836c8054c7f3a102f8305b52fd6
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    mceg/contracts/ho2_source_review.yaml: b550446a4ddd4decd8e476e6273a333cf29ae52d8c6a432b2eef52009d523941
+    mceg/reviews/build_oh_adoption.py: 31f5ef6b75a9a0fb617c63798eee583eae174f516f7b08dfeb3df9e69e6ddb79
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
+    mceg/reviews/co2_source_review.py: cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172
+    mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
+    mceg/reviews/curated_oh_adoption.py: 2a9b741d86a4fb0a90a5f7a9b6bef30845c5608f315f4028364ecd02768e0db2
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/ho2_candidate.py: 10d772922c4cb01871a6407552f87dd81f881f82430d641c3eb675d6b1434289
+    mceg/reviews/ho2_equilibrium_impact.py: df086a9df5d133365054a94c0331e5865654be7bbff63dd10d4c39e5c8b60028
+    mceg/reviews/ho2_source_review.py: b65f9b4be21c52086923f935e4f643a4990be01dbbf3de41da4ef73ef9f025ac
+    mceg/reviews/oh_candidate.py: 094fe414773c7927e273c7cd3cb98acd764236d35c97539d05dba34f1f2d1eb1
+    mceg/reviews/oh_equilibrium_impact.py: 59661ec0e2de217a73dcd74b5746697c325f9d20db7016211c5219a68ecab170
+    mceg/reviews/oh_source_review.py: a9450f7616d87089293851446c5fa4241b4b29f9ef1a0a84543b4a588223c90d
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    tests/data/validation/co2_candidate/20261104/candidate.json: 9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/curated_h2o_adoption/20261104/neutral.npz: 0f04e08e51ee29c354ad45ea7ab24f28d2ae77d742222f4abe1087274b06412e
+    tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
+    tests/data/validation/curated_oh_adoption/20261105/neutral.npz: f21a9f1ce4c2b737e5af6dc93a82faad01a6547cbb7f3f56369e05d46e121bf1
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/data/validation/curated_tio_adoption/20261103/neutral.npz: 4fef69416723000ab214ac413d027f10f2bc9a13955f289b195099192f3f1816
+    tests/data/validation/h2o_candidate/20261104/candidate.json: 0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a
+    tests/data/validation/ho2_candidate/20261105/README.rst: 1a5de98182a741e61d35011dfad4081a119e05ebd76a6d3d8fe5cdc6746ca150
+    tests/data/validation/ho2_candidate/20261105/candidate.json: b04c3146c88d2d688d1ea284815c85f4e1990d1cf8305b2534813a86f45be34d
+    tests/data/validation/ho2_candidate/20261105/receipt.json: b56645246e02d86a5df19432c5c6a7cd044c39af9841932e3c42529a57e6338a
+    tests/data/validation/ho2_candidate/20261105/validation.json: cd62402ad16aa07b8ee9bdac47f4105393e5870e792164d5239069f33dec0130
+    tests/data/validation/ho2_equilibrium_impact/20261105/README.rst: 3d571ce9ee159cf10e8401a18d5c922a7c4a873b1b87e136f739d8ae7d073276
+    tests/data/validation/ho2_equilibrium_impact/20261105/diagnostics.json: 354e432a80dd4ad092034202aec23116ffb87ee0e1979de904e4af20938bbdb7
+    tests/data/validation/ho2_equilibrium_impact/20261105/ions.npz: dfd921c5f18c17a4edac1a734a61e10e126e7f79488715aba72f5f5c6b27c7d6
+    tests/data/validation/ho2_equilibrium_impact/20261105/neutral.npz: 48a31ddb20ecf9f7f1c29124633f4c1f28aa8a1dfab648bae1ee0f750ac5e5ad
+    tests/data/validation/ho2_equilibrium_impact/20261105/receipt.json: 8e61d7551aaa20bf8affa8aa8b466d52f2ecfc00fba9ee80d927a23807ec3d86
+    tests/data/validation/ho2_equilibrium_impact/20261105/selected_diagnostics.json: 8474d21692529a1a9ce43ba7540646c1e846aa10d2657f6444d8f4c8f63be26d
+    tests/data/validation/ho2_equilibrium_impact/20261105/summary.json: 208d0f9d3108478ac99cb945e4c4368a4a0a5d1a19aa561467933271d49ab657
+    tests/data/validation/ho2_source_review/20261105/H-043.txt: 92a340244deaa3d2d32e19a25acdff3765b78b33f5abda37fd477fb9fd88f6ac
+    tests/data/validation/ho2_source_review/20261105/README.rst: d5acb0cf7b030f952a74d1512e16ed652c3907b187c275ed8a1c1ea637a31db0
+    tests/data/validation/ho2_source_review/20261105/atct_nodes.json: f38f1d012a895574d1128769e1c3e2d59150563d4541d955e75c2090b04f4eab
+    tests/data/validation/ho2_source_review/20261105/comparison.json: 1a6a3064367ccc72948f23a20403d7fcebc2e9407886b7122525c45112eed425
+    tests/data/validation/ho2_source_review/20261105/nasa_records.json: 95b4aa2c8d061b5cc1209c5af0d66cd0516eb90136e7351cceb1f8f54b8c045d
+    tests/data/validation/ho2_source_review/20261105/nasa_selected_records.txt: 76841915543eb26ed9db7c74a471e4f477fb1a2fd82bd2248706a9b96bb16a1d
+    tests/data/validation/ho2_source_review/20261105/receipt.json: 7f3355951396c97df643576cb700934c277cd25e1d39e25e5b29f21d0bee0c4d
+    tests/data/validation/ho2_source_review/20261105/sources.json: 2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd
+    tests/data/validation/oh_candidate/20261105/candidate.json: 5c2eea21282fc1cee77723c0e5774e0b2b52a401e45d62a17a726f76b9c7780d
+    tests/data/validation/oh_equilibrium_impact/20261105/ions.npz: f4e9329ebeeede3f2e0f696b5bdb5cf172921492e24c5f65e83a682e8e851c5d
+    tests/data/validation/oh_equilibrium_impact/20261105/neutral.npz: c5f773d986bf5b6d8673dff037a84d1a502b2751fd0ded2b1c28a443b03aa62c
+    tests/data/validation/oh_source_review/20261105/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/oh_source_review/20261105/H-038.txt: 5d676fdf41f19da94506bb95139e0e15326905f062cd440cb78a9891593bff36
+    tests/data/validation/oh_source_review/20261105/MYTHOS.def.json: 0fbfd6811a8c2a75e38f51e62b1dca54f476f1404b12924d2a71cc48d477e0f4
+    tests/data/validation/oh_source_review/20261105/MoLLIST-OH.def.json: 856aafeaf91c7b86f61cc895c43bfe4f08d64a75c0f933011edb7b832c4cf198
+    tests/data/validation/oh_source_review/20261105/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/oh_source_review/20261105/README.rst: c148421474f72b877175c9f92cae82af73ebe1b77653d10feb2652cc137a6af9
+    tests/data/validation/oh_source_review/20261105/comparison.json: 6f112b19de2dcd5998cabcea4469e1c85d13908c0fdade16ddb49c6d7b9dac09
+    tests/data/validation/oh_source_review/20261105/literature.json: fe13a72ff050b3830b4c17b9901721501e844962584049971d588986e3b6c677
+    tests/data/validation/oh_source_review/20261105/nasa_H.txt: 376979df2a1bddc5b25e4ada120d2a78d4a19f1b8650f490375285ae1f727dca
+    tests/data/validation/oh_source_review/20261105/nasa_O.txt: bf127e8c2ef2e3ded946562217d978ea0da0f3b73179b9321a30fff0a634e040
+    tests/data/validation/oh_source_review/20261105/nasa_OH.txt: cfae51379a97e9abc9ed348fbe20cf248b4ee46819ac986520434f87162cd382
+    tests/data/validation/oh_source_review/20261105/receipt.json: efd8ef8a1af36a7c14a4c4cf1bbacd605aa0d1dc6b09c591f925868bad3aee38
+    tests/data/validation/oh_source_review/20261105/sources.json: 3312c062118313a7a193242696e0f4cf458c4cb6c9f5c643b87b5e0c700c938e
+    tests/data/validation/oh_source_review/20261105/state_inventory.json: 7d09a1ac26b21de19fbe8aa2530fb25869c8e1e3eb6a3cc2a6b9e6b8fa1bd927
+    tests/data/validation/oh_source_review/20261105/states.npz: c1d1a042b137ee52100e2f63f298ac5c7cd3b22d4410362e5ecfbb684ec2e7bb
+    tests/model_evidence/ho2_candidate_test.py: b5a61a5361e5de413cce22a6725c0a65b72292362f56ed589a050f511301b76f
+    tests/data/validation/curated_ho2_adoption/20261105/source/tests/model_evidence/ho2_equilibrium_impact_test.py: daf0da6f449a6635e00959ad1a6430d7df61ca48a2b07b8dfaf0349df9562e81
+contexts:
+- id: candidate_evaluation
+  scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
+    D0=694.662 kJ/mol; curated-oh-v1 75-condition grids with 537 ion-inclusive or 421 neutral species;
+    no production adoption or photochemical validation.
+  settings:
+    reaction: H(g)+2O(g)->HO2(g)
+    standard_pressure_bar: 1
+    primary: Exact NASA9 HO2-H-2O with balanced ATcT 1.172 energy
+    thermal_control: JANAF original knots only, same D0 and NASA atomic thermal reference
+    production_change: none
+    prior_contract: mceg/contracts/ho2_source_review.yaml
+    prior_follow_up: next_calculation completed; source-only context remains dated history
+assessments:
+- id: continuous_thermodynamics_review
+  kind: evidence_support
+  claim: continuous_thermodynamics
+  claim_revision: '1'
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  method:
+    id: review_ho2_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, bounded numerical verification and scientific preference
+      from total physical accuracy.
+  evidence:
+  - source_scope
+  - candidate_validation
+  reasons:
+  - One NASA interval covers the domain; the exact HO2-H-2O reaction requires only the -2.02096231694
+    K D0/R correction. Source calorics and JAX derivatives agree to numerical precision.
+  status: supported
+  origin: reviewed
+- id: finite_substitution_review
+  kind: evidence_support
+  claim: finite_substitution
+  claim_revision: '1'
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  method:
+    id: review_ho2_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, bounded numerical verification and scientific preference
+      from total physical accuracy.
+  evidence:
+  - candidate_validation
+  - finite_execution
+  reasons:
+  - All 150 candidate endpoints converge; HO2 abundance ratios span 0.446393-0.755162 and the largest
+    absolute mole-fraction change is 4.731e-12. H/C/O closure is below 9.00e-13, tighter HO2 ln(x) differences
+    below 1.20e-10 and four FastChem comparisons agree within 1.193e-8 dex. Tiny Gibbs differences are
+    not resolved at every case.
+  status: supported
+  origin: reviewed
+- id: candidate_direction_review
+  kind: evidence_support
+  claim: candidate_direction
+  claim_revision: '1'
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  method:
+    id: review_ho2_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, bounded numerical verification and scientific preference
+      from total physical accuracy.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - scientific_reasoning
+  reasons:
+  - The evaluated energy supersedes the obsolete JANAF anchor. NASA supplies a continuous exact representation;
+    a same-energy JANAF original-knot contrast is only +0.23% to -2.01%. No new historical-paper gate
+    or production change is introduced.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: ho2_candidate_and_finite_substitution_20261105
+  context: candidate_evaluation
+  method:
+    id: review_ho2_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, bounded numerical verification and scientific preference
+      from total physical accuracy.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  reasons:
+  - Reaction covariance, high-state completeness and atmosphere-specific physical validation are absent.
+    Trace HO2 in hot H-rich equilibrium does not constrain low-temperature photochemistry or kinetics.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: scoped_production_choice
+  target_kind: claim
+  target: candidate_direction
+  revision: '1'
+  action: Make a separately authorized curated decision and package the exact candidate without refitting.
+    Completed for the bounded production choice by curated-ho2-v1 on curated-kh-v1; see mceg/contracts/curated_ho2.yaml.
+    Full physical scope remains unknown.
+  requires:
+  - Preserve balanced ATcT energy, native NASA normalization, bounded domain and derivative/inventory
+    checks.
+  - Keep candidate and production-adoption evidence distinct.
+  completion: Record the production decision and runtime validation; obtaining every historical paper
+    is not a prerequisite.
+- id: physical_scope_and_covariance
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Resolve only the physical limits required by the claimed application and precision, or retain
+    their explicit unknown status.
+  requires:
+  - Same-version ATcT reaction covariance for correlated energy uncertainty.
+  - Consistent high-state/continuum treatment for a completeness bound.
+  - Application-specific lower-temperature, photochemical or kinetic evidence for atmospheric radical
+    claims.
+  completion: Supply proportionate physical evidence or retain unknown; no new gate on this completed
+    bounded study.
+limitations:
+- statement: Source agreement is not necessarily independent validation. JANAF same-energy contrasts are
+    original-knot source sensitivity, not a confidence interval or omitted-state bound.
+  evidence:
+  - source_scope
+  - candidate_validation
+- statement: HO2 is extremely trace on this hot H-rich grid. The largest absolute composition response
+    is 4.731e-12; many Gibbs differences are below numerical resolution despite consistent constraints
+    and selected tighter controls.
+  evidence:
+  - finite_execution
+- statement: Numerical verification and cross-solver agreement do not establish low-temperature photochemistry,
+    kinetics, condensation, transport or total planetary physical accuracy.
+  evidence:
+  - finite_execution
+  - scientific_reasoning

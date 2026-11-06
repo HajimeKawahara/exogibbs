@@ -1,0 +1,14 @@
+{
+  "source_name": "CCN",
+  "connectivity": "C-C-N",
+  "composition": {
+    "C": 2,
+    "N": 1
+  },
+  "NASA_hf298_J_mol": 804596.472,
+  "NASA_h298_minus_h0_J_mol": 11038.524,
+  "source_line_1based": 3177,
+  "ATcT_1.228_id": "4120-02-9*0",
+  "ATcT_1.228_hf0_kJ_mol": 684.7,
+  "scope": "Negative identity control only; never selected as the CNC thermal or energy source."
+}

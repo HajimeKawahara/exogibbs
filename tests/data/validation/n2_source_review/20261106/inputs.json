@@ -1,0 +1,47 @@
+{
+  "molecule": "N2",
+  "species_id": "N2",
+  "composition": {
+    "N": 2
+  },
+  "footprint_element": "N",
+  "temperatures_K": [
+    300,
+    500,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "tables": {
+    "N2": "N-023.txt",
+    "N": "N-002.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "N2": {
+      "hf0_kJ_mol": 0,
+      "hf298_kJ_mol": 0,
+      "uncertainty_95pct_kJ_mol": 0,
+      "atct_id": "7727-37-9*0",
+      "note": "exact elemental reference"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0"
+    }
+  },
+  "partition": {
+    "states_file": "n2-TRINITY.states.bz2",
+    "nodes_file": "partition_nodes.json",
+    "nuclear_spin_divisor": 9,
+    "mass_u": 28.00614800886,
+    "scope": "Principal isotope; finite distributed state sum, not a natural-isotope mixture or a completeness guarantee."
+  },
+  "inherited_ATcT_D0_J_mol": 941166
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "CI replay revalidation; original scientific packet and execution receipt preserved",
+  "molecule": "NCO",
+  "field": "source_samples[1].curated_minus_janaf_reaction.G_J_mol",
+  "temperature_K": 2000,
+  "observation": "Read-only pre-Python-3.12 sequential-sum emulation detected the same failure class; no CI failure is claimed for NCO.",
+  "expected_J_mol": 27.068383472738788,
+  "sequential_sum_actual_J_mol": 27.068383472505957,
+  "absolute_difference_J_mol": 2.3283064365386963e-10,
+  "replay_policy": {
+    "only_changed_field": "curated_minus_janaf_reaction.G_J_mol at each source knot",
+    "absolute_tolerance_J_mol": 1e-08,
+    "relative_tolerance": 0,
+    "rejected_perturbation_J_mol": 1e-05,
+    "other_fields": "Original shared check_equal tolerances unchanged",
+    "rationale": "Cancellation of reaction Gibbs energies of order 1e6 J/mol amplifies last-bit differences from Python 3.11 sequential versus Python 3.12 improved float sum. The absolute allowance is below 1e-12 in ln(K) at 1500-4000 K, not a physical accuracy tolerance."
+  },
+  "source_and_runtime_changed": false,
+  "original_receipt_sha256": "d9dfb7299a7766f47cf39157eb0e4d7e610432120a38280fbedabf8b5de0a2cd",
+  "original_test_snapshot": "tests/data/validation/nco_source_review/ci-revalidation-20261106/source/nco_source_review_test.py",
+  "original_test_sha256": "bb99cd3d09c5c1e262ba18f646244c8a19f0fe447adc53277785eb69498a7468",
+  "current_test_source": "tests/model_evidence/nco_source_review_test.py",
+  "current_test_sha256": "208bac744979d5e5c764bf855567e65829808231db2ce8e637c665c128ab5ff0",
+  "original_packet_sha256": {
+    "tests/data/validation/nco_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/nco_source_review/20261106/C-087.txt": "286f26a5026d9aba57a26533184d7ab8a47cf24dc5dae25613d356d740a69a09",
+    "tests/data/validation/nco_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/nco_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/nco_source_review/20261106/README.rst": "22e6d1715db042da19e47f16b6b4477ead570ce9d9c9604da6ca0ca62f024418",
+    "tests/data/validation/nco_source_review/20261106/comparison.json": "d286c6b4c7cb0bdc5f9005804f3d093f31bf2865239e062e450422408b76ad0c",
+    "tests/data/validation/nco_source_review/20261106/identity.json": "7f6379d58bd6cb45db7ad426fd5490f75605e21f0dff57d7cb379479530b2df8",
+    "tests/data/validation/nco_source_review/20261106/inputs.json": "1d9edd4509f15c1fc504fd0f5e16fb6a7e9e08ad9ab30ed070e75a056976dc1d",
+    "tests/data/validation/nco_source_review/20261106/literature.json": "800d606a0b6e402991cccceee1f55f8bd4ece347f84768d2094f80998fe149fc",
+    "tests/data/validation/nco_source_review/20261106/nasa_records.json": "0d40a938ba20d424cbb7c9fe1e9c9f2c6eb0f8e0b08ea199e77f6912b8e98e57",
+    "tests/data/validation/nco_source_review/20261106/nasa_selected_records.txt": "6d4fd7d2ee5a168b0af3dad3ed11dfd2223696d57eb5351fdb3c44c08816f4af",
+    "tests/data/validation/nco_source_review/20261106/receipt.json": "d9dfb7299a7766f47cf39157eb0e4d7e610432120a38280fbedabf8b5de0a2cd",
+    "tests/data/validation/nco_source_review/20261106/sources.json": "1df8fe5109de4ac2e65ef67ba88eef370eb3f118872190d8384a534c2b9169e9"
+  },
+  "environment": {
+    "python": "3.12.7",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "sequential_sum_emulation": "Set only the review module global sum to a loop adding each input in order from start=0. Common helpers, Python builtins and NumPy remain unchanged; this is not a full interpreter/platform simulation.",
+  "test_command": [
+    "taskset",
+    "-c",
+    "4-7",
+    "python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/model_evidence/nco_source_review_test.py"
+  ],
+  "test_result": "8 passed in 2.46s",
+  "sequential_sum_full_replay_with_local_comparator": "passed"
+}

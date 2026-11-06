@@ -1,0 +1,121 @@
+{
+  "temperature_count": 2752,
+  "offgrid_count": 251,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "models": [
+    {
+      "variant": "retained",
+      "species": "P4S3",
+      "jax_scalar_derivative_errors": {
+        "G_J_mol": 6.657501216977835e-10,
+        "H_J_mol": 1.862645149230957e-09,
+        "S_J_mol_K": 5.684341886080801e-13,
+        "Cp_J_mol_K": 7.858158568296858e-13
+      },
+      "samples": [
+        {
+          "temperature_K": 1500.0,
+          "G_J_mol": -940387.162361837,
+          "H_J_mol": -2184121.143172546,
+          "S_J_mol_K": -829.1559872071394,
+          "Cp_J_mol_K": 7.021920476229246
+        },
+        {
+          "temperature_K": 2000.0,
+          "G_J_mol": -526311.187955198,
+          "H_J_mol": -2180934.3572048163,
+          "S_J_mol_K": -827.3115846248094,
+          "Cp_J_mol_K": 5.431071764310414
+        },
+        {
+          "temperature_K": 2500.0,
+          "G_J_mol": -112915.70713205195,
+          "H_J_mol": -2178984.223038614,
+          "S_J_mol_K": -826.4274063626248,
+          "Cp_J_mol_K": 2.0753132701231154
+        },
+        {
+          "temperature_K": 3000.0,
+          "G_J_mol": 300271.4258895734,
+          "H_J_mol": -2179153.195565072,
+          "S_J_mol_K": -826.4748738182151,
+          "Cp_J_mol_K": -3.045355006332658
+        },
+        {
+          "temperature_K": 4000.0,
+          "G_J_mol": 1127861.368006589,
+          "H_J_mol": -2189378.2802605066,
+          "S_J_mol_K": -829.3099120667739,
+          "Cp_J_mol_K": -18.581420906049626
+        }
+      ]
+    },
+    {
+      "variant": "atomization_route_H298",
+      "species": "P4S3",
+      "jax_scalar_derivative_errors": {
+        "G_J_mol": 6.657501216977835e-10,
+        "H_J_mol": 1.3969838619232178e-09,
+        "S_J_mol_K": 4.547473508864641e-13,
+        "Cp_J_mol_K": 7.425171588693047e-13
+      },
+      "samples": [
+        {
+          "temperature_K": 1500.0,
+          "G_J_mol": -949787.162361837,
+          "H_J_mol": -2193521.143172546,
+          "S_J_mol_K": -829.1559872071394,
+          "Cp_J_mol_K": 7.021920476229246
+        },
+        {
+          "temperature_K": 2000.0,
+          "G_J_mol": -535711.187955198,
+          "H_J_mol": -2190334.3572048163,
+          "S_J_mol_K": -827.3115846248094,
+          "Cp_J_mol_K": 5.431071764310414
+        },
+        {
+          "temperature_K": 2500.0,
+          "G_J_mol": -122315.70713205196,
+          "H_J_mol": -2188384.223038614,
+          "S_J_mol_K": -826.4274063626248,
+          "Cp_J_mol_K": 2.0753132701231154
+        },
+        {
+          "temperature_K": 3000.0,
+          "G_J_mol": 290871.42588957347,
+          "H_J_mol": -2188553.195565072,
+          "S_J_mol_K": -826.4748738182151,
+          "Cp_J_mol_K": -3.045355006332658
+        },
+        {
+          "temperature_K": 4000.0,
+          "G_J_mol": 1118461.368006589,
+          "H_J_mol": -2198778.2802605066,
+          "S_J_mol_K": -829.3099120667739,
+          "Cp_J_mol_K": -18.581420906049626
+        }
+      ]
+    }
+  ],
+  "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks.",
+  "source_independent_property_errors": {
+    "retained:P4S3": {
+      "G_J_mol": 2.3283064365386963e-10,
+      "H_J_mol": 1.3969838619232178e-09,
+      "S_J_mol_K": 2.2737367544323206e-13,
+      "Cp_J_mol_K": 1.0658141036401503e-14
+    },
+    "atomization_route_H298:P4S3": {
+      "G_J_mol": 2.3283064365386963e-10,
+      "H_J_mol": 1.3969838619232178e-09,
+      "S_J_mol_K": 2.2737367544323206e-13,
+      "Cp_J_mol_K": 1.0658141036401503e-14
+    }
+  },
+  "curated_change": "none",
+  "source_scope": "Independent source expressions separate physical energy and thermal functions; numerical verification does not establish complete physical accuracy."
+}

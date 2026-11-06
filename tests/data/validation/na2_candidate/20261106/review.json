@@ -1,0 +1,28 @@
+{
+  "scope": "Na2 measured ground-vibrational D0 energy-only candidate on retained thermal fit;1500-4000K curated-ch2-v1 fixed networks;thermal state completeness separately limited;no production adoption.",
+  "source_claim": "The measured ground-state binding energy is converted with exact SI constants and applied once relative to the physical JANAF source D0; modern thermal completeness is audited separately.",
+  "source_summary": "D0measured=71090.335610230J/mol versusJANAF70539;2025officialsupplements inspected and corrected-figure scope checked;no sparseQ interpolation or unverified complete-state claim.",
+  "decision": "Prefer the measured D0 energy-only candidate for a separately authorized bounded update; retain the current thermal function until a complete normalized modern construction has been validated.",
+  "inspection_scope": "The primary publisher abstract of Jones et al. (1996), `10.1103/PhysRevA.54.R1006 <https://doi.org/10.1103/PhysRevA.54.R1006>`_, reports D0 = 5942.6880 +/- 0.0049 cm^-1 for 23Na2 from combined direct spectroscopic measurements. This is the lowest vibrational level relative to the free ground-atom limit, not De. The original full paper has not been obtained; that access limit is recorded rather than converted into a claim of a complete modern thermal evaluation. Sodium is naturally monoisotopic for this construction. The selected control moves D0 upward by the reported 0.0049 cm^-1 measurement uncertainty. It is one anchor sensitivity, not a confidence interval for the retained thermal function or atmosphere. Official2025supplements and publishercorrectionpreview inspected; fullcorrectionpages remain unavailable. ",
+  "continuous_reason": "ConstantG/Hshift\u2212551.335610230J/mol;SCp exactly unchanged;atomicgauge and residual preserved;both main/selected2752-node scalar/JAX checks pass.",
+  "finite_reason": "150fresh+12tight+10path+4selected+4FastChem;ionsratio1.0167157766\u20131.0451986414;maximumNaallocation0.00117245757%\u21920.00122544975%;FC1.23e-08dex.",
+  "gibbs_reason": "12/75ions and12/75neutral comparisons resolve above the recorded floating-point diagnostic scale;othersunresolved.",
+  "physical_reason": "Inherited thermal source errors, complete electronic/rotational/quasibound/continuum coverage and correlated reaction/atmospheric accuracy remain unknown; precise isotope-specific D0 does not remove these limits.",
+  "assumptions": [
+    "Physical sourceD0 differs from empirical fitintercept; noZPE doublecount or arbitraryH298shift.",
+    "SCp,literalthermalfit,atomicgauge and fullfitresidual unchanged.",
+    "Measured principal-isotope energy is kept distinct from a complete natural-isotope thermal calculation."
+  ],
+  "followup": "Consider separately authorized bounded energy-only adoption with actual production regression. Pursue complete normalized modern thermal input separately; do not delay this scoped decision for unlimited ancestral literature.",
+  "required_inputs": [
+    "No new thermal input needed for the tested constant physical-energy candidate.",
+    "Complete thermal states/calorics and near-dissociation convention before any thermal replacement."
+  ],
+  "limitations": [
+    "Measured ground v0J0 atomization anchor applied once to retained thermal fit; complete thermal state coverage remains unknown.",
+    "Sparse Q nodes do not uniquely validate continuous G/H/S/Cp; no Q interpolation adopted.",
+    "2025officialODS haspotentialparameters,notverifiedcompletecalorics;correctedfiguresalone are not numericthermalinput.",
+    "Universal same-modelGibbs resolution and full physicalaccuracy are not claimed.",
+    "Production and original source packets unchanged."
+  ]
+}

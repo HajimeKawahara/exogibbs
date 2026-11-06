@@ -1,0 +1,83 @@
+{
+  "molecule": "NCO",
+  "species_id": "C1N1O1",
+  "composition": {
+    "C": 1,
+    "N": 1,
+    "O": 1
+  },
+  "cas": "22400-26-6",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "tables": {
+    "NCO": "C-087.txt",
+    "C": "C-003.txt",
+    "N": "N-002.txt",
+    "O": "O-001.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "NCO": {
+      "hf0_kJ_mol": 127.03,
+      "hf298_kJ_mol": 127.5,
+      "uncertainty_95pct_kJ_mol": 0.33,
+      "atct_id": "22400-26-6*0",
+      "preferred_formula": "NCO  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=262"
+    },
+    "C": {
+      "hf0_kJ_mol": 711.37,
+      "hf298_kJ_mol": 716.855,
+      "uncertainty_95pct_kJ_mol": 0.038,
+      "atct_id": "7440-44-0*0",
+      "preferred_formula": "C  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0",
+      "preferred_formula": "N  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    },
+    "O": {
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "atct_id": "17778-80-2*0",
+      "preferred_formula": "O  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    }
+  },
+  "inherited_source": "Chase 1998 JANAF (FastChem fit) [U]",
+  "fastchem_record": {
+    "species": "C1N1O1",
+    "record_name": "NCO_Radical",
+    "source_file": "FastChem4/logK/logK.dat",
+    "record_line_number": 217,
+    "coefficient_line_number": 218,
+    "record_line": "C1N1O1 NCO_Radical : C 1 N 1 O 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+    "coefficient_line": "   1.5332977701533429e+05  -2.3271371471604425e+00  -1.4099093278716282e+01   8.2488947513587041e-04  -4.9400757352844278e-08 ",
+    "coefficients": [
+      153329.7770153343,
+      -2.3271371471604425,
+      -14.099093278716282,
+      0.0008248894751358704,
+      -4.940075735284428e-08
+    ],
+    "selected_temperature_segment_index": null,
+    "selected_temperature_segment_upper_bound": null,
+    "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+    "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+    "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+  },
+  "current_model": "curated-tio2-v1",
+  "nasa_record_key": "NCO",
+  "nasa_same_identity": true,
+  "exact_atct_id": "22400-26-6*0"
+}

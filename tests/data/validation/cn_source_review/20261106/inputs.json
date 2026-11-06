@@ -1,0 +1,59 @@
+{
+  "molecule": "CN",
+  "species_id": "C1N1",
+  "composition": {
+    "C": 1,
+    "N": 1
+  },
+  "footprint_element": "N",
+  "temperatures_K": [
+    300,
+    500,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "atomic_tables": {
+    "C": "tests/data/validation/c2h_source_review/20261102/C-003.txt",
+    "N": "tests/data/validation/n3_source_review/20261103/N-002.txt"
+  },
+  "molecular_janaf_table": "C-080.txt",
+  "atct_version": "1.228",
+  "atct": {
+    "CN": {
+      "name": "Nitrilomethyl",
+      "formula": "CN  (g)",
+      "hf0_kJ_mol": 436.67,
+      "hf298_kJ_mol": 439.96,
+      "reported_uncertainty_kJ_mol": 0.13,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=79"
+    },
+    "C": {
+      "name": "Carbon",
+      "formula": "C  (g)",
+      "hf0_kJ_mol": 711.37,
+      "hf298_kJ_mol": 716.855,
+      "reported_uncertainty_kJ_mol": 0.038,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21"
+    },
+    "N": {
+      "name": "Nitrogen atom",
+      "formula": "N  (g)",
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "reported_uncertainty_kJ_mol": 0.021,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    }
+  },
+  "partition": {
+    "file": "partition.pf",
+    "nuclear_spin_divisor": 3,
+    "mass_u": 26.00307400443,
+    "scope": "12C14N, X2Sigma+, A2Pi, B2Sigma+",
+    "states_file": "states.npz"
+  }
+}

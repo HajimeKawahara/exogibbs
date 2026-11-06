@@ -1,0 +1,23 @@
+{
+  "version": "1.172",
+  "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+  "inspection": "Official rendered index inspected 2026-11-05, H/O atom rows and Dioxidanyl HOO(g), ATcT ID3170-83-0*0. Selected displayed numerical transcription; full species provenance page and network covariance not obtained. Shell HTML retrieval returned403; no raw HTML hash claimed.",
+  "records": {
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "displayed_uncertainty_kJ_mol": 0.0
+    },
+    "O": {
+      "hf0_kJ_mol": 246.844,
+      "hf298_kJ_mol": 249.229,
+      "displayed_uncertainty_kJ_mol": 0.0021
+    },
+    "HO2": {
+      "hf0_kJ_mol": 15.06,
+      "hf298_kJ_mol": 12.15,
+      "displayed_uncertainty_kJ_mol": 0.14
+    }
+  },
+  "uncertainty_note": "Rounded displayed uncertainty0.000 is not exact zero; covariance unavailable. No quadrature reaction uncertainty."
+}

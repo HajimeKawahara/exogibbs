@@ -1,0 +1,102 @@
+{
+  "decision": "Retain NASA thermal + ATcT 1.172 balanced energy provisionally on the reviewed grid; do not adopt the current AYT2/TIPS full-range table. A convergence-checked thermal candidate is a computational follow-up, not an unconditional missing-paper gate.",
+  "sources": [
+    {
+      "id": "AYT2",
+      "doi": "10.1093/mnras/stw1133",
+      "inspection": "Full author manuscript, especially Sections 3 and 4 and Table 10; official current states/def/PF/Cp retrieved.",
+      "finding": "The paper demonstrates partition convergence to 2000 K and uses ortho/para weights 3/1. Spectral transition completeness is a different condition from thermodynamic moment convergence. Current distributed states extend to J=40 and 34636.207111 cm-1. The 10000 cm-1 metadata field is not the actual full state maximum."
+    },
+    {
+      "id": "MARVEL",
+      "doi": "10.1016/j.jqsrt.2018.07.012",
+      "inspection": "Full author manuscript and current ExoMol readme/state schema inspected.",
+      "finding": "Measured ortho and para networks are distinct; the current distribution incorporates empirical energies and preserves originally calculated energies. Energy refinements do not add missing high-J states. A single current row has inconsistent printed J/gtot; neither field is silently corrected."
+    },
+    {
+      "id": "TIPS2017",
+      "doi": "10.1016/j.jqsrt.2017.03.045",
+      "inspection": "Full author-hosted PDF Section 3.31.",
+      "finding": "H2(32S) is an AYT2 direct sum. The paper states completeness to 34636 cm-1 and convergence to 4000 K. This reported convergence is not accepted uncritically: the distributed J=40 boundary and declining high-temperature Cp demand an extended-state calculation. Table agreement is source-dependent."
+    },
+    {
+      "id": "TIPS2021",
+      "doi": "10.1016/j.jqsrt.2021.107713",
+      "inspection": "User-provided full PDF Section 3.31.",
+      "finding": "Main H2(32S) Q is inherited from the 2017 evaluation; minor H2(34S)/H2(33S) use product approximations. HAPI 2017/2021 main-isotope nodes coincide in the packet."
+    },
+    {
+      "id": "TIPS2025",
+      "doi": "10.1016/j.jqsrt.2025.109568",
+      "inspection": "Full locally acquired PDF introduction, Section 2 and Table 1; pinned official HAPI TIPS2025 numerical arrays.",
+      "finding": "Existing direct sums were recomputed with updated constants. H2(32S) Table 1 still lists Tmax=4000 K; the methods caution that some high-temperature cutoffs are optimistic. The numerical H2S arrays remain almost identical to AYT2 and do not provide an independent convergence demonstration."
+    },
+    {
+      "id": "TIPS2025corr",
+      "doi": "10.1016/j.jqsrt.2025.109618",
+      "inspection": "User-provided full one-page corrigendum.",
+      "finding": "The correction concerns 16O14N18O state symmetry, not H2S."
+    },
+    {
+      "id": "NASA",
+      "doi": null,
+      "inspection": "Pinned official CEA data record inspected; Gurvich 1989 H2S underlying full original not acquired.",
+      "finding": "H2S reference is Gurvich 1989 part 1 p298/part 2 p181. S record cites Cox1989/Martin1990/Gordon1999. NASA native R is retained in dimensionless quantities. Native NASA/JANAF thermal disagreement is recorded rather than treated as a physical error bar."
+    },
+    {
+      "id": "ATcT",
+      "doi": null,
+      "inspection": "Version 1.172 official displayed table and existing frozen excerpt.",
+      "finding": "Same-version H, S, H2S and SH 0 K enthalpies define atomization and first fragmentation separately. Natural-isotope reference, displayed precision and unpropagated covariance limit uncertainty claims."
+    },
+    {
+      "id": "atmosphere_priority",
+      "doi": "10.1038/s41586-024-07760-y",
+      "inspection": "Author abstract arXiv:2407.06163.",
+      "finding": "The reported HD189733b H2S detection motivates priority; archived equilibrium cases do not test that atmosphere, photochemistry, transport or spectra."
+    }
+  ],
+  "normalization": {
+    "reaction": "2 H(g)+S(g)->H2S(g), 1 bar",
+    "energy_zero": "Molecular rovibrational ground and atomic fine-structure ground; D0, not De; no added ZPE.",
+    "nuclear_spin": "Q_full/4; no additional symmetry-number divisor. Allowed para/ortho states encode exchange symmetry. Thermal equilibrium of spin manifolds is assumed, not fixed non-LTE ortho/para.",
+    "mass": "NASA natural mass 34.08088 u retained for aligned comparison; 1H2-32S internal spectrum is a representative proxy. Isotope-mass 33.98772106 u sensitivity is separate; no isotope-balanced abundance claim.",
+    "sulfur_levels_cm1_and_g": [
+      [
+        0,
+        5
+      ],
+      [
+        396.055,
+        3
+      ],
+      [
+        573.64,
+        1
+      ],
+      [
+        9238.609,
+        5
+      ],
+      [
+        22179.954,
+        1
+      ]
+    ]
+  },
+  "followups": [
+    {
+      "kind": "calculation",
+      "requirement": "Extend J and vibrational/state coverage, monitor Q, H, S and Cp convergence separately to 4000 K; reconcile TIPS2017 high-T convergence claim and current data. Use first H+SH threshold, not total atomization, for above-threshold diagnostics. Fit a thermodynamically consistent candidate at fixed ATcT anchor, then perform finite substitution and sulfur-budget checks."
+    },
+    {
+      "kind": "data_reconciliation",
+      "requirement": "Reconcile current AYT2 row 76644 J/gtot/assignment, definition max-energy/max-T and PF/Cp generation constants with the official data. This source-review PR retains raw values and labelled sensitivities."
+    },
+    {
+      "kind": "optional_original",
+      "requirement": "Gurvich 1989 original H2S pages and Haar 1955 legacy functions may clarify the residual NASA/JANAF thermal difference; no unverified DOI is invented. Not required for merging the scoped review."
+    }
+  ],
+  "physical_accuracy": "unknown: high-temperature missing-state bounds, isotope mixture, correlated energy uncertainty, full atomic level completeness and planetary abundances are not validated."
+}

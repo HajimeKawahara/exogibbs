@@ -8,7 +8,7 @@ model at adoption. Only C1O2 changes relative to ``curated-tio-v1``; both the
 species, elemental budgets, standard pressure of 1 bar and **1500--4000 K**
 domain. The earlier ``curated_tio``, ``curated_c2h`` and ``curated_v1`` factories
 remain available for reproducible comparisons. The current public default
-is described in :doc:`curated_h2o`; use ``curated_co2.chemsetup()`` to
+is described in :doc:`curated_oh`; use ``curated_co2.chemsetup()`` to
 reproduce the CO2-only adoption recorded here.
 
 Scientific decision

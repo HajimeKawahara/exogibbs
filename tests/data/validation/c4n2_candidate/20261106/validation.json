@@ -1,0 +1,121 @@
+{
+  "temperature_count": 2752,
+  "offgrid_count": 251,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "models": [
+    {
+      "variant": "retained",
+      "species": "C4N2",
+      "jax_scalar_derivative_errors": {
+        "G_J_mol": 9.313225746154785e-10,
+        "H_J_mol": 1.862645149230957e-09,
+        "S_J_mol_K": 9.094947017729282e-13,
+        "Cp_J_mol_K": 1.326938559031987e-12
+      },
+      "samples": [
+        {
+          "temperature_K": 1500.0,
+          "G_J_mol": -2283583.1240409045,
+          "H_J_mol": -3296992.0198462214,
+          "S_J_mol_K": -675.6059305368782,
+          "Cp_J_mol_K": 0.8612863045109114
+        },
+        {
+          "temperature_K": 2000.0,
+          "G_J_mol": -1945997.914047494,
+          "H_J_mol": -3295024.6805334245,
+          "S_J_mol_K": -674.5133832429653,
+          "Cp_J_mol_K": 6.554368795347352
+        },
+        {
+          "temperature_K": 2500.0,
+          "G_J_mol": -1609188.5191982614,
+          "H_J_mol": -3290891.3532022024,
+          "S_J_mol_K": -672.6811336015763,
+          "Cp_J_mol_K": 9.525238378214489
+        },
+        {
+          "temperature_K": 3000.0,
+          "G_J_mol": -1273309.5925172302,
+          "H_J_mol": -3285953.144306539,
+          "S_J_mol_K": -670.8811839297696,
+          "Cp_J_mol_K": 9.773895053112309
+        },
+        {
+          "temperature_K": 4000.0,
+          "G_J_mol": -603668.8007019598,
+          "H_J_mol": -3279106.5076378253,
+          "S_J_mol_K": -668.8594267339665,
+          "Cp_J_mol_K": 2.1045696790000488
+        }
+      ]
+    },
+    {
+      "variant": "nasa",
+      "species": "C4N2",
+      "jax_scalar_derivative_errors": {
+        "G_J_mol": 1.0477378964424133e-09,
+        "H_J_mol": 2.7939677238464355e-09,
+        "S_J_mol_K": 1.5916157281026244e-12,
+        "Cp_J_mol_K": 1.637801005927031e-12
+      },
+      "samples": [
+        {
+          "temperature_K": 1500.0,
+          "G_J_mol": -2283791.395852601,
+          "H_J_mol": -3296043.7992827753,
+          "S_J_mol_K": -674.834935620116,
+          "Cp_J_mol_K": 2.658334601506831
+        },
+        {
+          "temperature_K": 2000.0,
+          "G_J_mol": -1946672.1109928826,
+          "H_J_mol": -3293771.7307226094,
+          "S_J_mol_K": -673.5498098648635,
+          "Cp_J_mol_K": 5.87806005302595
+        },
+        {
+          "temperature_K": 2500.0,
+          "G_J_mol": -1610259.8537589773,
+          "H_J_mol": -3290571.146528246,
+          "S_J_mol_K": -672.1245171077074,
+          "Cp_J_mol_K": 6.626102007290204
+        },
+        {
+          "temperature_K": 3000.0,
+          "G_J_mol": -1274503.2010566453,
+          "H_J_mol": -3287374.462552909,
+          "S_J_mol_K": -670.9570871654212,
+          "Cp_J_mol_K": 5.985087880427295
+        },
+        {
+          "temperature_K": 4000.0,
+          "G_J_mol": -604308.5444482148,
+          "H_J_mol": -3282954.084211052,
+          "S_J_mol_K": -669.6613849407094,
+          "Cp_J_mol_K": 2.5078394464617544
+        }
+      ]
+    }
+  ],
+  "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks.",
+  "source_independent_property_errors": {
+    "retained:C4N2": {
+      "G_J_mol": 4.656612873077393e-10,
+      "H_J_mol": 1.862645149230957e-09,
+      "S_J_mol_K": 3.410605131648481e-13,
+      "Cp_J_mol_K": 2.3092638912203256e-14
+    },
+    "nasa:C4N2": {
+      "G_J_mol": 2.561137080192566e-09,
+      "H_J_mol": 1.3969838619232178e-09,
+      "S_J_mol_K": 7.958078640513122e-13,
+      "Cp_J_mol_K": 8.79296635503124e-14
+    }
+  },
+  "curated_change": "none",
+  "source_scope": "Independent source expressions separate physical energy and thermal functions; numerical verification does not establish complete physical accuracy."
+}

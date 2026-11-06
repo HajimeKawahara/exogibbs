@@ -1,0 +1,20 @@
+{
+  "review_date": "2026-11-05",
+  "command": "python mceg/reviews/ko_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/ko_source_review.py": "7affb7dcc77998329b43f7cb3e2d24715ba19770e40280fd4330b13295da5ca1",
+    "documents/mceg/ko_source_review.rst": "65b04fa0cb591ee0c37a194953c74739bfce34f564b34a7760fc439864572808",
+    "tests/model_evidence/ko_source_review_test.py": "7292f6111c8d4ce9e6a5d2c27ef1ec8bd57ce7d44cc1f113a033ddc875de106c",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/curated_oh_adoption/20261105/ions.npz": "a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d",
+    "tests/data/validation/ko_source_review/20261105/README.rst": "7c1c37f26a53bc9cb9ace5e456eee5baf1ce43f78d6ce5b9af1dd1764c293b8d",
+    "tests/data/validation/ko_source_review/20261105/inputs.json": "594844dcedcfbf3ef9ed72bbd99a16d815c79111295133fc9ef95c6fae451e5f",
+    "tests/data/validation/ko_source_review/20261105/literature.json": "458423ab15b63be92634e1613624032f2472d3d40935cf0ea07e0cea2a80d862",
+    "tests/data/validation/ko_source_review/20261105/sources.json": "93864c6a05fafbad4a0317335c15fa961fa8213bd5c219cc245903e5263b07f1"
+  },
+  "output_sha256": {
+    "tests/data/validation/ko_source_review/20261105/comparison.json": "82dee7be27c23f24dcade0da84f33ce90207888a5871d594f31ebff0dfe5691e"
+  },
+  "scope": "KO; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change or finite substitution."
+}

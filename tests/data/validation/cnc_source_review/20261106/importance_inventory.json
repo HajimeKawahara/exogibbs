@@ -1,0 +1,72 @@
+{
+  "molecule": "CNC",
+  "canonical": "C2N1",
+  "composition": {
+    "C": 2,
+    "N": 1
+  },
+  "max_mole_fraction": 6.505382464977366e-08,
+  "max_mole_fraction_condition": {
+    "case_index": 67,
+    "temperature_K": 3000.0,
+    "pressure_bar": 0.01,
+    "C_over_O": 1.5
+  },
+  "element_shares": {
+    "C": {
+      "maximum_share": 0.00015978527196941925,
+      "maximum_share_percent": 0.015978527196941924,
+      "condition": {
+        "case_index": 67,
+        "temperature_K": 3000.0,
+        "pressure_bar": 0.01,
+        "C_over_O": 1.5
+      }
+    },
+    "N": {
+      "maximum_share": 0.0008681564767875711,
+      "maximum_share_percent": 0.08681564767875712,
+      "condition": {
+        "case_index": 67,
+        "temperature_K": 3000.0,
+        "pressure_bar": 0.01,
+        "C_over_O": 1.5
+      }
+    }
+  },
+  "max_element": "N",
+  "max_element_share": 0.0008681564767875711,
+  "max_element_share_percent": 0.08681564767875712,
+  "max_element_share_condition": {
+    "case_index": 67,
+    "temperature_K": 3000.0,
+    "pressure_bar": 0.01,
+    "C_over_O": 1.5
+  },
+  "archive_vs_runtime_max_abs_h_error": 0.0,
+  "runtime_provenance": {
+    "status": "inherited_unreviewed",
+    "source_group": "FastChem4",
+    "record": {
+      "species": "C2N1",
+      "record_name": "CNC_Radical",
+      "source_file": "FastChem4/logK/logK.dat",
+      "record_line_number": 313,
+      "coefficient_line_number": 314,
+      "record_line": "C2N1 CNC_Radical : C 2 N 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "coefficient_line": "   1.6205377826499325e+05  -1.3595968401578489e+00  -2.0180281057635057e+01   5.2725678598564141e-04  -3.5603201693733741e-08 ",
+      "coefficients": [
+        162053.77826499325,
+        -1.3595968401578489,
+        -20.180281057635057,
+        0.0005272567859856414,
+        -3.560320169373374e-08
+      ],
+      "selected_temperature_segment_index": null,
+      "selected_temperature_segment_upper_bound": null,
+      "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+      "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+      "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+    }
+  }
+}

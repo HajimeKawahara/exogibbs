@@ -1,0 +1,407 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.s6_source_review.v1
+  name: S6 energy and thermal-source investigation
+  description: Inspect S6 source conventions and modern alternatives while preserving curated; distinguish source
+    evidence, candidate readiness and physical accuracy.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:750b7024dc9e5dd8c3f5ef7dc92b4a09963e53ef9c9f221d76c4ac749144e6a1
+    entry_points:
+    - mceg/reviews/s6_source_review.py
+assumptions:
+- statement: The reaction balances one neutral S6 against 6 neutral S atoms at 1 bar; source-specific atomic terms
+    are retained. Balanced H298 alignment and modern energy/state diagnostics are not adopted thermochemical models.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: The new RRHO calculation includes one well and one electronic component per archived record. Missing
+    states, enantiomer counting, anharmonic/hindered motion and dissociation coverage are not inferred from numerical
+    replay.
+  evidence:
+  - state_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Exact source nodes and an existing equilibrium archive.
+  conditions:
+  - Source decomposition at 500, 1000, 1500, 2000, 3000 and 4000 K; named curated_cos only at 1500-4000 K.
+  - Positive JANAF audit nodes 298.15, 300, 500, 1000, 1500, 2000, 3000 and 4000 K.
+  - 'Reused curated_cos_adoption/20261105/ions.npz: 75 cases, 537 species, 1500-4000 K, 1e-6-100 bar, reference
+    C/O, 1 and 1.5. No new solve.'
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete high-temperature state counting, cooler/sulfur-rich regimes, photochemistry and physical
+    atmospheric accuracy remain unvalidated.
+  conditions: []
+  evidence:
+  - literature_review
+  - source_replay
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: Official selected S6 NASA coefficients and JANAF nodes reproduce the frozen attribution, and balanced
+    H298 alignment leaves a substantial thermal difference.
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+- id: modern_source_screen
+  revision: '2'
+  kind: numerical_verification
+  statement: In the original source packet, the inspected full 2023 article supports an S6 isomer-gap fact, not
+    a replacement D0 or complete partition model. The separate state_reconstruction assessment records subsequent
+    progress.
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: The source decomposition, modern diagnostic and correctly stoichiometric archived sulfur allocation
+    reproduce offline with pinned inputs.
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+- id: candidate_adoption
+  revision: '1'
+  kind: physical_validation
+  statement: A specified replacement S6 model has sufficient evidence and numerical evaluation for curated adoption.
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: S6 standard functions and atmospheric abundances have quantified physical accuracy over intended applications.
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+- id: state_reconstruction
+  revision: '1'
+  kind: numerical_verification
+  statement: Four recovered numerical structures support a reproducible RRHO sensitivity, while missing armchair
+    data and soft modes prevent treating that sum as a complete physical model.
+  scope: S6 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim.
+evidence:
+- id: literature_review
+  kind: literature
+  summary: Record official table/report inspection and source-specific full-text or abstract-only access without
+    implying all original evaluations were obtained.
+  sources:
+  - tests/data/validation/s6_source_review/20261105/sources.json
+  - documents/mceg/s6_source_review.rst
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+  subject: s6_sources_20261105
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/s6_source_review/20261105/sources.json
+    sha256: ad76f54768d9b4d153e586018ea06b3af51643c918f4d8cbd6f12ec4d2743d05
+  - source: documents/mceg/s6_source_review.rst
+    sha256: a0157a51d59b6d9070a9b23264439f5ff032c034a16234bac34e050531cd4802
+  provenance:
+    role: primary
+    location: documents/mceg/s6_source_review.rst
+    inspection: partial
+    note: Access is recorded per source. The archived grid is not a new substitution; convergence and trace abundance
+      do not quantify physical uncertainty.
+- id: source_replay
+  kind: numerical_test
+  summary: Replay 18 NASA coefficients, four frozen JANAF nodes, six temperature decompositions, a scoped modern
+    diagnostic and a reused 75-case/537-species footprint.
+  sources:
+  - tests/data/validation/s6_source_review/20261105/comparison.json
+  - tests/data/validation/s6_source_review/20261105/receipt.json
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+  subject: s6_sources_20261105
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/s6_source_review/20261105/comparison.json
+    sha256: dabc64e0bca3b864747e5243c9065d987dae4ff77fa84f80da29fb428f2deadc
+  - source: tests/data/validation/s6_source_review/20261105/receipt.json
+    sha256: bf7b44d0cee25c6b2d8ebf98f71383dcd57cadf77b931d22a6c0de7448c771ab
+  provenance:
+    role: primary
+    location: documents/mceg/s6_source_review.rst
+    inspection: inspected
+    note: Access is recorded per source. The archived grid is not a new substitution; convergence and trace abundance
+      do not quantify physical uncertainty.
+  result: passed
+- id: state_replay
+  kind: numerical_test
+  summary: Independent RRHO reconstruction from selected primary numerical facts, with source access and limitations
+    recorded separately from the unchanged historical source packet.
+  sources:
+  - documents/mceg/s6_state_followup.rst
+  - tests/data/validation/s6_state_followup/20261105/sources.json
+  - tests/data/validation/s6_state_followup/20261105/diagnostic.json
+  - tests/data/validation/s6_state_followup/20261105/receipt.json
+  scope: S6 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim.
+  subject: s6_states_20261105
+  context: state_reconstruction
+  artifacts:
+  - source: documents/mceg/s6_state_followup.rst
+    sha256: e255e13575650a70ffbd9334870cb222866cfbca63e6acf3681eedb608675124
+  - source: tests/data/validation/s6_state_followup/20261105/sources.json
+    sha256: a351d5351c7920b4345353a7b8203df5ac3d1bcbf0b99369209502844affeee0
+  - source: tests/data/validation/s6_state_followup/20261105/diagnostic.json
+    sha256: a7b80831da6ea21d86d1d6345b98e1af2a7a0b98c968ac969456d4ab637c7b70
+  - source: tests/data/validation/s6_state_followup/20261105/receipt.json
+    sha256: 148750d34c92148c41460bd2fbd755c27597968f56bf6a309e177a6393622b74
+  provenance:
+    role: primary
+    location: documents/mceg/s6_state_followup.rst
+    inspection: inspected
+    note: Only selected numerical molecular facts are archived; author code is neither copied nor executed. Initial-submission
+      data is not asserted to reproduce every final-paper result. This is a restricted-state diagnostic, not a new
+      production candidate.
+  result: passed
+subjects:
+- id: s6_sources_20261105
+  implementation: *id001
+  selected_files:
+    documents/mceg/s6_source_review.rst: a0157a51d59b6d9070a9b23264439f5ff032c034a16234bac34e050531cd4802
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/s6_source_review.py: 750b7024dc9e5dd8c3f5ef7dc92b4a09963e53ef9c9f221d76c4ac749144e6a1
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/io/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/io/load_data.py: e6c9333d71a5179b20b9d71847c175028c02628f00b1475c00c7ead9761fe7ac
+    src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/stoichiometry.py: 8b3dc769db8e89859ddff3fad26a724a41faec2f1b5b99d96d435799554fd254
+    src/exogibbs/utils/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/utils/nameparser.py: 81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a
+    tests/data/validation/curated_cos_adoption/20261105/ions.npz: 5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49
+    tests/data/validation/curated_cos_adoption/20261105/receipt.json: 08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/s2o_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+    tests/data/validation/s6_source_review/20261105/README.rst: 847351ffec6df886dc57944289ff232443e3becb477fc50fa2277074419cd93f
+    tests/data/validation/s6_source_review/20261105/comparison.json: dabc64e0bca3b864747e5243c9065d987dae4ff77fa84f80da29fb428f2deadc
+    tests/data/validation/s6_source_review/20261105/inputs.json: eb6e882c225fcc66f4dc422af4eb45cd8033d76cb2ba0b49c909b242f6f9436e
+    tests/data/validation/s6_source_review/20261105/nasa-record.txt: 8bd677b80e36c25434576e61e09d5ee8fd26dba35b4c8a485823ec19bc11bb31
+    tests/data/validation/s6_source_review/20261105/sources.json: ad76f54768d9b4d153e586018ea06b3af51643c918f4d8cbd6f12ec4d2743d05
+    tests/model_evidence/s6_source_review_test.py: ee48ce6037e593bdc4abbe4cc7a2fa4695ba34eb00adaa1f55ade1e62f7be537
+    tests/data/validation/s6_source_review/20261105/receipt.json: bf7b44d0cee25c6b2d8ebf98f71383dcd57cadf77b931d22a6c0de7448c771ab
+- id: s6_states_20261105
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
+    entry_points:
+    - mceg/reviews/sulfur_state_followup.py
+  selected_files:
+    mceg/reviews/sulfur_state_followup.py: ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
+    documents/mceg/s6_state_followup.rst: e255e13575650a70ffbd9334870cb222866cfbca63e6acf3681eedb608675124
+    tests/model_evidence/s6_state_followup_test.py: a34e85112536c0f065fb6c3f41484f79fbaecf5c4326af5b65e6c527ea8bffea
+    tests/data/validation/s6_source_review/20261105/comparison.json: dabc64e0bca3b864747e5243c9065d987dae4ff77fa84f80da29fb428f2deadc
+    tests/data/validation/s6_state_followup/20261105/README.rst: 8fa144430703b3a60ace7c8ba30973b5c86bbdebda9447db0368f4afc7e08abd
+    tests/data/validation/s6_state_followup/20261105/diagnostic.json: a7b80831da6ea21d86d1d6345b98e1af2a7a0b98c968ac969456d4ab637c7b70
+    tests/data/validation/s6_state_followup/20261105/inputs.json: bd60d2f31591d24145bd1b90cd4f4a8fb4757465d6b93b4c17374f5003ad3df1
+    tests/data/validation/s6_state_followup/20261105/receipt.json: 148750d34c92148c41460bd2fbd755c27597968f56bf6a309e177a6393622b74
+    tests/data/validation/s6_state_followup/20261105/sources.json: a351d5351c7920b4345353a7b8203df5ac3d1bcbf0b99369209502844affeee0
+contexts:
+- id: source_comparison
+  scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
+    curated-cos footprint only.
+  settings:
+    reaction: 6 S(g) -> S6(g)
+    standard_pressure_bar: 1
+    gas_constant_J_mol_K: 8.31446261815324
+    atomic_reference_policy: Balance molecule and neutral atoms within each source; modern TAE0 must not be confused
+      with molecular Hf.
+    grid_reuse: curated_cos_adoption/20261105/ions.npz; no new solve
+    curated_change: none
+    modern_diagnostic: 'Historical source-packet status: The inspected full 2023 article supports an S6 isomer-gap
+      fact, not a replacement D0 or complete partition model.'
+- id: state_reconstruction
+  scope: S6 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim.
+  settings:
+    temperature_K: 250-4000; formal RRHO diagnostic, not physical applicability
+    standard_pressure_bar: 1
+    atomic_mass_u: 32.065
+    electronic_components_per_record: 1
+    rotational_symmetry: Archived value; no extra enantiomer factor. One well per recorded geometry.
+    energy_reference: Relative electronic energy plus already-scaled harmonic ZPE among same-size records; no absolute
+      DFT calibration adoption.
+    new_equilibrium_solves: 0
+    curated_change: none
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: s6_sources_20261105
+  context: source_comparison
+  method: &id002
+    id: s6_source_review
+    revision: '1'
+    description: Separate inspected source facts, reference conventions, numerical replay, adoption readiness and
+      complete physical accuracy.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Official selected numerical records agree. The molecular and atomic contributions, 298 K anchor and thermal
+    terms are distinguished; no agreement-based source selection is made.
+  status: supported
+  origin: reviewed
+- id: modern_source_screen_review
+  kind: evidence_support
+  claim: modern_source_screen
+  claim_revision: '2'
+  subject: s6_sources_20261105
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - This assessment concerns the unchanged historical packet. The inspected full 2023 article supports an S6 isomer-gap
+    fact, not a replacement D0 or complete partition model. The diagnostic does not claim a full high-temperature
+    partition calculation.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: s6_sources_20261105
+  context: source_comparison
+  method: *id002
+  evidence:
+  - source_replay
+  reasons:
+  - Pinned imported code, consumed data and output hashes support the offline replay; target archived thermodynamics
+    match the named curated_cos factory.
+  status: supported
+  origin: reviewed
+- id: candidate_adoption_review
+  kind: evidence_support
+  claim: candidate_adoption
+  claim_revision: '1'
+  subject: s6_sources_20261105
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - No candidate thermochemical implementation or fixed-network replacement calculation was performed. State inventory
+    and energy/thermal conventions require an explicit candidate reconstruction.
+  status: unknown
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: s6_sources_20261105
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Legacy detailed state/energy assumptions, complete high-temperature state counting and physical uncertainties
+    are not established; tiny archived abundance is not an error bound.
+  status: unknown
+  origin: reviewed
+- id: state_reconstruction_review
+  kind: evidence_support
+  claim: state_reconstruction
+  claim_revision: '1'
+  subject: s6_states_20261105
+  context: state_reconstruction
+  method:
+    id: sulfur_state_followup
+    revision: '1'
+    description: Reconstruct explicit RRHO wells, verify thermodynamic derivatives and geometry invariance, separate
+      conditional state counting and energy conventions from physical adoption.
+  evidence:
+  - state_replay
+  reasons:
+  - Four stored S6 structures produce a large formal thermal response. No armchair-labelled entry is present; unknown
+    inventory completeness and soft-mode treatment prevent adopting that sum.
+  status: supported
+  origin: reviewed
+follow_ups:
+- id: candidate_step_1
+  target_kind: claim
+  target: candidate_adoption
+  revision: '1'
+  action: Obtain missing armchair and other relevant S6 coordinates, frequencies and consistent isomer energies,
+    especially Fedyaeva 2023 supporting data (10.1039/D2CP05498A); four Jackson v1.0 numerical structures are now
+    archived separately.
+  requires:
+  - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
+  - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
+  completion: Archive scoped source/candidate calculations and their limits. Missing complete physical validation
+    is not a blanket blocker for merging this source review.
+- id: candidate_step_2
+  target_kind: claim
+  target: candidate_adoption
+  revision: '1'
+  action: Extend the recovered four-record RRHO diagnostic with a justified complete state inventory, soft-mode
+    treatment and atomic energy reference before a production candidate or fixed-network substitution.
+  requires:
+  - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
+  - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
+  completion: Archive scoped source/candidate calculations and their limits. Missing complete physical validation
+    is not a blanket blocker for merging this source review.
+- id: candidate_step_3
+  target_kind: claim
+  target: candidate_adoption
+  revision: '1'
+  action: Inspect the original Gurvich 1989 S6 evaluation and Rau 1973 full text (10.1016/S0021-9614(73)80045-X)
+    for historical energy/thermal assumptions; record uncertainty gaps without requiring complete physical validation
+    to merge the review.
+  requires:
+  - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
+  - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
+  completion: Archive scoped source/candidate calculations and their limits. Missing complete physical validation
+    is not a blanket blocker for merging this source review.
+limitations:
+- statement: Source agreement, source dates, numerical replay and trace archive abundance do not establish physical
+    accuracy or an uncertainty distribution.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: Original Gurvich and printed JANAF evaluation notes, Rau full text and all relevant modern supporting
+    data are not fully inspected; access is explicit per source. This does not block the bounded source review.
+  evidence:
+  - literature_review
+- statement: Curated remains unchanged. The modern diagnostic is not a fitted partition model, adopted correction
+    or new equilibrium substitution.
+  evidence:
+  - source_replay
+- statement: The follow-up has recovered a restricted numerical subset, not a physically complete partition function.
+    High-temperature conditional weights are a formal diagnostic, not atmospheric populations or accuracy bounds.
+  evidence:
+  - state_replay

@@ -1,0 +1,175 @@
+{
+  "review_date": "2026-11-05",
+  "downloads": [
+    {
+      "file": "MYTHOS.states.bz2",
+      "url": "https://exomol.com/db/OH/16O-1H/MYTHOS/16O-1H__MYTHOS.states.bz2",
+      "retrieved": "2026-11-05",
+      "sha256": "959a89f760f3dd2e5df26e8e17da2e781cebb0aabe12f0357c03e3ba8929cc69",
+      "bytes": 229685,
+      "archived": false
+    },
+    {
+      "file": "MYTHOS.pf",
+      "url": "https://exomol.com/db/OH/16O-1H/MYTHOS/16O-1H__MYTHOS.pf",
+      "retrieved": "2026-11-05",
+      "sha256": "5d18ac10fea550ab0a2a23d9a3c076a8a7fe5cedbdfec7d49d6bf188299c6dc2",
+      "bytes": 250000,
+      "archived": false
+    },
+    {
+      "file": "MYTHOS.def.json",
+      "url": "https://exomol.com/db/OH/16O-1H/MYTHOS/16O-1H__MYTHOS.def.json",
+      "retrieved": "2026-11-05",
+      "sha256": "362e6a653c6db5e9da4c809df3096ca72dc4a6e0c9866814ef968c8ed61a2b9a",
+      "bytes": 5240,
+      "archived": true,
+      "archive_sha256": "0fbfd6811a8c2a75e38f51e62b1dca54f476f1404b12924d2a71cc48d477e0f4"
+    },
+    {
+      "file": "MoLLIST-OH.states.bz2",
+      "url": "https://exomol.com/db/OH/16O-1H/MoLLIST-OH/16O-1H__MoLLIST-OH.states.bz2",
+      "retrieved": "2026-11-05",
+      "sha256": "d24dd7e4152c7773b85aed0c406a99881d4ef2d3d8746baa557713349014c48e",
+      "bytes": 16713,
+      "archived": false
+    },
+    {
+      "file": "MoLLIST-OH.pf",
+      "url": "https://exomol.com/db/OH/16O-1H/MoLLIST-OH/16O-1H__MoLLIST-OH.pf",
+      "retrieved": "2026-11-05",
+      "sha256": "7a0770778c3941919541f9b261a0e842b6c47d56b9f5ff50d6c32b8fdbc3633a",
+      "bytes": 125000,
+      "archived": false
+    },
+    {
+      "file": "MoLLIST-OH.def.json",
+      "url": "https://exomol.com/db/OH/16O-1H/MoLLIST-OH/16O-1H__MoLLIST-OH.def.json",
+      "retrieved": "2026-11-05",
+      "sha256": "856aafeaf91c7b86f61cc895c43bfe4f08d64a75c0f933011edb7b832c4cf198",
+      "bytes": 3332,
+      "archived": true,
+      "archive_sha256": "856aafeaf91c7b86f61cc895c43bfe4f08d64a75c0f933011edb7b832c4cf198"
+    },
+    {
+      "file": "H-001.txt",
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "retrieved": "2026-11-05",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "bytes": 3802,
+      "archived": true,
+      "archive_sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+    },
+    {
+      "file": "H-038.txt",
+      "url": "https://janaf.nist.gov/tables/H-038.txt",
+      "retrieved": "2026-11-05",
+      "sha256": "5d676fdf41f19da94506bb95139e0e15326905f062cd440cb78a9891593bff36",
+      "bytes": 3705,
+      "archived": true,
+      "archive_sha256": "5d676fdf41f19da94506bb95139e0e15326905f062cd440cb78a9891593bff36"
+    },
+    {
+      "file": "O-001.txt",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "retrieved": "2026-11-05",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "bytes": 3807,
+      "archived": true,
+      "archive_sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+    },
+    {
+      "file": "mythos.pdf",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/24MiBoZh.pdf",
+      "retrieved": "2026-11-05",
+      "sha256": "b71d8e1fdf812d78600ea4d2b978ae04c8e8f75626fe9104544a735b5050cf26",
+      "bytes": 2937072,
+      "archived": false
+    },
+    {
+      "file": "brooke.pdf",
+      "url": "https://arxiv.org/pdf/1503.08420",
+      "retrieved": "2026-11-05",
+      "sha256": "e2d703b627b78d64b0dac6edce236149b3a2ae670964948d709a0e8da7a276f0",
+      "bytes": 2189244,
+      "archived": false
+    },
+    {
+      "file": "mythos.html",
+      "url": "https://exomol.com/data/molecules/OH/16O-1H/MYTHOS/",
+      "retrieved": "2026-11-05",
+      "sha256": "2d549a183bf6ec68a8acc8e689d1e01202ff89e799183de092177fd59d1a3b55",
+      "bytes": 60808,
+      "archived": false
+    },
+    {
+      "file": "mollist.html",
+      "url": "https://exomol.com/data/molecules/OH/16O-1H/MoLLIST-OH/",
+      "retrieved": "2026-11-05",
+      "sha256": "37505f1f712c9f0b2fab6197703965646e14573db53313a462a31c9ceda0731d",
+      "bytes": 19729,
+      "archived": false
+    },
+    {
+      "file": "nasa-thermo.inp",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "retrieved": "2026-11-03; cached original reused and inspected 2026-11-05",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "bytes": 1234323,
+      "archived": false,
+      "selection": "OH, H and O full 11-line records copied into nasa_*.txt with line-ending normalization. Coefficients agree with the frozen comparison."
+    },
+    {
+      "file": "nasa_H.txt",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "376979df2a1bddc5b25e4ada120d2a78d4a19f1b8650f490375285ae1f727dca",
+      "archive_sha256": "376979df2a1bddc5b25e4ada120d2a78d4a19f1b8650f490375285ae1f727dca",
+      "archived": true,
+      "inspection": "Selected NASA record from the pinned full source; LF normalized."
+    },
+    {
+      "file": "nasa_O.txt",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "bf127e8c2ef2e3ded946562217d978ea0da0f3b73179b9321a30fff0a634e040",
+      "archive_sha256": "bf127e8c2ef2e3ded946562217d978ea0da0f3b73179b9321a30fff0a634e040",
+      "archived": true,
+      "inspection": "Selected NASA record from the pinned full source; LF normalized."
+    },
+    {
+      "file": "nasa_OH.txt",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "cfae51379a97e9abc9ed348fbe20cf248b4ee46819ac986520434f87162cd382",
+      "archive_sha256": "cfae51379a97e9abc9ed348fbe20cf248b4ee46819ac986520434f87162cd382",
+      "archived": true,
+      "inspection": "Selected NASA record from the pinned full source; LF normalized."
+    }
+  ],
+  "literature": [
+    {
+      "title": "IUPAC Critical Evaluation of Thermochemical Properties of Selected Radicals. Part I",
+      "doi": "10.1063/1.1724828",
+      "url": "https://atct.anl.gov/~ruscic/reprints/Ruscic%202005.pdf",
+      "inspection": "Official author-hosted PDF web text inspected at pp. 633–638. Direct urllib returned HTTP 403; no local raw PDF hash available. Selected numerical nodes and source defect summarized in literature.json."
+    },
+    {
+      "title": "ATcT version 1.172",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Official version table viewed through web, OH 37.274 kJ/mol at 0 K, 37.514 at 298.15 K. Direct urllib returned HTTP 403. H/O data reuse pinned major_molecule_reference.json; covariance not propagated."
+    },
+    {
+      "title": "Brooke et al. 2016",
+      "doi": "10.1016/j.jqsrt.2015.07.021",
+      "inspection": "Author preprint arXiv:1503.08420v2, section 7 inspected. Bristol accepted manuscript returned HTTP 403. Preprint and publisher versions are not asserted byte-identical."
+    },
+    {
+      "title": "Mitev et al. 2025 MYTHOS",
+      "doi": "10.1093/mnras/stae2803",
+      "inspection": "Published author-hosted PDF sections 4, 6.2 and 6.3 and actual distributed states/PF inspected."
+    }
+  ],
+  "access_limits": [
+    "Historical Gurvich 1978/1989 original pages were not obtained; IUPAC 2005 explicitly documents that thermal ancestry.",
+    "MYTHOS metadata says 10000 K; published line-list scope is 8000 K. Neither proves quantified thermodynamic completeness.",
+    "MoLLIST has 1878 actual rows versus 2640 in metadata; its published PF residual exceeds printed rounding. No silent data fix."
+  ]
+}

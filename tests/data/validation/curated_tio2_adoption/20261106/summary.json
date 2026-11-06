@@ -1,0 +1,158 @@
+{
+  "dataset": "curated-tio2-v1",
+  "base_dataset": "curated-ps-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate_on_ps": 2.3092638912203256e-14,
+      "tighter_case_indices": [
+        4,
+        45,
+        70
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.364910008305742e-05,
+        "max_tio2_abs_delta_ln_x": 1.7053025658242404e-13,
+        "max_absolute_delta_x": 3.164366066744653e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3662658298951287e-06,
+        "mass_action_max_abs_ln": 1.3642420526593924e-12,
+        "titanium_relative_residual": 4.678546663816155e-10,
+        "major_element_relative_residual": 2.1356561520063263e-13,
+        "charge_relative_residual": 1.575576938247998e-14
+      },
+      "tio2_incremental_response": {
+        "min_x_ratio": 0.8932125888587582,
+        "max_x_ratio": 0.9519297903731355,
+        "highlighted_case_index": 4,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 0.5888436553555908,
+        "x_before": 8.031709850267725e-08,
+        "x_after": 7.645623874103202e-08,
+        "titanium_share_before": 0.5008719050494576,
+        "titanium_share_after": 0.4767948876335681
+      },
+      "cumulative_response_from_curated_cos": {
+        "C1N1": {
+          "production_over_old_cos_min": 0.6804763268533147,
+          "production_over_old_cos_max": 0.8721351488370013,
+          "max_absolute_delta_x": 1.1712281601309636e-06
+        },
+        "P1S1": {
+          "production_over_old_cos_min": 0.9973421018093986,
+          "production_over_old_cos_max": 1.0144929648064496,
+          "max_absolute_delta_x": 4.930814618413057e-11
+        },
+        "O2Ti1": {
+          "production_over_old_cos_min": 0.8892664896136762,
+          "production_over_old_cos_max": 0.9519297903727838,
+          "max_absolute_delta_x": 3.8609622363205165e-09
+        },
+        "O1Ti1": {
+          "production_over_old_cos_min": 0.9965328700289707,
+          "production_over_old_cos_max": 1.0482555582231257,
+          "max_absolute_delta_x": 3.788179136753742e-09
+        }
+      },
+      "background_effect_relative_to_old_tio2_only_candidate": {
+        "TiO2_ratio_min": 0.9930776340996694,
+        "TiO2_ratio_max": 1.000000001561439,
+        "max_absolute_delta_x_all_species": 1.1712281601306764e-06,
+        "scope": "CN/PS background adoption changes equilibrium composition; this is a physical model difference, not a numerical reproduction error."
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate_on_ps": 2.3092638912203256e-14,
+      "tighter_case_indices": [
+        4,
+        21,
+        70
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3755710995155823e-05,
+        "max_tio2_abs_delta_ln_x": 1.4921397450962104e-13,
+        "max_absolute_delta_x": 3.1855213052092865e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.376728225257048e-06,
+        "mass_action_max_abs_ln": 1.0231815394945443e-12,
+        "titanium_relative_residual": 2.472974624180178e-09,
+        "major_element_relative_residual": 2.570281106843517e-13
+      },
+      "tio2_incremental_response": {
+        "min_x_ratio": 0.8932125888586059,
+        "max_x_ratio": 0.9519297909500799,
+        "highlighted_case_index": 4,
+        "temperature_K": 1500.0,
+        "pressure_bar": 100.0,
+        "C_over_O": 0.5888436553555908,
+        "x_before": 8.03170995428048e-08,
+        "x_after": 7.645623977749894e-08,
+        "titanium_share_before": 0.5008719115287592,
+        "titanium_share_after": 0.47679489409039205
+      },
+      "cumulative_response_from_curated_cos": {
+        "C1N1": {
+          "production_over_old_cos_min": 0.6804763268531262,
+          "production_over_old_cos_max": 0.8721352756050013,
+          "max_absolute_delta_x": 1.1712341542752068e-06
+        },
+        "P1S1": {
+          "production_over_old_cos_min": 0.9973420944706752,
+          "production_over_old_cos_max": 1.0144929637980729,
+          "max_absolute_delta_x": 4.9308148929642285e-11
+        },
+        "O2Ti1": {
+          "production_over_old_cos_min": 0.8892667767854213,
+          "production_over_old_cos_max": 0.9519297909502356,
+          "max_absolute_delta_x": 3.860962240215108e-09
+        },
+        "O1Ti1": {
+          "production_over_old_cos_min": 0.9965328676253995,
+          "production_over_old_cos_max": 1.0482555588591624,
+          "max_absolute_delta_x": 3.788179228157941e-09
+        }
+      },
+      "background_effect_relative_to_old_tio2_only_candidate": "not_available: prior TiO2 candidate solved the ion-inclusive network only"
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 4,
+      "comparisons": [
+        {
+          "dataset": "curated-tio2-v1",
+          "max_abs_delta_log10_x": 6.744848830189809e-09,
+          "element_relative_residual": 2.610947557998046e-11,
+          "charge_relative_residual": 3.943163619497869e-13,
+          "mass_action_max_abs_ln": 2.2571811086891103e-10
+        }
+      ]
+    },
+    {
+      "case_index": 70,
+      "comparisons": [
+        {
+          "dataset": "curated-tio2-v1",
+          "max_abs_delta_log10_x": 5.89357448704339e-09,
+          "element_relative_residual": 4.855723920052826e-11,
+          "charge_relative_residual": 1.4346078273885715e-12,
+          "mass_action_max_abs_ln": 1.354631962158237e-10
+        }
+      ]
+    }
+  ],
+  "scope": "Exact reviewed TiO2 retained-energy RRHO thermal update on cumulative CN/PS base; fixed1500-4000K ideal-gas networks. Old single-candidate abundance differences include CN/PS background changes. Full physical accuracy remains unknown."
+}

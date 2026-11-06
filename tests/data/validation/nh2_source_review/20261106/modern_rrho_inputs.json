@@ -1,0 +1,68 @@
+{
+  "source_doi": "10.5281/zenodo.20662187",
+  "raw_pdf_sha256": "ca6a09ccb23ab7a9b179dca4aceb9d9c54d1b02da54e1fdfaed7d38f09b2f943",
+  "mass_u": 16.022579,
+  "symmetry_number": 2,
+  "inertia_product_kg3_m6": 8.73444e-141,
+  "vibration_cm-1": [
+    3429.77,
+    3341.34,
+    1530.68
+  ],
+  "electronic_cm-1": [
+    0,
+    6581.42,
+    45698.95,
+    50731.8,
+    58853.73,
+    62208.97,
+    67120.84
+  ],
+  "electronic_weight": [
+    1,
+    2,
+    4,
+    2,
+    2,
+    2,
+    2
+  ],
+  "printed_nodes": {
+    "298.15": {
+      "Cp_J_mol_K": 33.54,
+      "H_minus_H0_J_mol": 9927.0,
+      "S_J_mol_K": 188.94,
+      "G_minus_H0_J_mol": -46405.0,
+      "Q_internal": 52.79
+    },
+    "1500.0": {
+      "Cp_J_mol_K": 48.801,
+      "H_minus_H0_J_mol": 58929.0,
+      "S_J_mol_K": 251.525,
+      "G_minus_H0_J_mol": -318358.0,
+      "Q_internal": 840.4
+    },
+    "2000.0": {
+      "Cp_J_mol_K": 54.317,
+      "H_minus_H0_J_mol": 84770.0,
+      "S_J_mol_K": 266.355,
+      "G_minus_H0_J_mol": -447939.0,
+      "Q_internal": 1678.0
+    },
+    "3000.0": {
+      "Cp_J_mol_K": 60.61,
+      "H_minus_H0_J_mol": 142746.0,
+      "S_J_mol_K": 289.775,
+      "G_minus_H0_J_mol": -726579.0,
+      "Q_internal": 5452.0
+    },
+    "4000.0": {
+      "Cp_J_mol_K": 62.279,
+      "H_minus_H0_J_mol": 204441.0,
+      "S_J_mol_K": 307.512,
+      "G_minus_H0_J_mol": -1025608.0,
+      "Q_internal": 14670.0
+    }
+  },
+  "scope": "Printed input/output reproduction under classical nonlinear rotation, independent harmonic vibrations and listed electronic factors. Original gas constant and all implementation details are not stated; alternative ground weight two is a sensitivity, not an asserted correction or adopted model."
+}

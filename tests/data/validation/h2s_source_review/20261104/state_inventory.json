@@ -1,0 +1,62 @@
+{
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "original_calculated_energy_cm-1"
+  ],
+  "states": 220630,
+  "maximum_energy_cm-1": 34636.207111,
+  "maximum_J": 40.0,
+  "ground_state": [
+    0.0,
+    1.0,
+    0.0,
+    0.0
+  ],
+  "lowest_ortho_energy_cm-1": 13.74631,
+  "weight_J_inconsistencies": [
+    {
+      "state_id": 76644,
+      "energy_cm1": 11091.055557,
+      "gtot": 99.0,
+      "J": 13.0,
+      "symmetry": "B2",
+      "source_type": "Ma",
+      "original_calculated_energy_cm1": 11091.05555
+    }
+  ],
+  "states_with_changed_energy": 7424,
+  "source_type_counts": {
+    "Ca": 213042,
+    "Ma": 7588
+  },
+  "original_sha256": {
+    "AYT2.states.bz2": "52cf071aee6af131bcf2dc950434e7e7b4756cdaf893a4a0e5fcb91d9b4cda13",
+    "AYT2.pf": "786beaca5627d4f318324983de8bc8104a2f11d33890657260adc610374910a3",
+    "AYT2.cp": "7ea0b3c4d4441a34aa407dfedd31a08168234e99cd093e644165b14c17bead12"
+  },
+  "hapi_sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+  "table_bounds_K": {
+    "tips2017": [
+      1.0,
+      4000.0
+    ],
+    "tips2021": [
+      1.0,
+      4000.0
+    ],
+    "tips2025": [
+      1.0,
+      4000.0
+    ],
+    "published_pf": [
+      1.0,
+      3000.0
+    ],
+    "published_cp": [
+      200.0,
+      3000.0
+    ]
+  }
+}

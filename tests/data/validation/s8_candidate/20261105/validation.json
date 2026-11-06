@@ -1,0 +1,86 @@
+{
+  "temperature_count": 2501,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "step_K": 1,
+  "maximum_abs_current_h_replay_error": 2.842170943040401e-14,
+  "maximum_abs_energy_shift_h_error": 5.262457136723242e-14,
+  "maximum_abs_energy_only_property_errors": {
+    "G_J_mol": 6.984919309616089e-10,
+    "H_J_mol": 2.3283064365386963e-10,
+    "S_J_mol_K": 0.0,
+    "Cp_J_mol_K": 0.0
+  },
+  "maximum_abs_jax_property_errors": {
+    "G_J_mol": 4.656612873077393e-10,
+    "H_J_mol": 1.3969838619232178e-09,
+    "S_J_mol_K": 4.547473508864641e-13,
+    "Cp_J_mol_K": 1.0391687510491465e-12
+  },
+  "samples": [
+    {
+      "temperature_K": 1500,
+      "candidate_over_current_K": 5.944931062180259,
+      "current_minus_JANAF_reaction": {
+        "H_J_mol": -1377.7351742140017,
+        "S_J_mol_K": -0.7052343546016573,
+        "Cp_J_mol_K": -2.3281276971750007
+      },
+      "candidate_reaction_properties": {
+        "G_J_mol": -758068.1636423117,
+        "H_J_mol": -2136990.0151742147,
+        "S_J_mol_K": -919.2812343546017,
+        "Cp_J_mol_K": 9.819872302824995
+      }
+    },
+    {
+      "temperature_K": 2000,
+      "candidate_over_current_K": 3.807238794737076,
+      "current_minus_JANAF_reaction": {
+        "H_J_mol": -1820.2698911824264,
+        "S_J_mol_K": -0.9837701999846331,
+        "Cp_J_mol_K": 0.6769536516754364
+      },
+      "candidate_reaction_properties": {
+        "G_J_mol": -299250.0094912139,
+        "H_J_mol": -2131271.549891183,
+        "S_J_mol_K": -916.0107701999846,
+        "Cp_J_mol_K": 12.662953651675426
+      }
+    },
+    {
+      "temperature_K": 3000,
+      "candidate_over_current_K": 2.438222931189898,
+      "current_minus_JANAF_reaction": {
+        "H_J_mol": 1402.5188659634441,
+        "S_J_mol_K": 0.2682790141586793,
+        "Cp_J_mol_K": 4.707483152114362
+      },
+      "candidate_reaction_properties": {
+        "G_J_mol": 613947.4018234874,
+        "H_J_mol": -2118502.761134037,
+        "S_J_mol_K": -910.8167209858414,
+        "Cp_J_mol_K": 11.31048315211437
+      }
+    },
+    {
+      "temperature_K": 4000,
+      "candidate_over_current_K": 1.9512146972429958,
+      "current_minus_JANAF_reaction": {
+        "H_J_mol": 4331.414992041187,
+        "S_J_mol_K": 1.1489551525569368,
+        "Cp_J_mol_K": -0.8028316104625364
+      },
+      "candidate_reaction_properties": {
+        "G_J_mol": 1523457.3143818136,
+        "H_J_mol": -2111778.8650079593,
+        "S_J_mol_K": -908.8090448474431,
+        "Cp_J_mol_K": 0.57316838953744
+      }
+    }
+  ],
+  "production_change": "none",
+  "new_fit": "none"
+}

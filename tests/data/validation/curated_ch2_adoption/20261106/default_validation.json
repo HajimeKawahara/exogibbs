@@ -1,0 +1,33 @@
+{
+  "id": "curated_ch2_public_default_binding_20261106",
+  "result": "passed",
+  "scope": "Direct delegation and exact metadata/potential identity; existing fresh named-factory execution validates the same callable. No duplicate equilibrium solves counted. Catalog match is declared metadata, not validation of arbitrary user calls.",
+  "networks": [
+    {
+      "ions": true,
+      "dataset": "curated-ch2-v1",
+      "data_sha256": "a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536",
+      "species_count": 537,
+      "model_id": "exogibbs.curated_ch2.v1",
+      "metadata_matches_named_factory": true,
+      "potential_matches_named_factory": true
+    },
+    {
+      "ions": false,
+      "dataset": "curated-ch2-v1",
+      "data_sha256": "a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536",
+      "species_count": 421,
+      "model_id": null,
+      "metadata_matches_named_factory": true,
+      "potential_matches_named_factory": true
+    }
+  ],
+  "selected_file_sha256": {
+    "src/exogibbs/presets/curated.py": "0785ab61c45116b73d645d1e4842b9c3325ed4b67db458ab451a59e5855c5c99",
+    "src/exogibbs/presets/curated_ch2.py": "89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701",
+    "src/exogibbs/data/curated/ch2_v1.json": "a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536",
+    "mceg/build_catalog.py": "856a9bdf61bc7ea0ecdd857b7c939b151efb79e9d98b676294e5cc2f1f4bc20c",
+    "tests/unittests/provenance_test.py": "48cc70543067c3f4149fa6b6a3eb2154cb0a8476210a0ad8b227e4c54aabea1f",
+    "tests/unittests/presets/curated_test.py": "ed50d7f422c70a06332a728fd9a64a5acb9cca40e236c403976b3a7199747ab6"
+  }
+}

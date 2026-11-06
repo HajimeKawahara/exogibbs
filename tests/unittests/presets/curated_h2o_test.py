@@ -8,7 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from exogibbs.presets import curated, curated_co2, curated_h2o, curated_v1
+from exogibbs.presets import curated_co2, curated_h2o, curated_v1
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -31,7 +31,6 @@ def models(float64):
 
 def test_adoption_changes_only_water_and_preserves_the_co2_base(models):
     before, after = models
-    assert curated.chemsetup is curated_h2o.chemsetup
     assert after.metadata["dataset"] == "curated-h2o-v1"
     assert after.metadata["base_dataset"] == "curated-co2-v1"
     assert after.metadata["relative_charge_convergence"] is True

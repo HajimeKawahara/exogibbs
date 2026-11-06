@@ -1,0 +1,320 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.ns_source_review.v1
+  name: NS source review
+  description: Retain production for this source review; prioritize a Peebles/JPL energy candidate with
+    explicitly balanced reference atoms and a substitution solve. Do not replace corrected Lodders by
+    old NASA or uncorrected JANAF simply to reduce their ratio. SNaSH supports the current thermal family
+    and does not require thermal replacement.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d0c46af9ccdc68cc7e47d5a59affc665966e67c02676e59c5f4fa05d7124baee
+    entry_points:
+    - mceg/reviews/ns_source_review.py
+assumptions:
+- statement: Same-version balanced molecular and atomic energy anchors; source native R, one bar and ground-relative
+    state sums. Partial literature availability remains explicit.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K;
+    75 archived gas-only endpoints, no substitution.
+  conditions:
+  - Saved abundance allocation is not a new replacement result.
+  - Partition tables and incomplete state sums retain their declared scope.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Physical uncertainty and planetary validation unestablished.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: Current source attribution and primary-source distinctions are documented with explicit access
+    limits.
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+- id: normalized_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: Energy and thermal comparisons preserve source constants, nuclear-spin conventions, ground
+    zeros, mass and one-bar normalization.
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+- id: scoped_decision
+  revision: '1'
+  kind: theoretical
+  statement: Retain production for this source review; prioritize a Peebles/JPL energy candidate with
+    explicitly balanced reference atoms and a substitution solve. Do not replace corrected Lodders by
+    old NASA or uncorrected JANAF simply to reduce their ratio. SNaSH supports the current thermal family
+    and does not require thermal replacement.
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Complete physical uncertainty and planetary abundance accuracy are established.
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+- id: historical_source_completeness
+  revision: '1'
+  kind: numerical_verification
+  statement: All primary historical source inputs and fit construction are independently recovered.
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Inspected primary sources and individually recorded limits.
+  sources:
+  - tests/data/validation/ns_source_review/20261105/sources.json
+  - tests/data/validation/ns_source_review/20261105/literature.json
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+  subject: ns_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/ns_source_review/20261105/sources.json
+    sha256: 533f8db431d0922adcd8711cbf725afb00b3f4e248453eac4abe2e826a48a218
+  - source: tests/data/validation/ns_source_review/20261105/literature.json
+    sha256: 04e19dca1facf8e4385bc185b715d21f63b2a8c61a72f3751e42ce38c9e34e6a
+  provenance:
+    role: primary
+    location: documents/mceg/ns_source_review.rst
+    inspection: inspected
+    note: See individual access limits in literature.json; source agreement is not physical validation.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline independent calculations and archived footprint.
+  sources:
+  - tests/data/validation/ns_source_review/20261105/nasa_SN.txt
+  - tests/data/validation/ns_source_review/20261105/inputs.json
+  - tests/data/validation/ns_source_review/20261105/receipt.json
+  - tests/data/validation/ns_source_review/20261105/comparison.json
+  - tests/data/validation/ns_source_review/20261105/states.npz
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+  subject: ns_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/ns_source_review/20261105/nasa_SN.txt
+    sha256: f9ddeec04579dff26bc113050ffd92c1209e1be60e62ca182a85dcd4ab9cff5a
+  - source: tests/data/validation/ns_source_review/20261105/inputs.json
+    sha256: ffd16989571444eb0b5387eb2fdd6d6570170f776dee512bb4eced85cff2e71f
+  - source: tests/data/validation/ns_source_review/20261105/receipt.json
+    sha256: a4a5b898e691cb53f4229d9e7ca5f5a74b174479ba5d26f11eadccf969ca5b24
+  - source: tests/data/validation/ns_source_review/20261105/comparison.json
+    sha256: 4665dd3e2135167b5b6829e7e31b655644a96b5dacdb5071f5097e7153cb20c6
+  - source: tests/data/validation/ns_source_review/20261105/states.npz
+    sha256: fef722c9fd2020a1fcfc2a3c8b77746a6ecb80860e66eef0b971ee08ed2359ee
+  provenance:
+    role: primary
+    location: documents/mceg/ns_source_review.rst
+    inspection: inspected
+    note: See individual access limits in literature.json; source agreement is not physical validation.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Scoped decision and concrete next calculation.
+  sources:
+  - documents/mceg/ns_source_review.rst
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+  subject: ns_sources_20261105
+  context: source_review
+  artifacts:
+  - source: documents/mceg/ns_source_review.rst
+    sha256: aaae6f4cc28ff266d007d6ac113334f7f293f17a7f3ba42bc5daf35c84f1d3d1
+  provenance:
+    role: primary
+    location: documents/mceg/ns_source_review.rst
+    inspection: inspected
+    note: See individual access limits in literature.json; source agreement is not physical validation.
+subjects:
+- id: ns_sources_20261105
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d0c46af9ccdc68cc7e47d5a59affc665966e67c02676e59c5f4fa05d7124baee
+    entry_points:
+    - mceg/reviews/ns_source_review.py
+  selected_files:
+    mceg/reviews/ns_source_review.py: d0c46af9ccdc68cc7e47d5a59affc665966e67c02676e59c5f4fa05d7124baee
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    tests/data/validation/ns_source_review/20261105/literature.json: 04e19dca1facf8e4385bc185b715d21f63b2a8c61a72f3751e42ce38c9e34e6a
+    tests/data/validation/ns_source_review/20261105/nasa_SN.txt: f9ddeec04579dff26bc113050ffd92c1209e1be60e62ca182a85dcd4ab9cff5a
+    tests/data/validation/ns_source_review/20261105/inputs.json: ffd16989571444eb0b5387eb2fdd6d6570170f776dee512bb4eced85cff2e71f
+    tests/data/validation/ns_source_review/20261105/sources.json: 533f8db431d0922adcd8711cbf725afb00b3f4e248453eac4abe2e826a48a218
+    tests/data/validation/ns_source_review/20261105/states.npz: fef722c9fd2020a1fcfc2a3c8b77746a6ecb80860e66eef0b971ee08ed2359ee
+    documents/mceg/ns_source_review.rst: aaae6f4cc28ff266d007d6ac113334f7f293f17a7f3ba42bc5daf35c84f1d3d1
+    tests/data/validation/curated_kh_adoption/20261105/source/tests/model_evidence/ns_source_review_test.py: 479ab11cfae36cf1d9a3d7407dedaefa1b8928be125b7250982720fbf956d54a
+    tests/data/validation/ns_source_review/20261105/README.rst: a3a0b2cb4f2aee72f7e3eded3da9de95653b75f6bf7595990c82cbe3c9f34d29
+    tests/data/validation/ns_source_review/20261105/comparison.json: 4665dd3e2135167b5b6829e7e31b655644a96b5dacdb5071f5097e7153cb20c6
+    tests/data/validation/ns_source_review/20261105/receipt.json: a4a5b898e691cb53f4229d9e7ca5f5a74b174479ba5d26f11eadccf969ca5b24
+contexts:
+- id: source_review
+  scope: Neutral NS, one bar; source diagnostics 300–4000 K, current curated model 1500–4000 K; 75 archived
+    gas-only endpoints, no substitution.
+  settings:
+    standard_pressure_bar: 1
+    production_change: none
+    equilibrium_substitution: not_run
+    model: curated-oh-v1
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: ns_sources_20261105
+  context: source_review
+  method:
+    id: review_ns_sources
+    revision: '1'
+    description: Separate source attribution, numerical reproducibility, scoped judgment and full physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - The archived calculation and inspected sources support only the stated review scope.
+  status: supported
+  origin: reviewed
+- id: normalized_comparison_review
+  kind: evidence_support
+  claim: normalized_comparison
+  claim_revision: '1'
+  subject: ns_sources_20261105
+  context: source_review
+  method:
+    id: review_ns_sources
+    revision: '1'
+    description: Separate source attribution, numerical reproducibility, scoped judgment and full physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - The archived calculation and inspected sources support only the stated review scope.
+  status: supported
+  origin: reviewed
+- id: scoped_decision_review
+  kind: evidence_support
+  claim: scoped_decision
+  claim_revision: '1'
+  subject: ns_sources_20261105
+  context: source_review
+  method:
+    id: review_ns_sources
+    revision: '1'
+    description: Separate source attribution, numerical reproducibility, scoped judgment and full physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - The archived calculation and inspected sources support only the stated review scope.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: ns_sources_20261105
+  context: source_review
+  method:
+    id: review_ns_sources
+    revision: '1'
+    description: Separate source attribution, numerical reproducibility, scoped judgment and full physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - No complete uncertainty, atmospheric validation or full historical fit recovery is claimed.
+  status: unknown
+  origin: reviewed
+- id: historical_source_completeness_review
+  kind: evidence_support
+  claim: historical_source_completeness
+  claim_revision: '1'
+  subject: ns_sources_20261105
+  context: source_review
+  method:
+    id: review_ns_sources
+    revision: '1'
+    description: Separate source attribution, numerical reproducibility, scoped judgment and full physical
+      accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - No complete uncertainty, atmospheric validation or full historical fit recovery is claimed.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  id: follow_up_1
+  action: Evaluate the proposed candidate with explicit isotope/state completeness and reference conventions
+    before production adoption.
+  completion: Recorded independent candidate evaluation with explicit limitations.
+- target_kind: claim
+  target: historical_source_completeness
+  revision: '1'
+  id: follow_up_2
+  action: Recover historical fitting/source details if needed for a broader provenance claim; not a blocker
+    for this scoped review.
+  completion: Recorded independent candidate evaluation with explicit limitations.
+limitations:
+- statement: Lodders molecular+NASA atomic reconstruction intentionally differs in atomic convention and
+    inherited fit by approximately1–2%; it is an attribution diagnostic, not exact recovery of the historical
+    fitting process.
+  evidence:
+  - literature
+  - source_replay
+- statement: Peebles H298 shift is only a scale diagnostic; no modern ATcT NS value or same-version NS/atom
+    network has been pinned.
+  evidence:
+  - literature
+  - source_replay
+- statement: Natural elemental translation and one principal isotope Q are an approximation; explicit
+    isotope mixture is uncomputed.
+  evidence:
+  - literature
+  - source_replay
+- statement: No new equilibrium solve; trace footprint on this grid is not a statement about all planetary
+    atmospheres.
+  evidence:
+  - literature
+  - source_replay

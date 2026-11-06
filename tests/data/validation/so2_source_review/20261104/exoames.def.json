@@ -1,0 +1,199 @@
+{
+    "isotopologue": {
+        "iso_formula": "(32S)(16O)2",
+        "iso_slug": "32S-16O2",
+        "inchi": "InChI=1S/O2S/c1-3-2",
+        "inchikey": "RAHZWNYVWXNFOC-UHFFFAOYSA-N",
+        "cas_registry_number": "7446-09-05",
+        "mass_in_Da": 63.96190024,
+        "point_group": "C2v"
+    },
+    "atoms": {
+        "number_of_atoms": 3,
+        "element": {
+            "S": 32,
+            "O": 16
+        }
+    },
+    "irreducible_representations": {
+        "A1": 1,
+        "A2": 1,
+        "B1": 0,
+        "B2": 0
+    },
+    "dataset": {
+        "name": "ExoAmes",
+        "version": 20170131,
+        "doi": "10.5281/zenodo.5716834",
+        "max_temperature": 2000.0,
+        "num_pressure_broadeners": 2,
+        "cooling_function_available": false,
+        "specific_heat_available": true,
+        "continuum": false,
+        "states": {
+            "number_of_states": 3270271,
+            "max_energy": 8000.0,
+            "hyperfine_resolved_dataset": false,
+            "uncertainty_description": null,
+            "uncertainties_available": true,
+            "lifetime_available": true,
+            "lande_g_available": false,
+            "quantum_case_label": "asymcs",
+            "num_quanta": 6,
+            "num_quantum_types": 1,
+            "states_file_fields": [
+                {
+                    "name": "ID",
+                    "desc": "Unique integer identifier for the energy level",
+                    "ffmt": "I12",
+                    "cfmt": "%12d"
+                },
+                {
+                    "name": "E",
+                    "desc": "State energy in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "gtot",
+                    "desc": "Total energy level degeneracy",
+                    "ffmt": "I6",
+                    "cfmt": "%6d"
+                },
+                {
+                    "name": "J",
+                    "desc": "Total rotational quantum number, excluding nuclear spin",
+                    "ffmt": "I7",
+                    "cfmt": "%7d"
+                },
+                {
+                    "name": "unc",
+                    "desc": "Energy uncertainty in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "tau",
+                    "desc": "Lifetime in s",
+                    "ffmt": "ES12.4",
+                    "cfmt": "%12.4e"
+                },
+                {
+                    "name": "+/-",
+                    "ffmt": "A1",
+                    "cfmt": "%1s",
+                    "desc": "Total parity: '+' or '-'"
+                },
+                {
+                    "name": "Herzberg:v1",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "v1 symmetric stretch quantum number(3)"
+                },
+                {
+                    "name": "Herzberg:v2",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "v2 bend quantum number"
+                },
+                {
+                    "name": "Herzberg:v3",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "v3 asymmetrics stretch quantum number"
+                },
+                {
+                    "name": "Herzberg:Ka",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Ka rotational quantum number"
+                },
+                {
+                    "name": "Herzberg:Kc",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Kc rotational quantum number"
+                },
+                {
+                    "name": "Auxiliary:Ecal",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f",
+                    "desc": "Calculated energy in cm-1"
+                },
+                {
+                    "name": "Auxiliary:SourceType",
+                    "ffmt": "A2",
+                    "cfmt": "%2s",
+                    "desc": "Ma=MARVEL,Ca=Calculated,EH=Effective Hamiltonian,IE=Isotopologue extrapolation"
+                }
+            ]
+        },
+        "transitions": {
+            "number_of_transitions": 1300000000,
+            "number_of_transition_files": 80,
+            "max_wavenumber": 8000.0
+        }
+    },
+    "partition_function": {
+        "max_partition_function_temperature": 2000.0,
+        "partition_function_step_size": 1.0
+    },
+    "broad": {
+        "default_Lorentzian_half-width": 0.1063,
+        "default_temperature_exponent": 0.695,
+        "H2": {
+            "filename": "32S-16O2__H2.broad",
+            "max_J": 60,
+            "Lorentzian_half_width": 0.14,
+            "temperature_exponent": 0.75,
+            "num_quantum_number_sets": 2,
+            "quantum_number_sets": [
+                {
+                    "code": "a5",
+                    "num_lines": 41,
+                    "num_quantum_numbers": 5,
+                    "quantum_numbers": [
+                        "Ka\"",
+                        "Kc\"",
+                        "J'",
+                        "Ka'",
+                        "Kc'"
+                    ]
+                },
+                {
+                    "code": "a0",
+                    "num_lines": 61,
+                    "num_quantum_numbers": 0,
+                    "quantum_numbers": []
+                }
+            ]
+        },
+        "He": {
+            "filename": "32S-16O2__He.broad",
+            "max_J": 60,
+            "Lorentzian_half_width": 0.07,
+            "temperature_exponent": 0.64,
+            "num_quantum_number_sets": 2,
+            "quantum_number_sets": [
+                {
+                    "code": "a5",
+                    "num_lines": 40,
+                    "num_quantum_numbers": 5,
+                    "quantum_numbers": [
+                        "Ka\"",
+                        "Kc\"",
+                        "J'",
+                        "Ka'",
+                        "Kc'"
+                    ]
+                },
+                {
+                    "code": "a0",
+                    "num_lines": 61,
+                    "num_quantum_numbers": 0,
+                    "quantum_numbers": []
+                }
+            ]
+        }
+    }
+}

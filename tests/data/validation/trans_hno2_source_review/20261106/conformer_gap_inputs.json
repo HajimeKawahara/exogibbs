@@ -1,0 +1,19 @@
+{
+  "janaf_tables": {
+    "cis": "H-028.txt",
+    "trans": "H-029.txt"
+  },
+  "atct_hf0_kJ_mol": {
+    "cis": -71.31,
+    "trans": -72.92
+  },
+  "atct_ids": {
+    "cis": "7782-77-6*2",
+    "trans": "7782-77-6*1"
+  },
+  "measured_cis_minus_trans_cm1": 95.8,
+  "quoted_uncertainty_cm1": 9.2,
+  "measurement_doi": "10.1016/j.jqsrt.2023.108727",
+  "numerical_reproduction_source_doi": "10.1016/j.jqsrt.2025.109568",
+  "inspection": "Primary 2023 abstract and inspected full 2025 section 3.12; uncertainty convention not reinterpreted as a joint covariance."
+}

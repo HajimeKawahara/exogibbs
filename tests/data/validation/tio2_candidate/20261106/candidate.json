@@ -1,0 +1,69 @@
+{
+  "id": "tio2_retained_energy_rrho_candidate_v1",
+  "molecule": "TiO2",
+  "species": "O2Ti1",
+  "baseline_dataset": "curated-cos-v1",
+  "standard_pressure_Pa": 100000,
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "primary": "rrho",
+  "control": "h298",
+  "composition": {
+    "Ti": 1,
+    "O": 2
+  },
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "nasa_native_R_J_mol_K": 8.31451,
+  "original_source_D0_J_mol": 1267776.0,
+  "delta_D0_J_mol": 0.0,
+  "nasa_molecular_hf298_native_J_mol": -305430.0,
+  "nasa_molecular_heat_content_native_J_mol": 11351.69,
+  "nasa_molecular_h0_div_R_K": -38099.862770024934,
+  "nasa_molecular_thermal_coefficients": [
+    154629.9764,
+    -1046.25688,
+    7.78898583,
+    -0.0001546805714,
+    -7.05993595e-08,
+    3.100244802e-11,
+    -2.49472543e-15,
+    5436.495270024934,
+    -15.9153466
+  ],
+  "original_logK_coefficients": [
+    153310.08680959255,
+    -1.7150138997147906,
+    -18.334613322190307,
+    0.00044282177413010326,
+    -4.38785476209064e-08
+  ],
+  "rotational_constants_MHz": [
+    30520.54148,
+    8471.75838,
+    6613.58731
+  ],
+  "frequencies_cm-1": [
+    959,
+    322,
+    944
+  ],
+  "mass_u": 79.8788,
+  "symmetry_number": 2,
+  "electronic_degeneracy": 1,
+  "nuclear_spin_weight": 1,
+  "new_minus_reference_heat_content_298_J_mol": -169.81843238845067,
+  "anchor_scope": "Retain source D0 and the complete current-fit residual to the NASA reference. Only molecular G-H0 changes; no unique 0 K limit is inferred for the finite-range fit. H298 control subtracts the 298 K heat-content difference and therefore changes the source zero-energy offset.",
+  "thermal_scope": "Single-ground-state rigid rotor/harmonic oscillator using measured 48Ti16O2 rotation and gas fundamentals as harmonic frequencies, JANAF mean mass, sigma=2 and spin weight=1. NASA is the continuous old-thermal proxy, not an exact JANAF interpolation.",
+  "physical_scope": "No anharmonicity, centrifugal distortion, complete excited-state manifold, isotope mixture or independent energy reevaluation. ZPE is already included in D0 and is not added again.",
+  "source_sha256": {
+    "tests/data/validation/tio2_source_review/20261106/inputs.json": "59102c2a49eab9d6c0e3ae90cabd2499b5ff9b75a55b6a045ca54fedf6db2596",
+    "tests/data/validation/tio2_source_review/20261106/nasa-record.txt": "01471b6c054a9dc743e55c35f6b17f7f3a4e365304e0d0ee3edafd8449c09202",
+    "tests/data/validation/tio2_source_review/20261106/O-046.txt": "7dd56850c1ce8f2b74327202af8db7a6f4e4f50ee8635ef5982cbdf4aa21c122",
+    "tests/data/validation/tio2_source_review/20261106/Ti-006.txt": "66f195c514cbc4378faf2d5d7978015c92230777fb77e0947d7204672879b69d",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+  }
+}

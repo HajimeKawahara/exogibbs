@@ -1,0 +1,27 @@
+{
+  "scope": "NaCN neutral gas;1500-4000K bounded T-shaped RRHO sensitivity on curated-ch2-v1; unchanged sourceD0 and old-linear-proxy residual; not a complete hot thermal model or production adoption.",
+  "source_claim": "The inspected three-mode inputs and original linear thermal proxy define the declared bounded RRHO sensitivity without inventing complete high-temperature state coverage.",
+  "source_summary": "New primary fulltext inspected; modes[2061, 373, 181]cm\u22121 with measured rotation. Original linear RRHO source rebuilt independently; connected low-barrier motion makes high-temperature physical completeness unknown.",
+  "decision": "Retain production curated and do not adopt this RRHO sensitivity. Its large finite response prioritizes a converged coupled rotational/large-amplitude thermal construction, not unqualified adoption.",
+  "inspection_scope": "New primary fulltext and numerical tables inspected; source reconstruction is distinct from complete high-temperature molecular-state coverage.",
+  "continuous_reason": "PhysicalJANAFD0 and atomicgauge are unchanged. Three-mode nonlinear-minus-four-mode linear molecular potentials preserve literal proxy-relative fit residual. Both models pass2752-node scalar/JAX GHSCp.",
+  "finite_reason": "150fresh+12tight+10path+4selected+4FastChem; ionsratio5.6206181\u20138.2016697;maximumNashare0.240904692%\u21921.94156746%;FastChem1.44e-06dex.",
+  "gibbs_reason": "Resolved same-model exchanges:53/75ions,58/75neutral. Others below diagnostic scale; no universal resolution claim.",
+  "physical_reason": "Known low barriers and large-amplitude/rovibrational coupling invalidate interpreting this single-well RRHO extrapolation as a complete1500\u20134000K physical thermal model; isotope and source-energy uncertainties remain.",
+  "assumptions": [
+    "A nonlinear triatomic has three oscillators; no retention of twofold linear bending count.",
+    "Measured principal-isotope rotation with original mean translational mass and sigma1/electronic1;no nuclear-spin multiplier.",
+    "OldJANAFphysicalD0, atomicgauge and full proxy-relative fit residual unchanged; no additionalZPE."
+  ],
+  "followup": "Obtain or compute a converged coupled rotational/large-amplitude state sum on the inspected2012potential, including its connected minima, with state weights and a finite dissociation prescription. Validate against measured spectra and GHSCp before a new thermal adoption decision.",
+  "required_inputs": [
+    "Converged coupled rovibrational/large-amplitude states and normalization on an inspected potential.",
+    "Finite high-energy completeness and independent GHSCp validation; no requirement for unlimited ancestral-paper collection."
+  ],
+  "limitations": [
+    "Single T-shaped well, measured ground-state rotation and computed harmonic three-mode model; analytic1500-4000K sensitivity, not a converged high-temperature state sum. Low barriers lie inside the thermally occupied region, and strong anharmonic coupling invalidates uncontrolled extrapolation. Linear minima on one connected potential are not extra independently counted species.",
+    "The selected alternate frequencies are another harmonic surrogate, not a physical uncertainty interval.",
+    "Large substitution response cannot establish physical accuracy.",
+    "Original source records and production files remain unchanged."
+  ]
+}

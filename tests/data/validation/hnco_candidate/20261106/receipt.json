@@ -1,0 +1,41 @@
+{
+  "created_utc": "2026-11-06T05:58:57.902453+00:00",
+  "result": "passed",
+  "command": [
+    "/home/kawahara/miniconda3/bin/python",
+    "/tmp/exogibbs-adoption-and-pending-candidates-20261106/prepare_a_packets.py"
+  ],
+  "python": "3.12.7",
+  "numpy": "2.1.0",
+  "jax": "0.6.2",
+  "dtype": "float64",
+  "temperature_count": 2752,
+  "scope": "Candidate/source expressions and scalar/JAX derivatives; no equilibrium solves in this receipt.",
+  "selected_file_sha256": {
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "mceg/reviews/pending_molecule_inputs.py": "131fffb1c45f71a3d7de1fac89a72a934c21a9577d0e87c263807e23cb61e27e",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/hnco_source_review/20261106/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/hnco_source_review/20261106/C-053.txt": "6607b4c9a1adf36bef0f44bd361af679c14dab5b98afab121d55fe94ecf0f3ad",
+    "tests/data/validation/hnco_source_review/20261106/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/hnco_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/hnco_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/hnco_source_review/20261106/comparison.json": "08d1976e4f5f4e41b875e8d338570791fe03a10aaf17d0ff5d48b4f561ec4922",
+    "tests/data/validation/hnco_source_review/20261106/identity.json": "9a30d135bfcbc3adb71ae5e43b6fa586751596874e4a0dc26bf12bc6df296923",
+    "tests/data/validation/hnco_source_review/20261106/inputs.json": "03ae753ab3e029c4ea5efbd0c134fe0dcc88b6aeecca48256cfbb7be33b4fd95",
+    "tests/data/validation/hnco_source_review/20261106/literature.json": "51a25e2beefe760a84e6cda20fb223eafef9b8abcb797c3504c1f9f6ac62877e",
+    "tests/data/validation/hnco_source_review/20261106/nasa_records.json": "2e8703e4e42d21165f023262a8ea625a311f442f3a5e7afdbba4500945700317",
+    "tests/data/validation/hnco_source_review/20261106/nasa_selected_records.txt": "df5c7533acd57d0554326dba693fb2f7d8378f5c480a5360de620628f1f19b74",
+    "tests/data/validation/hnco_source_review/20261106/sources.json": "eaa39a3076927dd5b720705e17b9c778f41029d94e8a63d2cbc2c159e23dcdff"
+  },
+  "output_sha256": {
+    "candidate.json": "f14c5203e36f9d6c1e5e52e16bfcd7b425ac3d0fc3780cac417abc45ced2d26d",
+    "validation.json": "a8f9c9295384939f8616a2002418a9ad4e001b166b8cf02639eb5bcf65cd8558"
+  }
+}

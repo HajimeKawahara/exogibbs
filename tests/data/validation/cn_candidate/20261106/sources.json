@@ -1,0 +1,22 @@
+{
+  "access_date": "2026-11-06",
+  "source_replay": "Fresh official ATcT 1.228 displayed values checked against the frozen CN source packet. All three species pages were accessible. No new audit of every thermochemical network input is claimed.",
+  "sources": [
+    {
+      "species": "CN",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=79",
+      "hf0_kJ_mol": 436.67
+    },
+    {
+      "species": "C",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21",
+      "hf0_kJ_mol": 711.37
+    },
+    {
+      "species": "N",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25",
+      "hf0_kJ_mol": 470.655
+    }
+  ],
+  "scope": "Same-version ground-level molecular and gas-atom central energies. Preserve the literal JANAF-derived FastChem thermal fit and its residual; do not reinterpret a formal fit intercept as physical D0 or add ZPE again. Full reaction covariance remains unavailable."
+}

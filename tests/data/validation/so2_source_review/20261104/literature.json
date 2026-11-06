@@ -1,0 +1,97 @@
+{
+  "review_date": "2026-11-04",
+  "sources": [
+    {
+      "id": "underwood2016",
+      "doi": "10.1093/mnras/stw849",
+      "inspection": "Full author manuscript inspected; Section 3, Figures 1-3, pp. 3892-3894.",
+      "finding": "Opacity lower-state cutoff 8000 cm-1, full levels below 15000 cm-1, J<=165. Published full-Q convergence claim at 3000-5000 K is not established by current finite distribution; explicit edge populations and caloric decline retained. Paper lists 3255954 levels; current file 3270270, metadata3270271."
+    },
+    {
+      "id": "exoames",
+      "doi": "10.5281/zenodo.5716834",
+      "inspection": "Current official states, PF and JSON metadata downloaded and hashed; every supplied state summed.",
+      "finding": "Ground zero, all g=2J+1, observed Emax14999.996460/J165. Metadata state max8000 conflicts with actual upper levels. PF1-2000K. No high-T completeness inferred from an opacity label."
+    },
+    {
+      "id": "gamache2021",
+      "doi": "10.1016/j.jqsrt.2021.107713",
+      "inspection": "Full user-supplied PDF; Section3.9 and cited references inspected.",
+      "finding": "SO2 Watson rotational model times harmonic vibrational oscillator, Pine1977/Lafferty1993 inputs, 1-5000K. This is an analytic product approximation, not a modern complete anharmonic sum."
+    },
+    {
+      "id": "gamache2025",
+      "doi": "10.1016/j.jqsrt.2025.109568",
+      "inspection": "Full author PDF; abstract, introduction, methods and molecule update list inspected.",
+      "finding": "Older calculations updated to newer CODATA; no new SO2 state-based evaluation described. Official SO2 TIPS2025 differs from2021 by<=2.011ppm."
+    },
+    {
+      "id": "corrigendum2025",
+      "doi": "10.1016/j.jqsrt.2025.109618",
+      "inspection": "Full one-page user-supplied corrigendum inspected.",
+      "finding": "Correction concerns16O14N18O missing symmetry states, not SO2."
+    },
+    {
+      "id": "ATcT1172",
+      "doi": "10.17038/CSE/2440254",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Official table reopened 2026-11-04: O(g),S(g),OSO(g). Full covariance/provenance network not reaudited.",
+      "hf0_kJ_mol": {
+        "O": 246.844,
+        "S": 276.83,
+        "SO2": -294.2
+      },
+      "hf298_kJ_mol": {
+        "O": 249.229,
+        "S": 279.08,
+        "SO2": -296.74
+      },
+      "displayed_uncertainty_kJ_mol": {
+        "O": 0.0021,
+        "S": 0.14,
+        "SO2": 0.13
+      },
+      "finding": "Balance same-version gas-phase atoms and molecule; uncertainty covariance remains unknown. ATcT displayed SO2 natural mass64.0648 differs from retained NASA64.0638."
+    },
+    {
+      "id": "NASA",
+      "inspection": "Frozen NASA source header and nine-coefficient record; balanced D0 reconstructed. Historical Gurvich1989 part1p288/part2p175 not obtained.",
+      "finding": "NASA assignedH0=hf298-enthalpy increment is balanced before comparison; nativeR8.314510. SO2 validity300-6000K; production1500-4000K."
+    },
+    {
+      "id": "JANAF",
+      "url": "https://janaf.nist.gov/tables/O-034.html",
+      "inspection": "Frozen official June1961 one-bar gas table; common tabulated nodes only, no interpolated JANAF calorics.",
+      "finding": "Normalized thermal residuals against NASA remain; legacy source agreement is not independent physical accuracy."
+    },
+    {
+      "id": "S_fine_structure",
+      "url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/sulfurtable5_a.htm",
+      "inspection": "Official NIST handbook table inspected online2026-11-04.",
+      "levels_cm-1": [
+        0,
+        396.055,
+        573.64,
+        9238.609,
+        22179.954
+      ],
+      "weights": [
+        5,
+        3,
+        1,
+        5,
+        1
+      ],
+      "finding": "Shared NASA S thermal term agrees with five-level sum within0.008%; neither fixed groundg5 nor unsplitg9 assumed."
+    },
+    {
+      "id": "photochemical_context",
+      "doi": "10.1038/s41586-023-05902-2",
+      "additional_doi": "10.1038/s41586-024-07040-9",
+      "inspection": "Primary article abstracts/context inspected online; not used as thermodynamic validation.",
+      "finding": "WASP39b SO2 motivates priority; photochemistry and cooler/high-metallicity oxidizing atmospheres are outside this archived hot H-rich equilibrium grid."
+    }
+  ],
+  "decision": "Retain current production; complete high-temperature anharmonic Q and caloric convergence before replacement.",
+  "no_blanket_document_gate": true
+}

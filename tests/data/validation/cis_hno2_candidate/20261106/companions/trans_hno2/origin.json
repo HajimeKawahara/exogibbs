@@ -1,0 +1,45 @@
+{
+  "scope": "Exact minimal companion source bytes copied for a self-contained joint candidate; not a dependency on a separate new candidate or its unmerged source PR.",
+  "files": [
+    {
+      "copied_file": "H-001.txt",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be"
+    },
+    {
+      "copied_file": "H-029.txt",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/H-029.txt",
+      "sha256": "a7bd864e1726f8f04154abb0852dbee07fdb4f34eb905c5d3e6f96630305448b"
+    },
+    {
+      "copied_file": "N-002.txt",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/N-002.txt",
+      "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+    },
+    {
+      "copied_file": "O-001.txt",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+    },
+    {
+      "copied_file": "comparison.json",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/comparison.json",
+      "sha256": "14e500060d1a73acfc34277b5b8732a7b075cf312cfc2f5d3f2b49edb272a0c6"
+    },
+    {
+      "copied_file": "inputs.json",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/inputs.json",
+      "sha256": "29c9e7286ee1a534b1cc60e0c45bac31524d3e47e326cff1306d880d5ef59bf2"
+    },
+    {
+      "copied_file": "nasa_records.json",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/nasa_records.json",
+      "sha256": "2c778a7673a8c2111186b6a2cfd1dce1c600b956b8b796ba38e23eef32ed8b3f"
+    },
+    {
+      "copied_file": "sources.json",
+      "original_path": "tests/data/validation/trans_hno2_source_review/20261106/sources.json",
+      "sha256": "a6fda2fbe1c15e8e07da9d8b28f92b3f650715769301a27da0e531dc621cad6d"
+    }
+  ]
+}
