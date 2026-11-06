@@ -107,6 +107,8 @@ HCN differences with optional MCEG tooling.
    c2o_candidate
    alh_source_review
    c2h_source_review
+   c2_source_review
+   c2_candidate
    h2s_source_review
    hnco_source_review
    hnco_candidate
