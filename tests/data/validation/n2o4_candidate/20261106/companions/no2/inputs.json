@@ -1,0 +1,70 @@
+{
+  "molecule": "NO2",
+  "species_id": "N1O2",
+  "composition": {
+    "N": 1,
+    "O": 2
+  },
+  "cas": "10102-44-0",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "tables": {
+    "NO2": "N-007.txt",
+    "N": "N-002.txt",
+    "O": "O-001.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "NO2": {
+      "hf0_kJ_mol": 36.926,
+      "hf298_kJ_mol": 34.119,
+      "uncertainty_95pct_kJ_mol": 0.062,
+      "atct_id": "10102-44-0*0",
+      "preferred_formula": "ONO  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=62"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0",
+      "preferred_formula": "N  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    },
+    "O": {
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "atct_id": "17778-80-2*0",
+      "preferred_formula": "O  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    }
+  },
+  "inherited_source": "JANAF 1998 (FastChem fit) [U]",
+  "fastchem_record": {
+    "species": "N1O2",
+    "record_name": "Nitrogen_Oxide",
+    "source_file": "FastChem4/logK/logK.dat",
+    "record_line_number": 1036,
+    "coefficient_line_number": 1037,
+    "record_line": "N1O2 Nitrogen_Oxide : N 1 O 2 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+    "coefficient_line": "   1.1214942460778740e+05  -2.8249443194595756e+00  -1.0203950342764756e+01   8.3697742323110558e-04  -4.9283218795120417e-08 ",
+    "coefficients": [
+      112149.4246077874,
+      -2.8249443194595756,
+      -10.203950342764756,
+      0.0008369774232311056,
+      -4.928321879512042e-08
+    ],
+    "selected_temperature_segment_index": null,
+    "selected_temperature_segment_upper_bound": null,
+    "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+    "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+    "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+  },
+  "current_model": "curated-tio2-v1"
+}

@@ -1,0 +1,558 @@
+{
+  "id": "n2o4_bounded_candidates_20261106",
+  "slug": "n2o4",
+  "baseline_dataset": "curated-ch2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "native_NASA_R_J_mol_K": 8.31451,
+  "target_species": "N2O4",
+  "tracked_elements": [
+    "N",
+    "O"
+  ],
+  "primary_variant": "retained",
+  "variants": [
+    {
+      "name": "retained",
+      "replacements": {
+        "N2O4": {
+          "kind": "retained_energy",
+          "coefficients": [
+            231628.32484998493,
+            -4.451345552339831,
+            -49.98133738761453,
+            0.0019701844757245013,
+            -1.1543810101034548e-07
+          ],
+          "delta_GH_J_mol": 1691.0
+        }
+      }
+    },
+    {
+      "name": "joint_no2_n2o4_atct",
+      "replacements": {
+        "N2O4": {
+          "kind": "retained_energy",
+          "coefficients": [
+            231628.32484998493,
+            -4.451345552339831,
+            -49.98133738761453,
+            0.0019701844757245013,
+            -1.1543810101034548e-07
+          ],
+          "delta_GH_J_mol": 1691.0
+        },
+        "N1O2": {
+          "kind": "retained_energy",
+          "coefficients": [
+            112149.4246077874,
+            -2.8249443194595756,
+            -10.203950342764756,
+            0.0008369774232311056,
+            -4.928321879512042e-08
+          ],
+          "delta_GH_J_mol": 1058.0
+        }
+      }
+    }
+  ],
+  "selected_variants": [],
+  "source_records": {
+    "n2o4": {
+      "slug": "n2o4",
+      "molecule": "N2O4",
+      "species": "N2O4",
+      "composition": {
+        "N": 2,
+        "O": 4
+      },
+      "atct_version": "1.228",
+      "same_version_hf0_J_mol": {
+        "N2O4": 20290,
+        "N": 470655,
+        "O": 246843
+      },
+      "janaf_fixed_reference_h0_J_mol": {
+        "N2O4": -7319,
+        "N": 466486,
+        "O": 242448
+      },
+      "janaf_D0_J_mol": 1910083.0,
+      "atct_D0_J_mol": 1908392.0,
+      "delta_D0_J_mol": -1691.0,
+      "original_coefficients": [
+        231628.32484998493,
+        -4.451345552339831,
+        -49.98133738761453,
+        0.0019701844757245013,
+        -1.1543810101034548e-07
+      ],
+      "formal_fit_intercept_Ra_J_mol": 1925865.0482706549,
+      "nasa_same_identity": true,
+      "nasa_h0_J_mol": {
+        "N2O4": -5630.312,
+        "N": 466482.572,
+        "O": 242449.6
+      },
+      "nasa_D0_J_mol": 1908393.856,
+      "nasa_records": {
+        "N2O4": {
+          "composition": {
+            "N": 2,
+            "O": 4
+          },
+          "reference": "Gurvich,1989 pt1 p342 pt2 p212.",
+          "source_line_1based": 7433,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                -38047.5144,
+                561.282889,
+                -0.2083648324,
+                0.0388708782,
+                -4.42241226e-05,
+                2.49881231e-08,
+                -5.67910238e-12,
+                -3310.79473,
+                29.6392484
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                -458284.376,
+                -1604.749805,
+                16.74102133,
+                -0.000509138508,
+                1.14363467e-07,
+                -1.316288176e-11,
+                5.97631662e-16,
+                4306.90052,
+                -65.6945038
+              ]
+            }
+          ],
+          "source_name": "N2O4",
+          "mass_u": 92.011,
+          "hf298_J_mol": 11110.919,
+          "h298_minus_h0_J_mol": 16741.231
+        },
+        "N": {
+          "composition": {
+            "N": 1
+          },
+          "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+          "source_line_1based": 7051,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                0.0,
+                0.0,
+                2.5,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                56104.6378,
+                4.193905036
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                88765.0138,
+                -107.12315,
+                2.362188287,
+                0.0002916720081,
+                -1.7295151e-07,
+                4.01265788e-11,
+                -2.677227571e-15,
+                56973.5133,
+                4.865231506
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                547518105.0,
+                -310757.498,
+                69.1678274,
+                -0.00684798813,
+                3.8275724e-07,
+                -1.098367709e-11,
+                1.277986024e-16,
+                2550585.618,
+                -584.8769753
+              ]
+            }
+          ],
+          "source_name": "N",
+          "mass_u": 14.0067,
+          "hf298_J_mol": 472680.0,
+          "h298_minus_h0_J_mol": 6197.428
+        },
+        "O": {
+          "composition": {
+            "O": 1
+          },
+          "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+          "source_line_1based": 7864,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                -7953.6113,
+                160.7177787,
+                1.966226438,
+                0.00101367031,
+                -1.110415423e-06,
+                6.5175075e-10,
+                -1.584779251e-13,
+                28403.62437,
+                8.40424182
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                261902.0262,
+                -729.872203,
+                3.31717727,
+                -0.000428133436,
+                1.036104594e-07,
+                -9.43830433e-12,
+                2.725038297e-16,
+                33924.2806,
+                -0.667958535
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                177900426.4,
+                -108232.8257,
+                28.10778365,
+                -0.002975232262,
+                1.854997534e-07,
+                -5.79623154e-12,
+                7.191720164e-17,
+                889094.263,
+                -218.1728151
+              ]
+            }
+          ],
+          "source_name": "O",
+          "mass_u": 15.9994,
+          "hf298_J_mol": 249175.003,
+          "h298_minus_h0_J_mol": 6725.403
+        }
+      },
+      "quoted_ATcT_marginal_uncertainties_kJ_mol": {
+        "N2O4": 0.13,
+        "N": 0.021,
+        "O": 0.0021
+      },
+      "source_sha256": {
+        "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+        "tests/data/validation/n2o4_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+        "tests/data/validation/n2o4_source_review/20261106/N-032.txt": "411f661696b1d53adc10d4ac262b983b31fdf73c9b54920effa6254cfcc8d82f",
+        "tests/data/validation/n2o4_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+        "tests/data/validation/n2o4_source_review/20261106/comparison.json": "f0ad0263004c341541ea22e2c0715ebeee8c861a66089c16c78cadfacf947675",
+        "tests/data/validation/n2o4_source_review/20261106/inputs.json": "c25a833f67d2b1efc7969712610fd898ee0d50aac934ccb52ecf0c0250818541",
+        "tests/data/validation/n2o4_source_review/20261106/literature.json": "dd9f58cda07e9ccb550617c7097b7a0bedcf6e8d23b211f3fa6b577123dcfb10",
+        "tests/data/validation/n2o4_source_review/20261106/nasa_records.json": "a3fa262ed3c6ffa314c653dc21f4abc018ae799250efe8bac32c9f4d2f2bcacc",
+        "tests/data/validation/n2o4_source_review/20261106/sources.json": "ad5e5ea66f2e7408676854a38920a70de4847cdb8cd718912c103f97d00a71ee"
+      }
+    },
+    "no2": {
+      "slug": "no2",
+      "molecule": "NO2",
+      "species": "N1O2",
+      "composition": {
+        "N": 1,
+        "O": 2
+      },
+      "atct_version": "1.228",
+      "same_version_hf0_J_mol": {
+        "NO2": 36926,
+        "N": 470655,
+        "O": 246843
+      },
+      "janaf_fixed_reference_h0_J_mol": {
+        "NO2": 22909,
+        "N": 466486,
+        "O": 242448
+      },
+      "janaf_D0_J_mol": 928473.0,
+      "atct_D0_J_mol": 927415.0,
+      "delta_D0_J_mol": -1058.0,
+      "original_coefficients": [
+        112149.4246077874,
+        -2.8249443194595756,
+        -10.203950342764756,
+        0.0008369774232311056,
+        -4.928321879512042e-08
+      ],
+      "formal_fit_intercept_Ra_J_mol": 932462.1985488434,
+      "nasa_same_identity": true,
+      "nasa_h0_J_mol": {
+        "NO2": 23984.844,
+        "N": 466482.572,
+        "O": 242449.6
+      },
+      "nasa_D0_J_mol": 927396.928,
+      "nasa_records": {
+        "NO2": {
+          "composition": {
+            "N": 1,
+            "O": 2
+          },
+          "reference": "Gurvich,1989 pt1 p332 pt2 p207.",
+          "source_line_1based": 7264,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                -56420.3878,
+                963.308572,
+                -2.434510974,
+                0.01927760886,
+                -1.874559328e-05,
+                9.14549773e-09,
+                -1.777647635e-12,
+                -1547.925037,
+                40.6785121
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                721300.157,
+                -3832.6152,
+                11.13963285,
+                -0.002238062246,
+                6.54772343e-07,
+                -7.6113359e-11,
+                3.32836105e-15,
+                25024.97403,
+                -43.0513004
+              ]
+            }
+          ],
+          "source_name": "NO2",
+          "mass_u": 46.0055,
+          "hf298_J_mol": 34193.019,
+          "h298_minus_h0_J_mol": 10208.175
+        },
+        "N": {
+          "composition": {
+            "N": 1
+          },
+          "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+          "source_line_1based": 7051,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                0.0,
+                0.0,
+                2.5,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                56104.6378,
+                4.193905036
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                88765.0138,
+                -107.12315,
+                2.362188287,
+                0.0002916720081,
+                -1.7295151e-07,
+                4.01265788e-11,
+                -2.677227571e-15,
+                56973.5133,
+                4.865231506
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                547518105.0,
+                -310757.498,
+                69.1678274,
+                -0.00684798813,
+                3.8275724e-07,
+                -1.098367709e-11,
+                1.277986024e-16,
+                2550585.618,
+                -584.8769753
+              ]
+            }
+          ],
+          "source_name": "N",
+          "mass_u": 14.0067,
+          "hf298_J_mol": 472680.0,
+          "h298_minus_h0_J_mol": 6197.428
+        },
+        "O": {
+          "composition": {
+            "O": 1
+          },
+          "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+          "source_line_1based": 7864,
+          "intervals": [
+            {
+              "bounds_K": [
+                200.0,
+                1000.0
+              ],
+              "coefficients": [
+                -7953.6113,
+                160.7177787,
+                1.966226438,
+                0.00101367031,
+                -1.110415423e-06,
+                6.5175075e-10,
+                -1.584779251e-13,
+                28403.62437,
+                8.40424182
+              ]
+            },
+            {
+              "bounds_K": [
+                1000.0,
+                6000.0
+              ],
+              "coefficients": [
+                261902.0262,
+                -729.872203,
+                3.31717727,
+                -0.000428133436,
+                1.036104594e-07,
+                -9.43830433e-12,
+                2.725038297e-16,
+                33924.2806,
+                -0.667958535
+              ]
+            },
+            {
+              "bounds_K": [
+                6000.0,
+                20000.0
+              ],
+              "coefficients": [
+                177900426.4,
+                -108232.8257,
+                28.10778365,
+                -0.002975232262,
+                1.854997534e-07,
+                -5.79623154e-12,
+                7.191720164e-17,
+                889094.263,
+                -218.1728151
+              ]
+            }
+          ],
+          "source_name": "O",
+          "mass_u": 15.9994,
+          "hf298_J_mol": 249175.003,
+          "h298_minus_h0_J_mol": 6725.403
+        }
+      },
+      "quoted_ATcT_marginal_uncertainties_kJ_mol": {
+        "NO2": 0.062,
+        "N": 0.021,
+        "O": 0.0021
+      },
+      "source_sha256": {
+        "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/N-007.txt": "b6ad15bebb6ab62cd7d4677c679696106f4a1c7d45eff6b4fe40a5559497c25b",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/comparison.json": "8289b6110663eab1c1ea8a881510e88d0458b44c8d20b8ffb432236a7319e4c9",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/inputs.json": "3475eecec10e0798e6cf0d81cacb843f53851044d6b1050353a4dbbf20a0696a",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/nasa_records.json": "669e0a5cec765427698d5885b0395e5d481e0e356a919490b790e2060e628ffa",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/origin.json": "216e3b6d66d9ec615930df8c879d3e123b51de48f0c2088df86df77f13a30521",
+        "tests/data/validation/n2o4_candidate/20261106/companions/no2/sources.json": "31cd5c2969e60fb5f8db4d22da561370a669c1d4d8222cb5053eacd9dd5e9c9c"
+      }
+    }
+  },
+  "special_controls": {
+    "joint_scope": "Compare dimer-only and matched monomer/dimer energy changes on the same hot base. No low-temperature extrapolation or reactive-fluid EOS is used.",
+    "association_delta_GH_J_mol": -425.0
+  },
+  "source_sha256": {
+    "mceg/reviews/pending_nitrogen_inputs.py": "a3f19aec5e64b281ca7e1ddb58e8c9ef7db49fe773f5e7b423866935aadf79d3",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/N-007.txt": "b6ad15bebb6ab62cd7d4677c679696106f4a1c7d45eff6b4fe40a5559497c25b",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/comparison.json": "8289b6110663eab1c1ea8a881510e88d0458b44c8d20b8ffb432236a7319e4c9",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/inputs.json": "3475eecec10e0798e6cf0d81cacb843f53851044d6b1050353a4dbbf20a0696a",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/nasa_records.json": "669e0a5cec765427698d5885b0395e5d481e0e356a919490b790e2060e628ffa",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/origin.json": "216e3b6d66d9ec615930df8c879d3e123b51de48f0c2088df86df77f13a30521",
+    "tests/data/validation/n2o4_candidate/20261106/companions/no2/sources.json": "31cd5c2969e60fb5f8db4d22da561370a669c1d4d8222cb5053eacd9dd5e9c9c",
+    "tests/data/validation/n2o4_source_review/20261106/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/n2o4_source_review/20261106/N-032.txt": "411f661696b1d53adc10d4ac262b983b31fdf73c9b54920effa6254cfcc8d82f",
+    "tests/data/validation/n2o4_source_review/20261106/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/n2o4_source_review/20261106/comparison.json": "f0ad0263004c341541ea22e2c0715ebeee8c861a66089c16c78cadfacf947675",
+    "tests/data/validation/n2o4_source_review/20261106/inputs.json": "c25a833f67d2b1efc7969712610fd898ee0d50aac934ccb52ecf0c0250818541",
+    "tests/data/validation/n2o4_source_review/20261106/literature.json": "dd9f58cda07e9ccb550617c7097b7a0bedcf6e8d23b211f3fa6b577123dcfb10",
+    "tests/data/validation/n2o4_source_review/20261106/nasa_records.json": "a3fa262ed3c6ffa314c653dc21f4abc018ae799250efe8bac32c9f4d2f2bcacc",
+    "tests/data/validation/n2o4_source_review/20261106/sources.json": "ad5e5ea66f2e7408676854a38920a70de4847cdb8cd718912c103f97d00a71ee"
+  },
+  "retained_scope": "Apply only the physical ATcT-minus-JANAF energy difference to the literal fit; retain all thermal terms and the source-fit residual. Formal R*a is not physical D0. No additional ZPE.",
+  "NASA_scope": "NASA9 is molecular-minus-stoichiometric-neutral-atoms. Remove the native source D0 using NASA R, insert selected ATcT D0 with SI R, retain dimensionless NASA molecular/atomic thermals. This also replaces the inherited fit residual; it is a separate model sensitivity.",
+  "uncertainty_scope": "Rounded same-version central ATcT values; marginal uncertainties are recorded but not combined as independent reaction errors. No complete thermal uncertainty or atmospheric accuracy is claimed.",
+  "production_change": "none"
+}
