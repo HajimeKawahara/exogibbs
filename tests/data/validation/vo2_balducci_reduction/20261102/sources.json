@@ -1,0 +1,71 @@
+{
+  "scope": "Fixed offline inputs for a partial independent Balducci1983 equilibrium re-reduction. Full copyrighted articles are not redistributed.",
+  "fixed_inputs": [
+    {
+      "path": "tests/data/validation/vo2_balducci_reduction/20261102/table_I.csv",
+      "sha256": "b0c7a6d3f2dc20af220edcf2baedc5cf61621c0ea260f7982676bed3d174701a"
+    },
+    {
+      "path": "tests/data/validation/vo2_balducci_reduction/20261102/inputs.json",
+      "sha256": "706cb349181d54a65b4557b25c37d836ba27bac54408ed812fa5373f5a915292"
+    },
+    {
+      "path": "tests/data/validation/vo2_balducci_reduction/20261102/O-026.txt",
+      "sha256": "88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552"
+    },
+    {
+      "path": "tests/data/validation/vo2_balducci_reduction/20261102/reference_audit.json",
+      "sha256": "e59ee6a3c644df38c298a59a24f54872d23ce0ee07fc5fd68a5c572b0652d44f"
+    },
+    {
+      "path": "tests/data/validation/vo2_source_review/20261102/literature_inputs.json",
+      "sha256": "49d500e99a8a0ad58533aeb3c90792ff74f9bc458d838f41b591436e23d32182"
+    },
+    {
+      "path": "tests/data/validation/vo2_source_review/20261102/V-005.txt",
+      "sha256": "4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02"
+    },
+    {
+      "path": "src/exogibbs/data/curated/gas_v1.json",
+      "sha256": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38"
+    }
+  ],
+  "references": [
+    {
+      "citation": "Balducci, Gigli and Guido, J. Chem. Phys. 79, 5616-5622 (1983)",
+      "doi": "10.1063/1.445682",
+      "url": "https://doi.org/10.1063/1.445682",
+      "local_user_file": "ref/refs_exogibbs_202611/Balducci.pdf",
+      "sha256": "10f5ca81d2c8ddc1248844667f60e55cc3b8b99e6dea82a055a57c1baac19755",
+      "bytes": 1063587,
+      "access": "Full user-provided article inspected; Table I (printed p5617, PDF page 3) independently visually transcribed, including half-last-digit subscripts and column signs. Table IV/V and appendix inspected. Original PDF and extracted text are not included."
+    },
+    {
+      "citation": "NIST-JANAF VO gas table O-026",
+      "url": "https://janaf.nist.gov/tables/O-026.txt",
+      "html_url": "https://janaf.nist.gov/tables/O-026.html",
+      "download_date": "2026-11-02",
+      "pressure_Pa": 100000,
+      "enthalpy_reference_K": 298.15,
+      "use": "Cp/S/free-energy/enthalpy increments only; formation enthalpy/logKf columns are not used as modern D0."
+    },
+    {
+      "citation": "NIST-JANAF V gas table V-005",
+      "url": "https://janaf.nist.gov/tables/V-005.txt",
+      "pressure_Pa": 100000,
+      "use": "Existing source-review fixed input; molecular ground/atomic lowest-level H0 reference."
+    },
+    {
+      "citation": "Kim, Weichman and Neumark (2014)",
+      "doi": "10.1063/1.4861667",
+      "url": "https://doi.org/10.1063/1.4861667",
+      "use": "Only explicitly identified ground frequencies and electronic origins from existing full-text source-review inputs; no complete rovibrational model claimed."
+    },
+    {
+      "citation": "Merriles et al., J. Chem. Phys. 153, 024303 (2020)",
+      "doi": "10.1063/5.0014006",
+      "url": "https://doi.org/10.1063/5.0014006",
+      "use": "Current curated VO dissociation anchor, with independent accepted-manuscript atomic-limit and uncertainty audit in reference_audit.json."
+    }
+  ]
+}

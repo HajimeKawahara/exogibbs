@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-06",
+  "scope": "Historical baseline and replay maintenance; no new equilibrium execution or scientific source reevaluation.",
+  "original_head": "5978ab5294fffad861fc1663b089e09e8f804195",
+  "baseline_dataset": "curated-c2h-v1",
+  "new_equilibrium_solves": 0,
+  "new_fastchem_executions": 0,
+  "current_file_sha256": {
+    "mceg/reviews/vo2_equilibrium_impact.py": "3c3462499e20df498b6929b629cc96bf0af547a0d8b50ddb2a4ea723a51936ed",
+    "tests/model_evidence/vo2_equilibrium_impact_test.py": "14ef80cc2c7d1a99440a8be5d73a4e315446e6b546f6354a8a72aaeb343c4fd8",
+    "documents/mceg/vo2_source_review.rst": "afa7f430880ed2cd8619b5af9985e761ffe16cbb4a3e0e7c802f9b3a4b870f01",
+    "mceg/reviews/curated_adoption_history.py": "098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff",
+    "mceg/reviews/curated_tio_history.py": "dba777198ec0777d647bbc340952abf3a1954672bef1a87d73adb0e5a8c65ef0",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf"
+  },
+  "original_file_sha256": {
+    "mceg/reviews/vo2_equilibrium_impact.py": "2ce7117e5f0c5aee203f663530d2ad5fe1b1909b577596495e11fba5d60485be",
+    "tests/model_evidence/vo2_equilibrium_impact_test.py": "01aa1edd5bbe8726661c8db0e2f9cf75152ac731911a60670cbd21c6b0a8cdb0",
+    "src/exogibbs/presets/curated.py": "14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1"
+  },
+  "original_receipt_sha256": "03d87fb0adcabf8af8dc769f0f48ef690dffa12c04b2a1ed8f43a90d1f978869",
+  "variants": [
+    "baseline",
+    "energy",
+    "electronic",
+    "combined"
+  ],
+  "archived_cases": 75,
+  "species": 537,
+  "maximum_abs_h_error": 0.0,
+  "variant_maximum_abs_h_errors": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

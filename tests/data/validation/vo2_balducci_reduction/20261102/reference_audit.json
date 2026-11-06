@@ -1,0 +1,54 @@
+{
+  "review_date": "2026-11-02",
+  "scope": "Read-only reference audit; no adopted thermochemical model.",
+  "vo_anchor": {
+    "citation": "Merriles et al. (2020), J. Chem. Phys. 153, 024303",
+    "doi": "10.1063/5.0014006",
+    "primary_url": "https://doi.org/10.1063/5.0014006",
+    "abstract_url": "https://pubmed.ncbi.nlm.nih.gov/32668947/",
+    "accepted_manuscript_read_url": "https://www.researchgate.net/publication/342901201_The_bond_dissociation_energy_of_VO_measured_by_resonant_three-photon_ionization_spectroscopy",
+    "access": "Web-rendered author accepted manuscript inspected, especially sections III.B, IV.A and Figure 1 caption. Publisher version of record/PDF not downloaded; no file checksum.",
+    "D0_eV": 6.545,
+    "reported_error_eV": 0.002,
+    "threshold_cm_inverse": 52790,
+    "reported_error_cm_inverse": 15,
+    "atomic_limit": "V(4F_3/2) + O(3P_2), the lowest fine-structure separated-atom levels (Figure 1).",
+    "uncertainty_definition": "Conservative assigned error limit covering molecular-beam rotational temperature, laser linewidth/calibration and all four excitation thresholds; not explicitly a one-standard-deviation estimate.",
+    "initial_state_check": "The approximately 9 cm^-1 lower fourth threshold is attributed to initial excitation of the upper VO ground-term spin component; calculated separation 8.998 cm^-1.",
+    "method_limitation": "A dissociation barrier would make the predissociation threshold an upper limit. Authors consider this unlikely from the dense state manifold and agreement across excitation paths."
+  },
+  "euO_ancestry": {
+    "source": "Balducci et al. (1983), J. Chem. Phys. 79, 5616-5622, reference 15 and references grouped under 14",
+    "source_doi": "10.1063/1.445682",
+    "adopted_D0_kJ_mol": 467,
+    "reported_error_kJ_mol": 6,
+    "selection": "Average of the two thermochemical determinations below; their original full texts were not inspected.",
+    "references": [
+      {
+        "citation": "Murad and Hildenbrand (1976), Thermochemical properties of gaseous EuO, J. Chem. Phys. 65(8), 3250-3256",
+        "doi": "10.1063/1.433498",
+        "primary_url": "https://doi.org/10.1063/1.433498",
+        "publisher_deposited_metadata_url": "https://api.crossref.org/works/10.1063/1.433498",
+        "verification": "Title, DOI, publisher AIP Publishing, volume, issue and pages verified from Crossref metadata."
+      },
+      {
+        "citation": "Balducci, Gigli and Guido (1977), Thermodynamic study of gaseous ternary europium-tungsten-oxygen molecules, J. Chem. Phys. 67(1), 147-151",
+        "doi": "10.1063/1.434559",
+        "primary_url": "https://doi.org/10.1063/1.434559",
+        "publisher_deposited_metadata_url": "https://api.crossref.org/works/10.1063/1.434559",
+        "verification": "Title, DOI, publisher AIP Publishing, volume, issue and pages verified from Crossref metadata."
+      }
+    ]
+  },
+  "independent_reanchor": {
+    "reaction": "VO2 + V -> 2 VO",
+    "equation": "D0(VO2) = 2 D0(VO) + Delta_r H0",
+    "electronvolt_kJ_mol": 96.48533212331001,
+    "retained_historical_reaction_enthalpy_kJ_mol": -74,
+    "nominal_D0_VO_kJ_mol": 631.496498747064,
+    "nominal_D0_VO2_kJ_mol": 1188.992997494128,
+    "scope": "Diagnostic retaining the original selected reaction enthalpy, before thermal-function re-reduction; EuO-independent and not an adopted value or newly assigned uncertainty.",
+    "common_reference": "Use 0 K molecular ground levels and lowest fine-structure atomic levels throughout. A common elemental energy-gauge change cancels from the balanced reaction; a physical D0 revision does not. Do not mix 298 K formation enthalpies, De/ZPE conventions or term-centroid energies without explicit conversion.",
+    "historical_gap_diagnostic": "JANAF 1236.342 minus original Balducci 1177 is +59.342 kJ/mol in molecular energy. That source-gap perturbation is distinct from the modern-VO reanchor; the latter nominally implies +47.34900250587202 kJ/mol relative to that JANAF D0."
+  }
+}

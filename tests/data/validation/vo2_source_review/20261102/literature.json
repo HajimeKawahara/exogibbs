@@ -1,0 +1,134 @@
+{
+  "review_date": "2026-11-02",
+  "status": "Full-text update: Balducci1983 inspected and Gunina2012 SI available; main Gunina article remains pending; no production adoption",
+  "decision": "Evidence favours weaker binding than the old JANAF energy, but no single complete energy/thermal replacement is selected. Retain current coefficients operationally while reconciling primary equilibria and state sums.",
+  "entries": [
+    {
+      "id": "janaf1973",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "locator": "PDF pages47 and99; printed1763 and1815; web tableO-076",
+      "role": "Evaluated thermochemical source",
+      "inspection": "Full relevant printed pages and online table",
+      "findings": [
+        "Adopted Hf298=-55.6 kcal/mol from Frantseva/Semenov and reanalysis of Farber all-gas equilibria; printed uncertainty41.8 kJ/mol.",
+        "Estimated bent C2v geometry and frequencies970/300/930cm^-1; constant ground weight2 adopted. The text illustrates the uncertainty using a hypothetical VO2 excited state derived by analogy with V++ atomic levels, not an adopted molecular excited-state list.",
+        "Printed S298 uncertainty5.9 J/mol/K; the text says many constants are estimated and recommends improved data."
+      ],
+      "ancestry": [
+        "Shchukarev et al., Dokl. Akad. Nauk USSR85,313(1952)",
+        "Frantseva and Semenov, High Temp. (USSR)7,46(1969)",
+        "Farber, Uy and Srivastava, JCP56,5312(1972), DOI10.1063/1.1677037",
+        "Brewer and Rosenblatt, Chemical Reviews61,257(1961)"
+      ]
+    },
+    {
+      "id": "nasa_gurvich1982",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "locator": "VO2 record: Gurvich1982 part1 p64, part2 p66",
+      "inspection": "Official pinned coefficient record; original Gurvich volume not inspected",
+      "findings": [
+        "Official NASA9 VO2 record has300-1000 and1000-6000K intervals, Hf298 header-232697.655 J/mol and H298-H0=10622.449 J/mol.",
+        "VO2/O/V coefficients match the frozen local inputs; the local V and VO2 lower bounds200K differs from official300K.",
+        "The numerical298.15K polynomial anchor is a legacy reconstruction outside the official V/VO2 intervals, not a new endorsement of extrapolation."
+      ]
+    },
+    {
+      "id": "balducci1983",
+      "doi": "10.1063/1.445682",
+      "url": "https://doi.org/10.1063/1.445682",
+      "locator": "Full article pp5616-5622; Table I, p5618 selected value/error paragraph, Tables IV-V and Appendix",
+      "role": "Primary high-temperature mass-spectrometric all-gas equilibria",
+      "inspection": "Full user-supplied eight-page PDF including publisher cover; relevant scans visually checked",
+      "findings": [
+        "Full-text selected D0=1177+/-11 kJ/mol on p5618; abstract reports1177+/-18. Table I separately gives1177+/-18 and1177+/-12 from reactions2 and3. Hf298=-174+/-14 is unchanged. Preserve all locators instead of silently replacing one uncertainty.",
+        "Selected heats at0K for VO+Eu=EuO+V, VO2+V=2VO, VO2+Eu=EuO+VO are158.5+/-6,-74+/-6,84.5+/-6 kJ/mol. With D0(EuO)=467+/-6, both routes giveD0(VO2)=1177 viaD0(VO)=625.5. Reaction temperature ranges are1913-2178,1913-2186,1913-2282K.",
+        "The authors define selected reaction and ancillary errors as estimated standard deviations, assuming normal distributed effects, and state reliability within three times the quoted errors. These are not a common confidence convention for all literature sources.",
+        "The inferred VO2 energies share VO and EuO references. At fixed reaction heats both respond by2 kJ/mol to a1 kJ/mol change inD0(EuO); separate reaction routes do not justify statistically independent final energies. Full covariance is not supplied.",
+        "Appendix/Table V use ground weight2, matrix-derived frequencies983/538/1034cm^-1,95degree angle and estimated0.163nm bonds. V/VO functions remain JANAF-based. The538cm^-1 bend conflicts with later resolved291(2)cm^-1; no excited electronic states included.",
+        "Table IV thermal functions and source-specific uncertainties are now accessible. Reconstructing selected-energy algebra and tabulated enthalpy increments does not redo the raw mass-spectrometric analysis or establish a modern replacement."
+      ]
+    },
+    {
+      "id": "gunina2012",
+      "doi": "10.1021/ic201644f",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22497535/",
+      "locator": "Primary abstract; Inorganic Chemistry51,4918-4924; supplied SI TablesS1-S3 and structure catalogue",
+      "inspection": "Abstract and local supporting-information PDF; main article unavailable",
+      "findings": [
+        "Authors critically reevaluate literature and adopt Hf298(VO2)=-185+-15 kJ/mol.",
+        "The abstract does not establish a new independent VO2 formation experiment, a confidence convention or complete thermal model.",
+        "SI gives partial pressures/third-law heats for mixed W/Mo/V oxide equilibria and VMoO4/VWO3/VWO4 structures. It does not supply the main-text VO/VO2 critical reevaluation or its uncertainty/reference choices.",
+        "SI reaction numbering differs between captions(10-14) and column labels/cover(7-11); original main text is required before assigning equations."
+      ]
+    },
+    {
+      "id": "msu_evaluation",
+      "url": "https://www.chem.msu.ru/rus/tsiv/V/print-VO2.html",
+      "locator": "Energy discussion before table912; molecular constants discussion",
+      "role": "Expert reevaluation by E.L. Osina and L.N. Gorokhov",
+      "inspection": "Full online evaluation; publication/revision date not securely established",
+      "findings": [
+        "Reevaluates isomolecular Balducci1983 equilibria VO2+V=2VO and VO2+Eu=EuO+VO; favours pressure ratios over absolute pressures; D0=1166+-12 kJ/mol, Hf298=-160.259+-12.3 kJ/mol.",
+        "No new independent measurement relative to Balducci1983. Updated auxiliary data and thermal functions matter.",
+        "Its description that JANAF omits excited electronic states agrees with the inspected original page. The atomic V++ level analogy and a hypothetical VO2 state in the JANAF uncertainty discussion must not be mistaken for adopted levels.",
+        "Its older0.6eV state assignment follows Wu/Wang1998 and predates the2014 cryo-SEVI reassignment."
+      ]
+    },
+    {
+      "id": "kim2014",
+      "doi": "10.1063/1.4861667",
+      "url": "https://bromine.cchem.berkeley.edu/grppub/sevi29.pdf",
+      "locator": "TableIII p034307-5; SectionsV A,C,D andVI",
+      "role": "Primary cryogenic anion photoelectron experiment with calculations",
+      "inspection": "Full nine-page paper",
+      "findings": [
+        "Assigned neutral bent X2A1 ground state, A2B1 at0.1845(8)eV and B2A1 at0.8130(5)eV; v1/v2 measured separately in all three states.",
+        "EA1.8357(5)eV revises the2.03(1)eV assignment in Wu/Wang1998; electron affinity is not neutral atomization energy.",
+        "Cryogenic ion preparation and resolved distinct progressions reduce hot-anion ambiguities; the third band needs configuration interaction.",
+        "No v3 measurement, complete high-temperature partition function, state-specific rotational measurement or formation enthalpy supplied."
+      ]
+    },
+    {
+      "id": "hendrickx_tran2014",
+      "doi": "10.1021/ct500526m",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26588547/",
+      "locator": "Primary abstract; JCTC10,4037-4044",
+      "inspection": "Abstract; full text not inspected",
+      "findings": [
+        "DFT/CASPT2/RCCSD(T) study proposes alternate assignments involving near-degenerate anion states.",
+        "The assignment dispute is retained, not silently treated as agreement."
+      ]
+    },
+    {
+      "id": "kim_reply2014",
+      "doi": "10.1021/ct5007949",
+      "url": "https://citeseerx.ist.psu.edu/document?doi=9455d066e04deacb139b96b3a644f4e04b32e183&repid=rep1&type=pdf",
+      "locator": "Author manuscript pagesA-C; published JCTC10,5235-5237",
+      "inspection": "Full text rendered by web provider from author-manuscript mirror; author-host download failed",
+      "findings": [
+        "Authors defend the cold-ion assignments using one-electron orbital transitions, Franck-Condon patterns and source-temperature considerations.",
+        "Reply is the same experimental lineage as the original paper, not an independent replication. A complete high-temperature state sum is still missing."
+      ]
+    },
+    {
+      "id": "lecoq2024",
+      "doi": "10.1051/0004-6361/202347693",
+      "url": "https://arxiv.org/pdf/2401.02784",
+      "locator": "Inspected16-page arXiv manuscript, Sections2.2,3.2; Tables2-4, Figure4; published A&A690,A34 has15pages",
+      "role": "Primary B3LYP/cc-pVTZ and GGChem study",
+      "inspection": "Full arXiv PDF and published abstract; published PDF/HTML inaccessible",
+      "findings": [
+        "Table2 gives VO2 electronic binding1154.7 kJ/mol, JANAF1236.3 and Balducci1177.0; Table3 instead lists1150. The sign/ZPE/De-D0 convention and discrepancy are not resolved here, so no numerical substitution uses them.",
+        "The assumed JANAF4 kJ/mol uncertainty in Table2 is not the41.8 kJ/mol uncertainty on the original VO2 evaluation.",
+        "DFT choice is benchmarked/calibrated using VO and JANAF; comparison is not independent validation of every VO2 thermal state.",
+        "Figure4 updates VO and VO2 together using Asplund2009 abundances at1bar. It is not a VO2-only sensitivity experiment in our Asplund2021 network."
+      ]
+    }
+  ],
+  "follow_ups": [
+    "Obtain Gunina2012 main text, then reconcile the inspected Balducci1983 reactions using common V/O/VO/EuO references and modern thermal functions; investigate abstract/body uncertainty mismatch and shared-reference covariance. Original EuO auxiliary papers are still uninspected.",
+    "Inspect Gurvich1982 original evaluation before attributing every NASA thermal feature.",
+    "Rebuild neutral VO2 electronic and rovibrational sums from resolved spectroscopy, audit state completeness and anharmonicity over1500-4000K, and compare Cp as well asQ.",
+    "Only after choosing a consistent candidate, run VO2-only finite mixture substitutions and relevant condensation/physical benchmarks."
+  ]
+}

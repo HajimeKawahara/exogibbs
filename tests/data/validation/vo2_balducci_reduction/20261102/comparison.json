@@ -1,0 +1,1041 @@
+{
+  "source": "Balducci et al. 1983 Table I; printed observations retained without correction",
+  "second_law": [
+    {
+      "reaction": 1,
+      "count": 11,
+      "arithmetic_mean_temperature_K": 2060.0,
+      "harmonic_mean_temperature_K": 2057.3443435615186,
+      "printed_temperature_K": 2057,
+      "OLS_H_T_kJ_mol": 169.51864279971934,
+      "OLS_slope_standard_error_kJ_mol": 4.217909372883278,
+      "printed_H_T_kJ_mol": 169.5,
+      "printed_H_T_uncertainty_kJ_mol": 4.2,
+      "printed_row_H0_mean_kJ_mol": 157.43636363636367,
+      "printed_row_H0_sample_std_kJ_mol": 0.4904543348217602,
+      "scope": "Unweighted OLS of printed lnK, not a new combined physical error budget."
+    },
+    {
+      "reaction": 2,
+      "count": 21,
+      "arithmetic_mean_temperature_K": 2049.4761904761904,
+      "harmonic_mean_temperature_K": 2046.1649375426794,
+      "printed_temperature_K": 1046,
+      "OLS_H_T_kJ_mol": -86.97840151116976,
+      "OLS_slope_standard_error_kJ_mol": 3.087553520077813,
+      "printed_H_T_kJ_mol": -87.0,
+      "printed_H_T_uncertainty_kJ_mol": 3.1,
+      "printed_row_H0_mean_kJ_mol": -73.77619047619046,
+      "printed_row_H0_sample_std_kJ_mol": 0.6081979627594633,
+      "scope": "Unweighted OLS of printed lnK, not a new combined physical error budget.",
+      "H0_reduced_at_harmonic_temperature_kJ_mol": -73.8995499892614,
+      "printed_second_law_H0_kJ_mol": -73.8
+    },
+    {
+      "reaction": 3,
+      "count": 16,
+      "arithmetic_mean_temperature_K": 2082.625,
+      "harmonic_mean_temperature_K": 2078.6941328584508,
+      "printed_temperature_K": 2076,
+      "OLS_H_T_kJ_mol": 81.48172454872943,
+      "OLS_slope_standard_error_kJ_mol": 4.150482083240058,
+      "printed_H_T_kJ_mol": 82.0,
+      "printed_H_T_uncertainty_kJ_mol": 2.9,
+      "printed_row_H0_mean_kJ_mol": 83.775,
+      "printed_row_H0_sample_std_kJ_mol": 0.5347896782848375,
+      "scope": "Unweighted OLS of printed lnK, not a new combined physical error budget."
+    }
+  ],
+  "reaction_cycle": {
+    "identity": "Reaction 3 = reaction 1 + reaction 2",
+    "overlapping_rows": [
+      {
+        "temperature_K": 2080.0,
+        "lnK3_minus_lnK1_minus_lnK2": -0.004999999999999893
+      },
+      {
+        "temperature_K": 2087.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.0
+      },
+      {
+        "temperature_K": 2168.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.005000000000000782
+      },
+      {
+        "temperature_K": 2081.0,
+        "lnK3_minus_lnK1_minus_lnK2": -0.004999999999999893
+      },
+      {
+        "temperature_K": 2178.0,
+        "lnK3_minus_lnK1_minus_lnK2": 8.881784197001252e-16
+      },
+      {
+        "temperature_K": 1971.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.005000000000000782
+      },
+      {
+        "temperature_K": 1913.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.0
+      },
+      {
+        "temperature_K": 2059.0,
+        "lnK3_minus_lnK1_minus_lnK2": -0.004999999999999893
+      },
+      {
+        "temperature_K": 2044.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.004999999999999005
+      },
+      {
+        "temperature_K": 2010.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.0
+      },
+      {
+        "temperature_K": 2069.0,
+        "lnK3_minus_lnK1_minus_lnK2": 0.0
+      }
+    ],
+    "max_abs_lnK_closure": 0.005000000000000782,
+    "historical_D0_route2": "2 D0(EuO) + 2 H0(1) + H0(2)",
+    "historical_D0_route3": "2 D0(EuO) + H0(1) + H0(3)",
+    "covariance": "Both routes share EuO twice, VO, and overlapping equilibrium observations; no independent pooling or new combined uncertainty."
+  },
+  "third_law_reaction2": {
+    "nodes": [
+      {
+        "temperature_K": 2080.0,
+        "lnK2": 5.55,
+        "printed_H0_kJ_mol": -74.2,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.93540096239158,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.1630427339769,
+        "residual_assume_1atm_kJ_mol": 0.03695726602310856
+      },
+      {
+        "temperature_K": 2087.0,
+        "lnK2": 5.51,
+        "printed_H0_kJ_mol": -74.8,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.53506419145307,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.7634720651543,
+        "residual_assume_1atm_kJ_mol": 1.0365279348456937
+      },
+      {
+        "temperature_K": 2186.0,
+        "lnK2": 5.335,
+        "printed_H0_kJ_mol": -74.7,
+        "H0_assume_tableIV_1bar_kJ_mol": -74.49451512291144,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.73375786939485,
+        "residual_assume_1atm_kJ_mol": -0.03375786939484726
+      },
+      {
+        "temperature_K": 2168.0,
+        "lnK2": 5.305,
+        "printed_H0_kJ_mol": -73.5,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.22502119273325,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.46229396234718,
+        "residual_assume_1atm_kJ_mol": 0.037706037652824875
+      },
+      {
+        "temperature_K": 2063.0,
+        "lnK2": 5.585,
+        "printed_H0_kJ_mol": -74.1,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.82314144893179,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.04892268680703,
+        "residual_assume_1atm_kJ_mol": 0.05107731319296249
+      },
+      {
+        "temperature_K": 2081.0,
+        "lnK2": 5.54,
+        "printed_H0_kJ_mol": -74.0,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.80432959801352,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.03208081275825,
+        "residual_assume_1atm_kJ_mol": -0.032080812758252364
+      },
+      {
+        "temperature_K": 2178.0,
+        "lnK2": 5.31,
+        "printed_H0_kJ_mol": -74.0,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.717814507507,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.95618170871508,
+        "residual_assume_1atm_kJ_mol": 0.04381829128492143
+      },
+      {
+        "temperature_K": 1971.0,
+        "lnK2": 5.795,
+        "printed_H0_kJ_mol": -73.6,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.39521946431856,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.61093193152753,
+        "residual_assume_1atm_kJ_mol": -0.010931931527537131
+      },
+      {
+        "temperature_K": 1913.0,
+        "lnK2": 5.97,
+        "printed_H0_kJ_mol": -73.9,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.6493664137266,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.85873117768944,
+        "residual_assume_1atm_kJ_mol": 0.041268822310570386
+      },
+      {
+        "temperature_K": 1915.0,
+        "lnK2": 5.915,
+        "printed_H0_kJ_mol": -73.1,
+        "H0_assume_tableIV_1bar_kJ_mol": -72.86355092326349,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.07313457354516,
+        "residual_assume_1atm_kJ_mol": 0.02686542645483314
+      },
+      {
+        "temperature_K": 2059.0,
+        "lnK2": 5.55,
+        "printed_H0_kJ_mol": -73.3,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.05527556267401,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.2806190279116,
+        "residual_assume_1atm_kJ_mol": 0.019380972088399062
+      },
+      {
+        "temperature_K": 2065.0,
+        "lnK2": 5.515,
+        "printed_H0_kJ_mol": -72.9,
+        "H0_assume_tableIV_1bar_kJ_mol": -72.70564865909719,
+        "H0_assume_tableIV_1atm_kJ_mol": -72.93164878329127,
+        "residual_assume_1atm_kJ_mol": -0.031648783291259974
+      },
+      {
+        "temperature_K": 2127.0,
+        "lnK2": 5.385,
+        "printed_H0_kJ_mol": -73.2,
+        "H0_assume_tableIV_1bar_kJ_mol": -72.99352298426949,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.22630858434736,
+        "residual_assume_1atm_kJ_mol": -0.02630858434736183
+      },
+      {
+        "temperature_K": 2129.0,
+        "lnK2": 5.35,
+        "printed_H0_kJ_mol": -72.7,
+        "H0_assume_tableIV_1bar_kJ_mol": -72.45549027202249,
+        "H0_assume_tableIV_1atm_kJ_mol": -72.68849475841918,
+        "residual_assume_1atm_kJ_mol": 0.01150524158082078
+      },
+      {
+        "temperature_K": 2044.0,
+        "lnK2": 5.57,
+        "printed_H0_kJ_mol": -73.0,
+        "H0_assume_tableIV_1bar_kJ_mol": -72.76743095524263,
+        "H0_assume_tableIV_1atm_kJ_mol": -72.99113277308896,
+        "residual_assume_1atm_kJ_mol": 0.008867226911036141
+      },
+      {
+        "temperature_K": 1933.0,
+        "lnK2": 5.895,
+        "printed_H0_kJ_mol": -73.6,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.3438261742883,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.55537980143946,
+        "residual_assume_1atm_kJ_mol": 0.044620198560537006
+      },
+      {
+        "temperature_K": 1926.0,
+        "lnK2": 5.97,
+        "printed_H0_kJ_mol": -74.5,
+        "H0_assume_tableIV_1bar_kJ_mol": -74.23407270213139,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.44486022716663,
+        "residual_assume_1atm_kJ_mol": 0.055139772833371126
+      },
+      {
+        "temperature_K": 2004.0,
+        "lnK2": 5.72,
+        "printed_H0_kJ_mol": -73.8,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.58903241550912,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.80835650697882,
+        "residual_assume_1atm_kJ_mol": -0.008356506978827838
+      },
+      {
+        "temperature_K": 2031.0,
+        "lnK2": 5.7,
+        "printed_H0_kJ_mol": -74.6,
+        "H0_assume_tableIV_1bar_kJ_mol": -74.41702396232532,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.63930301909924,
+        "residual_assume_1atm_kJ_mol": -0.03930301909925049
+      },
+      {
+        "temperature_K": 2010.0,
+        "lnK2": 5.73,
+        "printed_H0_kJ_mol": -74.2,
+        "H0_assume_tableIV_1bar_kJ_mol": -74.01507532288794,
+        "H0_assume_tableIV_1atm_kJ_mol": -74.23505607331413,
+        "residual_assume_1atm_kJ_mol": -0.03505607331412364
+      },
+      {
+        "temperature_K": 2069.0,
+        "lnK2": 5.545,
+        "printed_H0_kJ_mol": -73.6,
+        "H0_assume_tableIV_1bar_kJ_mol": -73.3881675673172,
+        "H0_assume_tableIV_1atm_kJ_mol": -73.61460546414894,
+        "residual_assume_1atm_kJ_mol": -0.014605464148942815
+      }
+    ],
+    "mean_H0_assume_1atm_kJ_mol": -73.7199197400534,
+    "mean_H0_assume_1bar_kJ_mol": -73.49561859061978,
+    "modern_VO_D0_kJ_mol": 631.496498747064,
+    "modern_VO_reanchor_keep_selected_minus74_kJ_mol": 1188.992997494128,
+    "modern_VO_reanchor_replayed_assume_1atm_kJ_mol": 1189.2730777540746,
+    "modern_VO_reanchor_replayed_assume_1bar_kJ_mol": 1189.4973789035082,
+    "thermal_variants": {
+      "vibrations": {
+        "mean_delta_reaction2_H0_kJ_mol": -9.347543268787671,
+        "second_law_delta_H0_kJ_mol": 1.4410206061544923,
+        "second_law_H0_kJ_mol": -72.4585293831069,
+        "third_law_mean_H0_assume_1atm_kJ_mol": -83.06746300884106,
+        "third_law_mean_H0_assume_1bar_kJ_mol": -82.84316185940745,
+        "second_minus_third_law_H0_assume_1atm_kJ_mol": 10.608933625734153,
+        "second_minus_third_law_H0_assume_1bar_kJ_mol": 10.384632476300538,
+        "modern_VO_reanchored_second_law_D0_kJ_mol": 1190.5344681110212,
+        "modern_VO_reanchored_D0_assume_1atm_kJ_mol": 1179.925534485287,
+        "modern_VO_reanchored_D0_assume_1bar_kJ_mol": 1180.1498356347206,
+        "observation_nodes": [
+          {
+            "temperature_K": 2080.0,
+            "delta_G_J_mol": -9508.104232397109,
+            "delta_H_J_mol": 1443.8211099128712,
+            "delta_S_J_mol_K": 5.265348722264413,
+            "delta_Cp_J_mol_K": 0.08144340733928068,
+            "delta_Phi_J_mol_K": 4.571203957883226,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.508104232397109
+          },
+          {
+            "temperature_K": 2087.0,
+            "delta_G_J_mol": -9544.962629577112,
+            "delta_H_J_mol": 1444.3893304446683,
+            "delta_S_J_mol_K": 5.265621447063623,
+            "delta_Cp_J_mol_K": 0.08090620030752582,
+            "delta_Phi_J_mol_K": 4.573532644742268,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.544962629577112
+          },
+          {
+            "temperature_K": 2186.0,
+            "delta_G_J_mol": -10066.440607191736,
+            "delta_H_J_mol": 1452.0414411410056,
+            "delta_S_J_mol_K": 5.269204962640779,
+            "delta_Cp_J_mol_K": 0.07384241732312091,
+            "delta_Phi_J_mol_K": 4.604959106675086,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -10.066440607191737
+          },
+          {
+            "temperature_K": 2168.0,
+            "delta_G_J_mol": -9971.60043518864,
+            "delta_H_J_mol": 1450.7013955338134,
+            "delta_S_J_mol_K": 5.268589405314785,
+            "delta_Cp_J_mol_K": 0.07505646541582767,
+            "delta_Phi_J_mol_K": 4.599446695197712,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.971600435188641
+          },
+          {
+            "temperature_K": 2063.0,
+            "delta_G_J_mol": -9418.599008234118,
+            "delta_H_J_mol": 1442.4253376565302,
+            "delta_S_J_mol_K": 5.26467491318015,
+            "delta_Cp_J_mol_K": 0.0827704277689314,
+            "delta_Phi_J_mol_K": 4.565486673889539,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.418599008234118
+          },
+          {
+            "temperature_K": 2081.0,
+            "delta_G_J_mol": -9513.369600687809,
+            "delta_H_J_mol": 1443.902514776535,
+            "delta_S_J_mol_K": 5.265387849814678,
+            "delta_Cp_J_mol_K": 0.08136633813375305,
+            "delta_Phi_J_mol_K": 4.571537530364156,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.51336960068781
+          },
+          {
+            "temperature_K": 2178.0,
+            "delta_G_J_mol": -10024.288052374779,
+            "delta_H_J_mol": 1451.4485619401985,
+            "delta_S_J_mol_K": 5.268933248078502,
+            "delta_Cp_J_mol_K": 0.07437834728248927,
+            "delta_Phi_J_mol_K": 4.602519766930569,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -10.024288052374779
+          },
+          {
+            "temperature_K": 1971.0,
+            "delta_G_J_mol": -8934.426549240306,
+            "delta_H_J_mol": 1434.4608351054158,
+            "delta_S_J_mol_K": 5.260724192970939,
+            "delta_Cp_J_mol_K": 0.09054442350337855,
+            "delta_Phi_J_mol_K": 4.53294091793014,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -8.934426549240307
+          },
+          {
+            "temperature_K": 1913.0,
+            "delta_G_J_mol": -8629.384129678994,
+            "delta_H_J_mol": 1429.0528268076505,
+            "delta_S_J_mol_K": 5.2579388167729455,
+            "delta_Cp_J_mol_K": 0.09601847749558967,
+            "delta_Phi_J_mol_K": 4.510916952262935,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -8.629384129678995
+          },
+          {
+            "temperature_K": 1915.0,
+            "delta_G_J_mol": -8639.90010759419,
+            "delta_H_J_mol": 1429.2446667801432,
+            "delta_S_J_mol_K": 5.25803904667067,
+            "delta_Cp_J_mol_K": 0.0958215954192827,
+            "delta_Phi_J_mol_K": 4.511697184122292,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -8.63990010759419
+          },
+          {
+            "temperature_K": 2059.0,
+            "delta_G_J_mol": -9397.540630169648,
+            "delta_H_J_mol": 1442.0936226914346,
+            "delta_S_J_mol_K": 5.264513964478428,
+            "delta_Cp_J_mol_K": 0.08308735600018213,
+            "delta_Phi_J_mol_K": 4.564128523637517,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.397540630169647
+          },
+          {
+            "temperature_K": 2065.0,
+            "delta_G_J_mol": -9429.128438226337,
+            "delta_H_J_mol": 1442.5907206491192,
+            "delta_S_J_mol_K": 5.264755040617654,
+            "delta_Cp_J_mol_K": 0.08261263970844723,
+            "delta_Phi_J_mol_K": 4.566163892603553,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.429128438226337
+          },
+          {
+            "temperature_K": 2127.0,
+            "delta_G_J_mol": -9755.617923345213,
+            "delta_H_J_mol": 1447.5656122727687,
+            "delta_S_J_mol_K": 5.267129071752695,
+            "delta_Cp_J_mol_K": 0.07793553409899268,
+            "delta_Phi_J_mol_K": 4.5865622582723145,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.755617923345213
+          },
+          {
+            "temperature_K": 2129.0,
+            "delta_G_J_mol": -9766.15225470266,
+            "delta_H_J_mol": 1447.721339036465,
+            "delta_S_J_mol_K": 5.267202251638857,
+            "delta_Cp_J_mol_K": 0.07779129605919,
+            "delta_Phi_J_mol_K": 4.587201622687957,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.766152254702659
+          },
+          {
+            "temperature_K": 2044.0,
+            "delta_G_J_mol": -9318.577493412373,
+            "delta_H_J_mol": 1440.8383090601965,
+            "delta_S_J_mol_K": 5.263902056004192,
+            "delta_Cp_J_mol_K": 0.08429210788661745,
+            "delta_Phi_J_mol_K": 4.558990945896464,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.318577493412374
+          },
+          {
+            "temperature_K": 1933.0,
+            "delta_G_J_mol": -8734.552841894641,
+            "delta_H_J_mol": 1430.9536772307401,
+            "delta_S_J_mol_K": 5.2589273249484645,
+            "delta_Cp_J_mol_K": 0.09407642613307043,
+            "delta_Phi_J_mol_K": 4.518651237400229,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -8.734552841894642
+          },
+          {
+            "temperature_K": 1926.0,
+            "delta_G_J_mol": -8697.741547283864,
+            "delta_H_J_mol": 1430.2927909162772,
+            "delta_S_J_mol_K": 5.258584806957498,
+            "delta_Cp_J_mol_K": 0.09474942737774761,
+            "delta_Phi_J_mol_K": 4.515961343345723,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -8.697741547283863
+          },
+          {
+            "temperature_K": 2004.0,
+            "delta_G_J_mol": -9108.055053658141,
+            "delta_H_J_mol": 1437.4004093355288,
+            "delta_S_J_mol_K": 5.262203324847141,
+            "delta_Cp_J_mol_K": 0.08763520934947078,
+            "delta_Phi_J_mol_K": 4.544937651526019,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.108055053658141
+          },
+          {
+            "temperature_K": 2031.0,
+            "delta_G_J_mol": -9250.150273432484,
+            "delta_H_J_mol": 1439.7356086658128,
+            "delta_S_J_mol_K": 5.263360847906596,
+            "delta_Cp_J_mol_K": 0.08535743377694427,
+            "delta_Phi_J_mol_K": 4.5544806860819715,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.250150273432483
+          },
+          {
+            "temperature_K": 2010.0,
+            "delta_G_J_mol": -9139.629058425593,
+            "delta_H_J_mol": 1437.9246765066582,
+            "delta_S_J_mol_K": 5.262464544742413,
+            "delta_Cp_J_mol_K": 0.0871212659539955,
+            "delta_Phi_J_mol_K": 4.547079133545071,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.139629058425593
+          },
+          {
+            "temperature_K": 2069.0,
+            "delta_G_J_mol": -9450.18777782535,
+            "delta_H_J_mol": 1442.9205421472961,
+            "delta_S_J_mol_K": 5.264914606076677,
+            "delta_Cp_J_mol_K": 0.0822984072138242,
+            "delta_Phi_J_mol_K": 4.567514634038352,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -9.450187777825349
+          }
+        ]
+      },
+      "electronic": {
+        "mean_delta_reaction2_H0_kJ_mol": -5.267212842552037,
+        "second_law_delta_H0_kJ_mol": 5.166298202872371,
+        "second_law_H0_kJ_mol": -68.73325178638903,
+        "third_law_mean_H0_assume_1atm_kJ_mol": -78.98713258260544,
+        "third_law_mean_H0_assume_1bar_kJ_mol": -78.76283143317181,
+        "second_minus_third_law_H0_assume_1atm_kJ_mol": 10.253880796216407,
+        "second_minus_third_law_H0_assume_1bar_kJ_mol": 10.029579646782778,
+        "modern_VO_reanchored_second_law_D0_kJ_mol": 1194.259745707739,
+        "modern_VO_reanchored_D0_assume_1atm_kJ_mol": 1184.0058649115226,
+        "modern_VO_reanchored_D0_assume_1bar_kJ_mol": 1184.2301660609562,
+        "observation_nodes": [
+          {
+            "temperature_K": 2080.0,
+            "delta_G_J_mol": -5418.589920964971,
+            "delta_H_J_mol": 5263.473909369608,
+            "delta_S_J_mol_K": 5.135607610737778,
+            "delta_Cp_J_mol_K": 2.8707222455372876,
+            "delta_Phi_J_mol_K": 2.605091308156236,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.418589920964971
+          },
+          {
+            "temperature_K": 2087.0,
+            "delta_G_J_mol": -5454.572948218425,
+            "delta_H_J_mol": 5283.567232125516,
+            "delta_S_J_mol_K": 5.145251643672228,
+            "delta_Cp_J_mol_K": 2.8702312705135236,
+            "delta_Phi_J_mol_K": 2.613595087790333,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.454572948218425
+          },
+          {
+            "temperature_K": 2186.0,
+            "delta_G_J_mol": -5970.584039057585,
+            "delta_H_J_mol": 5567.457268864818,
+            "delta_S_J_mol_K": 5.278152473889479,
+            "delta_Cp_J_mol_K": 2.865563924104402,
+            "delta_Phi_J_mol_K": 2.731282726009874,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.970584039057585
+          },
+          {
+            "temperature_K": 2168.0,
+            "delta_G_J_mol": -5875.790254614128,
+            "delta_H_J_mol": 5515.872071668093,
+            "delta_S_J_mol_K": 5.2544567925656,
+            "delta_Cp_J_mol_K": 2.8661414672456482,
+            "delta_Phi_J_mol_K": 2.7102353572943394,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.875790254614127
+          },
+          {
+            "temperature_K": 2063.0,
+            "delta_G_J_mol": -5331.484598841803,
+            "delta_H_J_mol": 5214.660805689176,
+            "delta_S_J_mol_K": 5.112043337145409,
+            "delta_Cp_J_mol_K": 2.8720217011797624,
+            "delta_Phi_J_mol_K": 2.5843357241113925,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.3314845988418025
+          },
+          {
+            "temperature_K": 2081.0,
+            "delta_G_J_mol": -5423.726218536856,
+            "delta_H_J_mol": 5266.344595736049,
+            "delta_S_J_mol_K": 5.136987416757763,
+            "delta_Cp_J_mol_K": 2.870650573339432,
+            "delta_Phi_J_mol_K": 2.606307649465092,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.423726218536856
+          },
+          {
+            "temperature_K": 2178.0,
+            "delta_G_J_mol": -5928.400819573142,
+            "delta_H_J_mol": 5544.531793319866,
+            "delta_S_J_mol_K": 5.267645827774567,
+            "delta_Cp_J_mol_K": 2.865808181038192,
+            "delta_Phi_J_mol_K": 2.721947116424767,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.928400819573143
+          },
+          {
+            "temperature_K": 1971.0,
+            "delta_G_J_mol": -4867.163921749802,
+            "delta_H_J_mol": 4950.012111332872,
+            "delta_S_J_mol_K": 4.980809758032813,
+            "delta_Cp_J_mol_K": 2.8821587048739996,
+            "delta_Phi_J_mol_K": 2.4693880881531216,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -4.867163921749802
+          },
+          {
+            "temperature_K": 1913.0,
+            "delta_G_J_mol": -4580.763596253584,
+            "delta_H_J_mol": 4782.579395920465,
+            "delta_S_J_mol_K": 4.894585986499765,
+            "delta_Cp_J_mol_K": 2.8918733379930273,
+            "delta_Phi_J_mol_K": 2.394544483143536,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -4.580763596253584
+          },
+          {
+            "temperature_K": 1915.0,
+            "delta_G_J_mol": -4590.555790429782,
+            "delta_H_J_mol": 4788.362756583541,
+            "delta_S_J_mol_K": 4.897607596351605,
+            "delta_Cp_J_mol_K": 2.8914879613306836,
+            "delta_Phi_J_mol_K": 2.397157070720513,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -4.590555790429782
+          },
+          {
+            "temperature_K": 2059.0,
+            "delta_G_J_mol": -5311.047570383748,
+            "delta_H_J_mol": 5203.172064435098,
+            "delta_S_J_mol_K": 5.106468982427803,
+            "delta_Cp_J_mol_K": 2.872350424342494,
+            "delta_Phi_J_mol_K": 2.579430582993564,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.3110475703837485
+          },
+          {
+            "temperature_K": 2065.0,
+            "delta_G_J_mol": -5341.7114688803385,
+            "delta_H_J_mol": 5220.404687712565,
+            "delta_S_J_mol_K": 5.11482622595298,
+            "delta_Cp_J_mol_K": 2.871860692050152,
+            "delta_Phi_J_mol_K": 2.5867852149541593,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.341711468880338
+          },
+          {
+            "temperature_K": 2127.0,
+            "delta_G_J_mol": -5661.4759621319145,
+            "delta_H_J_mol": 5398.326892427873,
+            "delta_S_J_mol_K": 5.19971925461203,
+            "delta_Cp_J_mol_K": 2.8678733868059183,
+            "delta_Phi_J_mol_K": 2.6617188350408623,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.661475962131915
+          },
+          {
+            "temperature_K": 2129.0,
+            "delta_G_J_mol": -5671.878096401996,
+            "delta_H_J_mol": 5404.062539517552,
+            "delta_S_J_mol_K": 5.202414577698238,
+            "delta_Cp_J_mol_K": 2.867773976538741,
+            "delta_Phi_J_mol_K": 2.664104319587598,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.671878096401996
+          },
+          {
+            "temperature_K": 2044.0,
+            "delta_G_J_mol": -5234.60788156363,
+            "delta_H_J_mol": 5160.077112056053,
+            "delta_S_J_mol_K": 5.085462325645637,
+            "delta_Cp_J_mol_K": 2.873665159639244,
+            "delta_Phi_J_mol_K": 2.5609627600604843,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.2346078815636305
+          },
+          {
+            "temperature_K": 1933.0,
+            "delta_G_J_mol": -4678.956475920454,
+            "delta_H_J_mol": 4840.3793909616115,
+            "delta_S_J_mol_K": 4.924643490368373,
+            "delta_Cp_J_mol_K": 2.8881880524832906,
+            "delta_Phi_J_mol_K": 2.4205672405175656,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -4.6789564759204545
+          },
+          {
+            "temperature_K": 1926.0,
+            "delta_G_J_mol": -4644.520627615697,
+            "delta_H_J_mol": 4820.157733488546,
+            "delta_S_J_mol_K": 4.914163219680292,
+            "delta_Cp_J_mol_K": 2.88943579647692,
+            "delta_Phi_J_mol_K": 2.41148526875166,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -4.644520627615697
+          },
+          {
+            "temperature_K": 2004.0,
+            "delta_G_J_mol": -5032.322038290103,
+            "delta_H_J_mol": 5045.050139940849,
+            "delta_S_J_mol_K": 5.02862883145257,
+            "delta_Cp_J_mol_K": 2.877857695196123,
+            "delta_Phi_J_mol_K": 2.511138741661728,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.032322038290102
+          },
+          {
+            "temperature_K": 2031.0,
+            "delta_G_J_mol": -5168.615939675217,
+            "delta_H_J_mol": 5122.711460270876,
+            "delta_S_J_mol_K": 5.0671232889936455,
+            "delta_Cp_J_mol_K": 2.874914098314466,
+            "delta_Phi_J_mol_K": 2.5448625995446665,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.168615939675218
+          },
+          {
+            "temperature_K": 2010.0,
+            "delta_G_J_mol": -5062.519632439438,
+            "delta_H_J_mol": 5062.315183333708,
+            "delta_S_J_mol_K": 5.03723125162843,
+            "delta_Cp_J_mol_K": 2.877160951293563,
+            "delta_Phi_J_mol_K": 2.5186664838007156,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.062519632439439
+          },
+          {
+            "temperature_K": 2069.0,
+            "delta_G_J_mol": -5362.1818920501555,
+            "delta_H_J_mol": 5231.891496742669,
+            "delta_S_J_mol_K": 5.120383464858785,
+            "delta_Cp_J_mol_K": 2.871545283344302,
+            "delta_Phi_J_mol_K": 2.591678053190022,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -5.362181892050155
+          }
+        ]
+      },
+      "combined": {
+        "mean_delta_reaction2_H0_kJ_mol": -14.614756111339707,
+        "second_law_delta_H0_kJ_mol": 6.6073188090268635,
+        "second_law_H0_kJ_mol": -67.29223118023454,
+        "third_law_mean_H0_assume_1atm_kJ_mol": -88.33467585139309,
+        "third_law_mean_H0_assume_1bar_kJ_mol": -88.1103747019595,
+        "second_minus_third_law_H0_assume_1atm_kJ_mol": 21.04244467115855,
+        "second_minus_third_law_H0_assume_1bar_kJ_mol": 20.818143521724963,
+        "modern_VO_reanchored_second_law_D0_kJ_mol": 1195.7007663138936,
+        "modern_VO_reanchored_D0_assume_1atm_kJ_mol": 1174.658321642735,
+        "modern_VO_reanchored_D0_assume_1bar_kJ_mol": 1174.8826227921686,
+        "observation_nodes": [
+          {
+            "temperature_K": 2080.0,
+            "delta_G_J_mol": -14926.69415336208,
+            "delta_H_J_mol": 6707.295019282479,
+            "delta_S_J_mol_K": 10.40095633300219,
+            "delta_Cp_J_mol_K": 2.9521656528765683,
+            "delta_Phi_J_mol_K": 7.176295266039461,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.92669415336208
+          },
+          {
+            "temperature_K": 2087.0,
+            "delta_G_J_mol": -14999.535577795537,
+            "delta_H_J_mol": 6727.956562570184,
+            "delta_S_J_mol_K": 10.410873090735851,
+            "delta_Cp_J_mol_K": 2.9511374708210494,
+            "delta_Phi_J_mol_K": 7.1871277325326,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.999535577795537
+          },
+          {
+            "temperature_K": 2186.0,
+            "delta_G_J_mol": -16037.024646249321,
+            "delta_H_J_mol": 7019.498710005823,
+            "delta_S_J_mol_K": 10.547357436530257,
+            "delta_Cp_J_mol_K": 2.939406341427523,
+            "delta_Phi_J_mol_K": 7.336241832684959,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -16.03702464624932
+          },
+          {
+            "temperature_K": 2168.0,
+            "delta_G_J_mol": -15847.390689802767,
+            "delta_H_J_mol": 6966.573467201906,
+            "delta_S_J_mol_K": 10.523046197880385,
+            "delta_Cp_J_mol_K": 2.941197932661476,
+            "delta_Phi_J_mol_K": 7.309682052492051,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -15.847390689802767
+          },
+          {
+            "temperature_K": 2063.0,
+            "delta_G_J_mol": -14750.083607075921,
+            "delta_H_J_mol": 6657.086143345707,
+            "delta_S_J_mol_K": 10.37671825032556,
+            "delta_Cp_J_mol_K": 2.954792128948694,
+            "delta_Phi_J_mol_K": 7.149822398000931,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.750083607075922
+          },
+          {
+            "temperature_K": 2081.0,
+            "delta_G_J_mol": -14937.095819224665,
+            "delta_H_J_mol": 6710.247110512584,
+            "delta_S_J_mol_K": 10.402375266572442,
+            "delta_Cp_J_mol_K": 2.952016911473185,
+            "delta_Phi_J_mol_K": 7.177845179829248,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.937095819224666
+          },
+          {
+            "temperature_K": 2178.0,
+            "delta_G_J_mol": -15952.688871947921,
+            "delta_H_J_mol": 6995.980355260064,
+            "delta_S_J_mol_K": 10.53657907585307,
+            "delta_Cp_J_mol_K": 2.940186528320681,
+            "delta_Phi_J_mol_K": 7.324466883355336,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -15.95268887194792
+          },
+          {
+            "temperature_K": 1971.0,
+            "delta_G_J_mol": -13801.590470990108,
+            "delta_H_J_mol": 6384.472946438288,
+            "delta_S_J_mol_K": 10.241533951003753,
+            "delta_Cp_J_mol_K": 2.972703128377378,
+            "delta_Phi_J_mol_K": 7.0023290060832615,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -13.801590470990108
+          },
+          {
+            "temperature_K": 1913.0,
+            "delta_G_J_mol": -13210.147725932578,
+            "delta_H_J_mol": 6211.632222728115,
+            "delta_S_J_mol_K": 10.152524803272708,
+            "delta_Cp_J_mol_K": 2.987891815488617,
+            "delta_Phi_J_mol_K": 6.905461435406471,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -13.210147725932579
+          },
+          {
+            "temperature_K": 1915.0,
+            "delta_G_J_mol": -13230.455898023973,
+            "delta_H_J_mol": 6217.607423363685,
+            "delta_S_J_mol_K": 10.155646643022274,
+            "delta_Cp_J_mol_K": 2.9873095567499663,
+            "delta_Phi_J_mol_K": 6.908854254842805,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -13.230455898023973
+          },
+          {
+            "temperature_K": 2059.0,
+            "delta_G_J_mol": -14708.588200553397,
+            "delta_H_J_mol": 6645.265687126533,
+            "delta_S_J_mol_K": 10.37098294690623,
+            "delta_Cp_J_mol_K": 2.955437780342676,
+            "delta_Phi_J_mol_K": 7.1435591066310815,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.708588200553397
+          },
+          {
+            "temperature_K": 2065.0,
+            "delta_G_J_mol": -14770.839907106674,
+            "delta_H_J_mol": 6662.995408361684,
+            "delta_S_J_mol_K": 10.379581266570634,
+            "delta_Cp_J_mol_K": 2.9544733317585994,
+            "delta_Phi_J_mol_K": 7.152949107557712,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.770839907106675
+          },
+          {
+            "temperature_K": 2127.0,
+            "delta_G_J_mol": -15417.093885477127,
+            "delta_H_J_mol": 6845.892504700641,
+            "delta_S_J_mol_K": 10.466848326364724,
+            "delta_Cp_J_mol_K": 2.945808920904911,
+            "delta_Phi_J_mol_K": 7.248281093313176,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -15.417093885477126
+          },
+          {
+            "temperature_K": 2129.0,
+            "delta_G_J_mol": -15438.030351104655,
+            "delta_H_J_mol": 6851.783878554017,
+            "delta_S_J_mol_K": 10.469616829337093,
+            "delta_Cp_J_mol_K": 2.945565272597931,
+            "delta_Phi_J_mol_K": 7.251305942275554,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -15.438030351104654
+          },
+          {
+            "temperature_K": 2044.0,
+            "delta_G_J_mol": -14553.185374976003,
+            "delta_H_J_mol": 6600.9154211162495,
+            "delta_S_J_mol_K": 10.34936438164983,
+            "delta_Cp_J_mol_K": 2.9579572675258614,
+            "delta_Phi_J_mol_K": 7.119953705956949,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.553185374976003
+          },
+          {
+            "temperature_K": 1933.0,
+            "delta_G_J_mol": -13413.509317815096,
+            "delta_H_J_mol": 6271.333068192352,
+            "delta_S_J_mol_K": 10.183570815316838,
+            "delta_Cp_J_mol_K": 2.982264478616361,
+            "delta_Phi_J_mol_K": 6.939218477917795,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -13.413509317815096
+          },
+          {
+            "temperature_K": 1926.0,
+            "delta_G_J_mol": -13342.26217489956,
+            "delta_H_J_mol": 6250.450524404823,
+            "delta_S_J_mol_K": 10.172748026637791,
+            "delta_Cp_J_mol_K": 2.984185223854668,
+            "delta_Phi_J_mol_K": 6.927446612097383,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -13.342262174899561
+          },
+          {
+            "temperature_K": 2004.0,
+            "delta_G_J_mol": -14140.377091948245,
+            "delta_H_J_mol": 6482.450549276377,
+            "delta_S_J_mol_K": 10.290832156299713,
+            "delta_Cp_J_mol_K": 2.9654929045455938,
+            "delta_Phi_J_mol_K": 7.056076393187747,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.140377091948245
+          },
+          {
+            "temperature_K": 2031.0,
+            "delta_G_J_mol": -14418.766213107701,
+            "delta_H_J_mol": 6562.447068936689,
+            "delta_S_J_mol_K": 10.330484136900242,
+            "delta_Cp_J_mol_K": 2.96027153209141,
+            "delta_Phi_J_mol_K": 7.099343285626638,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.418766213107702
+          },
+          {
+            "temperature_K": 2010.0,
+            "delta_G_J_mol": -14202.148690865031,
+            "delta_H_J_mol": 6500.239859840366,
+            "delta_S_J_mol_K": 10.299695796370845,
+            "delta_Cp_J_mol_K": 2.9642822172475585,
+            "delta_Phi_J_mol_K": 7.065745617345787,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.202148690865032
+          },
+          {
+            "temperature_K": 2069.0,
+            "delta_G_J_mol": -14812.369669875505,
+            "delta_H_J_mol": 6674.812038889965,
+            "delta_S_J_mol_K": 10.385298070935463,
+            "delta_Cp_J_mol_K": 2.9538436905581262,
+            "delta_Phi_J_mol_K": 7.159192687228374,
+            "delta_third_law_reaction2_or3_H0_kJ_mol": -14.812369669875505
+          }
+        ]
+      }
+    }
+  },
+  "thermal_samples": {
+    "vibrations": [
+      {
+        "temperature_K": 1500.0,
+        "delta_G_J_mol": -6463.295633277375,
+        "delta_H_J_mol": 1378.7481447014416,
+        "delta_S_J_mol_K": 5.228029185319211,
+        "delta_Cp_J_mol_K": 0.15444474022338905,
+        "delta_Phi_J_mol_K": 4.308863755518249,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -6.463295633277375
+      },
+      {
+        "temperature_K": 2000.0,
+        "delta_G_J_mol": -9087.006590891955,
+        "delta_H_J_mol": 1437.049178881478,
+        "delta_S_J_mol_K": 5.262027884886717,
+        "delta_Cp_J_mol_K": 0.0879803549709175,
+        "delta_Phi_J_mol_K": 4.543503295445977,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -9.087006590891955
+      },
+      {
+        "temperature_K": 3000.0,
+        "delta_G_J_mol": -14363.747038285135,
+        "delta_H_J_mol": 1495.9892837587795,
+        "delta_S_J_mol_K": 5.286578774014639,
+        "delta_Cp_J_mol_K": 0.03946165988535455,
+        "delta_Phi_J_mol_K": 4.787915679428378,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -14.363747038285135
+      },
+      {
+        "temperature_K": 4000.0,
+        "delta_G_J_mol": -19655.26420026434,
+        "delta_H_J_mol": 1525.635545286299,
+        "delta_S_J_mol_K": 5.29522493638766,
+        "delta_Cp_J_mol_K": 0.022268878398650216,
+        "delta_Phi_J_mol_K": 4.913816050066085,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -19.65526420026434
+      }
+    ],
+    "electronic": [
+      {
+        "temperature_K": 1500.0,
+        "delta_G_J_mol": -2700.87383041111,
+        "delta_H_J_mol": 3556.8516760325515,
+        "delta_S_J_mol_K": 4.171817004295774,
+        "delta_Cp_J_mol_K": 3.0882523383462375,
+        "delta_Phi_J_mol_K": 1.8005825536074065,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -2.7008738304111097
+      },
+      {
+        "temperature_K": 2000.0,
+        "delta_G_J_mol": -5012.219019703147,
+        "delta_H_J_mol": 5033.537755830293,
+        "delta_S_J_mol_K": 5.02287838776672,
+        "delta_Cp_J_mol_K": 2.8783362537005672,
+        "delta_Phi_J_mol_K": 2.5061095098515733,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -5.012219019703147
+      },
+      {
+        "temperature_K": 3000.0,
+        "delta_G_J_mol": -10655.076261269884,
+        "delta_H_J_mol": 7892.661469132964,
+        "delta_S_J_mol_K": 6.182579243467616,
+        "delta_Cp_J_mol_K": 2.8313903866050674,
+        "delta_Phi_J_mol_K": 3.551692087089961,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -10.655076261269883
+      },
+      {
+        "temperature_K": 4000.0,
+        "delta_G_J_mol": -17255.327313220318,
+        "delta_H_J_mol": 10618.571401207719,
+        "delta_S_J_mol_K": 6.968474678607009,
+        "delta_Cp_J_mol_K": 2.585689396871603,
+        "delta_Phi_J_mol_K": 4.313831828305079,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -17.255327313220317
+      }
+    ],
+    "combined": [
+      {
+        "temperature_K": 1500.0,
+        "delta_G_J_mol": -9164.169463688484,
+        "delta_H_J_mol": 4935.599820733993,
+        "delta_S_J_mol_K": 9.399846189614985,
+        "delta_Cp_J_mol_K": 3.2426970785696265,
+        "delta_Phi_J_mol_K": 6.109446309125656,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -9.164169463688484
+      },
+      {
+        "temperature_K": 2000.0,
+        "delta_G_J_mol": -14099.225610595102,
+        "delta_H_J_mol": 6470.5869347117705,
+        "delta_S_J_mol_K": 10.284906272653435,
+        "delta_Cp_J_mol_K": 2.9663166086714847,
+        "delta_Phi_J_mol_K": 7.049612805297551,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -14.099225610595102
+      },
+      {
+        "temperature_K": 3000.0,
+        "delta_G_J_mol": -25018.82329955502,
+        "delta_H_J_mol": 9388.650752891743,
+        "delta_S_J_mol_K": 11.469158017482254,
+        "delta_Cp_J_mol_K": 2.870852046490422,
+        "delta_Phi_J_mol_K": 8.33960776651834,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -25.01882329955502
+      },
+      {
+        "temperature_K": 4000.0,
+        "delta_G_J_mol": -36910.59151348466,
+        "delta_H_J_mol": 12144.206946494018,
+        "delta_S_J_mol_K": 12.263699614994668,
+        "delta_Cp_J_mol_K": 2.6079582752702533,
+        "delta_Phi_J_mol_K": 9.227647878371165,
+        "delta_third_law_reaction2_or3_H0_kJ_mol": -36.91059151348466
+      }
+    ]
+  },
+  "vibration_components_2000K": {
+    "bend": {
+      "temperature_K": 2000.0,
+      "delta_G_J_mol": -8814.97805570779,
+      "delta_H_J_mol": 1331.014423191853,
+      "delta_S_J_mol_K": 5.072996239449822,
+      "delta_Cp_J_mol_K": 0.07271655061802207,
+      "delta_Phi_J_mol_K": 4.407489027853895,
+      "delta_third_law_reaction2_or3_H0_kJ_mol": -8.81497805570779
+    },
+    "symmetric_stretch": {
+      "temperature_K": 2000.0,
+      "delta_G_J_mol": -272.0285351841612,
+      "delta_H_J_mol": 106.03475568962858,
+      "delta_S_J_mol_K": 0.1890316454368949,
+      "delta_Cp_J_mol_K": 0.015263804352897203,
+      "delta_Phi_J_mol_K": 0.1360142675920806,
+      "delta_third_law_reaction2_or3_H0_kJ_mol": -0.2720285351841612
+    }
+  },
+  "limitations": [
+    "Table I contains published equilibrium estimates after ion fragmentation, multiple-ionization, cross-section and multiplier-gain corrections; the underlying ion-intensity readings and full calibration covariance are unavailable. No raw instrument reprocessing is claimed.",
+    "Unweighted second-law fits reproduce the printed reaction 1 and 2 slopes and standard errors. Reaction 3 does not reproduce the printed 82.0 +/- 2.9 kJ/mol; original fit weighting, grouping, unrounded observations or printing differences remain unresolved. No data points are removed or changed.",
+    "Table I prints reaction 2 average temperature as 1046 K although its observations span 1913-2186 K; the separately calculated harmonic mean is about 2046 K. The original value is retained, not silently corrected.",
+    "At 2087 K Table I prints lnK2=5.51 and H0(2)=-74.8 kJ/mol. They do not close in the present third-law replay; both were visually rechecked and retained. No inferred correction is treated as an observation.",
+    "Original Table IV is used for VO2. Current official JANAF V/VO thermal tables are used on the H0 reference; the exact historical 1975 JANAF printed pages have not been independently compared. JANAF formation enthalpies and logKf are not used as modern energy anchors.",
+    "Table IV does not explicitly state its pressure convention. Separate 1 bar and 1 atm assumptions are retained. Every reaction has Delta nu=0, so a common standard-pressure conversion cancels; mixing a 1 atm VO2 table with 1 bar V/VO tables does not. Experimental pressures quoted in atm do not by themselves establish the Table IV convention.",
+    "Complete reaction 1 and 3 third-law re-reductions remain unavailable without the original Eu/EuO thermal functions. Their selected historical VO2 energies share EuO and VO references and must not be pooled as independent measurements.",
+    "The modern VO anchor is Merriles2020 D0=6.545(2) eV to V(4F3/2)+O(3P2), retained in current curated spectroscopy provenance. Its uncertainty is a conservative assigned limit, not stated as one sigma; no new combined VO2 uncertainty is assigned.",
+    "The partial thermal change leaves geometry, rotation, antisymmetric stretch, anharmonicity, higher electronic states and state-specific rovibrational functions unresolved. The old bent geometry and old antisymmetric frequency are held, not revalidated.",
+    "Applying the same partial thermal model to the second-law reduction moves inferred H0 by +delta H(VO2), while the third-law reduction moves by +delta G(VO2). Their combined-model results differ by about 21 kJ/mol. This failure of method agreement prevents interpreting the approximately 1175 kJ/mol third-law endpoint as a validated new D0; original equilibrium calibration and a complete thermal model require further evaluation.",
+    "No selected rounded H0 is refitted as an observation, no covariance-free pooling is performed, and no newly recommended D0 or curated update follows from this partial re-reduction."
+  ],
+  "adoption": "none; partial thermochemical re-reduction, not a calibrated recommended D0"
+}
