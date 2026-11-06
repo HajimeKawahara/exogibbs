@@ -24,9 +24,10 @@ NASA_ALTERNATIVES = {"n2o", "no2", "hno", "n2h4", "n2o5"}
 FASTCHEM = ROOT / "src/exogibbs/data/FastChem4/logK/logK.dat"
 
 
-def source_record(slug: str) -> dict:
+def source_record(slug: str, directory: Path | None = None) -> dict:
     """Reconstruct physical anchors from source tables, not frozen differences."""
-    directory = ROOT / f"tests/data/validation/{slug}_source_review/20261106"
+    if directory is None:
+        directory = ROOT / f"tests/data/validation/{slug}_source_review/20261106"
     inputs = json.loads((directory / "inputs.json").read_text())
     comparison = json.loads((directory / "comparison.json").read_text())
     composition, name = inputs["composition"], inputs["molecule"]
@@ -57,7 +58,7 @@ def source_record(slug: str) -> dict:
     paths = [FASTCHEM, directory / "inputs.json", directory / "comparison.json",
              directory / "nasa_records.json", directory / "sources.json"]
     paths.extend(directory / p for p in inputs["tables"].values())
-    for optional in ("literature.json", "partition_inputs.json", "conformer_gap_inputs.json", "identity.json"):
+    for optional in ("literature.json", "partition_inputs.json", "conformer_gap_inputs.json", "identity.json", "origin.json"):
         if (directory / optional).is_file():
             paths.append(directory / optional)
     return {"slug": slug, "molecule": name, "species": inputs["species_id"],
@@ -69,6 +70,12 @@ def source_record(slug: str) -> dict:
             "nasa_D0_J_mol": nasa_d0, "nasa_records": nasa,
             "quoted_ATcT_marginal_uncertainties_kJ_mol": {n: row["uncertainty_95pct_kJ_mol"] for n, row in inputs["atct"].items()},
             "source_sha256": {str(p.relative_to(ROOT)): file_hash(p) for p in sorted(set(paths))}}
+
+
+def companion_record(owner: str, companion: str) -> dict:
+    """Use a small local source copy, without another unmerged PR dependency."""
+    directory = ROOT / f"tests/data/validation/{owner}_candidate/20261106/companions/{companion}"
+    return source_record(companion, directory)
 
 
 def retained_spec(record: dict, d0_J_mol: float | None = None) -> dict:
@@ -135,14 +142,14 @@ def build(slug: str) -> dict:
     special = {}
     selected_variants = []
     if slug == "n2o4":
-        other = source_record("no2")
+        other = companion_record(slug, "no2")
         sources["no2"] = other
         variants.append({"name": "joint_no2_n2o4_atct", "replacements": {
             target["species"]: retained_spec(target), other["species"]: retained_spec(other)}})
         special["joint_scope"] = "Compare dimer-only and matched monomer/dimer energy changes on the same hot base. No low-temperature extrapolation or reactive-fluid EOS is used."
         special["association_delta_GH_J_mol"] = -target["delta_D0_J_mol"] + 2*other["delta_D0_J_mol"]
     if slug == "cis_hno2":
-        other = source_record("trans_hno2")
+        other = companion_record(slug, "trans_hno2")
         sources["trans_hno2"] = other
         gap_source = ROOT / "tests/data/validation/cis_hno2_source_review/20261106/comparison.json"
         gap = json.loads(gap_source.read_text())["conformer_gap"]
@@ -166,7 +173,7 @@ def build(slug: str) -> dict:
             "baseline_dataset": "curated-ch2-v1", "temperature_range_K": [1500, 4000],
             "standard_pressure_Pa": 100000, "gas_constant_J_mol_K": R, "native_NASA_R_J_mol_K": NASA_R,
             "target_species": target["species"], "tracked_elements": list(target["composition"]),
-            "primary_variant": 0, "variants": variants, "selected_variants": selected_variants,
+            "primary_variant": variants[0]["name"], "variants": variants, "selected_variants": selected_variants,
             "source_records": sources, "special_controls": special,
             "source_sha256": dict(sorted(pins.items())),
             "retained_scope": "Apply only the physical ATcT-minus-JANAF energy difference to the literal fit; retain all thermal terms and the source-fit residual. Formal R*a is not physical D0. No additional ZPE.",
