@@ -85,6 +85,7 @@ HCN differences with optional MCEG tooling.
    naoh_candidate
    koh_dimer_source_review
    koh_source_review
+   kcn_source_review
    koh_candidate
    ps_source_review
    ps_candidate
