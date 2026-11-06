@@ -61,6 +61,8 @@ The selected ions/atomization_route_H298 control gives target x/current 0.022824
 
 The selected neutral/atomization_route_H298 control gives target x/current 0.022824527 to 0.242326366 at its two recorded conditions. These are sampled controls, not extrema of a full-grid uncertainty envelope.
 
+The larger apparent changes in bulk P/S carriers above are numerical re-solve differences at this extremely small P4S3 inventory; they are not resolved physical redistribution driven by P4S3.
+
 Every species carrying a tracked element has its largest allocation response archived in ``summary.json``. Equilibrium-constant factors are not substituted for solved abundances. A finite hot hydrogen-rich inventory does not constrain photochemistry, transport, condensation or arbitrary atmospheric compositions.
 
 Numerical evidence and decision

@@ -100,7 +100,7 @@ evidence:
   - source: tests/data/validation/p4s3_source_review/20261106/comparison.json
     sha256: 73c40772eaab737d606f8f162de5c59a98c9105f479d696a0c341a45ce4ea411
   - source: documents/mceg/p4s3_candidate.rst
-    sha256: c7f6c55aff16ddaa5d8d0b74d9a910c46a2ff4944af402dfbd28eee2c9078f1c
+    sha256: 9cf654d96bf5905eaf07d8eb762eb66b41e3fd92665ac2b76b02fbed7cccb3ba
   provenance:
     role: primary
     location: documents/mceg/p4s3_candidate.rst
@@ -205,7 +205,7 @@ evidence:
   context: candidate_evaluation
   artifacts:
   - source: documents/mceg/p4s3_candidate.rst
-    sha256: c7f6c55aff16ddaa5d8d0b74d9a910c46a2ff4944af402dfbd28eee2c9078f1c
+    sha256: 9cf654d96bf5905eaf07d8eb762eb66b41e3fd92665ac2b76b02fbed7cccb3ba
   provenance:
     role: primary
     location: documents/mceg/p4s3_candidate.rst
@@ -220,7 +220,7 @@ subjects:
     benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
     benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
     benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
-    documents/mceg/p4s3_candidate.rst: c7f6c55aff16ddaa5d8d0b74d9a910c46a2ff4944af402dfbd28eee2c9078f1c
+    documents/mceg/p4s3_candidate.rst: 9cf654d96bf5905eaf07d8eb762eb66b41e3fd92665ac2b76b02fbed7cccb3ba
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
     examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
