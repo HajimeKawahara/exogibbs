@@ -1,0 +1,476 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.tio2_candidate.v1
+  name: TiO2 retained-energy measured RRHO thermal candidate
+  description: Evaluate one continuous molecular thermal correction while preserving source D0, atomic references
+    and current-fit residuals; quantify its bounded gas-network response.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:8f3adebef9cc313b4e07f032df13de69dcb12dbaaf61c110310387b40979a659
+    entry_points:
+    - mceg/reviews/tio2_candidate.py
+    - mceg/reviews/tio2_equilibrium_impact.py
+assumptions:
+- statement: The literal current fit plus the new-minus-NASA molecular G-H0 preserves its documented source D0 and
+    its full residual relative to that continuous thermal proxy; no unique 0K fit limit is assumed.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: Use measured48Ti16O2 rotation and gas fundamentals as harmonic frequencies, JANAF mass79.8788u, sigma2
+    and spin weight1; ground-state-only primary with separately reported electronic sensitivities.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: All species/elements/formula-matrix/budgets/baseline potentials are verified against named curated_cos
+    before reusing archives; selected baseline endpoints are solved afresh.
+  evidence:
+  - finite_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit
+    residual relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+  conditions:
+  - Continuous1500-4000K; no out-of-domain extrapolation.
+  - '75 ion-inclusive conditions: five temperatures,five pressures1e-6-100bar,three C/O values.'
+  - 75fresh+75reused endpoints,14selected controls,four standalone FastChem comparisons.
+  evidence:
+  - continuous_model
+  - finite_execution
+- kind: scientific_applicability
+  status: unknown
+  description: RRHO thermal sensitivity is scoped; complete high-temperature physical accuracy and planetary applicability
+    are not established.
+  conditions: []
+  evidence:
+  - source_scope
+  - decision_reasoning
+claims:
+- id: continuous_thermodynamics
+  revision: '1'
+  kind: numerical_verification
+  statement: The molecular RRHO thermal correction preserves the declared source energy and fit residual, and supports
+    continuous scalar/JAX derivative-consistent thermodynamics.
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+- id: finite_substitution
+  revision: '1'
+  kind: numerical_verification
+  statement: Fresh candidate endpoints and selected strict/path/H298/FastChem controls verify the fixed-network
+    response while recording unresolved numerical comparisons.
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+- id: candidate_direction
+  revision: '1'
+  kind: theoretical
+  statement: Prefer measured ground-state rotation and bending within the declared RRHO approximation for a scoped
+    thermal update; keep energy reevaluation and complete physical accuracy separate.
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+- id: universal_gibbs_resolution
+  revision: '1'
+  kind: numerical_verification
+  statement: Every same-model total-system Gibbs exchange is numerically resolved over the sampled conditions.
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Complete thermal/reaction uncertainty and atmosphere-specific physical accuracy are established across
+    intended applications.
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+evidence:
+- id: source_scope
+  kind: literature
+  summary: Pinned JANAF/NASA source record and measured ground-state spectroscopy establish conventions; Zhuang2010
+    primary abstract supports a selected A-state sensitivity rather than a complete excited-state model.
+  sources:
+  - tests/data/validation/tio2_source_review/20261106/inputs.json
+  - tests/data/validation/tio2_source_review/20261106/sources.json
+  - tests/data/validation/tio2_candidate/20261106/sources.json
+  - documents/mceg/tio2_candidate.rst
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  artifacts:
+  - source: tests/data/validation/tio2_source_review/20261106/inputs.json
+    sha256: 59102c2a49eab9d6c0e3ae90cabd2499b5ff9b75a55b6a045ca54fedf6db2596
+  - source: tests/data/validation/tio2_source_review/20261106/sources.json
+    sha256: 00c3f9c06f04828c583f944d0cc9ffc392dcca85bfa2de6fdeb16b3d3aaa8ad5
+  - source: tests/data/validation/tio2_candidate/20261106/sources.json
+    sha256: e3bf48ed8e7adfdacb923e23ecd02c304adefa99fa7a214d0dc97b8f758c5e41
+  - source: documents/mceg/tio2_candidate.rst
+    sha256: 5bab7622294fe6e4bb64c8d02cf7d20e5d76b477cf94db5444401c84a0ffa6f0
+  provenance:
+    role: primary
+    location: documents/mceg/tio2_candidate.rst
+    inspection: partial
+    note: Prior source access is preserved. New Zhuang2010 publisher abstract was inspected; complete article and
+      all ancestral experiments are not claimed. Scoped numerical verification is separate from complete physical
+      accuracy.
+- id: continuous_model
+  kind: numerical_test
+  summary: 2501-point independent source reconstruction and dense scalar/JAX checks, analytic/automatic G/H/S/Cp
+    derivatives, explicit native-R/H0 treatment and H298-anchor control.
+  sources:
+  - tests/data/validation/tio2_candidate/20261106/candidate.json
+  - tests/data/validation/tio2_candidate/20261106/validation.json
+  - tests/data/validation/tio2_candidate/20261106/receipt.json
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  artifacts:
+  - source: tests/data/validation/tio2_candidate/20261106/candidate.json
+    sha256: 81586500b343ddc3e9eb42be2af502d8748bf8f66c99eae931715c77910aa9af
+  - source: tests/data/validation/tio2_candidate/20261106/validation.json
+    sha256: 7bb69e2b1311903ecfd6d58f12c00049950429a06dc04f9cff0b73b26a2953b8
+  - source: tests/data/validation/tio2_candidate/20261106/receipt.json
+    sha256: 6184c8cbc72e8edf4e20814d3c84772e372f1913c8a85fafe1de45eaeb40871c
+  provenance:
+    role: primary
+    location: documents/mceg/tio2_candidate.rst
+    inspection: inspected
+    note: Prior source access is preserved. New Zhuang2010 publisher abstract was inspected; complete article and
+      all ancestral experiments are not claimed. Scoped numerical verification is separate from complete physical
+      accuracy.
+  result: passed
+- id: finite_execution
+  kind: numerical_test
+  summary: 75 verified reused baselines,75 fresh endpoints,six tighter cold endpoints,five finite-path nodes,three
+    H298 controls and four standalone FastChem comparisons.
+  sources:
+  - tests/data/validation/tio2_equilibrium_impact/20261106/summary.json
+  - tests/data/validation/tio2_equilibrium_impact/20261106/diagnostics.json
+  - tests/data/validation/tio2_equilibrium_impact/20261106/selected_diagnostics.json
+  - tests/data/validation/tio2_equilibrium_impact/20261106/ions.npz
+  - tests/data/validation/tio2_equilibrium_impact/20261106/receipt.json
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  artifacts:
+  - source: tests/data/validation/tio2_equilibrium_impact/20261106/summary.json
+    sha256: 596e070ef3747828886aceb83c64f8f9ca9a467e79ef0553bb6bc808376ccccd
+  - source: tests/data/validation/tio2_equilibrium_impact/20261106/diagnostics.json
+    sha256: 7e02fd29dc97b0c4dcce3947fc635465964d3857939bcb57681616a771f41ab6
+  - source: tests/data/validation/tio2_equilibrium_impact/20261106/selected_diagnostics.json
+    sha256: b0b687c1b0f8196b7558e0ca91e4404269e947fe778ff334ea176ca5921bf98c
+  - source: tests/data/validation/tio2_equilibrium_impact/20261106/ions.npz
+    sha256: f84db6ca18501bdcd913f2a22e67e75fc8cf2647cd410f69a17bc3a8541449e9
+  - source: tests/data/validation/tio2_equilibrium_impact/20261106/receipt.json
+    sha256: d5fba6205404b120a793bb3be950f7c37081ce5526cdeb9436e1a6bbf5adf720
+  provenance:
+    role: primary
+    location: documents/mceg/tio2_candidate.rst
+    inspection: inspected
+    note: Prior source access is preserved. New Zhuang2010 publisher abstract was inspected; complete article and
+      all ancestral experiments are not claimed. Scoped numerical verification is separate from complete physical
+      accuracy.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Measured inputs improve the central thermal description within the same RRHO approximation. A9-11% K
+    shift exceeds selected bend and electronic sensitivities, without quantifying omitted anharmonic or full excited-state
+    errors.
+  sources:
+  - documents/mceg/tio2_candidate.rst
+  - tests/data/validation/tio2_candidate/20261106/validation.json
+  - tests/data/validation/tio2_equilibrium_impact/20261106/summary.json
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  artifacts:
+  - source: documents/mceg/tio2_candidate.rst
+    sha256: 5bab7622294fe6e4bb64c8d02cf7d20e5d76b477cf94db5444401c84a0ffa6f0
+  - source: tests/data/validation/tio2_candidate/20261106/validation.json
+    sha256: 7bb69e2b1311903ecfd6d58f12c00049950429a06dc04f9cff0b73b26a2953b8
+  - source: tests/data/validation/tio2_equilibrium_impact/20261106/summary.json
+    sha256: 596e070ef3747828886aceb83c64f8f9ca9a467e79ef0553bb6bc808376ccccd
+  provenance:
+    role: primary
+    location: documents/mceg/tio2_candidate.rst
+    inspection: inspected
+    note: Prior source access is preserved. New Zhuang2010 publisher abstract was inspected; complete article and
+      all ancestral experiments are not claimed. Scoped numerical verification is separate from complete physical
+      accuracy.
+subjects:
+- id: tio2_retained_energy_rrho_candidate_20261106
+  implementation: *id001
+  selected_files:
+    benchmarks/__init__.py: b1c18fc68440927cbfd4f278276efe1484336ceed8fd6012ff362494e695c0ec
+    benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    benchmarks/fastchem4/run_production_comparison.py: 2ad1b907914924698d4631d533f81a27f4f843660e0fd7c77bd4d864b4b0666e
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
+    mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/tio2_candidate.py: 8f3adebef9cc313b4e07f032df13de69dcb12dbaaf61c110310387b40979a659
+    mceg/reviews/tio2_source_review.py: 90236d630ea278e505b64507cfebcd6b5cbb17e1aa11979bf066eb225eb657d9
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/api/__init__.py: b50e66690ae01674e930f9495b111c7ea66bbd5b544d93b041261b3498b90b02
+    src/exogibbs/api/chemistry.py: 015434f7a6a9598f42d553a5b6248426ab96f085e0fe51bf1b1b09889556b245
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/__init__.py: 63a05e6341d70e90ab683936f8fb02604804d0ef6a807e7f6c13df2e62f9d058
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/io/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/io/load_data.py: e6c9333d71a5179b20b9d71847c175028c02628f00b1475c00c7ead9761fe7ac
+    src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/thermo/composition.py: 77d4fe5c05f7adc3ce9f98f0761aabecd21ded9d75e13be9d445a7482073fa8f
+    src/exogibbs/thermo/fugacity.py: 85348725ac895bec2cd653520cf795de5e10aa9d1b1d9afed1d9205b1480e31e
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/stoichiometry.py: 8b3dc769db8e89859ddff3fad26a724a41faec2f1b5b99d96d435799554fd254
+    src/exogibbs/utils/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/utils/elements.py: cf7714ca683370ee9607d7c9b183e3e49ebeb611c0d62aac35ac239e6d9225dd
+    src/exogibbs/utils/fastchem_parity.py: 6c88bca8effd17c3fd27dc364a0e0677bc14cc4b547919b0aa59ae0481a5115d
+    src/exogibbs/utils/interpolation.py: f8a564dcf8dd1c39acf8df6e313b5a458e7b2078a6e599e5ebe24825495e0f06
+    src/exogibbs/utils/nameparser.py: 81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a
+    tests/data/validation/curated_cos_adoption/20261105/ions.npz: 5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/oh_source_review/20261105/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/tio2_source_review/20261106/O-046.txt: 7dd56850c1ce8f2b74327202af8db7a6f4e4f50ee8635ef5982cbdf4aa21c122
+    tests/data/validation/tio2_source_review/20261106/Ti-006.txt: 66f195c514cbc4378faf2d5d7978015c92230777fb77e0947d7204672879b69d
+    tests/data/validation/tio2_source_review/20261106/inputs.json: 59102c2a49eab9d6c0e3ae90cabd2499b5ff9b75a55b6a045ca54fedf6db2596
+    tests/data/validation/tio2_source_review/20261106/nasa-record.txt: 01471b6c054a9dc743e55c35f6b17f7f3a4e365304e0d0ee3edafd8449c09202
+    tests/data/validation/tio2_candidate/20261106/README.rst: 3c314538a46cfdecf7fba24ff5cb66791aa38c8852b3982d8d79a7b317bb3a9c
+    tests/data/validation/tio2_candidate/20261106/candidate.json: 81586500b343ddc3e9eb42be2af502d8748bf8f66c99eae931715c77910aa9af
+    tests/data/validation/tio2_candidate/20261106/receipt.json: 6184c8cbc72e8edf4e20814d3c84772e372f1913c8a85fafe1de45eaeb40871c
+    tests/data/validation/tio2_candidate/20261106/validation.json: 7bb69e2b1311903ecfd6d58f12c00049950429a06dc04f9cff0b73b26a2953b8
+    tests/data/validation/tio2_candidate/20261106/sources.json: e3bf48ed8e7adfdacb923e23ecd02c304adefa99fa7a214d0dc97b8f758c5e41
+    mceg/reviews/tio2_equilibrium_impact.py: 6db3dea595af705b92e258f62ab9c6f8e00406b3fd5bcd4273513245c7a254f3
+    tests/data/validation/tio2_equilibrium_impact/20261106/diagnostics.json: 7e02fd29dc97b0c4dcce3947fc635465964d3857939bcb57681616a771f41ab6
+    tests/data/validation/tio2_equilibrium_impact/20261106/selected_diagnostics.json: b0b687c1b0f8196b7558e0ca91e4404269e947fe778ff334ea176ca5921bf98c
+    tests/data/validation/tio2_equilibrium_impact/20261106/ions.npz: f84db6ca18501bdcd913f2a22e67e75fc8cf2647cd410f69a17bc3a8541449e9
+    tests/data/validation/tio2_equilibrium_impact/20261106/README.rst: 3a13ae3a0375de9c70bacfab784e9becaaee992c02c288ee6f66a34754c47dc5
+    tests/data/validation/tio2_equilibrium_impact/20261106/receipt.json: d5fba6205404b120a793bb3be950f7c37081ce5526cdeb9436e1a6bbf5adf720
+    tests/data/validation/tio2_equilibrium_impact/20261106/summary.json: 596e070ef3747828886aceb83c64f8f9ca9a467e79ef0553bb6bc808376ccccd
+    documents/mceg/tio2_candidate.rst: 5bab7622294fe6e4bb64c8d02cf7d20e5d76b477cf94db5444401c84a0ffa6f0
+    tests/model_evidence/tio2_candidate_test.py: 95c27912271701729206af2299c1a06455dbc42f9b9b680d87c55eada0411526
+    tests/model_evidence/tio2_equilibrium_impact_test.py: 4d7a4af4fe52c4daa5b9f65c2737d56de4dd7cc2728eb5ff3d06b5a1610e2ae6
+    tests/data/validation/tio2_source_review/20261106/sources.json: 00c3f9c06f04828c583f944d0cc9ffc392dcca85bfa2de6fdeb16b3d3aaa8ad5
+    tests/data/validation/tio2_source_review/20261106/comparison.json: fdc50e31e39630e81c29d261e04e7b4855f3b86567f1e17a4e9f1fceb8d6c3f9
+contexts:
+- id: fixed_cos_network
+  scope: Ti(g) + 2 O(g) -> TiO2(g), 1 bar, 1500-4000 K; retained JANAF source D0 and complete current-fit residual
+    relative to NASA thermal proxy; fixed 537-species curated-cos-v1 network; no adoption.
+  settings:
+    baseline_dataset: curated-cos-v1
+    species: O2Ti1
+    standard_pressure_bar: 1
+    primary: rrho
+    secondary_control: h298
+    energy_shift_J_mol: 0
+    curated_update: none
+    prior_contract: mceg/contracts/tio2_source_review.yaml
+    prior_follow_up: thermal_candidate completed within continuous bounded thermal construction and finite substitution;
+      source-history artifacts retained.
+    gibbs_conditions_above_displayed_scale: 36
+assessments:
+- id: continuous_thermodynamics_review
+  kind: evidence_support
+  claim: continuous_thermodynamics
+  claim_revision: '1'
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  method:
+    id: review_tio2_thermal_candidate
+    revision: '1'
+    description: Separate source conventions, continuous calorics, finite numerical response, scoped thermal direction
+      and complete physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - The correction replaces only G-H0 for TiO2, retaining literal FastChem-fit residuals and JANAF sourceD0=1267.776kJ/mol.
+    Independent reconstruction error is4.3e-14 in h; H298-fixed control adds169.818432J/mol to G/H and preserves
+    S/Cp. No finite-range fit or NASA interval is extrapolated to0K.
+  status: supported
+  origin: reviewed
+- id: finite_substitution_review
+  kind: evidence_support
+  claim: finite_substitution
+  claim_revision: '1'
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  method:
+    id: review_tio2_thermal_candidate
+    revision: '1'
+    description: Separate source conventions, continuous calorics, finite numerical response, scoped thermal direction
+      and complete physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - All fresh endpoints and controls converge. TiO2 x ratios0.893213-0.951930; maximum Ti share change50.0872%-47.6795%,
+    target strict variation7.82e-14 in ln(x), FastChem comparison6.76e-9 in log10(x). Unresolved total-G cases and
+    small background responses remain explicit.
+  status: supported
+  origin: reviewed
+- id: candidate_direction_review
+  kind: evidence_support
+  claim: candidate_direction
+  claim_revision: '1'
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  method:
+    id: review_tio2_thermal_candidate
+    revision: '1'
+    description: Separate source conventions, continuous calorics, finite numerical response, scoped thermal direction
+      and complete physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - "Measured rotation/bending are preferable central inputs within the same RRHO approximation. Bend\xB16cm-1 varies\
+    \ K about\xB11.8%; selected A-state equal-rotation sensitivity adds0.882% at4000K versus the primary roughly9-11%\
+    \ K change. These do not bound all missing physics. A separately authorized scoped thermal adoption is reasonable\
+    \ without demanding every ancestral energy paper; no energy replacement is justified here."
+  status: supported
+  origin: reviewed
+- id: universal_gibbs_resolution_review
+  kind: evidence_support
+  claim: universal_gibbs_resolution
+  claim_revision: '1'
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  method:
+    id: review_tio2_thermal_candidate
+    revision: '1'
+    description: Separate source conventions, continuous calorics, finite numerical response, scoped thermal direction
+      and complete physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Only36/75 cases have both feasibility-corrected same-model exchange signs above the displayed floating-point
+    scale. The remaining39 are unresolved by this diagnostic. Comparing absolute G across different models cannot
+    establish physical source preference.
+  status: unknown
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: tio2_retained_energy_rrho_candidate_20261106
+  context: fixed_cos_network
+  method:
+    id: review_tio2_thermal_candidate
+    revision: '1'
+    description: Separate source conventions, continuous calorics, finite numerical response, scoped thermal direction
+      and complete physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - decision_reasoning
+  reasons:
+  - Anharmonicity, centrifugal distortion, complete excited manifolds, isotope mixtures and reaction covariance
+    are not quantified. Gas-only equilibrium checks do not include condensation, opacity, transport or planetary
+    validation.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: scoped_thermal_adoption
+  target_kind: claim
+  target: candidate_direction
+  revision: '1'
+  action: Make a separately authorized curated thermal-adoption decision using the tested measured-input RRHO direction
+    and explicit scope.
+  requires:
+  - Retain current energy and atomic references; preserve one-bar,1500-4000K and source-mass conventions.
+  - Keep ground-state RRHO approximation and selected electronic/bend sensitivities distinct from full physical
+    uncertainty.
+  completion: Record explicit scoped adoption or retention. Missing ancestral energy papers are not a merge prerequisite
+    for this completed candidate evaluation.
+- id: physical_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Add anharmonic/electronic/isotope or atmospheric evidence when claiming those applications; energy replacement
+    remains a separate cycle review.
+  requires:
+  - Do not infer spin multiplicity from a state letter alone or adopt excited-state geometry for the ground state.
+  - For a new D0 inspect the full Hildenbrand1976/Balducci1985 cycles; keep that requirement separate from retained-energy
+    thermal adoption.
+  completion: Scoped improved physical evidence, or retain explicit unknown without blocking the bounded numerical
+    review.
+limitations:
+- statement: Measured fundamentals are treated as harmonic constants; the ground-only primary omits real excited-state
+    populations. Selected equal-rotation A-state and equal-rovib legacy-triplet sensitivities are not completeness
+    bounds.
+  evidence:
+  - source_scope
+  - continuous_model
+- statement: NASA is a continuous proxy for JANAF thermals, not exact table interpolation. Retaining all inherited
+    fit residuals does not prove their physical correctness. H298-control and fixed-D0 candidates have different
+    energy-reference conventions.
+  evidence:
+  - continuous_model
+- statement: Trace-element residuals reach1.46e-6 and all-species strict variations1.46e-5 in ln(x); target and
+    major-element accuracy are reported separately. Floating-point total-G resolution is a diagnostic, not a physical
+    bound.
+  evidence:
+  - finite_execution

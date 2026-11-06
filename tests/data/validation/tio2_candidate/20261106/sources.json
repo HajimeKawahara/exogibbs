@@ -1,0 +1,24 @@
+{
+  "inspected_date": "2026-11-06",
+  "prior_source_packet": "tests/data/validation/tio2_source_review/20261106",
+  "new_primary_access": [
+    {
+      "doi": "10.1039/C0CP00861C",
+      "url": "https://pubs.rsc.org/en/content/articlelanding/2010/cp/c0cp00861c",
+      "access": "Publisher abstract inspected; full article not claimed",
+      "state": "A 1B2",
+      "origin_cm-1": 17593,
+      "harmonic_frequencies_cm-1": [
+        876,
+        184,
+        316
+      ],
+      "usage": "Selected equal-rotation electronic sensitivity only; primary candidate is ground-state RRHO."
+    },
+    {
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C13463677&Mask=3EE9&Units=SI",
+      "access": "Gas spectroscopy section rechecked, excluding condensed-phase IR spectrum",
+      "usage": "Gas/solid and ground/excited distinctions; a lower-case state label is not evidence for spin degeneracy."
+    }
+  ]
+}
