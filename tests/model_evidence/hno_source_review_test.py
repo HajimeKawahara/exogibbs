@@ -1,5 +1,6 @@
 """Guard the neutral HNO identity, source gauges and fixed current inventory."""
 
+from copy import deepcopy
 from hashlib import sha256
 import json
 import math
@@ -22,8 +23,21 @@ def report():
     return study.review()
 
 
+def assert_replay_equal(actual, expected):
+    """Bound cancellation noise only in the dimensional curated-minus-JANAF G."""
+    actual, expected = deepcopy(actual), deepcopy(expected)
+    assert len(actual["source_samples"]) == len(expected["source_samples"])
+    for left, right in zip(actual["source_samples"], expected["source_samples"]):
+        # Subtracting reaction Gibbs energies of about 3.8e5 J/mol at 2000 K
+        # produced 2.33e-10 J/mol platform noise in CI. A 1e-8 J/mol absolute
+        # bound is below 1e-12 in ln(K) here; all other fields stay unchanged.
+        assert left["curated_minus_janaf_reaction"].pop("G_J_mol") == pytest.approx(
+            right["curated_minus_janaf_reaction"].pop("G_J_mol"), rel=0, abs=1e-8)
+    check_equal(actual, expected)
+
+
 def test_offline_replay_and_balanced_source_decomposition(report):
-    check_equal(report, json.loads((study.DATA/"comparison.json").read_text()))
+    assert_replay_equal(report, json.loads((study.DATA/"comparison.json").read_text()))
     for row in report["source_samples"]:
         assert abs(row["decomposition_closure_ln_K"]) < 5e-13
         terms = row["janaf_minus_nasa_ln_K_components"]
@@ -103,7 +117,26 @@ def test_native_energy_and_fitting_residual_are_separate(report):
 def test_pinned_inputs_resolve_history_and_outputs_are_direct():
     receipt = json.loads((study.DATA/"receipt.json").read_text())
     for name,digest in receipt["selected_input_sha256"].items():
-        path = historical_source(ROOT,name,digest)
+        if name == Path(__file__).relative_to(ROOT).as_posix():
+            # Preserve the original execution's test bytes after this CI amendment.
+            path = study.DATA.parent/"ci-revalidation-20261106/source"/Path(name).name
+        else:
+            path = historical_source(ROOT,name,digest)
         assert sha256(path.read_bytes()).hexdigest() == digest,name
     for name,digest in receipt["output_sha256"].items():
         assert sha256((ROOT/name).read_bytes()).hexdigest() == digest,name
+    revalidation = json.loads((study.DATA.parent/"ci-revalidation-20261106/revalidation.json").read_text())
+    assert sha256(Path(__file__).read_bytes()).hexdigest() == revalidation["current_test_sha256"]
+    assert sha256((study.DATA/"receipt.json").read_bytes()).hexdigest() == revalidation["original_receipt_sha256"]
+
+
+def test_gibbs_difference_accepts_ci_roundoff_but_rejects_changed_energy(report):
+    expected, altered = deepcopy(report), deepcopy(report)
+    expected["source_samples"][1]["curated_minus_janaf_reaction"]["G_J_mol"] = 28.714558444858994
+    altered["source_samples"][1]["curated_minus_janaf_reaction"]["G_J_mol"] = 28.714558445091825
+    with pytest.raises(ValueError, match="curated_minus_janaf_reaction.G_J_mol"):
+        check_equal(altered, expected)
+    assert_replay_equal(altered, expected)
+    altered["source_samples"][1]["curated_minus_janaf_reaction"]["G_J_mol"] = 28.714558444858994 + 1e-5
+    with pytest.raises(AssertionError):
+        assert_replay_equal(altered, expected)
