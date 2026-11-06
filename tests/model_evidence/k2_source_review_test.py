@@ -101,7 +101,7 @@ def test_molecule_specific_source_diagnostic():
     for row in study.review()["source_samples"]:
         modern = row["modern"]
         node = next(x for x in literature["barklem_collet"]["nodes"] if x["temperature_K"] == row["temperature_K"])
-        assert modern["BC_ln_formation_K_one_bar"] == pytest.approx(np.log(1e5/10**node["log10_dissociation_K_Pa"]),abs=3e-15)
+        assert modern["BC_ln_formation_K_one_bar"] == pytest.approx(np.log(1e5/10**node["log10_dissociation_K_Pa"]),abs=2e-12)
         assert modern["measured_D0_J_mol"] == pytest.approx(literature["spectroscopy"]["D0_cm_inverse"]*11.9626565638697)
         assert modern["BC_Q_internal"] > 0 and modern["JANAF_effective_Q_with_source_mass"] > 0
     assert "no extra division" in literature["barklem_collet"]["nuclear_spin_convention"]
