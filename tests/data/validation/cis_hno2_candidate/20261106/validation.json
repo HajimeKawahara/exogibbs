@@ -1,0 +1,737 @@
+{
+  "temperature_count": 2752,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "maximum_current_h_errors": {
+    "H1N1O2cis": 2.1316282072803006e-14,
+    "H1N1O2trans": 1.4210854715202004e-14
+  },
+  "independent_source_checks": [
+    {
+      "variant": "retained",
+      "species": "H1N1O2cis",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2434497875801753e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.014469259658710598,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.0038231645978257234,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010977091217435841,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004618583844167468,
+          "preservation_error_ln_K": 0.0
+        }
+      ]
+    },
+    {
+      "variant": "joint_cis_trans_atct",
+      "species": "H1N1O2cis",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2434497875801753e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.014469259658710598,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.0038231645978257234,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010977091217435841,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004618583844167468,
+          "preservation_error_ln_K": 0.0
+        }
+      ]
+    },
+    {
+      "variant": "joint_cis_trans_atct",
+      "species": "H1N1O2trans",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2656542480726785e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.013706513931907693,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.00354408043682497,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010440793105771284,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004380032905270781,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        }
+      ]
+    },
+    {
+      "variant": "joint_measured_gap",
+      "species": "H1N1O2cis",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 9.313225746154785e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2434497875801753e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.014469259658710598,
+          "preservation_error_ln_K": 7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.0038231645978257234,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010977091217435841,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004618583844167468,
+          "preservation_error_ln_K": 0.0
+        }
+      ]
+    },
+    {
+      "variant": "joint_measured_gap",
+      "species": "H1N1O2trans",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2656542480726785e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.013706513931907693,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.00354408043682497,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010440793105771284,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004380032905270781,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        }
+      ]
+    },
+    {
+      "variant": "lower_gap",
+      "species": "H1N1O2cis",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2434497875801753e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.014469259658710598,
+          "preservation_error_ln_K": 7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.0038231645978257234,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010977091217435841,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004618583844167468,
+          "preservation_error_ln_K": 0.0
+        }
+      ]
+    },
+    {
+      "variant": "lower_gap",
+      "species": "H1N1O2trans",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2656542480726785e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.013706513931907693,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.00354408043682497,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010440793105771284,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004380032905270781,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        }
+      ]
+    },
+    {
+      "variant": "upper_gap",
+      "species": "H1N1O2cis",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2434497875801753e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.014469259658710598,
+          "preservation_error_ln_K": 7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.0038231645978257234,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010977091217435841,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004618583844167468,
+          "preservation_error_ln_K": 0.0
+        }
+      ]
+    },
+    {
+      "variant": "upper_gap",
+      "species": "H1N1O2trans",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.1641532182693481e-10,
+        "H_J_mol": 6.984919309616089e-10,
+        "S_J_mol_K": 1.7053025658242404e-13,
+        "Cp_J_mol_K": 1.2656542480726785e-14
+      },
+      "retained_source_fit_residuals": [
+        {
+          "temperature_K": 1500,
+          "old_fit_minus_JANAF_ln_K": 0.013706513931907693,
+          "preservation_error_ln_K": -7.105427357601002e-15
+        },
+        {
+          "temperature_K": 2000,
+          "old_fit_minus_JANAF_ln_K": -0.00354408043682497,
+          "preservation_error_ln_K": 0.0
+        },
+        {
+          "temperature_K": 3000,
+          "old_fit_minus_JANAF_ln_K": -0.010440793105771284,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        },
+        {
+          "temperature_K": 4000,
+          "old_fit_minus_JANAF_ln_K": 0.004380032905270781,
+          "preservation_error_ln_K": -8.881784197001252e-16
+        }
+      ]
+    }
+  ],
+  "jax_derivative_checks": {
+    "temperature_count": 2752,
+    "offgrid_count": 251,
+    "range_K": [
+      1500,
+      4000
+    ],
+    "models": [
+      {
+        "variant": "retained",
+        "species": "H1N1O2cis",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.8421709430404007e-13,
+          "Cp_J_mol_K": 4.121147867408581e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -723126.9561778171,
+            "H_J_mol": -1289409.8355715282,
+            "S_J_mol_K": -377.52191959580745,
+            "Cp_J_mol_K": -9.529862223900587
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -533771.4248817366,
+            "H_J_mol": -1292922.731998951,
+            "S_J_mol_K": -379.57565355860714,
+            "Cp_J_mol_K": -4.822574589282448
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -343767.01126701775,
+            "H_J_mol": -1294533.2612643032,
+            "S_J_mol_K": -380.3064999989142,
+            "Cp_J_mol_K": -1.9203935756198178
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -153547.19415624984,
+            "H_J_mol": -1295143.9766780634,
+            "S_J_mol_K": -380.53226084060447,
+            "Cp_J_mol_K": -0.8233191829127018
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 227174.39582911567,
+            "H_J_mol": -1296976.1791927172,
+            "S_J_mol_K": -381.0376437554582,
+            "Cp_J_mol_K": -4.044490260365033
+          }
+        ]
+      },
+      {
+        "variant": "joint_cis_trans_atct",
+        "species": "H1N1O2cis",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.8421709430404007e-13,
+          "Cp_J_mol_K": 4.121147867408581e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -723126.9561778171,
+            "H_J_mol": -1289409.8355715282,
+            "S_J_mol_K": -377.52191959580745,
+            "Cp_J_mol_K": -9.529862223900587
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -533771.4248817366,
+            "H_J_mol": -1292922.731998951,
+            "S_J_mol_K": -379.57565355860714,
+            "Cp_J_mol_K": -4.822574589282448
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -343767.01126701775,
+            "H_J_mol": -1294533.2612643032,
+            "S_J_mol_K": -380.3064999989142,
+            "Cp_J_mol_K": -1.9203935756198178
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -153547.19415624984,
+            "H_J_mol": -1295143.9766780634,
+            "S_J_mol_K": -380.53226084060447,
+            "Cp_J_mol_K": -0.8233191829127018
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 227174.39582911567,
+            "H_J_mol": -1296976.1791927172,
+            "S_J_mol_K": -381.0376437554582,
+            "Cp_J_mol_K": -4.044490260365033
+          }
+        ]
+      },
+      {
+        "variant": "joint_cis_trans_atct",
+        "species": "H1N1O2trans",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.2737367544323206e-13,
+          "Cp_J_mol_K": 4.618527782440651e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -725002.9434465681,
+            "H_J_mol": -1290662.0274564032,
+            "S_J_mol_K": -377.10605600655674,
+            "Cp_J_mol_K": -9.570037140770001
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -535849.0657513847,
+            "H_J_mol": -1294227.6001577687,
+            "S_J_mol_K": -379.18926720319206,
+            "Cp_J_mol_K": -4.98278617595177
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -346027.2028462305,
+            "H_J_mol": -1295935.3461436152,
+            "S_J_mol_K": -379.9632573189538,
+            "Cp_J_mol_K": -2.1387302786923694
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -155968.57124805465,
+            "H_J_mol": -1296656.862947721,
+            "S_J_mol_K": -380.2294305665555,
+            "Cp_J_mol_K": -1.0378694489917943
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 224476.32952057142,
+            "H_J_mol": -1298627.599145831,
+            "S_J_mol_K": -380.7759821666006,
+            "Cp_J_mol_K": -4.065732992267135
+          }
+        ]
+      },
+      {
+        "variant": "joint_measured_gap",
+        "species": "H1N1O2cis",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.8421709430404007e-13,
+          "Cp_J_mol_K": 5.151434834260726e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -723590.9336789984,
+            "H_J_mol": -1289873.8130727096,
+            "S_J_mol_K": -377.52191959580745,
+            "Cp_J_mol_K": -9.529862223900587
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -534235.4023829178,
+            "H_J_mol": -1293386.7095001321,
+            "S_J_mol_K": -379.57565355860714,
+            "Cp_J_mol_K": -4.822574589282448
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -344230.98876819893,
+            "H_J_mol": -1294997.2387654847,
+            "S_J_mol_K": -380.3064999989142,
+            "Cp_J_mol_K": -1.9203935756198178
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -154011.17165743103,
+            "H_J_mol": -1295607.9541792446,
+            "S_J_mol_K": -380.53226084060447,
+            "Cp_J_mol_K": -0.8233191829127018
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 226710.4183279345,
+            "H_J_mol": -1297440.1566938984,
+            "S_J_mol_K": -381.0376437554582,
+            "Cp_J_mol_K": -4.044490260365033
+          }
+        ]
+      },
+      {
+        "variant": "joint_measured_gap",
+        "species": "H1N1O2trans",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.2737367544323206e-13,
+          "Cp_J_mol_K": 4.618527782440651e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -725002.9434465681,
+            "H_J_mol": -1290662.0274564032,
+            "S_J_mol_K": -377.10605600655674,
+            "Cp_J_mol_K": -9.570037140770001
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -535849.0657513847,
+            "H_J_mol": -1294227.6001577687,
+            "S_J_mol_K": -379.18926720319206,
+            "Cp_J_mol_K": -4.98278617595177
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -346027.2028462305,
+            "H_J_mol": -1295935.3461436152,
+            "S_J_mol_K": -379.9632573189538,
+            "Cp_J_mol_K": -2.1387302786923694
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -155968.57124805465,
+            "H_J_mol": -1296656.862947721,
+            "S_J_mol_K": -380.2294305665555,
+            "Cp_J_mol_K": -1.0378694489917943
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 224476.32952057142,
+            "H_J_mol": -1298627.599145831,
+            "S_J_mol_K": -380.7759821666006,
+            "Cp_J_mol_K": -4.065732992267135
+          }
+        ]
+      },
+      {
+        "variant": "lower_gap",
+        "species": "H1N1O2cis",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.8421709430404007e-13,
+          "Cp_J_mol_K": 4.618527782440651e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -723700.990119386,
+            "H_J_mol": -1289983.8695130972,
+            "S_J_mol_K": -377.52191959580745,
+            "Cp_J_mol_K": -9.529862223900587
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -534345.4588233054,
+            "H_J_mol": -1293496.7659405197,
+            "S_J_mol_K": -379.57565355860714,
+            "Cp_J_mol_K": -4.822574589282448
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -344341.04520858655,
+            "H_J_mol": -1295107.295205872,
+            "S_J_mol_K": -380.3064999989142,
+            "Cp_J_mol_K": -1.9203935756198178
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -154121.22809781865,
+            "H_J_mol": -1295718.0106196322,
+            "S_J_mol_K": -380.53226084060447,
+            "Cp_J_mol_K": -0.8233191829127018
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 226600.36188754687,
+            "H_J_mol": -1297550.213134286,
+            "S_J_mol_K": -381.0376437554582,
+            "Cp_J_mol_K": -4.044490260365033
+          }
+        ]
+      },
+      {
+        "variant": "lower_gap",
+        "species": "H1N1O2trans",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.2737367544323206e-13,
+          "Cp_J_mol_K": 4.618527782440651e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -725002.9434465681,
+            "H_J_mol": -1290662.0274564032,
+            "S_J_mol_K": -377.10605600655674,
+            "Cp_J_mol_K": -9.570037140770001
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -535849.0657513847,
+            "H_J_mol": -1294227.6001577687,
+            "S_J_mol_K": -379.18926720319206,
+            "Cp_J_mol_K": -4.98278617595177
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -346027.2028462305,
+            "H_J_mol": -1295935.3461436152,
+            "S_J_mol_K": -379.9632573189538,
+            "Cp_J_mol_K": -2.1387302786923694
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -155968.57124805465,
+            "H_J_mol": -1296656.862947721,
+            "S_J_mol_K": -380.2294305665555,
+            "Cp_J_mol_K": -1.0378694489917943
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 224476.32952057142,
+            "H_J_mol": -1298627.599145831,
+            "S_J_mol_K": -380.7759821666006,
+            "Cp_J_mol_K": -4.065732992267135
+          }
+        ]
+      },
+      {
+        "variant": "upper_gap",
+        "species": "H1N1O2cis",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 4.656612873077393e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.8421709430404007e-13,
+          "Cp_J_mol_K": 4.192202140984591e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -723480.8772386108,
+            "H_J_mol": -1289763.756632322,
+            "S_J_mol_K": -377.52191959580745,
+            "Cp_J_mol_K": -9.529862223900587
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -534125.3459425302,
+            "H_J_mol": -1293276.6530597445,
+            "S_J_mol_K": -379.57565355860714,
+            "Cp_J_mol_K": -4.822574589282448
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -344120.9323278114,
+            "H_J_mol": -1294887.182325097,
+            "S_J_mol_K": -380.3064999989142,
+            "Cp_J_mol_K": -1.9203935756198178
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -153901.1152170434,
+            "H_J_mol": -1295497.897738857,
+            "S_J_mol_K": -380.53226084060447,
+            "Cp_J_mol_K": -0.8233191829127018
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 226820.4747683221,
+            "H_J_mol": -1297330.1002535108,
+            "S_J_mol_K": -381.0376437554582,
+            "Cp_J_mol_K": -4.044490260365033
+          }
+        ]
+      },
+      {
+        "variant": "upper_gap",
+        "species": "H1N1O2trans",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 3.4924596548080444e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 2.2737367544323206e-13,
+          "Cp_J_mol_K": 4.618527782440651e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -725002.9434465681,
+            "H_J_mol": -1290662.0274564032,
+            "S_J_mol_K": -377.10605600655674,
+            "Cp_J_mol_K": -9.570037140770001
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -535849.0657513847,
+            "H_J_mol": -1294227.6001577687,
+            "S_J_mol_K": -379.18926720319206,
+            "Cp_J_mol_K": -4.98278617595177
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": -346027.2028462305,
+            "H_J_mol": -1295935.3461436152,
+            "S_J_mol_K": -379.9632573189538,
+            "Cp_J_mol_K": -2.1387302786923694
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": -155968.57124805465,
+            "H_J_mol": -1296656.862947721,
+            "S_J_mol_K": -380.2294305665555,
+            "Cp_J_mol_K": -1.0378694489917943
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 224476.32952057142,
+            "H_J_mol": -1298627.599145831,
+            "S_J_mol_K": -380.7759821666006,
+            "Cp_J_mol_K": -4.065732992267135
+          }
+        ]
+      }
+    ],
+    "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks."
+  },
+  "production_change": "none",
+  "physical_accuracy": "unknown"
+}
