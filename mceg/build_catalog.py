@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
 RECORD_VERSION = "2026-11-06"
+GAS_CURATION_RELEASE_SHA256 = "f8ac775a45240d077a932c0ab7c7bed016c9e48652e561a430c3bde5f734bb0a"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -548,6 +549,40 @@ def build_catalog(output: Path = OUTPUT) -> None:
             "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
                       "documents/mceg/curated_gas_v2_adoption.rst"],
         }],
+    })
+    release_path = "mceg/releases/gas_curation/0.1.0.json"
+    release_bytes = (ROOT / release_path).read_bytes()
+    release = json.loads(release_bytes)
+    release_model = next(model for model in catalog["models"]
+                         if model["id"] == "exogibbs.curated_gas.v2")
+    if (hashlib.sha256(release_bytes).hexdigest() != GAS_CURATION_RELEASE_SHA256
+            or release["release_id"] != "gas-curation-v0.1.0"
+            or release["curation_version"] != "0.1.0"
+            or release["dataset"]["id"] != release_model["dataset"]
+            or release["dataset"]["model_id"] != release_model["id"]
+            or release["dataset"]["data_sha256"] != release_model["identity"]["data_sha256"]):
+        raise ValueError("Gas curation release changed; publish a new reviewed release record")
+    release_pin = copy(release_path, "artifacts/gas_curation_v0_1_0.json")
+    release_contract = copy("mceg/contracts/gas_curation_release_0_1.yaml",
+                            "contracts/gas_curation_release_0_1.yaml")
+    release_model["records"].append({
+        "id": "gas_curation_release_0_1", **release_contract,
+        "species": ["*"],
+        "assessments": ["inventory_review", "immutable_identity_review",
+                        "traceability_review", "whole_physical_accuracy_review"],
+        "artifacts": [release_pin],
+        "summary": (
+            "Gas curation v0.1 (0.1.0) freezes the 108-molecule review and adoption decisions "
+            "for curated-gas-v2 at scientific snapshot f580e66157edbe6f604e2748d8e1a25d46d08b86. "
+            "It records existing source assessments, retained/provisional choices and unresolved "
+            "follow-ups, together with production verification and the separate 540-constant "
+            "FastChem 4.0.4 comparison including updated HCN. This release adds no coefficients "
+            "or new equilibrium calculations. Complete physical accuracy remains unknown. "
+            "Curation, dataset, software and MCEG schema versions are distinct; "
+            "your calculation conditions have not been evaluated."
+        ),
+        "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
+                  "documents/mceg/gas_curation_release_0_1.rst"],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
 

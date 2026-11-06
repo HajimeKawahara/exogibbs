@@ -255,6 +255,31 @@ def test_builder_does_not_rebind_historical_study_to_changed_data(tmp_path, monk
         builder(tmp_path / "output")
 
 
+def test_curation_release_is_available_with_its_frozen_dataset():
+    setup = curated_v2.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == describe(setup)["model_id"])
+    record = next(r for r in model["records"] if r["id"] == "gas_curation_release_0_1")
+    release = json.loads((evidence_catalog().parent / record["artifacts"][0]["path"]).read_text())
+    assert release["curation_version"] == "0.1.0"
+    assert release["dataset"]["id"] == setup.metadata["dataset"]
+    assert release["dataset"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert "whole_physical_accuracy_review" in record["assessments"]
+    assert "Complete physical accuracy remains unknown" in record["summary"]
+    assert model["records"][0]["id"] == "gas_v2_adoption"
+    previous = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_ch2.v1")
+    assert all(r["id"] != record["id"] for r in previous["records"])
+
+
+def test_builder_rejects_silent_curation_release_replacement(tmp_path, monkeypatch):
+    builder = runpy.run_path(str(ROOT / "mceg/build_catalog.py"))["build_catalog"]
+    original = Path.read_bytes
+    manifest = ROOT / "mceg/releases/gas_curation/0.1.0.json"
+    monkeypatch.setattr(Path, "read_bytes", lambda path: original(path) + (b"\n" if path == manifest else b""))
+    with pytest.raises(ValueError, match="Gas curation release changed"):
+        builder(tmp_path)
+
+
 @pytest.mark.parametrize("name", ["src/exogibbs/data/curated/co2_v1.json",
                                  "tests/data/validation/curated_co2_adoption/20261104/summary.json",
                                  "src/exogibbs/data/curated/h2o_v1.json",

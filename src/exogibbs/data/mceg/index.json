@@ -7561,6 +7561,30 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/curated_gas_v2_adoption.rst"
           ]
+        },
+        {
+          "id": "gas_curation_release_0_1",
+          "path": "contracts/gas_curation_release_0_1.yaml",
+          "sha256": "b72b434e2c8e8ce8f15d0077669108b2b15e6d0fe9779616fcd13979c73a79be",
+          "species": [
+            "*"
+          ],
+          "assessments": [
+            "inventory_review",
+            "immutable_identity_review",
+            "traceability_review",
+            "whole_physical_accuracy_review"
+          ],
+          "artifacts": [
+            {
+              "path": "artifacts/gas_curation_v0_1_0.json",
+              "sha256": "f8ac775a45240d077a932c0ab7c7bed016c9e48652e561a430c3bde5f734bb0a"
+            }
+          ],
+          "summary": "Gas curation v0.1 (0.1.0) freezes the 108-molecule review and adoption decisions for curated-gas-v2 at scientific snapshot f580e66157edbe6f604e2748d8e1a25d46d08b86. It records existing source assessments, retained/provisional choices and unresolved follow-ups, together with production verification and the separate 540-constant FastChem 4.0.4 comparison including updated HCN. This release adds no coefficients or new equilibrium calculations. Complete physical accuracy remains unknown. Curation, dataset, software and MCEG schema versions are distinct; your calculation conditions have not been evaluated.",
+          "links": [
+            "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/gas_curation_release_0_1.rst"
+          ]
         }
       ]
     }

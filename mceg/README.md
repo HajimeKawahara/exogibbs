@@ -8,10 +8,21 @@ runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
 For installed-package and species lookup, see the
 [optional inspection guide](../documents/mceg/optional_inspection.rst).
-`python mceg/build_catalog.py` copies the legacy curated/HCN and current default C2H
-records and study artifacts into a committed wheel catalog. Both this builder and
+`python mceg/build_catalog.py` copies the historical curated records and current
+`curated-gas-v2` records and study artifacts into a committed wheel catalog. Both this builder and
 `exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
 evidence snapshot; matching declared metadata does not validate a user's run.
+
+[Gas curation v0.1](../documents/mceg/gas_curation_release_0_1.rst), canonically
+`0.1.0`, records the scientific snapshot at
+`f580e66157edbe6f604e2748d8e1a25d46d08b86`. Its
+[manifest](releases/gas_curation/0.1.0.json) and
+[aggregate contract](contracts/gas_curation_release_0_1.yaml) supplement the
+existing `exogibbs.curated_gas.v2` record. Dataset `curated-gas-v2`, factory
+`curated_v2`, numerical thermochemistry and the software version are unchanged;
+no Git tag or new runtime API is introduced. Record-only changes use a new
+patch release such as `0.1.1`; numerical, adoption or domain changes require
+the next minor release, `0.2.0`. Earlier release records remain immutable.
 
 Saved evidence lives in [the offline validation fixtures](../tests/data/validation/README.rst).
 Historical records retain their original `results/` paths and hashes; the
@@ -77,7 +88,7 @@ tool. Earlier source-study contracts and their archived results are historical
 evidence and are not rewritten by this implementation.
 
 The [C2H correction contract](contracts/curated_c2h.yaml) records the adopted
-[default preset](../documents/presets/curated_c2h.rst), `curated-c2h-v1`:
+[historical C2H preset](../documents/presets/curated_c2h.rst), `curated-c2h-v1`:
 NASA thermal functions and balanced ATcT 1.172 atomization energy. Its
 [75-pair comparison](../tests/data/validation/c2h_equilibrium_impact/20261102/README.rst)
 changes C2H alone while re-equilibrating the same 537 species at each fixed
@@ -232,12 +243,12 @@ Run `python -m mceg docs --config mceg/docs.yaml` to generate RST only, or
 See [the documentation build guide](../documents/mceg/build.rst) for installation,
 input selection and output locations. Generated files are ignored by Git.
 
-The C2H correction is now the `curated` default. The scientific reason is the
+The C2H correction was adopted as an earlier `curated` default. Its scientific reason is the
 superseded JANAF energy estimate and the thermal discrepancy that persists after
 energy alignment. `curated_v1` preserves the original implementation exactly.
-The default keeps the already reviewed `curated-c2h-v1` data identity and passes
+That historical stage keeps the reviewed `curated-c2h-v1` data identity and passed
 [150 new cold solves](../tests/data/validation/curated_default_adoption/20261102/summary.json),
-75 per network. `default_adoption_review` supports that numerical claim;
+75 per network. `default_adoption_review` supports that historical numerical claim;
 complete thermal support and whole-mixture physical accuracy remain unknown.
 Original study scripts are archived before their imports were made explicit;
 `reviews/curated_history.py` resolves their recorded paths. Original receipts,

@@ -1,6 +1,20 @@
 Release notes
 =============
 
+Scientific milestone: Gas curation v0.1
+---------------------------------------
+
+:doc:`Gas curation v0.1 <mceg/gas_curation_release_0_1>` (canonical ``0.1.0``)
+names the existing ``curated-gas-v2`` scientific snapshot at
+``f580e66157edbe6f604e2748d8e1a25d46d08b86``. Its manifest and aggregate MCEG
+record preserve the source selections, numerical evidence and unresolved
+physical limitations. The ``curated_v2`` factory, dataset, numerical functions
+and model identifier are unchanged. This is separate from the ExoGibbs
+software release number and creates no Git tag or runtime API.
+
+Record-only amendments use ``0.1.1``; numerical, adoption or domain changes
+require ``0.2.0``. Earlier release records remain immutable.
+
 v0.7.0
 ------
 
