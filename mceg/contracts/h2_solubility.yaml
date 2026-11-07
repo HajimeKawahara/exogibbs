@@ -370,8 +370,8 @@ evidence:
   result: passed
   summary: The selected provider tests passed in the maintenance run (8 tests).
   sources:
-  - results/mceg/h2_tests_c2d3e8b.json
-  - results/mceg/h2_tests_c2d3e8b.xml
+  - tests/data/validation/mceg/h2_tests_c2d3e8b.json
+  - tests/data/validation/mceg/h2_tests_c2d3e8b.xml
   scope: Only the recorded test selectors at implementation revision c2d3e8b0490d4ae502720940ea220a21a3146a56.
     Source hashes and execution environment are preserved in the receipt; these checks do not establish
     physical accuracy.

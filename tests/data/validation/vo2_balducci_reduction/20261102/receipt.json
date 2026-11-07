@@ -1,0 +1,43 @@
+{
+  "created_utc": "2026-11-02T08:03:06.224367+00:00",
+  "review": "vo2_balducci_reduction",
+  "scope": "Offline published-equilibrium replay and explicitly partial thermochemical re-reduction; no adopted energy or curated mutation.",
+  "base_revision": "765c74ee6388f55ee6e70f52f1ca14fc2e15eacc",
+  "environment": {
+    "python": "3.12.7",
+    "numpy": "2.1.0",
+    "scipy": "1.14.1",
+    "platform": "Linux-6.8.0-111-generic-x86_64-with-glibc2.35"
+  },
+  "commands": [
+    {
+      "command": "python mceg/reviews/vo2_balducci_reduction.py --output tests/data/validation/vo2_balducci_reduction/20261102/comparison.json",
+      "exit_code": 0
+    },
+    {
+      "command": "pytest -q tests/model_evidence/vo2_balducci_reduction_test.py",
+      "exit_code": 0,
+      "result": "8 passed in 0.41s"
+    }
+  ],
+  "selected_file_sha256": {
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/vo2_balducci_reduction.py": "6a365c93722cc5d282a4724f11226b33d5c560be102cac8a720bf14b416be96b",
+    "mceg/reviews/vo2_source_review.py": "ff1182a665c28132cfa242d656e274f8e82a8d74f5c510d228f561f6efada751",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/vo2_balducci_reduction/20261102/O-026.txt": "88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552",
+    "tests/data/validation/vo2_balducci_reduction/20261102/README.rst": "9de46a93c3fc864184a77a9f8c6e3a67ed9fdd8ef821f880dd24749a63f8e021",
+    "tests/data/validation/vo2_balducci_reduction/20261102/comparison.json": "6b0fe81a863a5d40a3b4893a8a0efc47b6976c2ff7ee11673a8305f55c9c8d12",
+    "tests/data/validation/vo2_balducci_reduction/20261102/inputs.json": "706cb349181d54a65b4557b25c37d836ba27bac54408ed812fa5373f5a915292",
+    "tests/data/validation/vo2_balducci_reduction/20261102/reference_audit.json": "e59ee6a3c644df38c298a59a24f54872d23ce0ee07fc5fd68a5c572b0652d44f",
+    "tests/data/validation/vo2_balducci_reduction/20261102/sources.json": "21b16d82a0b078579579263d1986f8276fc1c6c6c14646b47bcf197ddf74feee",
+    "tests/data/validation/vo2_balducci_reduction/20261102/table_I.csv": "b0c7a6d3f2dc20af220edcf2baedc5cf61621c0ea260f7982676bed3d174701a",
+    "tests/data/validation/vo2_source_review/20261102/V-005.txt": "4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02",
+    "tests/data/validation/vo2_source_review/20261102/literature_inputs.json": "49d500e99a8a0ad58533aeb3c90792ff74f9bc458d838f41b591436e23d32182",
+    "tests/model_evidence/vo2_balducci_reduction_test.py": "86961ce43094a4ac47989c24be1f99df0a831e9ba058b40792ad94a83b3258b4"
+  },
+  "independent_audit": "Separate reference-review agent checked the H0 reference, pressure-conversion sign, G/H/S/Cp signs, electronic ground normalization, partial-model scope and second/third-law discrepancy."
+}

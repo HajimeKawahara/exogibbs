@@ -107,9 +107,9 @@ evidence:
   summary: 56 selected tests passed.
   sources:
   - tests/unittests/solubility/meltyq_test.py
-  - results/mceg/20261020_model_survey/receipt.json
-  - results/mceg/20261020_model_survey/tests.xml
-  - results/mceg/20261020_model_survey/tests.log
+  - tests/data/validation/mceg/20261020_model_survey/receipt.json
+  - tests/data/validation/mceg/20261020_model_survey/tests.xml
+  - tests/data/validation/mceg/20261020_model_survey/tests.log
   scope: The selected module passes its literal-formula, zero/invalid-input and interior derivative
     checks. CO/N logarithmic variants and Sun-Yao composition response are covered only where explicitly
     tested. Counts include shared controls, not a separate experimental sample count.
@@ -117,15 +117,15 @@ evidence:
   subject: survey_20261020
   context: test_environment
   artifacts:
-  - source: results/mceg/20261020_model_survey/receipt.json
+  - source: tests/data/validation/mceg/20261020_model_survey/receipt.json
     sha256: 8e56fec883a5e85af4950163e9679ab3e5f4417d65bbdf2fd10fe775aa250b08
-  - source: results/mceg/20261020_model_survey/tests.xml
+  - source: tests/data/validation/mceg/20261020_model_survey/tests.xml
     sha256: 755b648a452d21234c8823918866da6c155ccef65dc4cb28f516ede2893be560
-  - source: results/mceg/20261020_model_survey/tests.log
+  - source: tests/data/validation/mceg/20261020_model_survey/tests.log
     sha256: fe9b3c8b8d4ad52f6c6f1d6ae84a6233fed5c266c690b03583c91a787fff38ea
   provenance:
     role: primary
-    location: results/mceg/20261020_model_survey/receipt.json and tests.xml
+    location: tests/data/validation/mceg/20261020_model_survey/receipt.json and tests.xml
     inspection: inspected
     note: Fresh local pytest execution; tests consume stored references where applicable. No external
       reference program or experiment was rerun.
@@ -254,7 +254,7 @@ evidence:
   summary: 3/3 scoped formula comparisons agree.
   sources:
   - mceg/reviews/volatile_source_review_20261021.py
-  - results/mceg/20261021_volatile_sources/comparison.json
+  - tests/data/validation/mceg/20261021_volatile_sources/comparison.json
   scope: Three samples of the published abstract coefficients with the provider bar convention. This
     does not establish equivalence to the full published Eq. 6.
   result: passed
@@ -263,11 +263,11 @@ evidence:
   artifacts:
   - source: mceg/reviews/volatile_source_review_20261021.py
     sha256: a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01
-  - source: results/mceg/20261021_volatile_sources/comparison.json
+  - source: tests/data/validation/mceg/20261021_volatile_sources/comparison.json
     sha256: 4770a809637e050c53d68d8a962d84f973a7f55fe146cf78eb03cdd62b59fec0
   provenance:
     role: primary
-    location: 'results/mceg/20261021_volatile_sources/comparison.json: comparisons with model=co_yoshioka2019.'
+    location: 'tests/data/validation/mceg/20261021_volatile_sources/comparison.json: comparisons with model=co_yoshioka2019.'
     inspection: inspected
     note: Fresh CPU/x64 execution of explicit reference expressions. Alternative-expression mismatches
       remain in the report; no experimental rows or external runtime were replayed.

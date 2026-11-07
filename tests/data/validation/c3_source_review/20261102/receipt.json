@@ -1,0 +1,47 @@
+{
+  "schema_version": "1",
+  "study": "c3-source-review-20261102",
+  "execution_kind": "fresh_offline_execution",
+  "executed_at_utc": "2026-11-02T09:22:45.880723+00:00",
+  "command": [
+    "/home/kawahara/miniconda3/bin/python",
+    "mceg/reviews/c3_source_review.py",
+    "--output",
+    "tests/data/validation/c3_source_review/20261102/comparison.json",
+    "--receipt",
+    "tests/data/validation/c3_source_review/20261102/receipt.json"
+  ],
+  "python": "3.12.7",
+  "base_commit": "6d11cd5ec6fd9c01a0de80e6bf74bb4a47a7db3b",
+  "implementation_identity": "Selected file hashes include uncommitted files; HEAD alone does not identify this execution.",
+  "selected_input_sha256": {
+    "mceg/reviews/c3_source_review.py": "7a5c3fe717951bd95787968f188bb96c260c49bf9b6ab99b52ea6157d902739a",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/c3_source_review/20261102/sources.json": "210edfddb80b91d7d14c4404aadc8695ce12752110978471c2d5ee7fa6e7bce8",
+    "tests/data/validation/c3_source_review/20261102/literature.json": "b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701",
+    "tests/data/validation/c3_source_review/20261102/C-138.txt": "5594a517653790da521f193d1c16a5b2cfd542e5c94357666ebabcf86bbb6bef",
+    "tests/data/validation/c3_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/c3_source_review/20261102/C-002.txt": "d929a499d9e827487970b654058f81381a652a84d836ec378bff8521cc19a3bf",
+    "tests/data/validation/c3_source_review/20261102/janaf_c3_printed_686.pdf": "52473971bc75a881ad88d2bc9c21b0b3f6ce24de201b41cc3d59161c7c609d83",
+    "tests/data/validation/c3_source_review/20261102/printed_c3_nodes.json": "0bba8db8a26c8fd4a9bf5eed143e6b27f886db6e6abc35fffafde2f8c7a674b3",
+    "tests/data/validation/c3_source_review/20261102/janaf_constants_printed_10.pdf": "2aeb29af2596f48e3148dcdb3cc77b71aeb5168db727741135951e67699cdb5b",
+    "tests/data/validation/c3_source_review/20261102/nasa_selected_records.txt": "f90ba2908303460a2885377f59549c78d7f6132efd662f17824d0b070ce56b9e",
+    "tests/data/validation/c3_source_review/20261102/atct_evidence.json": "ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4",
+    "tests/data/validation/c3_source_review/20261102/exomol_atlast_12C3.pf": "c03455acab83c2e8dc2919a9803445510f1af79bcdb0f52ceb9df63885f9f629",
+    "tests/data/validation/c3_source_review/20261102/exomol_atlast_12C3.def": "2dd3d1fe9deb5088043d0ecc5f8ac92540c744f2c275976fedde812e1f2a48f9",
+    "tests/data/validation/c3_source_review/20261102/exomol_atlast_12C3_states_head.txt": "104adcd00f4b2632b1f5430799fd0ed5427af755027308c2d23b962dcac40c59",
+    "tests/data/validation/c3_source_review/20261102/exomol_http_headers.json": "55cb661cc56a4b38a470d85c48c7c8c4f1e79bbe94add9b57944879be268ba4c",
+    "tests/data/validation/c3_source_review/20261102/state_sum_checks.json": "9caa0aac558265732f8227487ff77eed9d0d529c831f9f829b61de4e4a46983c",
+    "tests/data/validation/c3_source_review/20261102/nasa1978_thermal_appendix_21_22.pdf": "8143d8437c0c77d51f448eec0302bb3340952a9bc4b4c8b33c3ece1994182368",
+    "tests/data/validation/c3_source_review/20261102/historical_entropy_evidence.json": "6c90a1837fdd5cc3326aa7102a9e64cc131c54d348e0f771561a8dc793fff6aa"
+  },
+  "output_sha256": {
+    "tests/data/validation/c3_source_review/20261102/comparison.json": "4769153edec98a99b48cf0a7fa1d1cd1d2a780750ec05b6727769b9576cc06c0"
+  },
+  "scope": "C3 energy and thermal-source audit, not a model adoption or equilibrium execution",
+  "result": "passed"
+}

@@ -1,0 +1,59 @@
+{
+  "review_date": "2026-11-03",
+  "downloads": [
+    {
+      "url": "https://uhmreactiondynamics.org/publication_papers/p156.pdf",
+      "file": "cyclic2007.pdf",
+      "bytes": 394532,
+      "sha256": "53c0e615b71cdf961236e795b2b0f934bb981c0e3dfa171a1eb7623d29e501af",
+      "archived": false
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/N-034.txt",
+      "file": "N-034.txt",
+      "bytes": 3894,
+      "sha256": "56584e4693761305e7eebdd87bc865867abfcada057ee3e0cce9f06220ce2edd",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/N-002.txt",
+      "file": "N-002.txt",
+      "bytes": 3847,
+      "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Nitrogen.pdf",
+      "file": "janaf-nitrogen.pdf",
+      "bytes": 2903637,
+      "sha256": "f31c7ca73924a8992795918ef49c20d67a6e04d950c682f505843f6b64c125ca",
+      "archived": false
+    },
+    {
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "file": "nasa-glenn.pdf",
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "archived": false,
+      "inspection": "Existing official download from preceding PO2 review; N and N3 coefficient blocks inspected here."
+    }
+  ],
+  "official_pages": [
+    {
+      "url": "https://janaf.nist.gov/tables/N-034.html",
+      "inspection": "HTML and printed page1632 inspected; Dec1970 evaluation."
+    },
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=304",
+      "inspection": "Official version1.172 NNN energy/provenance page inspected through browser; selected facts in literature.json, no full-byte hash."
+    },
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=24",
+      "inspection": "Official same-version N atom page inspected through browser; selected facts in literature.json."
+    },
+    {
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C12596600&Mask=800",
+      "inspection": "Official Jacox compilation, identity and bibliographic entries inspected, original spectroscopy not inspected."
+    }
+  ],
+  "scope": "Sources inspected at the stated levels, not a claim of full original-literature verification; full research PDFs not redistributed."
+}

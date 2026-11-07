@@ -1,0 +1,27 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/n3_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/n3_source_review.py": "efe4e8ffdd6fae6f0d2bc815be07072d24b1d8f97702d2a3afb39d96ef72c55c",
+    "documents/mceg/n3_source_review.rst": "2cdbade34dcc0f1745346dda3f61ca49bdfc3ff435dfae8d41d4c480f86c2a8e",
+    "tests/model_evidence/n3_source_review_test.py": "fe909a89c9685033929c1c77c6c7c6b0efbad9ceb9bb6e625493e7a3abc31a60",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/n3_source_review/20261103/N-034.txt": "56584e4693761305e7eebdd87bc865867abfcada057ee3e0cce9f06220ce2edd",
+    "tests/data/validation/n3_source_review/20261103/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/n3_source_review/20261103/nasa9_excerpt.txt": "285cdc66cc58103f21ac3c6d24fef6a767810ca905baa81bd3470215f089644e",
+    "tests/data/validation/n3_source_review/20261103/literature.json": "76b7fb9abd5957651795fdb274c416215a56cf3cce448e8c3df6a112f5849c57",
+    "tests/data/validation/n3_source_review/20261103/sources.json": "ed884277942eb0c683176b0ee83209f44b53480efe57a7735eee698372558111",
+    "tests/data/validation/n3_source_review/20261103/README.rst": "24e0caea7064802ba330cc9957ffe5f2a14d4f0b9349894175487222c8c49d02"
+  },
+  "output_sha256": {
+    "tests/data/validation/n3_source_review/20261103/comparison.json": "0feea9df72dfa79565d8ac4187ebc783e9e9dbaa6c7108933fa3fb4f0c89a48b"
+  },
+  "scope": "Six source nodes,26 fit nodes and75 archived endpoints; no new equilibrium solve or adoption."
+}

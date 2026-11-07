@@ -1,0 +1,84 @@
+{
+  "retrieved_date": "2026-11-05",
+  "molecule": "H2O2",
+  "sources": [
+    {
+      "id": "nasa-thermo.inp",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "bytes": 1234323,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "atct-1.228.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "bytes": 4289738,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "H-070.txt",
+      "url": "https://janaf.nist.gov/tables/H-070.txt",
+      "sha256": "5eecf6ad2d1e0bcaaa54a7b460df45c08287aca2cde7b7a80dd9fdc5b5f45337",
+      "bytes": 1064,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "APTY.pf",
+      "url": "https://www.exomol.com/db/H2O2/1H2-16O2/APTY/1H2-16O2__APTY.pf",
+      "sha256": "a3b0df334b5e42cf8e11e505663830ae7d90b564eaa8acb69925d1fe0c12ba39",
+      "bytes": 52000,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository.",
+      "vendored_file": "APTY.pf",
+      "vendored_sha256": "0619c027f58365375f6b762ca6e41c5a725e8b85187fd36e7d8aff0cb7021a28",
+      "transformation": "Remove trailing whitespace only; every numerical table entry verified unchanged against downloaded original."
+    },
+    {
+      "id": "h2o2-2016.pdf",
+      "url": "https://discovery.ucl.ac.uk/1503472/1/yurchenko_MNRAS-2016-Al-Refaie-1012-22.pdf",
+      "sha256": "c75e01ecf3fb0ace3ad06c6e3408051b83bcda20a22aae03af93a6d7f31f1351",
+      "bytes": 1353134,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "atct-h2o2.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=66",
+      "sha256": "cbc19d4f5bf357db3a6084e16ab75569be296ca423429f4e13acc29ce2a0d30e",
+      "bytes": 55645,
+      "access": "Species identity and provenance table inspected; full HTML not committed."
+    },
+    {
+      "id": "dorofeeva2003",
+      "doi": "10.1063/1.1547435",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.1547435.pdf?download=1",
+      "sha256": "4fe097f91452fe833e34a093c6d20d2b302deced2fb48c120f1c87635c9a870e",
+      "bytes": 787612,
+      "access": "Full paper available; H2O2 section and Table 4 pages 894-895 read and selected table nodes visually verified. No full paper committed."
+    }
+  ],
+  "atomic_janaf_tables": {
+    "H": "tests/data/validation/oh_source_review/20261105/H-001.txt",
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt"
+  },
+  "source_node_units": [
+    "Cp J/mol/K",
+    "S J/mol/K",
+    "-[G-H298]/T J/mol/K",
+    "H-H298 kJ/mol",
+    "Hf kJ/mol",
+    "Gf kJ/mol",
+    "log10 Kf"
+  ],
+  "atct_conventions": "Same-version 1.228 molecule and neutral atom Hf(0); tabulated H uncertainty rounded 0.000 is not exact zero. Reaction covariance not propagated.",
+  "access_limit": "NASA source headers do not establish independent recovery of Gurvich inputs; current FastChem source attribution does not recover its original fit objective or atomic basis.",
+  "full_papers_committed": false,
+  "paper_dois": [
+    "10.1063/1.1547435",
+    "10.1093/mnras/stw1295"
+  ]
+}

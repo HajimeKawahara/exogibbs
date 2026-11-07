@@ -1,0 +1,282 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.n3_source_review.v1
+  name: N3 energy and thermal-source investigation
+  description: Separate inherited energy and thermal discrepancies; modern balanced energy favors weaker binding,
+    while curated is retained pending a scoped complete candidate.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:efe4e8ffdd6fae6f0d2bc815be07072d24b1d8f97702d2a3afb39d96ef72c55c
+    entry_points:
+    - mceg/reviews/n3_source_review.py
+assumptions:
+- statement: Balance source-native nitrogen atoms and neutral linear N3; H298 alignment and ATcT D0 comparison are
+    diagnostic.
+  evidence:
+  - literature_review
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Exact source nodes and an existing ideal-gas equilibrium archive.
+  conditions:
+  - Source decomposition at 500, 1000, 1500, 2000, 3000, 4000 K; current fit 1500-4000 K only.
+  - 75 archived converged cases, 537 species, 1500-4000 K, 1e-6-100 bar, three C/O values; no new solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Hot state completeness, cyclic contribution and physical atmosphere accuracy remain unquantified.
+  conditions: []
+  evidence:
+  - literature_review
+  - source_replay
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: Balanced energy and thermal terms reproduce the historical N3 discrepancy and separate legacy metadata
+    from the neutral radical identity.
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+- id: conditional_energy_direction
+  revision: '1'
+  kind: theoretical
+  statement: A same-version modern energy evaluation supports investigating weaker binding than both inherited JANAF
+    and historical NASA.
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: Source decomposition, balanced ground energies and nitrogen accounting in the archived 75-case grid
+    reproduce offline.
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A complete N3 thermal model and its atmospheric predictions have quantified physical accuracy.
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+evidence:
+- id: literature_review
+  kind: literature
+  summary: Inspect JANAF printed 1970 notes, NASA coefficient report, ATcT 1.172 evaluation, NIST spectroscopy and
+    Jamieson 2007 full text; distinguish underlying-original access gaps.
+  sources:
+  - tests/data/validation/n3_source_review/20261103/literature.json
+  - tests/data/validation/n3_source_review/20261103/sources.json
+  - documents/mceg/n3_source_review.rst
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+  subject: n3_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/n3_source_review/20261103/literature.json
+    sha256: 76b7fb9abd5957651795fdb274c416215a56cf3cce448e8c3df6a112f5849c57
+  - source: tests/data/validation/n3_source_review/20261103/sources.json
+    sha256: ed884277942eb0c683176b0ee83209f44b53480efe57a7735eee698372558111
+  - source: documents/mceg/n3_source_review.rst
+    sha256: 2cdbade34dcc0f1745346dda3f61ca49bdfc3ff435dfae8d41d4c480f86c2a8e
+  provenance:
+    role: primary
+    location: documents/mceg/n3_source_review.rst
+    inspection: partial
+    note: Inspection levels and unavailable originals are explicit. ATcT is an evaluated network, not independent
+      of its contributing experiments. No new equilibrium solve.
+- id: source_replay
+  kind: numerical_test
+  summary: Replay six source nodes, 26 fit nodes, balanced JANAF/NASA/ATcT ground energies and the existing 75-case
+    footprint.
+  sources:
+  - tests/data/validation/n3_source_review/20261103/comparison.json
+  - tests/data/validation/n3_source_review/20261103/receipt.json
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+  subject: n3_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/n3_source_review/20261103/comparison.json
+    sha256: 0feea9df72dfa79565d8ac4187ebc783e9e9dbaa6c7108933fa3fb4f0c89a48b
+  - source: tests/data/validation/n3_source_review/20261103/receipt.json
+    sha256: 88e0fb9f176830e9a0191562206578844166539b59f4455a65a64a558a77da54
+  provenance:
+    role: primary
+    location: documents/mceg/n3_source_review.rst
+    inspection: inspected
+    note: Inspection levels and unavailable originals are explicit. ATcT is an evaluated network, not independent
+      of its contributing experiments. No new equilibrium solve.
+  result: passed
+- id: reference_reasoning
+  kind: theory
+  summary: Balance the inspected modern ATcT evaluation against source-native atomic energies to infer a conditional
+    weaker-binding investigation direction.
+  sources:
+  - tests/data/validation/n3_source_review/20261103/literature.json
+  - tests/data/validation/n3_source_review/20261103/sources.json
+  - documents/mceg/n3_source_review.rst
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+  subject: n3_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/n3_source_review/20261103/literature.json
+    sha256: 76b7fb9abd5957651795fdb274c416215a56cf3cce448e8c3df6a112f5849c57
+  - source: tests/data/validation/n3_source_review/20261103/sources.json
+    sha256: ed884277942eb0c683176b0ee83209f44b53480efe57a7735eee698372558111
+  - source: documents/mceg/n3_source_review.rst
+    sha256: 2cdbade34dcc0f1745346dda3f61ca49bdfc3ff435dfae8d41d4c480f86c2a8e
+  provenance:
+    role: secondary
+    location: documents/mceg/n3_source_review.rst
+    inspection: partial
+    note: This inference concerns energy direction, not a claim that the full high-temperature thermal model or
+      abundances have been physically validated.
+subjects:
+- id: n3_sources_20261103
+  implementation: *id001
+  selected_files:
+    mceg/reviews/n3_source_review.py: efe4e8ffdd6fae6f0d2bc815be07072d24b1d8f97702d2a3afb39d96ef72c55c
+    documents/mceg/n3_source_review.rst: 2cdbade34dcc0f1745346dda3f61ca49bdfc3ff435dfae8d41d4c480f86c2a8e
+    tests/model_evidence/n3_source_review_test.py: fe909a89c9685033929c1c77c6c7c6b0efbad9ceb9bb6e625493e7a3abc31a60
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/n3_source_review/20261103/N-034.txt: 56584e4693761305e7eebdd87bc865867abfcada057ee3e0cce9f06220ce2edd
+    tests/data/validation/n3_source_review/20261103/N-002.txt: 1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5
+    tests/data/validation/n3_source_review/20261103/nasa9_excerpt.txt: 285cdc66cc58103f21ac3c6d24fef6a767810ca905baa81bd3470215f089644e
+    tests/data/validation/n3_source_review/20261103/literature.json: 76b7fb9abd5957651795fdb274c416215a56cf3cce448e8c3df6a112f5849c57
+    tests/data/validation/n3_source_review/20261103/sources.json: ed884277942eb0c683176b0ee83209f44b53480efe57a7735eee698372558111
+    tests/data/validation/n3_source_review/20261103/README.rst: 24e0caea7064802ba330cc9957ffe5f2a14d4f0b9349894175487222c8c49d02
+    tests/data/validation/n3_source_review/20261103/comparison.json: 0feea9df72dfa79565d8ac4187ebc783e9e9dbaa6c7108933fa3fb4f0c89a48b
+    tests/data/validation/n3_source_review/20261103/receipt.json: 88e0fb9f176830e9a0191562206578844166539b59f4455a65a64a558a77da54
+contexts:
+- id: source_comparison
+  scope: Neutral linear N3 radical, 3 N(g) -> N3(g), standard pressure 1 bar; native source atoms, ATcT 1.172 diagnostic
+    and archived grid.
+  settings:
+    reaction: 3 N(g) -> N3(g)
+    standard_pressure_bar: 1
+    baseline: gas_source_comparison/baseline-001
+    atomic_reference: Balance within each source; ATcT1.172 only
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: n3_sources_20261103
+  context: source_comparison
+  method: &id002
+    id: n3_source_review
+    revision: '1'
+    description: Separate source integrity, conditional energy evidence, numerical reproduction and physical accuracy.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Official JANAF 1970 notes and NASA coefficients identify the old constructions. A factor 2.15-2.61 remains after
+    H298 alignment over 1500-4000 K.
+  status: supported
+  origin: reviewed
+- id: conditional_energy_direction_review
+  kind: evidence_support
+  claim: conditional_energy_direction
+  claim_revision: '1'
+  subject: n3_sources_20261103
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - ATcT 1.172 3N-NNN gives 959.369 kJ/mol versus995.495 JANAF and973.018622 NASA. This supports an energy direction,
+    not a complete thermal model or adoption.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: n3_sources_20261103
+  context: source_comparison
+  method: *id002
+  evidence:
+  - source_replay
+  reasons:
+  - Official numerical tables match the frozen baseline and coefficients; all archived formation potentials and
+    nitrogen budgets are checked.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: n3_sources_20261103
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Gurvich originals and several experimental full texts remain uninspected; hot state/partition completeness and
+    candidate finite substitution remain unresolved.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: balanced_thermal_candidate
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Construct a named modern atom-balanced energy and linear-radical thermal candidate; preserve cyclic and
+    ionic identity distinctions.
+  requires:
+  - Use same-version atomic and molecular energy entries; quantify correlations where available instead of independent-error
+    assumptions.
+  - Assess tentative vibrational assignments, spin-orbit weights, anharmonicity and excited states; targeted originals
+    Beaman 1987 DOI 10.1021/j100308a006 and Brazier 1988 DOI 10.1063/1.455122.
+  - For energy provenance, Cook 1999 DOI 10.1039/A805936E and Yuan 2008 DOI 10.1021/jp800062t; Dixon 2004 DOI 10.1021/ja0303182
+    is a theoretical route already contributing to ATcT.
+  - Gurvich 1989 volume 1 part 1 page 325 / part 2 page 202 can resolve legacy choices; no verified DOI and not
+    a requirement to obtain every historical original before evaluating a modern candidate.
+  completion: Archive explicit candidate functions, source-inspection scope, energy zero, state inventory and thermal
+    uncertainty over its declared domain.
+- id: finite_substitution
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Evaluate the named candidate by controlled finite substitution on a fixed network before curated adoption.
+  requires:
+  - Conserved budgets, mass-action residuals, absolute abundance and nitrogen allocation; archive failures and domain
+    limits.
+  - Keep gas-equilibrium applicability separate from photochemical production, matrix trapping and radical lifetimes.
+  completion: Record a scoped adoption assessment and candidate response, without treating the tiny baseline footprint
+    as a physical error bound.
+limitations:
+- statement: Retaining current curated is provisional and does not assert scientific correction is unnecessary.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: Native NASA thermal functions are not validated by agreement with a modern energy anchor; original
+    spectroscopy and Gurvich source gaps remain.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: The modern CAS and JANAF index differ; printed state and charge are used to identify the radical. No
+    ionic or cyclic model is substituted.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: No combined ATcT uncertainty without covariance; no new equilibrium solve and no physical validation
+    from the finite archived footprint.
+  evidence:
+  - literature_review
+  - source_replay

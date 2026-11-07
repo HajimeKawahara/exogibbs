@@ -204,7 +204,7 @@ def test_source_disagreement_is_preserved_instead_of_ranked_away():
 
 
 def test_receipt_and_contract_identify_scoped_evidence():
-    directory = ROOT / "results/major_molecule_adoption"
+    directory = ROOT / "tests/data/validation/major_molecule_adoption"
     receipt = json.loads((directory / "receipt.json").read_text())
     for name, expected in receipt["selected_file_sha256"].items():
         assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
@@ -214,5 +214,5 @@ def test_receipt_and_contract_identify_scoped_evidence():
     key = "examples/comparisons/select_major_molecules.py"
     assert "revision: sha256:" + receipt["selected_file_sha256"][key] in contract
     assert "kind: physical_validation\n  status: unknown" in contract
-    assert "results/major_molecule_adoption/tests.json" in contract
+    assert "tests/data/validation/major_molecule_adoption/tests.json" in contract
     assert "No MCEG runtime or test dependency" in contract

@@ -1,0 +1,33 @@
+{
+  "review_date": "2026-11-05",
+  "base_commit": "4bb053017338878b8eda360758b3a8c45862b8ee",
+  "command": "PYTHONPATH=src python mceg/reviews/h2so4_source_review.py --output tests/data/validation/h2so4_source_review/20261105/comparison.json",
+  "exit_code": 0,
+  "selected_input_sha256": {
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "src/exogibbs/data/fastchem/logK/logK.dat": "dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_oh_adoption/20261105/ions.npz": "a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d",
+    "tests/data/validation/oh_source_review/20261105/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/sh_source_investigation/20261102/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+    "mceg/reviews/h2so4_source_review.py": "2050d4de2dceb15fa7c0b2a1789b9b673eb7ffadfa1844cf39fb62dcad98324e",
+    "documents/mceg/h2so4_source_review.rst": "bc4decfdfa68bfa0ce431574ba1d1e776f16e1dbb7cdd9a7c2f1dc446badd6aa",
+    "tests/model_evidence/h2so4_source_review_test.py": "1f79cfb5b08160b0078a33cdebcb4acb9103d62aea66e6cca6546fccff0daf60",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "tests/data/validation/h2so4_source_review/20261105/H-076.txt": "5d1e7858aaf169fb5bfe25080beda7745608c6c961fd14f7438d22b43f6297a1",
+    "tests/data/validation/h2so4_source_review/20261105/README.rst": "370e4105d919e9d576f35edd9d1e9a69ca84aed3806db12c3663a7518f070672",
+    "tests/data/validation/h2so4_source_review/20261105/dorofeeva2003_nodes.json": "878a552f052018f7731cbc5ceb75704846b9e0fb41110f54b47ad029dc1fb0f7",
+    "tests/data/validation/h2so4_source_review/20261105/nasa_records.json": "341e380df77a99219fd136feb3b91ca5a0b36b7c1f754816adceb84a2ce9aa35",
+    "tests/data/validation/h2so4_source_review/20261105/nasa_selected_records.txt": "a466bd892ff67ee0e1b5a4caf8f9b7598b9f797824db585b56c6100d3996f353",
+    "tests/data/validation/h2so4_source_review/20261105/sources.json": "eebf01867d548253f8d22ea71e48a95ab8bbfcf6b37a9f1a9a739f8eb957a019"
+  },
+  "output_sha256": {
+    "tests/data/validation/h2so4_source_review/20261105/comparison.json": "636b8eab00a53176e2025a1d05233faf46e99515ab72e7ab59222bc0dafd4aad"
+  },
+  "scope": "Eight exact source knots at 500-4000 K, six current-fit knots at 1500-4000 K, and 75 existing curated-oh-v1 endpoints. No runtime change, continuous candidate adoption or finite-substitution solve."
+}

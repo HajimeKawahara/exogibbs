@@ -64,7 +64,7 @@ evidence:
   sources:
   - examples/comparisons/audit_atomic_ions.py
   - examples/comparisons/data/atomic_ion_reference.json
-  - results/atomic_ion_audit/receipt.json
+  - tests/data/validation/atomic_ion_audit/receipt.json
   scope: Selected file hashes identify the actual working-tree implementation and data; base Git HEAD
     alone does not identify the newly added audit.
 - id: statistical_model
@@ -138,9 +138,9 @@ evidence:
   result: passed
   summary: Completed offline evaluation with recorded input and output hashes.
   sources:
-  - results/atomic_ion_audit/receipt.json
-  - results/atomic_ion_audit/comparison.csv
-  - results/atomic_ion_audit/summary.csv
+  - tests/data/validation/atomic_ion_audit/receipt.json
+  - tests/data/validation/atomic_ion_audit/comparison.csv
+  - tests/data/validation/atomic_ion_audit/summary.csv
   scope: Completion and reproducibility only. Ten FastChem species exceed a symmetric factor-1.1
     review threshold, including four exceeding factor two; these thresholds are not confidence intervals.
 - id: test_run
@@ -149,7 +149,7 @@ evidence:
   summary: Seven targeted standard-library regression tests passed.
   sources:
   - tests/unittests/examples/atomic_ion_audit_test.py
-  - results/atomic_ion_audit/tests.json
+  - tests/data/validation/atomic_ion_audit/tests.json
   scope: Coverage, Ni/Co reproduction, hydrogen reaction conventions, Cu/JANAF comparison,
     bound-level checks, invalid domains and evidence hashes. No whole-package test pass is claimed.
 limitations:

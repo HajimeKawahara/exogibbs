@@ -1,0 +1,285 @@
+{
+  "molecule": "NaCN",
+  "species_id": "C1N1Na1",
+  "composition": {
+    "Na": 1,
+    "C": 1,
+    "N": 1
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "NaCN": "C-086.txt",
+    "Na": "Na-005.txt",
+    "C": "C-003.txt",
+    "N": "N-002.txt"
+  },
+  "nasa9": {
+    "NaCN": {
+      "composition": {
+        "Na": 1,
+        "C": 1,
+        "N": 1
+      },
+      "reference": "Chase,1998 p634.",
+      "source_line_1based": 7522,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            24461.6541,
+            -753.601997,
+            10.44966241,
+            -0.01168769048,
+            1.849279385e-05,
+            -1.319387974e-08,
+            3.58976656e-12,
+            12978.20493,
+            -29.88519681
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            366557.029,
+            -1782.094358,
+            8.69962263,
+            -0.0004463297,
+            9.36222931e-08,
+            -1.03307132e-11,
+            4.65046681e-16,
+            20109.26347,
+            -24.19276094
+          ]
+        }
+      ],
+      "source_name": "NaCN",
+      "hf298_J_mol": 94266.0,
+      "h298_minus_h0_J_mol": 12125.972,
+      "mass_u": 49.00717
+    },
+    "Na": {
+      "composition": {
+        "Na": 1
+      },
+      "reference": "Hf:Cox,1989. Martin,W.C.,1981. Gordon,1999.",
+      "source_line_1based": 7465,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            12183.82949,
+            4.24402818
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            952572.338,
+            -2623.807254,
+            5.16259662,
+            -0.001210218586,
+            2.306301844e-07,
+            -1.249597843e-11,
+            7.22677119e-16,
+            29129.63564,
+            -15.19717061
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            1592533392.0,
+            -971783.666,
+            223.8443963,
+            -0.02380930558,
+            1.352018117e-06,
+            -3.93697111e-11,
+            4.630689121e-16,
+            7748677.26,
+            -1939.615505
+          ]
+        }
+      ],
+      "source_name": "Na",
+      "hf298_J_mol": 107500.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 22.98977
+    },
+    "C": {
+      "composition": {
+        "C": 1
+      },
+      "reference": "Hf:Douglas,1955. Moore,1970b. Gordon,1999.",
+      "source_line_1based": 1936,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            649.503147,
+            -0.964901086,
+            2.504675479,
+            -1.281448025e-05,
+            1.980133654e-08,
+            -1.606144025e-11,
+            5.314483411e-15,
+            85457.6311,
+            4.747924288
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -128913.6472,
+            171.9528572,
+            2.646044387,
+            -0.000335306895,
+            1.74209274e-07,
+            -2.902817829e-11,
+            1.642182385e-15,
+            84105.9785,
+            4.130047418
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            443252801.0,
+            -288601.8412,
+            77.3710832,
+            -0.00971528189,
+            6.64959533e-07,
+            -2.230078776e-11,
+            2.899388702e-16,
+            2355273.444,
+            -640.512316
+          ]
+        }
+      ],
+      "source_name": "C",
+      "hf298_J_mol": 716680.0,
+      "h298_minus_h0_J_mol": 6535.895,
+      "mass_u": 12.0107
+    },
+    "N": {
+      "composition": {
+        "N": 1
+      },
+      "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+      "source_line_1based": 7051,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            56104.6378,
+            4.193905036
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            88765.0138,
+            -107.12315,
+            2.362188287,
+            0.0002916720081,
+            -1.7295151e-07,
+            4.01265788e-11,
+            -2.677227571e-15,
+            56973.5133,
+            4.865231506
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            547518105.0,
+            -310757.498,
+            69.1678274,
+            -0.00684798813,
+            3.8275724e-07,
+            -1.098367709e-11,
+            1.277986024e-16,
+            2550585.618,
+            -584.8769753
+          ]
+        }
+      ],
+      "source_name": "N",
+      "hf298_J_mol": 472680.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 14.0067
+    }
+  },
+  "decision": "Retain pending a bounded modern thermal candidate: the March-1966 JANAF linear geometry is superseded by gas-phase T-shaped spectroscopy, and NASA largely shares that ancestry. Prioritize a nonlinear/large-amplitude thermal evaluation before adoption; no new energy is selected.",
+  "identity": {
+    "phase": "neutral gas monomer",
+    "electronic_state": "singlet X1A-prime T-shaped asymmetric top",
+    "excluded": "solid ionic salt, ions, dimer, and an independent linear cyanide/isocyanide population counted a second time",
+    "source_geometry": "JANAF March1966 C-infinity-v, 180-degree linear assumption; confirmed by inspecting the printed evaluation, not inferred from NASA agreement.",
+    "modern_geometry": "Nearly T-shaped gas monomer; the conventional cyanide name does not specify linear carbon-end bonding.",
+    "spin_symmetry": "Ground electronic multiplicity 1, rotational symmetry number 1; no nuclear-spin factor added to thermochemical functions.",
+    "isotope": "Natural source mass retained in old-model reconstruction; modern constants refer to the principal isotope, not an isotope-averaged full state sum."
+  },
+  "follow_ups": [
+    "Construct a bounded nonlinear thermal candidate using measured rotational constants and reliable gas-phase or variational vibrational/large-amplitude levels; do not simply retain the linear four-mode vibrational count.",
+    "Separate the old source physical D0 and fit residual from a thermal update; original vaporization/monomer-dimer assumptions remain energy follow-ups, not automatic new energy anchors.",
+    "Perform finite substitution after a derivative-consistent candidate is available; missing ancestral text alone does not block this source review."
+  ],
+  "limitations": [
+    "The JANAF linear geometry is obsolete; near-unity NASA/current ratios mostly reflect shared source ancestry.",
+    "Rotation-only factor is not a full molecular partition ratio or formation-K correction; a nonlinear triatomic has three normal modes, unlike the old linear four-mode count.",
+    "Centrifugal distortion, floppy/large-amplitude motion, vibrational anharmonicity, excited-state coverage and full covariance remain unbounded.",
+    "No new production coefficient, energy adoption or equilibrium substitution."
+  ]
+}

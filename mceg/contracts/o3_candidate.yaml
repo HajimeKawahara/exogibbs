@@ -1,0 +1,472 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.o3_candidate.v1
+  name: O3 bounded energy and thermal candidate evaluation
+  description: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000
+    K and 1-bar standard state; no production update.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:3142bd58fbd5ab85cc38cbf0809533acd761012b6bfe63fcfc9594a1405a6d5d
+    entry_points:
+    - mceg/reviews/pending_thermal_gap_inputs.py
+    - mceg/reviews/pending_equilibrium_impact.py
+assumptions:
+- statement: The retained candidate changes only balanced physical ATcT-minus-JANAF D0. NASA is a separate thermal/gauge/fit-residual
+    control at the same ATcT energy; native NASA energy is removed with its original R before SI-R insertion. No
+    second ZPE. Solver agreement cannot establish either thermal model's physical superiority.
+  evidence:
+  - source_scope
+  - continuous_model
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000
+    K and 1-bar standard state; no production update.
+  conditions:
+  - 75 conditions per network per variant; 150 common archived baseline endpoints are not recounted.
+  evidence:
+  - continuous_model
+  - finite_execution
+claims:
+- id: balanced_energy
+  revision: '1'
+  kind: theoretical
+  statement: The source cycle separates physical D0 from the fitted intercept and inserts the selected energy exactly
+    once.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+- id: continuous_consistency
+  revision: '1'
+  kind: numerical_verification
+  statement: Each finite continuous candidate has independently checked G/H/S/Cp and changes only the declared target
+    potential.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+- id: finite_response
+  revision: '1'
+  kind: numerical_verification
+  statement: The archived fixed-grid response passes conservation, formation, stricter-reference and independent
+    solver checks.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+- id: scientific_direction
+  revision: '1'
+  kind: theoretical
+  statement: The scoped production recommendation is supported independently of numerical solver agreement.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+- id: thermal_superiority
+  revision: '1'
+  kind: physical_validation
+  statement: The NASA alternative is established to be the physically superior hot thermal model.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+- id: complete_physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Complete physical uncertainty and planetary abundance accuracy are established.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+- id: full_grid_gibbs_ordering
+  revision: '1'
+  kind: numerical_verification
+  statement: Same-model Gibbs ordering is resolved above numerical scale at every grid point.
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+evidence:
+- id: source_scope
+  kind: literature
+  summary: Balanced physical source energies; unchanged original primary-source packet.
+  sources:
+  - tests/data/validation/o3_source_review/20261106/inputs.json
+  - tests/data/validation/o3_source_review/20261106/comparison.json
+  - tests/data/validation/o3_source_review/20261106/sources.json
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  artifacts:
+  - source: tests/data/validation/o3_source_review/20261106/inputs.json
+    sha256: 9b725a6cd00e53665a598eadbbc9d231b48954bef04296ec0bcd58cd593ef658
+  - source: tests/data/validation/o3_source_review/20261106/comparison.json
+    sha256: 867b611fdbd4dfaebb1502e30a987746b3bb5fc4c84d868cfb7dbbb013c6b40d
+  - source: tests/data/validation/o3_source_review/20261106/sources.json
+    sha256: ab190afa61661f7644ad6949ecb0edab061b1e62628d0d2c38ab70d3a45a64a3
+- id: continuous_model
+  kind: numerical_test
+  summary: Independent physical source arithmetic, 2752-point G/H/S/Cp and actual named-factory checks.
+  sources:
+  - tests/data/validation/o3_candidate/20261106/candidate.json
+  - tests/data/validation/o3_candidate/20261106/validation.json
+  - tests/data/validation/o3_candidate/20261106/receipt.json
+  - mceg/reviews/pending_thermal_gap_inputs.py
+  - mceg/reviews/pending_candidate.py
+  - mceg/reviews/pending_nitrogen_inputs.py
+  - tests/model_evidence/o3_candidate_test.py
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  artifacts:
+  - source: tests/data/validation/o3_candidate/20261106/candidate.json
+    sha256: 7c724f0f2a009edf0697fede0e961dc7c5925f607f4e6fbbfc1f4569d209f49e
+  - source: tests/data/validation/o3_candidate/20261106/validation.json
+    sha256: b35148db0dfca25992701a410888538d37a50af3e8c417d1348b41c5b6f96ba1
+  - source: tests/data/validation/o3_candidate/20261106/receipt.json
+    sha256: 559bb5ddfe53cb84b6ec05083457415ef4ebd25bfc37f882732df8cb52cdd7cc
+  - source: mceg/reviews/pending_thermal_gap_inputs.py
+    sha256: 3142bd58fbd5ab85cc38cbf0809533acd761012b6bfe63fcfc9594a1405a6d5d
+  - source: mceg/reviews/pending_candidate.py
+    sha256: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
+  - source: mceg/reviews/pending_nitrogen_inputs.py
+    sha256: a3f19aec5e64b281ca7e1ddb58e8c9ef7db49fe773f5e7b423866935aadf79d3
+  - source: tests/model_evidence/o3_candidate_test.py
+    sha256: d323ecd9f9dac73210ab4555bdcd54e57940cade7fc09e5510dc527e0bd19075
+  result: passed
+- id: finite_execution
+  kind: numerical_test
+  summary: 300 fresh endpoints, 28 selected controls, six independent FastChem executions; finite conservation and
+    response checks.
+  sources:
+  - tests/data/validation/o3_equilibrium_impact/20261106/receipt.json
+  - tests/data/validation/o3_equilibrium_impact/20261106/summary.json
+  - tests/data/validation/o3_equilibrium_impact/20261106/ions.npz
+  - tests/data/validation/o3_equilibrium_impact/20261106/neutral.npz
+  - tests/data/validation/o3_equilibrium_impact/20261106/diagnostics.json
+  - tests/data/validation/o3_equilibrium_impact/20261106/selected_diagnostics.json
+  - tests/data/validation/o3_equilibrium_impact/20261106/README.rst
+  - mceg/reviews/pending_equilibrium_impact.py
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  artifacts:
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/receipt.json
+    sha256: 51e13c0d59641fd29597dbc6224569a9643afacb67e1c0f81b0224512662d708
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/summary.json
+    sha256: e9bf4d6501e1a8cdfce55eed92895e78de54fdd61487f151d9af2c84f4d5394f
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/ions.npz
+    sha256: 6ebc97bbf066ad9936f495659d2b44ba5026761e7a2a6abb8bed0e21d5869c70
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/neutral.npz
+    sha256: 1967050d96913f96f66bd792169d32498c977a888affbc77267247dbb046ec26
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/diagnostics.json
+    sha256: 3fbb702be70611fbadcd96e72d89ad9e5a6f6b4a49119b1ec30ed9ca73aebe28
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/selected_diagnostics.json
+    sha256: 01728939a801726a59cd2ff93ff8b817f222a7c5315236bc48b4690949117119
+  - source: tests/data/validation/o3_equilibrium_impact/20261106/README.rst
+    sha256: f64c799fcdb3edf55576db34a65f8d321e3543506d91b7ce1beff3fed103b733
+  - source: mceg/reviews/pending_equilibrium_impact.py
+    sha256: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
+  result: passed
+- id: selection
+  kind: theory
+  summary: 'Prefer the same-version ATcT energy correction as a bounded future update: physical D0 increases by
+    1099 J/mol, so G/H decrease by that amount. Retain the thermal fit until its larger NASA difference has an independent
+    physical resolution. This is an ideal-gas equilibrium source decision, not an ozone photochemistry prediction.'
+  sources:
+  - documents/mceg/o3_candidate.rst
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  artifacts:
+  - source: documents/mceg/o3_candidate.rst
+    sha256: dce5ab5c8541727ba5fc7be70858c183d87360361e08f05772e20ec3d125447f
+subjects:
+- id: o3_candidates_20261106
+  implementation: *id001
+  selected_files:
+    benchmarks/__init__.py: b1c18fc68440927cbfd4f278276efe1484336ceed8fd6012ff362494e695c0ec
+    benchmarks/fastchem4/__init__.py: d827f7380f18ceebc689a720eae0ae971d66862896322c8a61312f3c1239d034
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    documents/mceg/o3_candidate.rst: dce5ab5c8541727ba5fc7be70858c183d87360361e08f05772e20ec3d125447f
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/select_atomic_ions.py: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
+    mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/pending_candidate.py: f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00
+    mceg/reviews/pending_equilibrium_impact.py: 729eb719ea1d961d43722a40d1d82ba1f828ea2d48e22f2442e898c9f08b6364
+    mceg/reviews/pending_nitrogen_inputs.py: a3f19aec5e64b281ca7e1ddb58e8c9ef7db49fe773f5e7b423866935aadf79d3
+    mceg/reviews/pending_thermal_gap_inputs.py: 3142bd58fbd5ab85cc38cbf0809533acd761012b6bfe63fcfc9594a1405a6d5d
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/api/__init__.py: b50e66690ae01674e930f9495b111c7ea66bbd5b544d93b041261b3498b90b02
+    src/exogibbs/api/chemistry.py: 015434f7a6a9598f42d553a5b6248426ab96f085e0fe51bf1b1b09889556b245
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h2_v1.json: cdd7f4348e05477c158b9fe0f9e3250b2d3f71d2e6fdd3cb8d051aa147bb169e
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/ch2_v1.json: a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536
+    src/exogibbs/data/curated/cn_v1.json: 28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/cos_v1.json: 0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    src/exogibbs/data/curated/hcp_v1.json: 7a193d32ca1b2796924a9ad024ee09396382cff530083f6ad2f24947b9061249
+    src/exogibbs/data/curated/ho2_v1.json: de1050836d2adfb0853594fb3c7f25253af758a9c35f40458baa32737bbf534b
+    src/exogibbs/data/curated/kh_v1.json: d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328
+    src/exogibbs/data/curated/oh_v1.json: f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081
+    src/exogibbs/data/curated/ps_v1.json: d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6
+    src/exogibbs/data/curated/tio2_v1.json: 7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/__init__.py: 63a05e6341d70e90ab683936f8fb02604804d0ef6a807e7f6c13df2e62f9d058
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/io/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/io/load_data.py: e6c9333d71a5179b20b9d71847c175028c02628f00b1475c00c7ead9761fe7ac
+    src/exogibbs/presets/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_c2h2.py: fda4ea4fdff2d99ff041bf0b4b648afdf903d812ba35b30283b33033f0445bb6
+    src/exogibbs/presets/curated_ch2.py: 89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701
+    src/exogibbs/presets/curated_cn.py: 8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_cos.py: 505a0f0e9b6aae68c52ef1488fdf73e65377f2b46d75dc93b39e88202cb4b01f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_hcp.py: 08f44b9d2b51a61576beb6f0cc6cfd20a133ffff21f06f966e7eb681b998038a
+    src/exogibbs/presets/curated_ho2.py: 74f95f4fb386a503359f054375651b41575c2ccc0ac9b405125b956d63870dca
+    src/exogibbs/presets/curated_kh.py: cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    src/exogibbs/presets/curated_ps.py: 73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_tio2.py: 876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/thermo/composition.py: 77d4fe5c05f7adc3ce9f98f0761aabecd21ded9d75e13be9d445a7482073fa8f
+    src/exogibbs/thermo/fugacity.py: 85348725ac895bec2cd653520cf795de5e10aa9d1b1d9afed1d9205b1480e31e
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/stoichiometry.py: 8b3dc769db8e89859ddff3fad26a724a41faec2f1b5b99d96d435799554fd254
+    src/exogibbs/utils/__init__.py: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    src/exogibbs/utils/elements.py: cf7714ca683370ee9607d7c9b183e3e49ebeb611c0d62aac35ac239e6d9225dd
+    src/exogibbs/utils/fastchem_parity.py: 6c88bca8effd17c3fd27dc364a0e0677bc14cc4b547919b0aa59ae0481a5115d
+    src/exogibbs/utils/interpolation.py: f8a564dcf8dd1c39acf8df6e313b5a458e7b2078a6e599e5ebe24825495e0f06
+    src/exogibbs/utils/nameparser.py: 81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a
+    tests/data/validation/curated_ch2_adoption/20261106/ions.npz: 2b8b5cf2275e5177c90a11dbd604989362f04a39efcf80f5a45294c5a0832b84
+    tests/data/validation/curated_ch2_adoption/20261106/neutral.npz: c93f8ed204949b0921e19c8bf2ab60abe80120101ccc4b9df9ce9dc9b612d320
+    tests/data/validation/curated_ch2_adoption/20261106/receipt.json: 693d76930fa681883e25f91c494ab6cd87e0db6f78fae1f8f305797ab80239b2
+    tests/data/validation/o3_candidate/20261106/candidate.json: 7c724f0f2a009edf0697fede0e961dc7c5925f607f4e6fbbfc1f4569d209f49e
+    tests/data/validation/o3_candidate/20261106/receipt.json: 559bb5ddfe53cb84b6ec05083457415ef4ebd25bfc37f882732df8cb52cdd7cc
+    tests/data/validation/o3_candidate/20261106/validation.json: b35148db0dfca25992701a410888538d37a50af3e8c417d1348b41c5b6f96ba1
+    tests/data/validation/o3_equilibrium_impact/20261106/README.rst: f64c799fcdb3edf55576db34a65f8d321e3543506d91b7ce1beff3fed103b733
+    tests/data/validation/o3_equilibrium_impact/20261106/diagnostics.json: 3fbb702be70611fbadcd96e72d89ad9e5a6f6b4a49119b1ec30ed9ca73aebe28
+    tests/data/validation/o3_equilibrium_impact/20261106/ions.npz: 6ebc97bbf066ad9936f495659d2b44ba5026761e7a2a6abb8bed0e21d5869c70
+    tests/data/validation/o3_equilibrium_impact/20261106/neutral.npz: 1967050d96913f96f66bd792169d32498c977a888affbc77267247dbb046ec26
+    tests/data/validation/o3_equilibrium_impact/20261106/receipt.json: 51e13c0d59641fd29597dbc6224569a9643afacb67e1c0f81b0224512662d708
+    tests/data/validation/o3_equilibrium_impact/20261106/selected_diagnostics.json: 01728939a801726a59cd2ff93ff8b817f222a7c5315236bc48b4690949117119
+    tests/data/validation/o3_equilibrium_impact/20261106/summary.json: e9bf4d6501e1a8cdfce55eed92895e78de54fdd61487f151d9af2c84f4d5394f
+    tests/data/validation/o3_source_review/20261106/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/o3_source_review/20261106/O-056.txt: bebfe8d1b755cbc6a140d7201cffc784c02210c38c53ca1d49a9166a09252540
+    tests/data/validation/o3_source_review/20261106/comparison.json: 867b611fdbd4dfaebb1502e30a987746b3bb5fc4c84d868cfb7dbbb013c6b40d
+    tests/data/validation/o3_source_review/20261106/inputs.json: 9b725a6cd00e53665a598eadbbc9d231b48954bef04296ec0bcd58cd593ef658
+    tests/data/validation/o3_source_review/20261106/literature.json: b72b6e6c4ccf94399c0f6b9325475c911cb4e4a6a07b1743df4eb2b868b1010f
+    tests/data/validation/o3_source_review/20261106/nasa_records.json: 6650a8b4ded3fe5e7f306bd7000533d07a89d4ebd1675f6104d33b8c649ea4e0
+    tests/data/validation/o3_source_review/20261106/sources.json: ab190afa61661f7644ad6949ecb0edab061b1e62628d0d2c38ab70d3a45a64a3
+    tests/model_evidence/o3_candidate_test.py: d323ecd9f9dac73210ab4555bdcd54e57940cade7fc09e5510dc527e0bd19075
+contexts:
+- id: fixed_ch2_network
+  scope: O3 independent retained-thermal ATcT and NASA9/ATcT candidates on fixed curated-ch2-v1, 1500-4000 K and
+    1-bar standard state; no production update.
+  settings:
+    baseline_dataset: curated-ch2-v1
+    target: O3
+    production_change: none
+    decision: recommend_energy_only
+assessments:
+- id: balanced_energy_review
+  kind: evidence_support
+  claim: balanced_energy
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - The retained candidate changes only balanced physical ATcT-minus-JANAF D0. NASA is a separate thermal/gauge/fit-residual
+    control at the same ATcT energy; native NASA energy is removed with its original R before SI-R insertion. No
+    second ZPE. Solver agreement cannot establish either thermal model's physical superiority.
+  status: supported
+  origin: reviewed
+- id: continuous_consistency_review
+  kind: evidence_support
+  claim: continuous_consistency
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - 2752 temperatures including 251 off-grid checks; the actual named factory reproduces the unchanged literal target.
+  status: supported
+  origin: reviewed
+- id: finite_response_review
+  kind: evidence_support
+  claim: finite_response
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - 300 fresh endpoints, 28 selected controls, six FastChem executions; maximum difference 1.49e-08 dex.
+  status: supported
+  origin: reviewed
+- id: scientific_direction_review
+  kind: evidence_support
+  claim: scientific_direction
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - 'Prefer the same-version ATcT energy correction as a bounded future update: physical D0 increases by 1099 J/mol,
+    so G/H decrease by that amount. Retain the thermal fit until its larger NASA difference has an independent physical
+    resolution. This is an ideal-gas equilibrium source decision, not an ozone photochemistry prediction.'
+  status: supported
+  origin: reviewed
+- id: thermal_superiority_review
+  kind: evidence_support
+  claim: thermal_superiority
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - The inspected TIPS ozone range ends at 1000 K; it is not extrapolated to 1500–4000 K. NASA can roughly double
+    an extraordinarily small equilibrium abundance, but neither this ratio nor solver agreement ranks hot thermal
+    accuracy.
+  status: unknown
+  origin: reviewed
+- id: complete_physical_accuracy_review
+  kind: evidence_support
+  claim: complete_physical_accuracy
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - ATcT covariance, hot thermal completeness and atmospheric kinetics/photochemistry are not quantified.
+  status: unknown
+  origin: reviewed
+- id: full_grid_gibbs_ordering_review
+  kind: evidence_support
+  claim: full_grid_gibbs_ordering
+  claim_revision: '1'
+  subject: o3_candidates_20261106
+  context: fixed_ch2_network
+  method:
+    id: review_o3_candidates
+    revision: '1'
+    description: Separate source reconstruction, finite numerical verification, scientific selection and unresolved
+      physical accuracy.
+  evidence:
+  - source_scope
+  - continuous_model
+  - finite_execution
+  - selection
+  reasons:
+  - 'Resolved cases per variant/network: {"ions": {"retained": 0, "nasa": 0}, "neutral": {"retained": 0, "nasa":
+    0}}. Below-scale differences remain unresolved.'
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: hot_thermal_source
+  target_kind: claim
+  target: thermal_superiority
+  revision: '1'
+  action: Resolve the specific high-temperature source gap before selecting a new thermal model.
+  requires:
+  - The inspected TIPS ozone range ends at 1000 K; it is not extrapolated to 1500–4000 K. NASA can roughly double
+    an extraordinarily small equilibrium abundance, but neither this ratio nor solver agreement ranks hot thermal
+    accuracy.
+  completion: New independent physical thermal evidence; not a prerequisite to merge this scoped completed evaluation.
+limitations:
+- statement: The inspected TIPS ozone range ends at 1000 K; it is not extrapolated to 1500–4000 K. NASA can roughly
+    double an extraordinarily small equilibrium abundance, but neither this ratio nor solver agreement ranks hot
+    thermal accuracy.
+  evidence:
+  - source_scope
+  - selection
+- statement: No invented hot state sums, low-temperature partition extrapolation, independent-quadrature ATcT covariance
+    or full physical uncertainty. The source gap remains documented after the finite substitution calculation.
+  evidence:
+  - source_scope
+  - finite_execution

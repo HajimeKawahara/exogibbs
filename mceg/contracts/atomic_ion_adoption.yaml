@@ -135,9 +135,9 @@ evidence:
   result: passed
   summary: Completed species-by-species comparison and recorded 43 NASA, four partition and two exclusion decisions.
   sources:
-  - results/atomic_ion_adoption/receipt.json
-  - results/atomic_ion_adoption/decisions.csv
-  - results/atomic_ion_adoption/comparison.csv
+  - tests/data/validation/atomic_ion_adoption/receipt.json
+  - tests/data/validation/atomic_ion_adoption/decisions.csv
+  - tests/data/validation/atomic_ion_adoption/comparison.csv
   scope: The 39 selected NASA cases excluding Na and K have sampled maximum symmetric factor 1.01316.
     Na and K reach approximately 1.0383 and 1.0702. These are comparisons, not uncertainty estimates.
 - id: test_run
@@ -146,7 +146,7 @@ evidence:
   summary: All 32 targeted tests passed, including source transcription, energy convention, caloric invariance and choice scope.
   sources:
   - tests/unittests/examples/atomic_ion_adoption_test.py
-  - results/atomic_ion_adoption/tests.json
+  - tests/data/validation/atomic_ion_adoption/tests.json
   scope: Six new adoption tests plus 26 existing audit and ion-preset tests. Analytic Cp minima are checked
     over 1000-6000 K for the 43 selected NASA ion curves; no whole-package pass is claimed.
 limitations:

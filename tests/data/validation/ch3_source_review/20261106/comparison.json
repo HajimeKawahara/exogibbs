@@ -1,0 +1,503 @@
+{
+  "molecule": "CH3",
+  "species_id": "C1H3",
+  "composition": {
+    "C": 1,
+    "H": 3
+  },
+  "standard_pressure_Pa": 100000,
+  "R_J_mol_K": 8.31446261815324,
+  "NASA_native_R_J_mol_K": 8.31451,
+  "balanced_ATcT_D0_J_mol": 1209580.0,
+  "inherited_janaf_D0_J_mol": 1210260.0,
+  "ATcT_minus_janaf_D0_J_mol": -680.0,
+  "samples": [
+    {
+      "temperature_K": 300,
+      "source": {
+        "ln_K": 454.0502303088337,
+        "nasa_ln_K": 453.6424580281794,
+        "janaf_over_nasa": 1.503464754175117,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.4050316617122735,
+          "molecular_thermal": 0.0031227790972820912,
+          "atomic_thermal": -0.000382160155337985
+        },
+        "decomposition_closure_ln_K": 6.755707104844078e-14,
+        "energy_aligned_janaf_over_nasa": 1.002744377871183,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 10479.0,
+          "janaf_S_J_mol_K": 194.41,
+          "janaf_Cp_J_mol_K": 38.753,
+          "nasa_HminusH0_J_mol": 10437.467848417582,
+          "nasa_S_J_mol_K": 194.24650394956285,
+          "nasa_Cp_J_mol_K": 38.47755749243029
+        },
+        "reaction": {
+          "H_J_mol": -1225061.0,
+          "S_J_mol_K": -308.35299999999995,
+          "Cp_J_mol_K": -44.443
+        }
+      },
+      "curated": null,
+      "curated_over_nasa": null,
+      "curated_minus_janaf_reaction": null,
+      "same_thermal_ATcT_energy_only_K_ratio": 0.7613840845740926,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": null,
+      "partition": {
+        "nasa_internal_Q": 90.43581909941555,
+        "published_spin_normalized_Q": 91.5917,
+        "published_Q_over_nasa": 1.012781228854839,
+        "published_isotope_translation_K_proxy": 1.0116653951529293,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 500,
+      "source": {
+        "ln_K": 257.03056206351357,
+        "nasa_ln_K": 256.7737374461887,
+        "janaf_over_nasa": 1.292818368931233,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.2430189970273641,
+          "molecular_thermal": 0.013432918975389896,
+          "atomic_thermal": 0.0003727013220924391
+        },
+        "decomposition_closure_ln_K": 2.0317081350640365e-14,
+        "energy_aligned_janaf_over_nasa": 1.0139013579385576,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 18884.00000000003,
+          "janaf_S_J_mol_K": 215.737,
+          "janaf_Cp_J_mol_K": 45.252,
+          "nasa_HminusH0_J_mol": 18791.166011071444,
+          "nasa_S_J_mol_K": 215.44065807961297,
+          "nasa_Cp_J_mol_K": 45.01986237310935
+        },
+        "reaction": {
+          "H_J_mol": -1233293.0,
+          "S_J_mol_K": -329.515,
+          "Cp_J_mol_K": -37.910000000000004
+        }
+      },
+      "curated": null,
+      "curated_over_nasa": null,
+      "curated_minus_janaf_reaction": null,
+      "same_thermal_ATcT_energy_only_K_ratio": 0.8491067173574691,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": null,
+      "partition": {
+        "nasa_internal_Q": 230.66854061911468,
+        "published_spin_normalized_Q": 232.7540875,
+        "published_Q_over_nasa": 1.0090413147596446,
+        "published_isotope_translation_K_proxy": 1.0079296015154122,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 1000,
+      "source": {
+        "ln_K": 107.9193017286427,
+        "nasa_ln_K": 107.76905487881966,
+        "janaf_over_nasa": 1.1621210767064976,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.12150949851368205,
+          "molecular_thermal": 0.02842632861427319,
+          "atomic_thermal": 0.00031102269506533275
+        },
+        "decomposition_closure_ln_K": 1.3711254354120683e-14,
+        "energy_aligned_janaf_over_nasa": 1.0291542529572342,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 45093.00000000003,
+          "janaf_S_J_mol_K": 251.521,
+          "janaf_Cp_J_mol_K": 58.954,
+          "nasa_HminusH0_J_mol": 44935.43377001441,
+          "nasa_S_J_mol_K": 251.12825915315963,
+          "nasa_Cp_J_mol_K": 58.90979594456137
+        },
+        "reaction": {
+          "H_J_mol": -1248661.0,
+          "S_J_mol_K": -351.3700000000001,
+          "Cp_J_mol_K": -24.195
+        }
+      },
+      "curated": null,
+      "curated_over_nasa": null,
+      "curated_minus_janaf_reaction": null,
+      "same_thermal_ATcT_energy_only_K_ratio": 0.9214698678510704,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": null,
+      "partition": {
+        "nasa_internal_Q": 1231.454637978159,
+        "published_spin_normalized_Q": 1223.918325,
+        "published_Q_over_nasa": 0.9938801538069382,
+        "published_isotope_translation_K_proxy": 0.9927851444014708,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 1500,
+      "source": {
+        "ln_K": 57.67789076585973,
+        "nasa_ln_K": 57.56147657356891,
+        "janaf_over_nasa": 1.1234611047073353,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.0810063323424547,
+          "molecular_thermal": 0.03507192472044096,
+          "atomic_thermal": 0.00033593522791264263
+        },
+        "decomposition_closure_ln_K": 1.0311196341206141e-14,
+        "energy_aligned_janaf_over_nasa": 1.0360421827498134,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 77070.00000000003,
+          "janaf_S_J_mol_K": 277.327,
+          "janaf_Cp_J_mol_K": 68.156,
+          "nasa_HminusH0_J_mol": 76910.29095634821,
+          "nasa_S_J_mol_K": 276.9302090455352,
+          "nasa_Cp_J_mol_K": 68.17897763449099
+        },
+        "reaction": {
+          "H_J_mol": -1258261.0,
+          "S_J_mol_K": -359.2800000000001,
+          "Cp_J_mol_K": -15.015999999999991
+        }
+      },
+      "curated": {
+        "ln_K": 57.69388804903938,
+        "H_J_mol": -1258749.7803530158,
+        "S_J_mol_K": -359.4728447556881,
+        "Cp_J_mol_K": -16.586570524615425
+      },
+      "curated_over_nasa": 1.141577953964715,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": -488.7803530157544,
+        "S_J_mol_K": -0.19284475568798598,
+        "Cp_J_mol_K": -1.5705705246154338
+      },
+      "same_thermal_ATcT_energy_only_K_ratio": 0.9469362862567375,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": 0.8994888596213211,
+      "partition": {
+        "nasa_internal_Q": 4643.571708250016,
+        "published_spin_normalized_Q": 4570.9188625,
+        "published_Q_over_nasa": 0.9843541027651328,
+        "published_isotope_translation_K_proxy": 0.9832695887050527,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 2000,
+      "source": {
+        "ln_K": 32.39632100959861,
+        "nasa_ln_K": 32.29678060733368,
+        "janaf_over_nasa": 1.1046631007296228,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.060754749256841024,
+          "molecular_thermal": 0.038157505184020835,
+          "atomic_thermal": 0.0006281478240524052
+        },
+        "decomposition_closure_ln_K": 1.3961054534661343e-14,
+        "energy_aligned_janaf_over_nasa": 1.0395476358589233,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 112589.00000000003,
+          "janaf_S_J_mol_K": 297.727,
+          "janaf_Cp_J_mol_K": 73.422,
+          "nasa_HminusH0_J_mol": 112441.97761883604,
+          "nasa_S_J_mol_K": 297.33760370872693,
+          "nasa_Cp_J_mol_K": 73.4473084311838
+        },
+        "reaction": {
+          "H_J_mol": -1264356.0,
+          "S_J_mol_K": -362.81999999999994,
+          "Cp_J_mol_K": -9.888000000000005
+        }
+      },
+      "curated": {
+        "ln_K": 32.39667690456204,
+        "H_J_mol": -1265333.4770640836,
+        "S_J_mol_K": -363.30577945667216,
+        "Cp_J_mol_K": -10.084928980685465
+      },
+      "curated_over_nasa": 1.1050563147307546,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": -977.4770640835632,
+        "S_J_mol_K": -0.4857794566722191,
+        "Cp_J_mol_K": -0.19692898068545972
+      },
+      "same_thermal_ATcT_energy_only_K_ratio": 0.9599322204463555,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": 0.9230848237145776,
+      "partition": {
+        "nasa_internal_Q": 14522.085481003889,
+        "published_spin_normalized_Q": 14251.4610375,
+        "published_Q_over_nasa": 0.9813646294908615,
+        "published_isotope_translation_K_proxy": 0.9802834090888146,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 2500,
+      "source": {
+        "ln_K": 17.164596986509626,
+        "nasa_ln_K": 17.075832222990265,
+        "janaf_over_nasa": 1.0928235541207758,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.04860379940547282,
+          "molecular_thermal": 0.039783876763539894,
+          "atomic_thermal": 0.0003770873503299299
+        },
+        "decomposition_closure_ln_K": 1.8263168755083825e-14,
+        "energy_aligned_janaf_over_nasa": 1.040978320860501,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 150126.0,
+          "janaf_S_J_mol_K": 314.466,
+          "janaf_Cp_J_mol_K": 76.459,
+          "nasa_HminusH0_J_mol": 149990.73811045248,
+          "nasa_S_J_mol_K": 314.08256164786167,
+          "nasa_Cp_J_mol_K": 76.48386951586977
+        },
+        "reaction": {
+          "H_J_mol": -1268541.0,
+          "S_J_mol_K": -364.702,
+          "Cp_J_mol_K": -7.140000000000001
+        }
+      },
+      "curated": {
+        "ln_K": 17.154605014117784,
+        "H_J_mol": -1269171.421994732,
+        "S_J_mol_K": -365.03724667882636,
+        "Cp_J_mol_K": -5.603563402939227
+      },
+      "curated_over_nasa": 1.081958463578177,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": -630.4219947319943,
+        "S_J_mol_K": -0.3352466788263655,
+        "Cp_J_mol_K": 1.5364365970607734
+      },
+      "same_thermal_ATcT_energy_only_K_ratio": 0.9678152372127931,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": 0.9390532686148021,
+      "partition": {
+        "nasa_internal_Q": 39555.05069641967,
+        "published_spin_normalized_Q": null,
+        "published_Q_over_nasa": null,
+        "published_isotope_translation_K_proxy": null,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 3000,
+      "source": {
+        "ln_K": 6.9812088484550285,
+        "nasa_ln_K": 6.899092061273681,
+        "janaf_over_nasa": 1.085582584556744,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.04050316617122735,
+          "molecular_thermal": 0.040897470952547366,
+          "atomic_thermal": 0.0007161500575669777
+        },
+        "decomposition_closure_ln_K": 6.050715484207103e-15,
+        "energy_aligned_janaf_over_nasa": 1.042491604071674,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 188853.00000000006,
+          "janaf_S_J_mol_K": 328.583,
+          "janaf_Cp_J_mol_K": 78.309,
+          "nasa_HminusH0_J_mol": 188730.30089077144,
+          "nasa_S_J_mol_K": 328.2035716297777,
+          "nasa_Cp_J_mol_K": 78.33087949051745
+        },
+        "reaction": {
+          "H_J_mol": -1271705.9999999995,
+          "S_J_mol_K": -365.8569999999999,
+          "Cp_J_mol_K": -5.670000000000002
+        }
+      },
+      "curated": {
+        "ln_K": 6.969448955460939,
+        "H_J_mol": -1271273.7531280534,
+        "S_J_mol_K": -365.810694900044,
+        "Cp_J_mol_K": -3.142473791376708
+      },
+      "curated_over_nasa": 1.0728910215025587,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": 432.2468719461467,
+        "S_J_mol_K": 0.04630509995593002,
+        "Cp_J_mol_K": 2.5275262086232937
+      },
+      "same_thermal_ATcT_energy_only_K_ratio": 0.9731065133153398,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": 0.9444850111068729,
+      "partition": {
+        "nasa_internal_Q": 96524.68194279542,
+        "published_spin_normalized_Q": null,
+        "published_Q_over_nasa": null,
+        "published_isotope_translation_K_proxy": null,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 3500,
+      "source": {
+        "ln_K": -0.3098215865900649,
+        "nasa_ln_K": -0.386504604257663,
+        "janaf_over_nasa": 1.0796997763905258,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.03471699957533773,
+          "molecular_thermal": 0.04155263609584381,
+          "atomic_thermal": 0.00041338199642027007
+        },
+        "decomposition_closure_ln_K": -3.747002708109903e-15,
+        "energy_aligned_janaf_over_nasa": 1.0428590398089528,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 228326.0,
+          "janaf_S_J_mol_K": 340.75,
+          "janaf_Cp_J_mol_K": 79.501,
+          "nasa_HminusH0_J_mol": 228212.96973031224,
+          "nasa_S_J_mol_K": 340.37378590776353,
+          "nasa_Cp_J_mol_K": 79.51805147820822
+        },
+        "reaction": {
+          "H_J_mol": -1274322.0,
+          "S_J_mol_K": -366.668,
+          "Cp_J_mol_K": -4.869
+        }
+      },
+      "curated": {
+        "ln_K": -0.31530778653284997,
+        "H_J_mol": -1272650.6084471394,
+        "S_J_mol_K": -366.23607436066555,
+        "Cp_J_mol_K": -2.7016601459979364
+      },
+      "curated_over_nasa": 1.0737925464777733,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": 1671.3915528606158,
+        "S_J_mol_K": 0.4319256393344517,
+        "Cp_J_mol_K": 2.1673398540020634
+      },
+      "same_thermal_ATcT_energy_only_K_ratio": 0.9769036984673051,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": 0.9419086171016063,
+      "partition": {
+        "nasa_internal_Q": 215357.25384011754,
+        "published_spin_normalized_Q": null,
+        "published_Q_over_nasa": null,
+        "published_isotope_translation_K_proxy": null,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    },
+    {
+      "temperature_K": 4000,
+      "source": {
+        "ln_K": -5.788227358786231,
+        "nasa_ln_K": -5.8612453627092655,
+        "janaf_over_nasa": 1.0757499044588414,
+        "janaf_minus_nasa_ln_K_components": {
+          "energy": 0.030377374628420512,
+          "molecular_thermal": 0.04203302889477101,
+          "atomic_thermal": 0.0006076003998387591
+        },
+        "decomposition_closure_ln_K": 4.315992008230296e-15,
+        "energy_aligned_janaf_over_nasa": 1.0435628015557643,
+        "janaf_D0_J_mol": 1210260.0,
+        "nasa_D0_J_mol": 1209256.6050000002,
+        "molecular": {
+          "janaf_HminusH0_J_mol": 268291.0,
+          "janaf_S_J_mol_K": 351.422,
+          "janaf_Cp_J_mol_K": 80.308,
+          "nasa_HminusH0_J_mol": 268185.00576820195,
+          "nasa_S_J_mol_K": 351.04763783152293,
+          "nasa_Cp_J_mol_K": 80.32113525483408
+        },
+        "reaction": {
+          "H_J_mol": -1276632.0,
+          "S_J_mol_K": -367.284,
+          "Cp_J_mol_K": -4.412999999999997
+        }
+      },
+      "curated": {
+        "ln_K": -5.785032866601897,
+        "H_J_mol": -1274312.1259350819,
+        "S_J_mol_K": -366.67747099791984,
+        "Cp_J_mol_K": -4.281122466802888
+      },
+      "curated_over_nasa": 1.0791918738660735,
+      "curated_minus_janaf_reaction": {
+        "H_J_mol": 2319.874064918142,
+        "S_J_mol_K": 0.6065290020801513,
+        "Cp_J_mol_K": 0.13187753319710893
+      },
+      "same_thermal_ATcT_energy_only_K_ratio": 0.979761307894099,
+      "NASA_thermal_ATcT_diagnostic_K_over_curated": 0.935867453691345,
+      "partition": {
+        "nasa_internal_Q": 446136.8508480915,
+        "published_spin_normalized_Q": null,
+        "published_Q_over_nasa": null,
+        "published_isotope_translation_K_proxy": null,
+        "published_range_K": [
+          1.0,
+          2000.0
+        ],
+        "published_table_derivatives": "not inferred from rounded PF values"
+      }
+    }
+  ],
+  "state_inventory": null,
+  "footprint": {
+    "model": "curated-cos-v1",
+    "cases": 75,
+    "species_count": 537,
+    "all_converged": true,
+    "element": "C",
+    "maximum_element_share": 0.05941766796327742,
+    "case_index": 74,
+    "maximum_mole_fraction": 6.979617716545366e-05,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 1.5,
+    "maximum_abs_h_error": 3.552713678800501e-15
+  },
+  "production_change": "none",
+  "candidate_model": "not_created",
+  "equilibrium_substitution": "not_run",
+  "physical_accuracy": "unknown"
+}

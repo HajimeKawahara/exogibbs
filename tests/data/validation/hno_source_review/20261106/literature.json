@@ -1,0 +1,11 @@
+{
+  "identity": "Neutral nitrosyl hydride H-N-O (nitroxyl), CAS 14332-28-6, singlet ground state; not the H-O-N isomer, nitrite acid HONO, or NO- anion.",
+  "decision": "candidate",
+  "recommendation": "Prioritize an HNO retained-thermal ATcT energy candidate, and compare NASA-thermal/ATcT separately. Keep curated unchanged until continuous candidate and current-network evaluations are completed.",
+  "science": "ATcT 1.228 gives balanced atomization energy 823.532 kJ/mol, 7.613 kJ/mol below the JANAF reference behind the inherited fit. The thermal-preserving diagnostic reduces K to 0.543 at 1500 K and 0.795 at 4000 K. Thermal disagreement changes sign with temperature, so a NASA/ATcT replacement is not equivalent to the physical energy shift. The current fit must retain its inherited residual if only the energy is changed.",
+  "modern": "The latest ATcT HNO provenance page was inspected. Its dominant contributor is the HNO -> H + NO dissociation threshold near 16450 cm-1, with additional atomization computations and connected NO thermochemistry. This first dissociation channel is not the total atomization to H+N+O. The individual old Dixon/Dateo papers were not inspected in full, and their network contribution is not claimed as a new independent measurement. No complete modern 1500-4000 K HNO partition-function source was established in this review.",
+  "importance": "HNO is a nitrogen/oxygen reaction intermediate. The modest hot-grid abundance does not validate kinetic pathways, oxygen-rich atmospheres or aqueous nitroxyl chemistry.",
+  "conventions": "HNO is a neutral singlet; it must not inherit the triplet convention of the isoelectronic NO- anion. NASA/JANAF molecular degeneracies are retained without an added spin or symmetry factor. All atoms and molecular energy zeros are balanced in their own source; natural-mass functions remain elemental proxies.",
+  "followup": "Construct the retained-thermal physical energy shift first and a distinct NASA/ATcT thermal alternative; validate G/H/S/Cp and derivative continuity, then run fixed-network substitutions. The already available ATcT values and NASA records suffice for bounded candidate work. Original HNO dissociation papers would improve ancestry, but are not a mandatory source-review merge hold.",
+  "curated_changed": false
+}

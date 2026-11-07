@@ -1,0 +1,48 @@
+{
+  "result": "passed",
+  "input_pin_mismatches_pending_root_freeze": [],
+  "blocking_findings": [],
+  "method": "Independent decimal70 arithmetic for five-term FC4 fits and closed-form NASA9 G/RT; actual named curated_v2 factory evaluated separately. No comparison-script import and no new equilibrium solve.",
+  "input_selected_file_hashes_verified": 52,
+  "input_selected_file_count": 52,
+  "independent_script_sha256": "3a5f1e4512c16aff7a640564fdc12b31aa34227edaed824a550a953ffd3ac146",
+  "frozen_inputs_sha256": "36e1559139f24fd7788ce1519e8e5a0f1da5dccbf39fcbb1429255d485f2a5bb",
+  "equilibrium_abundance_solves": 0,
+  "curated_neutral_atomic_reference_columns_exactly_zero": true,
+  "comparison_sha256": "539d7cbfa8d61bae77bdd70de5ab0470a861e649d5671315b5a765c01b7c766f",
+  "source_identity_inventory_sha256": "e3ff40292e7d8655256a3cd7b47fed88f639040086701914078e007040001b71",
+  "molecules_checked": 108,
+  "FC_samples_checked": 540,
+  "frozen_NASA_samples_checked": 465,
+  "main_NASA_identifiers_and_atomic_compositions_checked": 93,
+  "appendix_plus_C3H_not_given_NASA_quotients": 15,
+  "public_alias_is_named_curated_v2": true,
+  "reaction": "neutral constituent atoms -> one neutral molecule; natural-log, one-bar dimensionless Kp",
+  "no_density_conversion_no_extra_R_or_atomic_subtraction": true,
+  "maximum_absolute_or_relative_errors": {
+    "FC_lnK": 5.022199902494058e-14,
+    "current_lnK": 0.0,
+    "NASA_lnK": 1.4846030034817418e-13,
+    "ratio_relative": 5.0182080713057076e-14,
+    "NASA_ratio_relative": 1.488809076022335e-13
+  },
+  "main93_FC_grade_counts_1500K": {
+    "red": 2,
+    "green": 87,
+    "yellow": 4
+  },
+  "HCN_1500K": {
+    "curated_over_FC4": 1.0335697183423342,
+    "curated_minus_FC4_percent_relative_to_FC4": 3.3569718342334243,
+    "FC4_over_curated": 0.96752060577377,
+    "FC4_minus_curated_percent_relative_to_curated": -3.247939422623003,
+    "FC4_new_over_old": 1.5229624295365993,
+    "old_FC_over_curated": 0.6352885580166039
+  },
+  "limits": [
+    "These are 540 thermochemical K ratios, not 540 abundance solves.",
+    "A 3.35697% curated excess uses FC4 in the denominator; the reciprocal FC4 shortfall relative to curated is 3.24794%. Do not swap percentage denominators.",
+    "Frozen NASA 93 identities and original interval polynomials are reused; original 14 NASA exclusions remain separate despite exact FC4/curated record correspondence.",
+    "MCEG scientific physical_accuracy remains unknown; shared ancestry and unspecified original fitting details are not independent physical validation."
+  ]
+}

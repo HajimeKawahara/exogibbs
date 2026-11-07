@@ -1,0 +1,289 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.ho2_source_review.v1
+  name: HO2 source, energy and thermal investigation
+  description: retain provisionally; prioritize NASA thermal plus ATcT energy candidate, because the inherited
+    JANAF formation energy is obsolete
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:b65f9b4be21c52086923f935e4f643a4990be01dbbf3de41da4ef73ef9f025ac
+    entry_points:
+    - mceg/reviews/ho2_source_review.py
+assumptions:
+- statement: Balance molecular H(0) against explicit neutral-atom H(0); preserve NASA native R and source
+    entropy conventions. Source identity and state inventory are separate from numerical agreement.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Eight source knots and six current-fit knots, with 75 archived endpoint states.
+  conditions:
+  - 'Source temperatures: 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000 K.'
+  - 'Current-fit comparisons: 1500-4000 K at six exact knots; no continuous error bound.'
+  - 'Archived grid: curated-oh-v1, 75 cases, 537 species; 1500-4000 K, 1e-6-100 bar, reference C/O plus
+    1 and 1.5.'
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Neutral gas HO2 radical; equilibrium hot H-rich grid cannot validate photochemical radical
+    production/loss or lower-temperature atmospheres.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_assessment
+  revision: '1'
+  kind: numerical_verification
+  statement: The inherited JANAF formation energy is superseded by modern evaluations; a normalized NASA-thermal
+    plus same-version ATcT energy candidate is scientifically justified for the next calculation.
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: Pinned source coefficients, native balanced energy/thermal decomposition, analytic caloric
+    derivatives and the current archived footprint reproduce offline.
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+- id: scoped_decision
+  revision: '1'
+  kind: theoretical
+  statement: retain provisionally; prioritize NASA thermal plus ATcT energy candidate, because the inherited
+    JANAF formation energy is obsolete. This decision does not establish physical accuracy.
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: HO2 thermochemistry has quantified physical accuracy over intended planetary atmospheric
+    applications.
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+evidence:
+- id: literature
+  kind: literature
+  summary: Inspected primary evaluations, numerical data and explicit source/state coverage limits.
+  sources:
+  - tests/data/validation/ho2_source_review/20261105/sources.json
+  - documents/mceg/ho2_source_review.rst
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+  subject: ho2_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/ho2_source_review/20261105/sources.json
+    sha256: 2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd
+  - source: documents/mceg/ho2_source_review.rst
+    sha256: bfe3f5a738ffd486f3bd85e1b9b38156c66a57b6a51725199043ff58adcbf165
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_source_review.rst
+    inspection: partial
+    note: Selected direct source records and evaluated papers are inspected as detailed in sources.json.
+      Partial historical ancestry is not represented as complete source inspection.
+- id: source_replay
+  kind: numerical_test
+  summary: Eight-node source decomposition, six-node fit/caloric comparison, 75-case archived footprint
+    and pinned offline receipt.
+  sources:
+  - tests/data/validation/ho2_source_review/20261105/comparison.json
+  - tests/data/validation/ho2_source_review/20261105/receipt.json
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+  subject: ho2_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/ho2_source_review/20261105/comparison.json
+    sha256: 1a6a3064367ccc72948f23a20403d7fcebc2e9407886b7122525c45112eed425
+  - source: tests/data/validation/ho2_source_review/20261105/receipt.json
+    sha256: 7f3355951396c97df643576cb700934c277cd25e1d39e25e5b29f21d0bee0c4d
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_source_review.rst
+    inspection: inspected
+    note: Selected direct source records and evaluated papers are inspected as detailed in sources.json.
+      Partial historical ancestry is not represented as complete source inspection.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: ATcT 1.172 gives balanced D0 694.662 kJ/mol. The legacy 1500 K source lnK difference is dominated
+    by its energy term 0.796219, while the same-energy molecular thermal ratio is 1.00228.
+  sources:
+  - documents/mceg/ho2_source_review.rst
+  - tests/data/validation/ho2_source_review/20261105/sources.json
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+  subject: ho2_sources_20261105
+  context: source_review
+  artifacts:
+  - source: documents/mceg/ho2_source_review.rst
+    sha256: bfe3f5a738ffd486f3bd85e1b9b38156c66a57b6a51725199043ff58adcbf165
+  - source: tests/data/validation/ho2_source_review/20261105/sources.json
+    sha256: 2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd
+  provenance:
+    role: primary
+    location: documents/mceg/ho2_source_review.rst
+    inspection: inspected
+    note: Selected direct source records and evaluated papers are inspected as detailed in sources.json.
+      Partial historical ancestry is not represented as complete source inspection.
+subjects:
+- id: ho2_sources_20261105
+  implementation: *id001
+  selected_files:
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    src/exogibbs/data/fastchem/logK/logK.dat: dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
+    tests/data/validation/oh_source_review/20261105/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/oh_source_review/20261105/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    mceg/reviews/ho2_source_review.py: b65f9b4be21c52086923f935e4f643a4990be01dbbf3de41da4ef73ef9f025ac
+    documents/mceg/ho2_source_review.rst: bfe3f5a738ffd486f3bd85e1b9b38156c66a57b6a51725199043ff58adcbf165
+    tests/model_evidence/ho2_source_review_test.py: 818229dd2e282e7dbc61df5aac878f508f5180fa5762aff455c3c63733fcba74
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    tests/data/validation/ho2_source_review/20261105/H-043.txt: 92a340244deaa3d2d32e19a25acdff3765b78b33f5abda37fd477fb9fd88f6ac
+    tests/data/validation/ho2_source_review/20261105/README.rst: d5acb0cf7b030f952a74d1512e16ed652c3907b187c275ed8a1c1ea637a31db0
+    tests/data/validation/ho2_source_review/20261105/atct_nodes.json: f38f1d012a895574d1128769e1c3e2d59150563d4541d955e75c2090b04f4eab
+    tests/data/validation/ho2_source_review/20261105/nasa_records.json: 95b4aa2c8d061b5cc1209c5af0d66cd0516eb90136e7351cceb1f8f54b8c045d
+    tests/data/validation/ho2_source_review/20261105/nasa_selected_records.txt: 76841915543eb26ed9db7c74a471e4f477fb1a2fd82bd2248706a9b96bb16a1d
+    tests/data/validation/ho2_source_review/20261105/sources.json: 2bb0cd78c1b2996c20783fdab1333d95f29d847c76f19f0e690c7ac52da6cefd
+    tests/data/validation/ho2_source_review/20261105/comparison.json: 1a6a3064367ccc72948f23a20403d7fcebc2e9407886b7122525c45112eed425
+    tests/data/validation/ho2_source_review/20261105/receipt.json: 7f3355951396c97df643576cb700934c277cd25e1d39e25e5b29f21d0bee0c4d
+contexts:
+- id: source_review
+  scope: Neutral HO2 gas formation from neutral atoms at 1 bar; exact source nodes and archived current-model
+    footprint only.
+  settings:
+    standard_pressure_Pa: 100000
+    source_R_J_mol_K: 8.31446261815324
+    nasa_R_J_mol_K: 8.31451
+    curated_model: curated-oh-v1
+    candidate_adoption: none
+    finite_substitution: not_run
+    source_coverage: Neutral gas HO2 radical; equilibrium hot H-rich grid cannot validate photochemical
+      radical production/loss or lower-temperature atmospheres.
+    subsequent_candidate_record: mceg/contracts/ho2_candidate.yaml completes next_calculation; the source_review
+      context retains its original source-only scope.
+assessments:
+- id: source_assessment_review
+  kind: evidence_support
+  claim: source_assessment
+  claim_revision: '1'
+  subject: ho2_sources_20261105
+  context: source_review
+  method:
+    id: ho2_source_review
+    revision: '1'
+    description: Separate source inspection, numerical reproduction, scientific source preference and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - ATcT 1.172 gives balanced D0 694.662 kJ/mol. The legacy 1500 K source lnK difference is dominated
+    by its energy term 0.796219, while the same-energy molecular thermal ratio is 1.00228.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: ho2_sources_20261105
+  context: source_review
+  method:
+    id: ho2_source_review
+    revision: '1'
+    description: Separate source inspection, numerical reproduction, scientific source preference and
+      physical validation.
+  evidence:
+  - source_replay
+  reasons:
+  - Hash-pinned replay closes frozen baseline values, native energy/thermal identities and the archived
+    current chemical-potential column. Numerical reproduction does not certify physical accuracy.
+  status: supported
+  origin: reviewed
+- id: scoped_decision_review
+  kind: evidence_support
+  claim: scoped_decision
+  claim_revision: '1'
+  subject: ho2_sources_20261105
+  context: source_review
+  method:
+    id: ho2_source_review
+    revision: '1'
+    description: Separate source inspection, numerical reproduction, scientific source preference and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - retain provisionally; prioritize NASA thermal plus ATcT energy candidate, because the inherited JANAF
+    formation energy is obsolete
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: ho2_sources_20261105
+  context: source_review
+  method:
+    id: ho2_source_review
+    revision: '1'
+    description: Separate source inspection, numerical reproduction, scientific source preference and
+      physical validation.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - Neutral gas HO2 radical; equilibrium hot H-rich grid cannot validate photochemical radical production/loss
+    or lower-temperature atmospheres. No finite substitution, continuous-error bound or independent atmospheric
+    validation is supplied.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: next_calculation
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Build and validate a continuous NASA-thermal plus ATcT 1.172 candidate, then perform paired
+    finite substitutions before adoption.
+  requires:
+  - Preserve identity, state counting, same-version energy balance, continuous-domain boundary checks
+    and element-conserving solver diagnostics.
+  completion: 'Completed 2026-11-05 in mceg/contracts/ho2_candidate.yaml: exact bounded continuous candidate,
+    derivatives and 150 fresh finite substitutions. Production remains unchanged pending a separately
+    authorized decision; physical accuracy remains unknown.'
+- id: source_ancestry
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect further primary source details when needed for replacement or uncertainty analysis.
+  requires:
+  - Burgess 10.6028/jres.121.005 and ATcT 1.172 are already inspected; 10.1021/jp056311j is optional historical
+    ancestry, not a review-merge gate.
+  completion: Record inspected coverage and any changes to the scientific conclusion; historical paper
+    acquisition is not an unconditional merge gate.
+limitations:
+- statement: Neutral gas HO2 radical; equilibrium hot H-rich grid cannot validate photochemical radical
+    production/loss or lower-temperature atmospheres.
+  evidence:
+  - literature
+  - source_replay
+- statement: The dated source-only review did not run a finite substitution. The subsequent candidate
+    contract records its completion; neither source availability, numerical agreement nor trace abundance
+    independently establishes physical accuracy.
+  evidence:
+  - source_replay
+- statement: Underlying historical experiments and original Gurvich details are only partially inspected;
+    source-specific access limits are recorded without claiming full ancestry review.
+  evidence:
+  - literature

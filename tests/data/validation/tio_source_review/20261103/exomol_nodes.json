@@ -1,0 +1,162 @@
+{
+  "acquired_date": "2026-11-03",
+  "temperatures_K": [
+    300,
+    500,
+    1000,
+    1500,
+    2000,
+    3000,
+    4000,
+    5000
+  ],
+  "isotopologues": {
+    "46Ti-16O": {
+      "version": "20240509",
+      "mass_u": 61.94754622,
+      "nuclear_spin_weight": 1,
+      "partition": {
+        "300": 1572.4587,
+        "500": 3171.7512,
+        "1000": 8907.5863,
+        "1500": 17537.1827,
+        "2000": 29456.6238,
+        "3000": 64781.8776,
+        "4000": 119361.253,
+        "5000": 200220.208
+      },
+      "def_sha256": "6cfc967c0b4f474e60341d2162b1598ea4e653ee372ca4e612143119dc78f9c1",
+      "pf_sha256": "e2cf8a02b5ef66e880e8c9518dd9826b8cea90599c75f36b87f660544cd31ec2",
+      "pf_url": "https://www.exomol.com/db/TiO/46Ti-16O/Toto/46Ti-16O__Toto.pf",
+      "def_url": "https://www.exomol.com/db/TiO/46Ti-16O/Toto/46Ti-16O__Toto.def",
+      "line_list_max_temperature_K": 5000.0,
+      "pf_max_temperature_K": 8000.0
+    },
+    "47Ti-16O": {
+      "version": "20240509",
+      "mass_u": 62.94667772,
+      "nuclear_spin_weight": 6,
+      "partition": {
+        "300": 9487.5109,
+        "500": 19144.0527,
+        "1000": 53805.811,
+        "1500": 105976.37,
+        "2000": 178048.348,
+        "3000": 391673.338,
+        "4000": 721746.121,
+        "5000": 1210682.63
+      },
+      "def_sha256": "793eed3d175ed22339688ffc92c4aa747be71d180e3ed9db03a4b6d20da77d4f",
+      "pf_sha256": "b85a0d740b01c138200693e215fcfe7c7210edb862479cc325d963043b88086f",
+      "pf_url": "https://www.exomol.com/db/TiO/47Ti-16O/Toto/47Ti-16O__Toto.pf",
+      "def_url": "https://www.exomol.com/db/TiO/47Ti-16O/Toto/47Ti-16O__Toto.def",
+      "line_list_max_temperature_K": 5000.0,
+      "pf_max_temperature_K": 8000.0
+    },
+    "48Ti-16O": {
+      "version": "20240509",
+      "mass_u": 63.94286092,
+      "nuclear_spin_weight": 1,
+      "partition": {
+        "300": 1589.748,
+        "500": 3208.9713,
+        "1000": 9025.7336,
+        "1500": 17784.2336,
+        "2000": 29885.8421,
+        "3000": 65760.0644,
+        "4000": 121191.128,
+        "5000": 203290.525
+      },
+      "def_sha256": "d556d86736ac0b9ceae94427efd5108f4f9ba93d7d7bc22c414ffed868ffeb88",
+      "pf_sha256": "38c80b7adaed26bce40f6c31f52280305626c1ea021028474f48b23d08ab9c30",
+      "pf_url": "https://www.exomol.com/db/TiO/48Ti-16O/Toto/48Ti-16O__Toto.pf",
+      "def_url": "https://www.exomol.com/db/TiO/48Ti-16O/Toto/48Ti-16O__Toto.def",
+      "line_list_max_temperature_K": 5000.0,
+      "pf_max_temperature_K": 8000.0
+    },
+    "49Ti-16O": {
+      "version": "20240509",
+      "mass_u": 64.94278462,
+      "nuclear_spin_weight": 8,
+      "partition": {
+        "300": 12784.1308,
+        "500": 25814.2939,
+        "1000": 72658.7757,
+        "1500": 143221.349,
+        "2000": 240733.267,
+        "3000": 529833.826,
+        "4000": 976549.872,
+        "5000": 1638100.04
+      },
+      "def_sha256": "68a9af1836c967edd836d4d953f6a078dfbc4ec1e7eb131d3d33004a912c51b7",
+      "pf_sha256": "216e5fab2d10d72ef3838f1c248fe46d3b768b0d61fe5314adeb685a3e4af664",
+      "pf_url": "https://www.exomol.com/db/TiO/49Ti-16O/Toto/49Ti-16O__Toto.pf",
+      "def_url": "https://www.exomol.com/db/TiO/49Ti-16O/Toto/49Ti-16O__Toto.def",
+      "line_list_max_temperature_K": 5000.0,
+      "pf_max_temperature_K": 8000.0
+    },
+    "50Ti-16O": {
+      "version": "20240509",
+      "mass_u": 65.93970582,
+      "nuclear_spin_weight": 1,
+      "partition": {
+        "300": 1606.0125,
+        "500": 3244.0251,
+        "1000": 9137.1647,
+        "1500": 18017.3799,
+        "2000": 30291.0349,
+        "3000": 66683.7791,
+        "4000": 122918.971,
+        "5000": 206188.237
+      },
+      "def_sha256": "6dfe5b9828ca59516b001cc307ba8fceeb9b52217e615feff44a83fc77fbaf2e",
+      "pf_sha256": "e9da891f7695a666a8477501cca2d0ab34cfeb6a538cb1eb2d8277fabae5833d",
+      "pf_url": "https://www.exomol.com/db/TiO/50Ti-16O/Toto/50Ti-16O__Toto.pf",
+      "def_url": "https://www.exomol.com/db/TiO/50Ti-16O/Toto/50Ti-16O__Toto.def",
+      "line_list_max_temperature_K": 5000.0,
+      "pf_max_temperature_K": 8000.0
+    }
+  },
+  "convention": "Total nuclear spin multiplicity included; divide Q by the stated spin weight for chemical comparisons. Each isotope has its own rovibronic ground zero.",
+  "current_states_audit": {
+    "version": "20240509",
+    "url": "https://www.exomol.com/db/TiO/48Ti-16O/Toto/48Ti-16O__Toto.states.bz2",
+    "sha256": "7d54bf8d3ba2fb1a1f7a5d5f25b9335f0ee381625a873813e6a4ca1979734067",
+    "states_count": 301245,
+    "negative_energy_count": 0,
+    "ground_rows": [
+      "271 0.000000 3 1 0.000000 Inf -0.001145 + f X(3DELTA) 0 2 -1 1 Ma 0.000000",
+      "601 0.000000 3 1 0.000000 nan -0.001145 - e X(3DELTA) 0 -2 1 -1 Ma 0.000000"
+    ],
+    "minima_cm-1": {
+      "A(3PHI)": 14021.698599,
+      "B(3PI)": 16224.7935,
+      "C(3DELTA)": 19341.521081,
+      "D(3SIGMA-)": 12292.845415,
+      "E(3PI)": 11838.204653,
+      "F(3SIGMA+)": 19823.213281,
+      "X(3DELTA)": 0.0,
+      "a(1DELTA)": 3446.481388,
+      "b(1PI)": 14717.045626,
+      "c(1PHI)": 21290.081822,
+      "d(1SIGMA+)": 5661.898155,
+      "e(1SIGMA+)": 29960.069327,
+      "f(1DELTA)": 22515.241468,
+      "g(1GAMMA)": 17951.174391,
+      "h(1SIGMA+)": 17624.125598,
+      "i(1PI)": 22549.950654
+    },
+    "sum_formula": "Q(T)=sum_i g_i exp[-(h c/k_B) E_i/T], h c/k_B=1.4387768775039338 K cm",
+    "direct_state_sums": {
+      "300": 1589.4016188197659,
+      "500": 3208.56378067976,
+      "1000": 9025.187057372452,
+      "1500": 17783.536955790347,
+      "2000": 29884.991066743998,
+      "3000": 65758.94514875567,
+      "4000": 121189.86336551445,
+      "5000": 203289.2813584698
+    },
+    "scope": "Acquisition-time direct sum of full states file, frozen compact results; offline review does not regenerate the full line list."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "molecule": "CH3",
+  "species_id": "C1H3",
+  "composition": {
+    "C": 1,
+    "H": 3
+  },
+  "footprint_element": "C",
+  "temperatures_K": [
+    300,
+    500,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "atomic_tables": {
+    "C": "tests/data/validation/c2h_source_review/20261102/C-003.txt",
+    "H": "tests/data/validation/c2h_source_review/20261102/H-001.txt"
+  },
+  "molecular_janaf_table": "C-062.txt",
+  "atct_version": "1.228",
+  "atct": {
+    "CH3": {
+      "name": "Methyl",
+      "formula": "CH3  (g)",
+      "hf0_kJ_mol": 149.892,
+      "hf298_kJ_mol": 146.491,
+      "reported_uncertainty_kJ_mol": 0.048,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=34"
+    },
+    "C": {
+      "name": "Carbon",
+      "formula": "C  (g)",
+      "hf0_kJ_mol": 711.37,
+      "hf298_kJ_mol": 716.855,
+      "reported_uncertainty_kJ_mol": 0.038,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21"
+    },
+    "H": {
+      "name": "Hydrogen atom",
+      "formula": "H  (g)",
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "reported_uncertainty_kJ_mol": 0.0,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    }
+  },
+  "partition": {
+    "file": "partition.pf",
+    "nuclear_spin_divisor": 8,
+    "mass_u": 15.02347509669,
+    "scope": "12C1H3, ground electronic X2A2-double-prime, equilibrium nuclear-spin weights",
+    "states_file": null
+  }
+}

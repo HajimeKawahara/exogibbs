@@ -1,0 +1,69 @@
+{
+  "identity": "Neutral homonuclear gas K2, X 1Sigma_g+ ground state; not atomic vapor, cation or a condensed phase.",
+  "spectroscopy": {
+    "doi": "10.1063/1.2375120",
+    "D0_cm_inverse": 4404.808,
+    "reported_uncertainty_cm_inverse": 0.004,
+    "reference": "v=0,J=0 to ground-atom asymptote; not De.",
+    "access": "Complete article in author thesis inspected, section 4.1.4; center of gravity of atomic ground asymptote.",
+    "isotopologue": "39K2"
+  },
+  "barklem_collet": {
+    "doi": "10.1051/0004-6361/201526961",
+    "access": "Full paper and author numerical tables plus 2022 bug-fix notes inspected.",
+    "revision": "cd2f54ed46687659017b343763e95478ed93653e",
+    "url": "https://github.com/barklem/public-data/tree/cd2f54ed46687659017b343763e95478ed93653e/partition-functions_and_equilibrium-constants",
+    "D0_eV": 0.552,
+    "nodes": [
+      {
+        "temperature_K": 1500.0,
+        "Q_internal": 138571.0,
+        "log10_dissociation_K_Pa": 6.89668
+      },
+      {
+        "temperature_K": 2000.0,
+        "Q_internal": 274392.0,
+        "log10_dissociation_K_Pa": 7.37622
+      },
+      {
+        "temperature_K": 3000.0,
+        "Q_internal": 751662.0,
+        "log10_dissociation_K_Pa": 7.84753
+      },
+      {
+        "temperature_K": 4000.0,
+        "Q_internal": 1507270.0,
+        "log10_dissociation_K_Pa": 8.11289
+      }
+    ],
+    "nuclear_spin_convention": "Statistical weights divided by product of nuclear spin weights; no extra division by 16 or symmetry factor on the tabulated Q.",
+    "electronic_scope": "Pinned state-input file includes eight listed states; no a 3Sigma_u+ state; not a complete modern rovibronic model.",
+    "atomic_update": "2022 corrected atomic partition and equilibrium tables used; original molecular Q unchanged.",
+    "raw_sha256": {
+      "table1.dat": "08387a4d0ae4bf0fc0ee6cee8e8e1ad9d47ca434ebe85f85da57d2d5ad0848dd",
+      "table6.dat": "2fa8cf81dc27d0492cbf27ec482bd5187212a42beb3259bef5d8e8bce0f5281f",
+      "table7_vNov2022.dat": "3e5844e25d50d2d175b2b59d751aee47d2a933e2de27995972037a8dbe340000",
+      "ReadMe": "31cd701028aa7957554f96e765957023d764d180bdf1c83db90d33593ba63078",
+      "ReadMe_Bug_fix_Oct-Nov2022": "4f7eab690c3ffe8eb5c4a503588f75ce9ff7e2eea5f41e2e4d98890add8d5c21"
+    }
+  },
+  "thermal_2025": {
+    "doi": "10.1007/s10765-025-03628-z",
+    "correction_doi": "10.1007/s10765-025-03639-w",
+    "access": "Full author preprint inspected; final publisher abstract and correction metadata inspected, not corrected numerical tables or correction text.",
+    "standard_pressure_Pa": 101325,
+    "scope": "Bound rovibrational calculations on multiple electronic potentials; shallow triplet a-state and quasibound/continuum omitted by the authors. Must quantify these omissions and audit normalization before adopting."
+  },
+  "electronic_2025": {
+    "doi": "10.1063/5.0239463",
+    "access": "Primary indexed abstract inspected; author manuscript retrieval returned 404.",
+    "scope": "Four dissociation channels; theory De (not D0). Not a complete thermal table or a reason to prefer theoretical De over direct measured D0."
+  },
+  "cm_inverse_to_J_mol": 11.9626565638697,
+  "eV_to_J_mol": 96485.33212331001,
+  "potential_2026": {
+    "doi": "10.1063/5.0343162",
+    "access": "Primary indexed abstract inspected; full fitted potential and supplement not obtained.",
+    "scope": "Ground-state fit spanning bound, quasibound and continuum; 15000+ main-isotopologue lines and minor isotopologues. Specific next input, not already evaluated thermal data."
+  }
+}

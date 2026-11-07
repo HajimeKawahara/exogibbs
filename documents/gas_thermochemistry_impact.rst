@@ -103,7 +103,7 @@ archive, and the full summary also gives extrema over all 20 points.
    NiH,4000,0.01,1.38440e-12,5.61059e-11,40.5272
    CuH,4000,1,1.27934e-11,1.68356e-10,13.1596
 
-.. image:: ../results/gas_thermochemistry_impact/abundance_ratios.png
+.. image:: ../tests/data/validation/gas_thermochemistry_impact/abundance_ratios.png
    :alt: Abundance ratios at the twenty sampled temperature-pressure points
    :width: 100%
 
@@ -219,24 +219,24 @@ physical-accuracy claim for the complete hybrid remains **unknown** in MCEG.
 Artifacts and reproduction
 --------------------------
 
-* :download:`Per-species summary <../results/gas_thermochemistry_impact/species_summary.csv>`
+* :download:`Per-species summary <../tests/data/validation/gas_thermochemistry_impact/species_summary.csv>`
   and :download:`all reported mole fractions and source effects
-  <../results/gas_thermochemistry_impact/abundances.csv>`.
+  <../tests/data/validation/gas_thermochemistry_impact/abundances.csv>`.
 * :download:`328 equilibrium-constant comparisons
-  <../results/gas_thermochemistry_impact/equilibrium_constants.csv>` and
-  :download:`100 solver diagnostics <../results/gas_thermochemistry_impact/diagnostics.csv>`.
+  <../tests/data/validation/gas_thermochemistry_impact/equilibrium_constants.csv>` and
+  :download:`100 solver diagnostics <../tests/data/validation/gas_thermochemistry_impact/diagnostics.csv>`.
 * :download:`All-species log amounts, thermochemistry, budgets and catalogs
-  <../results/gas_thermochemistry_impact/equilibria.npz>` and
-  :download:`run receipt <../results/gas_thermochemistry_impact/receipt.json>`.
+  <../tests/data/validation/gas_thermochemistry_impact/equilibria.npz>` and
+  :download:`run receipt <../tests/data/validation/gas_thermochemistry_impact/receipt.json>`.
   The NPZ axes are model, temperature-major/pressure-minor point, and species;
   h has separate model, temperature and species axes. ``fastchem_ln_n`` uses
   the same ordering and nuclear-budget normalization as ``ln_n``.
 * :download:`100 independent FastChem comparisons
-  <../results/gas_thermochemistry_impact/fastchem_parity.csv>` and
+  <../tests/data/validation/gas_thermochemistry_impact/fastchem_parity.csv>` and
   :download:`source and build provenance
-  <../results/gas_thermochemistry_impact/fastchem_build.json>`.
+  <../tests/data/validation/gas_thermochemistry_impact/fastchem_build.json>`.
 * :download:`MCEG contract <../mceg/contracts/gas_thermochemistry_impact.yaml>`
-  and :download:`test receipt <../results/gas_thermochemistry_impact/tests.json>`.
+  and :download:`test receipt <../tests/data/validation/gas_thermochemistry_impact/tests.json>`.
 
 Run the offline study into a separate directory to preserve the recorded
 standalone comparison:

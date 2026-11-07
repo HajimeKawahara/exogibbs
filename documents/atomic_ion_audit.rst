@@ -29,8 +29,8 @@ For each species define ``D = max(abs(log10(Kp_model / Kp_reference)))`` over
 the seven nodes. Symmetric factors 1.1 and 2 are review thresholds, not error
 bars. FastChem is within factor 1.1 for 37 of the 47 numerical cases; six more
 exceed factor 1.1, and four exceed factor 2. All species and temperature values
-are in :download:`summary.csv <../results/atomic_ion_audit/summary.csv>` and
-:download:`comparison.csv <../results/atomic_ion_audit/comparison.csv>`.
+are in :download:`summary.csv <../tests/data/validation/atomic_ion_audit/summary.csv>` and
+:download:`comparison.csv <../tests/data/validation/atomic_ion_audit/comparison.csv>`.
 
 The ten FastChem review candidates are:
 
@@ -207,10 +207,10 @@ Pytest also collects these tests in the ordinary development environment:
 
    python -m pytest -q tests/unittests/examples/atomic_ion_audit_test.py
 
-The :download:`audit receipt <../results/atomic_ion_audit/receipt.json>` records
+The :download:`audit receipt <../tests/data/validation/atomic_ion_audit/receipt.json>` records
 selected input and output hashes, Python version and base Git revision. New
 audit files were uncommitted when evaluated, so their hashes identify the actual
-implementation. The :download:`test receipt <../results/atomic_ion_audit/tests.json>`
+implementation. The :download:`test receipt <../tests/data/validation/atomic_ion_audit/tests.json>`
 records the executed checks and unavailable optional validation tools. Changing
 selected inputs requires rerunning the audit, reviewing the scientific claims,
 and updating the MCEG implementation hash and evidence together.

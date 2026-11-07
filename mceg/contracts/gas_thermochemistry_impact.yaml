@@ -104,12 +104,12 @@ evidence:
   summary: One hundred ExoGibbs equilibria and 328 source-constant comparisons are
     recorded with exact catalogs, budgets, model arrays and file hashes.
   sources:
-  - results/gas_thermochemistry_impact/receipt.json
-  - results/gas_thermochemistry_impact/diagnostics.csv
-  - results/gas_thermochemistry_impact/equilibria.npz
-  - results/gas_thermochemistry_impact/equilibrium_constants.csv
-  - results/gas_thermochemistry_impact/abundances.csv
-  - results/gas_thermochemistry_impact/species_summary.csv
+  - tests/data/validation/gas_thermochemistry_impact/receipt.json
+  - tests/data/validation/gas_thermochemistry_impact/diagnostics.csv
+  - tests/data/validation/gas_thermochemistry_impact/equilibria.npz
+  - tests/data/validation/gas_thermochemistry_impact/equilibrium_constants.csv
+  - tests/data/validation/gas_thermochemistry_impact/abundances.csv
+  - tests/data/validation/gas_thermochemistry_impact/species_summary.csv
   scope: Numerical closure and source sensitivity, not proof that every changed
     abundance is physically more accurate. The recorded ExoGibbs results are
     unchanged by the subsequent independent FastChem comparison.
@@ -130,10 +130,10 @@ evidence:
   summary: All 100 independent standalone comparisons passed using the unmodified
     FastChem v4.0.3 source at ae67cbd559bc64a3233a1cee6030b8e6b50520de.
   sources:
-  - results/gas_thermochemistry_impact/fastchem_build.json
-  - results/gas_thermochemistry_impact/fastchem_parity.csv
-  - results/gas_thermochemistry_impact/receipt.json
-  - results/gas_thermochemistry_impact/equilibria.npz
+  - tests/data/validation/gas_thermochemistry_impact/fastchem_build.json
+  - tests/data/validation/gas_thermochemistry_impact/fastchem_parity.csv
+  - tests/data/validation/gas_thermochemistry_impact/receipt.json
+  - tests/data/validation/gas_thermochemistry_impact/equilibria.npz
   scope: The source checkout was clean and its original gas and abundance files
     matched the packaged bytes. Compiler, build command, executable SHA256 and
     each generated single-temperature input hash are recorded. FastChem maximum
@@ -150,7 +150,7 @@ evidence:
   - examples/comparisons/data/major_molecule_reference.json
   - documents/atomic_ion_audit.rst
   - documents/major_molecule_adoption.rst
-  - results/gas_thermochemistry_impact/equilibrium_constants.csv
+  - tests/data/validation/gas_thermochemistry_impact/equilibrium_constants.csv
   scope: External to FastChem fits, not uniformly independent of adopted inputs.
     Four ionic models match by construction; ten BC molecular thermal models are
     inherited. Updated thresholds are shared in the atomic comparison. Primary
@@ -162,8 +162,8 @@ evidence:
     preceding source-adoption and standalone-adapter regression tests.
   sources:
   - tests/unittests/examples/gas_thermochemistry_impact_test.py
-  - results/gas_thermochemistry_impact/tests.json
-  - results/gas_thermochemistry_impact/tests.xml
+  - tests/data/validation/gas_thermochemistry_impact/tests.json
+  - tests/data/validation/gas_thermochemistry_impact/tests.xml
   scope: Independent scalar charge-neutrality comparison, source/pressure conventions,
     immutable network, domain guards, archived closure and provenance. Offline
     checks also replay the archived independent FastChem solutions without an

@@ -1,0 +1,112 @@
+{
+  "id": "tio_48_internal_elemental_candidate_v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "D0_eV": 6.824,
+  "molecular_mass_u": 63.8664,
+  "D0_source": {
+    "doi": "10.1063/5.0146365",
+    "quoted_uncertainty_eV": 0.01
+  },
+  "nuclear_spin_factor": 1,
+  "knots_K": [
+    1500.0,
+    2000.0,
+    2500.0,
+    3000.0,
+    3500.0,
+    4000.0
+  ],
+  "coefficients": [
+    [
+      -45978.842929783794,
+      -17450.692386024763,
+      -385.9964923771316,
+      38.865002327404284,
+      -5.650051181453534,
+      0.6161000904446041
+    ],
+    [
+      -63781.70075694929,
+      -18125.610068070404,
+      -297.1407915791939,
+      22.290882397499473,
+      -2.757617648933035,
+      0.2503417766827454
+    ],
+    [
+      -82184.66801007364,
+      -18662.79776574861,
+      -244.31043251346622,
+      13.724228159747355,
+      -1.543757394045798,
+      0.1383123460630884
+    ],
+    [
+      -101079.45742522395,
+      -19115.72941414217,
+      -211.01716893786806,
+      8.91347592079208,
+      -0.8631670334844443,
+      0.08307950386668495
+    ],
+    [
+      -120398.07061991282,
+      -19514.060594870134,
+      -188.62494833773164,
+      6.279804658607361,
+      -0.4531580087784448,
+      0.04800757792895638
+    ]
+  ],
+  "atomic_background_nasa9": [
+    -91423.3548,
+    -343.9806,
+    -4.499132284,
+    0.00020360880080000002,
+    -4.127802442e-07,
+    6.683857713e-11,
+    -3.1998748437e-15,
+    1436.5931647869802,
+    -16.736355145
+  ],
+  "nasa_molecular_thermal_coefficients": [
+    2330644.03,
+    -7415.79386,
+    12.81799311,
+    -0.00434455595,
+    1.186303111e-06,
+    -1.367644275e-10,
+    5.70321225e-15,
+    46648.31112853746,
+    -57.9399424
+  ],
+  "representation": "C2 quintic Hermite of molecular (G-H0)/R; no production update",
+  "isotope_convention": "48Ti16O internal levels represent elemental TiO; NASA natural-mass translation and atoms; not a complete natural-isotope or isotope-resolved reaction",
+  "energy_zero": "Lowest 48Ti16O rovibronic level; Ti(a3F2)+O(3P2) atomization; no additional ZPE or spin-orbit correction",
+  "cutoff": {
+    "D0_eV": 6.824,
+    "energy_cm-1": 55039.27182847103,
+    "original_states": 301245,
+    "retained_states": 300670,
+    "excluded_states": 575,
+    "maximum_original_energy_cm-1": 55658.305414,
+    "J_max": 200,
+    "energy_uncertainty_policy": "Thermal levels and central cutoff stay fixed when varying only D0"
+  },
+  "completeness": "All current-state electronic manifolds included; approximate D,F,g,h,i already present and are not added again",
+  "source_sha256": {
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "tests/data/validation/tio_source_review/20261103/exomol_nodes.json": "97fbab6ef85372a39e66cb87136af3e142175e868d98bbea83df0aba4f810840",
+    "tests/data/validation/tio_source_review/20261103/literature.json": "761518caaccc4ce5539686b8a06b355092e2d6019c789110535af97285914100"
+  },
+  "original_states": {
+    "url": "https://www.exomol.com/db/TiO/48Ti-16O/Toto/48Ti-16O__Toto.states.bz2",
+    "sha256": "7d54bf8d3ba2fb1a1f7a5d5f25b9335f0ee381625a873813e6a4ca1979734067",
+    "version": "20240509",
+    "archived": false
+  }
+}

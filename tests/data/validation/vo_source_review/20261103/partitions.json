@@ -1,0 +1,81 @@
+{
+  "description": "Selected exact 1 K grid rows; full downloaded source hashes in sources.json. All tabulated Q include 51V nuclear spin. Paper Table 3 has different VOMYT numbers at high T; keep versions separate.",
+  "rows": [
+    {
+      "temperature_K": 300,
+      "HyVO": 12154.3485,
+      "VOMYT_download": 12159.8758
+    },
+    {
+      "temperature_K": 500,
+      "HyVO": 21422.9107,
+      "VOMYT_download": 21428.4136
+    },
+    {
+      "temperature_K": 1000,
+      "HyVO": 53459.6275,
+      "VOMYT_download": 53462.0585
+    },
+    {
+      "temperature_K": 1500,
+      "HyVO": 100366.0424,
+      "VOMYT_download": 100352.125,
+      "HyVO_paper": 100370,
+      "VOMYT_paper": 100350,
+      "paper_extra_VOMYT": 0.9406
+    },
+    {
+      "temperature_K": 2000,
+      "HyVO": 165564.151,
+      "VOMYT_download": 165541.99,
+      "HyVO_paper": 165560,
+      "VOMYT_paper": 165540,
+      "paper_extra_VOMYT": 29.106
+    },
+    {
+      "temperature_K": 2500,
+      "HyVO": 256208.6311,
+      "VOMYT_download": 256419.261,
+      "HyVO_paper": 256210,
+      "VOMYT_paper": 256420,
+      "paper_extra_VOMYT": 262.55
+    },
+    {
+      "temperature_K": 3000,
+      "HyVO": 382890.4169,
+      "VOMYT_download": 384314.847,
+      "HyVO_paper": 382890,
+      "VOMYT_paper": 384290,
+      "paper_extra_VOMYT": 1272.6
+    },
+    {
+      "temperature_K": 3500,
+      "HyVO": 558216.4169,
+      "VOMYT_download": 563405.709,
+      "HyVO_paper": 558220,
+      "VOMYT_paper": 563250,
+      "paper_extra_VOMYT": 4295.9
+    },
+    {
+      "temperature_K": 4000,
+      "HyVO": 795479.4863,
+      "VOMYT_download": 809705.902,
+      "HyVO_paper": 795480,
+      "VOMYT_paper": 809010,
+      "paper_extra_VOMYT": 11469
+    },
+    {
+      "temperature_K": 5000,
+      "HyVO": 1506875.5812,
+      "VOMYT_download": 1573175.45,
+      "HyVO_paper": 1506900,
+      "VOMYT_paper": 1567000,
+      "paper_extra_VOMYT": 52019
+    },
+    {
+      "temperature_K": 5400,
+      "HyVO": 1896096.3349,
+      "VOMYT_download": 2005107.24
+    }
+  ]
+}

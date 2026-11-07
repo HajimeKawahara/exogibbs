@@ -1,0 +1,130 @@
+{
+  "review_date": "2026-11-03",
+  "source_records": [
+    {
+      "id": "pokazatel2018",
+      "doi": "10.1093/mnras/sty1877",
+      "inspection": "full author manuscript and current official ExoMol definition, PF, Cp and states inspected",
+      "url": "https://arxiv.org/html/1807.04529v1",
+      "dataset_version": "current definition 20230621; not the original 20180425 states",
+      "findings": [
+        "Ground-referenced H2(16O) states carry ortho/para spin weights 3/1.",
+        "Paper coverage J<=72 and 41000 cm-1 differs from current parsed J<=69 and 45000.633993 cm-1.",
+        "Shared potential-energy and empirical inputs limit independence from the thermochemical evaluations."
+      ]
+    },
+    {
+      "id": "furtenbacher2016",
+      "doi": "10.1063/1.4967723",
+      "inspection": "full author manuscript inspected",
+      "url": "https://arxiv.org/html/1611.00324v1",
+      "findings": [
+        "Equations 1-3 define raw partition sums and dimensionless moments; thermochemical entropy removes R ln 4 (Table 3 footnote).",
+        "Section 2.5 and equations 12-16 approximate unbound OH+H scattering contributions; the scattering calculation is not rerun here."
+      ]
+    },
+    {
+      "id": "furtenbacher2025",
+      "doi": "10.1063/5.0273661",
+      "inspection": "full NIST accepted manuscript, published PDF via web, and numerical supplements inspected",
+      "url": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959474",
+      "findings": [
+        "Updated constants and empirical levels form PW2024; partition and caloric evaluations are tabulated over 1-5000 K.",
+        "Section 3.3 uses conservative expanded upper/lower-bound uncertainty estimates with coverage factor two and includes unbound-state uncertainty.",
+        "The 2025 uncertainty prescription does not by itself uniquely establish the cause of every central-table/direct-sum difference.",
+        "Supplemental H and U(H) column values are J/mol despite kJ/mol labels; closure against partition moments verifies the correction.",
+        "Supplemental S already removes the nuclear-spin product; it must not be divided by four again."
+      ]
+    },
+    {
+      "id": "pw2024",
+      "doi": "10.60893/figshare.jpr.29087330.v1",
+      "inspection": "complete 810270-level text parsed",
+      "license": "CC BY 4.0",
+      "findings": [
+        "All supplied levels contribute to direct moments; first-dissociation cutoff is a separate sensitivity diagnostic, not a total-atomization energy replacement."
+      ]
+    },
+    {
+      "id": "partition2025",
+      "doi": "10.60893/figshare.jpr.29087339.v1",
+      "inspection": "full CSV retrieved; exact selected temperature rows retained",
+      "license": "CC BY 4.0"
+    },
+    {
+      "id": "thermo2025",
+      "doi": "10.60893/figshare.jpr.29087342.v1",
+      "inspection": "full CSV retrieved; exact selected temperature rows retained with original headers",
+      "license": "CC BY 4.0"
+    },
+    {
+      "id": "supplement_readme",
+      "doi": "10.60893/figshare.jpr.29087324.v1",
+      "inspection": "full readme inspected",
+      "license": "CC BY 4.0"
+    },
+    {
+      "id": "atct1172",
+      "doi": "10.17038/CSE/2440254",
+      "inspection": "same-version index and H/O/H2O species pages inspected; reaction page retrieved but usable numeric covariance absent",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "Hf0_kJ_mol": {
+        "H": 216.034,
+        "O": 246.844,
+        "H2O": -238.907
+      },
+      "species_numbers": {
+        "H": 19,
+        "O": 21,
+        "H2O": 27
+      },
+      "findings": [
+        "H2O first dissociation to OH+H near 41145.92 cm-1 is distinct from total atomization to 2H+O.",
+        "Top 20 displayed H2O network contributors cover 65 percent; 305 are needed for 90 percent.",
+        "Individual original combustion and spectroscopic studies were not all reinspected; no independent quadrature or zero-error interpretation of rounded atomic uncertainties."
+      ]
+    },
+    {
+      "id": "nasa",
+      "doi": null,
+      "inspection": "fresh official coefficient file matches frozen H2O/H/O adoption inputs",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "reference_header": "Hf:Cox,1989. Woolley,1987. TRC(10/88) tuv25.",
+      "findings": [
+        "Original Woolley/TRC pages not obtained. Native NASA R=8.314510 is used for source atomization energy; modern R rescales dimensionless thermal functions for the runtime gauge."
+      ]
+    }
+  ],
+  "normalization": {
+    "standard_pressure_Pa": 100000,
+    "global_energy_zero": "para rovibrational ground state, shared by ortho/para; no added ZPE",
+    "raw_spin_weights": {
+      "ortho": 3,
+      "para": 1
+    },
+    "thermochemical_internal_partition": "Q_raw / 4, with state-dependent weights retained and no second symmetry divisor",
+    "published_2025_entropy": "already nuclear-spin-free",
+    "published_2025_enthalpy": "numeric J/mol, original kJ/mol header retained and corrected explicitly",
+    "isotope_mass_u": 18.01056468403,
+    "aggregate_translation_mass_u": 18.01528,
+    "isotope_limitation": "Changing translation alone is not an exact natural-isotope mixture or isotope-resolved reaction."
+  },
+  "model_boundary": {
+    "direct_sums": "All supplied current ExoMol or PW2024 discrete states; no separately reconstructed scattering continuum.",
+    "evaluated_tables": "2025 published central values and expanded uncertainties; keep their scope distinct from the direct sums.",
+    "difference_at_4000_K": {
+      "evaluated_minus_direct_Q_approx": 1.3444,
+      "direct_over_evaluated_Q": 0.9999661876691738,
+      "evaluated_minus_direct_Cp_J_mol_K": 0.067980959726682,
+      "published_Cp_expanded_uncertainty_J_mol_K": 0.042
+    },
+    "interpretation": "Positive excess is consistent with additional thermodynamic contributions and the 2016 unbound-treatment lineage; unique numerical attribution is not established. The Cp difference exceeds the published Cp uncertainty; few above-threshold discrete levels do not explain it."
+  },
+  "decision": "No production change in this investigation. Prioritize a thermodynamically consistent 2025 thermal candidate at the current total ATcT energy anchor, then test a conserved finite substitution.",
+  "remaining_work": [
+    "Define evaluated-table versus discrete-state scope, including consistency of scattering contributions with separately represented OH/H species.",
+    "Fit continuous G/H/S/Cp with derivative and off-node checks, and preserve an explicit isotope approximation.",
+    "Assess fixed-network finite equilibrium substitution before production adoption.",
+    "Obtain same-version reaction covariance and targeted legacy originals when needed; not every historical original is a source-review merge condition."
+  ]
+}

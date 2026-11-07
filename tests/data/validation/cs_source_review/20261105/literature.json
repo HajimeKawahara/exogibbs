@@ -1,0 +1,119 @@
+{
+  "review_date": "2026-11-05",
+  "atct_1.172": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+    "inspection": "Official displayed C, S and CS entries inspected; agrees with frozen major_molecule_reference.json. Complete network covariance not reaudited."
+  },
+  "atct_1.228": {
+    "record_columns": [
+      "hf0_kJ_mol",
+      "hf298_kJ_mol",
+      "reported_entry_uncertainty_kJ_mol"
+    ],
+    "records": {
+      "C": [
+        711.37,
+        716.855,
+        0.038
+      ],
+      "S": [
+        276.85,
+        279.1,
+        0.12
+      ],
+      "CS": [
+        278.53,
+        281.78,
+        0.52
+      ]
+    },
+    "urls": {
+      "C": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21",
+      "S": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=138",
+      "CS": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=1425"
+    },
+    "inspection": "Official displayed species tables and provenance inspected via browser; not raw-byte archived. Same version for molecule and both atoms. Entry errors are correlated and not combined into a reaction uncertainty. The +0.379 kJ/mol D0 change is a central-value diagnostic, not a statistically resolved disagreement. CS provenance includes Barman/Martin 2026 and Bell 1972; their primary determinations were not independently reaudited."
+  },
+  "paulose2015": {
+    "doi": "10.1093/mnras/stv1543",
+    "inspection": "Full author manuscript and publisher HTML inspected; Sections 2.1/2.3, Tables 8/9/10/13. X 1 Sigma+ only, claimed at least 95% Q convergence at 3000 K. PEC De fixed 59300 cm-1 is not a D0 to insert in an atom-balanced reaction. No 4000 K claim.",
+    "published_table8_T_K": [
+      150,
+      300,
+      500,
+      1000,
+      2000,
+      3000
+    ],
+    "published_table8_Q": [
+      127.9828,
+      256.3156,
+      437.5903,
+      1018.57,
+      2880.03,
+      5705.8
+    ]
+  },
+  "JnK_distribution": {
+    "inspection": "Every current state energy/degeneracy/J/v replayed. Readme says updated 03/2016; def version 20160726. Current PF differs from paper Table 8; exact cause not established, and paper values are not silently overwritten. Metadata maxE 30000 disagrees with actual state range. No additional spin or symmetry factor for 12 C 32 S; gtot=2 J+1."
+  },
+  "electronic_scale_source": {
+    "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C2944050&Mask=1000",
+    "inspection": "Huber/Herzberg evaluated constants, data through 1976: five low excited terms inspected. Original experimental papers not reread. Constants used only for a coarse same-rovibration sensitivity, not a corrected partition sum."
+  },
+  "electronic_scale_columns": [
+    "term",
+    "Te_cm-1",
+    "spin_times_orbital_degeneracy"
+  ],
+  "electronic_scale_constants": [
+    [
+      "a3Pi",
+      27661,
+      6
+    ],
+    [
+      "a_prime3Sigma+",
+      31331.4,
+      3
+    ],
+    [
+      "d3Delta",
+      35675,
+      6
+    ],
+    [
+      "e3Sigma-",
+      38683,
+      3
+    ],
+    [
+      "A1Pi",
+      38904.4,
+      2
+    ]
+  ],
+  "li2022": {
+    "doi": "10.1088/1674-1056/ac834f",
+    "inspection": "Full publisher PDF inspected, Sections 2/3.1/4.1 and Table 1. Twelve Lambda-S potential curves are discussed but partition sums in Section 4.1 use the lowest three singlet states only. Thus the plotted Q is not a complete low-triplet-inclusive thermal evaluation."
+  },
+  "coxon2023": {
+    "doi": "10.1016/j.jms.2023.111861",
+    "inspection": "Publisher abstract/introduction inspected, not full text or supplementary potential parameters. New seven-isotopologue direct potential fit uses 6759 observed lines; useful future precision study, not an acquisition gate for this review."
+  },
+  "olivares2025": {
+    "doi": "10.48550/arXiv.2409.14875",
+    "version": "v2,2025-04-09",
+    "inspection": "Full author preprint inspected, Sections II/III. BO model predicts 14562/14624 states and Jmax 289; warns near-threshold states depend on omitted corrections. No complete machine-readable state table or full electronic thermodynamic assessment used here."
+  },
+  "legacy_sources": {
+    "NASA": "Frozen header: Hf:Prinslow, 1991; Gurvich, 1991 pt 1 p 206 pt 2 p 198. Those originals not reread. Native R 8.314510 kept in dimensionless functions.",
+    "JANAF": "Frozen C-098 evaluationDecember 1976 at 1 bar; native molecular/atomic comparison kept separate from fixed-D0/fixed-atom thermal comparison.",
+    "Barklem_Collet": "Frozen 2016 partition samples are a separate compilation with shared legacy spectroscopy; agreement is not statistically independent physical validation."
+  },
+  "decision": "Retain current NASA thermal functions and current production energy in this source-review PR. Prioritize a separately tested energy-only candidate using balancedATcT 1.228; do not claim the older energy is scientifically preferred. JnK ground-state sum does not justify a wholesale 4000 K thermal replacement.",
+  "follow_ups": [
+    "Build energy-only candidate with same-version balancedATcT 1.228 D0 and test fixed-network sulfur redistribution before production adoption. No new historical full text is mandatory for this step.",
+    "For precision thermal replacement, reconcile currentJnK/paperPF and metadata, add electronic states with consistent zeros and converge Q, H, S, Cp; optionally use Coxon 2023 full text/supplement. Full physical uncertainty remainsunknown."
+  ]
+}

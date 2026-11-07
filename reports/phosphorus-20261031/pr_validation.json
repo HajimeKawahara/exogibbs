@@ -1,0 +1,83 @@
+{
+  "scope": "Fresh clean-checkout software and documentation validation of the phosphorus MCEG report bundle. Scientific execution receipts and their physical-accuracy limits are preserved; this validation does not rerun the original scientific experiments.",
+  "develop_revision": "33b2b0962afb05a4a3c06129e2cfaec3e0787dfc",
+  "archived_report_revision": "932a264db59d2c528297d3eb4f3e48b8e3a4732f",
+  "python_version": "3.12.7",
+  "integration_file_sha256": {
+    ".gitignore": "6e67cb7194edb4f2c849e86cabffbe90fc244b938b1fe23fc450318160c90bbe",
+    "MANIFEST.in": "dc515d6d52d51423720a0a42d90c53eaaf88485e52213f9554319fd8bb27d7ff",
+    "documents/mceg/index.rst": "73aef46b53dc6533f30a331586ae31d6dcbe22b6fd6b133eb875d55452d0af46",
+    "reports/phosphorus-20261031/README.md": "1253dcacbd69514bc8a889f908ead245335dbe5424da5ece58c6bc9196df2f4f",
+    "tests/unittests/mceg_phosphorus_cold_test.py": "54e350aa34609d11434f164a4308667819b1776ded55c5f9d1a180d42e0c89e2",
+    "tests/unittests/mceg_phosphorus_cold_validation_test.py": "3c6c606caa44f9a66830b847c5489ac795953f98d7d1e467f4566bd64a266990",
+    "tests/unittests/_phosphorus_test_data.py": "93a898d266b032510993c6b516c8e9c6aea3e1cf519d84c8132f668638bd8093"
+  },
+  "pytest": {
+    "command": "PYTHONPATH=src JAX_PLATFORMS=cpu OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 pytest tests/unittests --durations=20 --junitxml=results/phosphorus_pr/full_pytest.xml",
+    "summary": "1542 passed, 4 skipped, 25 warnings in 629.04s (0:10:29)",
+    "counts": {
+      "tests": 1546,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    "junit_xml": "reports/phosphorus-20261031/pr_pytest.xml",
+    "junit_sha256": "62aa6aa36256bea8cc1ce3bdfc37d1ac0b243924bfc4a13ff9044f5f161f648e",
+    "skips": [
+      {
+        "test": "tests.unittests.examples.equilibrium_sensitivity_plot_test",
+        "reason": "collection skipped"
+      },
+      {
+        "test": "test_package_version_matches_scm_generated_module",
+        "reason": "setuptools-scm generated version module is unavailable"
+      },
+      {
+        "test": "test_source_identities_and_formation_enthalpy_anchors",
+        "reason": "Optional source audit requires the locally regenerated NASA9 thermo.json; external coefficients are not distributed"
+      },
+      {
+        "test": "test_burcat_entropy_probe_distinguishes_bar_from_atmosphere",
+        "reason": "Optional source audit requires the locally regenerated NASA9 thermo.json; external coefficients are not distributed"
+      }
+    ]
+  },
+  "targeted_phosphorus_tests": {
+    "passed": 26,
+    "skipped": 2,
+    "skip_reason": "Optional source audits require the locally regenerated external NASA9 table."
+  },
+  "documentation": {
+    "command": "./update_doc.sh",
+    "status": "passed",
+    "warnings": 0,
+    "mceg_revision": "471e2516d644031b561e7bef4f4d4093b52fe07e",
+    "exoeos_revision": "37b9173f37866495949fd7c90340a02b7ceaa78d",
+    "all_three_reports_linked": true
+  },
+  "published_integrity": {
+    "ohno_p3": {
+      "checked": 11,
+      "missing": [],
+      "mismatched": []
+    },
+    "phosphorus_provenance": {
+      "checked": 8,
+      "missing": [],
+      "mismatched": []
+    },
+    "phosphorus_cold_validation": {
+      "checked": 61,
+      "missing": [
+        "tests/data/validation/phosphorus_cold/thermo.json"
+      ],
+      "mismatched": []
+    }
+  },
+  "excluded_input_regeneration": {
+    "status": "reproduces_frozen_hash",
+    "sha256": "0d2c38ec5511f7d61b33eeddd681d15c7418a7317ba55fbed6eca1cb0616c3e6",
+    "output_kept_only_in_ignored_results": true
+  },
+  "distribution_check": "Regenerated thermo.json is excluded; source-only GGChem ZIP and build manifest remain included."
+}

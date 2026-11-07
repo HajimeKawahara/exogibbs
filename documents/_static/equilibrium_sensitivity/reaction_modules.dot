@@ -1,0 +1,52 @@
+// Use neato -n2: fixed positions and splines expose the q-port endpoints.
+// Both incoming and outgoing sensitivity arrows attach to the visible q parameter port.
+// Gray edges attach to the equilibrium-relation port, not to the q parameter port.
+// CH4 sensitivity is a full-equilibrium derivative, not a local factor output.
+// Source: a782b40697084e48eb04dc7bc034ade7e33185ce, validation.json, 1000 K.
+// Reproduce: neato -n2 -Tpng -Gdpi=150 reaction_modules.dot -o reaction_modules.png
+digraph reactions {
+graph [layout=neato, splines=true, overlap=true, bgcolor=white, pad=0.24,
+fontname="DejaVu Sans", fontsize=17, labelloc=t, label="T/P -> explicit q inputs -> CH4 | 1000 K, 1 bar, fixed elemental amounts\nCH4 arrows: full coupled-equilibrium response (both reactions and all elemental balances)\nBlue positive; orange dashed negative | Gray edges: signed stoichiometry"];
+node [fontname="DejaVu Sans", fontsize=16, margin="0.13,0.08", style=filled, color="#374151", penwidth=1.2];
+edge [fontname="DejaVu Sans", fontsize=14, arrowsize=0.8];
+T [pos="100,520!", label="T", shape=box, fillcolor="#eef2f6"];
+P [pos="100,700!", label="P", shape=box, fillcolor="#eef2f6"];
+CH4 [pos="1080,500!", label="CH4", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", fontname="DejaVu Sans Bold", penwidth=2.3];
+subgraph cluster_q1 {
+graph [bb="200,540,910,880", lp="555,850", label="q1 | Methanation\nq1 = ln K1(T) + 2 ln(P/P0)", fontname="DejaVu Sans Bold", fontsize=18, color="#374151", style="rounded,filled", fillcolor="#fff9e8", margin=24];
+q1_balance [pos="550,650!", shape=plain, style="", label=<
+<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="10" COLOR="#374151">
+<TR><TD PORT="eq" BGCOLOR="#fff9e8"><B>r1: balance</B><BR/><FONT POINT-SIZE="13">sum s_i ln(x_i) = q1</FONT></TD></TR>
+<TR><TD PORT="q" BGCOLOR="#eef2f6"><B>q1(T, P)</B><BR/><FONT POINT-SIZE="13">RHS parameter</FONT></TD></TR>
+</TABLE>>];
+q1_H2 [pos="300,780!", label="H2", shape=ellipse, fillcolor="#ffffff"];
+q1_H2 -> q1_balance:eq:w [dir=none, label="-3", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+q1_H2O [pos="800,700!", label="H2O", shape=ellipse, fillcolor="#ffffff"];
+q1_balance:eq:e -> q1_H2O [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+q1_CO [pos="300,700!", label="CO", shape=ellipse, fillcolor="#ffffff"];
+q1_CO -> q1_balance:eq:w [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+q1_CH4 [pos="800,780!", label="CH4", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.3, fontname="DejaVu Sans Bold"];
+q1_balance:eq:e -> q1_CH4 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+}
+T:e -> q1_balance:q:w [pos="e,474,625 127,520 220,520 240,625 466,625", lp="280,565", label="-27.073", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=3.800];
+P:e -> q1_balance:q:w [pos="e,474,633 127,700 210,700 240,633 466,633", lp="260,625", label="+2", color="#2166ac", fontcolor="#2166ac", style=solid, penwidth=1.040];
+q1_balance:q:e -> CH4:w [pos="s,626,625 e,1041,500 632,625 760,625 900,500 1033,500", lp="800,615", label="+0.59252", color="#2166ac", fontcolor="#2166ac", style=solid, dir=both, arrowtail=dot, arrowhead=normal, penwidth=1.8];
+subgraph cluster_q2 {
+graph [bb="200,140,910,480", lp="555,450", label="q2 | Water-gas shift\nq2 = ln K2(T)", fontname="DejaVu Sans Bold", fontsize=18, color="#374151", style="rounded,filled", fillcolor="#fff9e8", margin=24];
+q2_balance [pos="550,250!", shape=plain, style="", label=<
+<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="10" COLOR="#374151">
+<TR><TD PORT="eq" BGCOLOR="#fff9e8"><B>r2: balance</B><BR/><FONT POINT-SIZE="13">sum s_i ln(x_i) = q2</FONT></TD></TR>
+<TR><TD PORT="q" BGCOLOR="#eef2f6"><B>q2(T)</B><BR/><FONT POINT-SIZE="13">RHS parameter</FONT></TD></TR>
+</TABLE>>];
+q2_H2 [pos="800,300!", label="H2", shape=ellipse, fillcolor="#ffffff"];
+q2_balance:eq:e -> q2_H2 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+q2_H2O [pos="300,380!", label="H2O", shape=ellipse, fillcolor="#ffffff"];
+q2_H2O -> q2_balance:eq:w [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+q2_CO [pos="300,300!", label="CO", shape=ellipse, fillcolor="#ffffff"];
+q2_CO -> q2_balance:eq:w [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+q2_CO2 [pos="800,380!", label="CO2", shape=ellipse, fillcolor="#ffffff"];
+q2_balance:eq:e -> q2_CO2 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.4];
+}
+T:e -> q2_balance:q:w [pos="e,474,225 127,520 150,520 150,225 466,225", lp="300,240", label="-4.1882", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=1.303];
+q2_balance:q:e -> CH4:w [pos="s,626,225 e,1041,500 632,225 940,225 940,500 1033,500", lp="800,205", label="-0.017041", color="#c65d16", fontcolor="#c65d16", style=dashed, dir=both, arrowtail=dot, arrowhead=normal, penwidth=1.8];
+}

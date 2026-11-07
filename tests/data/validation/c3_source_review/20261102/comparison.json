@@ -1,0 +1,1082 @@
+{
+  "schema_version": "1",
+  "reaction": "3 C(g) -> C3(g)",
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "reference_temperature_K": 298.15,
+  "delta_convention": "JANAF minus NASA, molecule minus atoms",
+  "energy_alignment": "Diagnostic reaction H298 shift only, not a model adoption",
+  "NASA_interval_join_checks": [
+    {
+      "species": "C3",
+      "temperature_K": 1000.0,
+      "high_minus_low_H_J_mol": -0.0009090985404327512,
+      "high_minus_low_S_J_mol_K": 2.1424119722723844e-07,
+      "high_minus_low_Cp_J_mol_K": 5.986429130189208e-09
+    },
+    {
+      "species": "C3",
+      "temperature_K": 6000.0,
+      "high_minus_low_H_J_mol": 0.0026031448505818844,
+      "high_minus_low_S_J_mol_K": -2.4213426854657882e-06,
+      "high_minus_low_Cp_J_mol_K": -2.07422631604004e-06
+    },
+    {
+      "species": "C",
+      "temperature_K": 1000.0,
+      "high_minus_low_H_J_mol": -0.0001964430557563901,
+      "high_minus_low_S_J_mol_K": 9.862048955255887e-10,
+      "high_minus_low_Cp_J_mol_K": -3.4671323589918757e-09
+    },
+    {
+      "species": "C",
+      "temperature_K": 6000.0,
+      "high_minus_low_H_J_mol": -0.0017038057558238506,
+      "high_minus_low_S_J_mol_K": 1.1421911949582864e-07,
+      "high_minus_low_Cp_J_mol_K": -8.065694601100404e-08
+    }
+  ],
+  "NASA_298_anchor_checks": [
+    {
+      "species": "C",
+      "header_H298_J_mol": 716680.0,
+      "source_R_polynomial_H298_J_mol": 716679.9998188204,
+      "common_R_polynomial_H298_J_mol": 716675.9156789338,
+      "source_R_fit_residual_J_mol": -0.00018117961008101702,
+      "gas_constant_conversion_J_mol": -4.084139886545017
+    },
+    {
+      "species": "C3",
+      "header_H298_J_mol": 839948.646,
+      "source_R_polynomial_H298_J_mol": 839948.6461073053,
+      "common_R_polynomial_H298_J_mol": 839943.8594971459,
+      "source_R_fit_residual_J_mol": 0.00010730535723268986,
+      "gas_constant_conversion_J_mol": -4.786610159440897
+    }
+  ],
+  "source_intervals": {
+    "C": [
+      [
+        200.0,
+        1000.0
+      ],
+      [
+        1000.0,
+        6000.0
+      ],
+      [
+        6000.0,
+        20000.0
+      ]
+    ],
+    "C3": [
+      [
+        200.0,
+        1000.0
+      ],
+      [
+        1000.0,
+        6000.0
+      ],
+      [
+        6000.0,
+        20000.0
+      ]
+    ]
+  },
+  "formation_reference_audit": {
+    "reference": "3 C(graphite, ref) -> C3(g)",
+    "samples": [
+      {
+        "temperature_K": 100.0,
+        "formation_H_error_kJ_mol": 0.002000000000066393,
+        "formation_G_error_kJ_mol": 0.0014999999999645297
+      },
+      {
+        "temperature_K": 200.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": -0.00019999999983610905
+      },
+      {
+        "temperature_K": 298.15,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0007519000000684173
+      },
+      {
+        "temperature_K": 300.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0009999999999763531
+      },
+      {
+        "temperature_K": 400.0,
+        "formation_H_error_kJ_mol": 0.0019999999999527063,
+        "formation_G_error_kJ_mol": 0.002000000000066393
+      },
+      {
+        "temperature_K": 500.0,
+        "formation_H_error_kJ_mol": -0.0009999999998626663,
+        "formation_G_error_kJ_mol": -0.0014999999999645297
+      },
+      {
+        "temperature_K": 600.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0007999999999128704
+      },
+      {
+        "temperature_K": 700.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0009999999998626663
+      },
+      {
+        "temperature_K": 800.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.0004000000000132786
+      },
+      {
+        "temperature_K": 900.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.0007000000000516593
+      },
+      {
+        "temperature_K": 1000.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.00100000000009004
+      },
+      {
+        "temperature_K": 1100.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0004000000000132786
+      },
+      {
+        "temperature_K": 1200.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": 0.0012000000000398359
+      },
+      {
+        "temperature_K": 1300.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0008000000001402441
+      },
+      {
+        "temperature_K": 1400.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.001199999999926149
+      },
+      {
+        "temperature_K": 1500.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0009999999999763531
+      },
+      {
+        "temperature_K": 1600.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": -0.0006000000000199179
+      },
+      {
+        "temperature_K": 1700.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.0018000000000029104
+      },
+      {
+        "temperature_K": 1800.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.002399999999965985
+      },
+      {
+        "temperature_K": 1900.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.0004999999998744897
+      },
+      {
+        "temperature_K": 2000.0,
+        "formation_H_error_kJ_mol": -0.0019999999999527063,
+        "formation_G_error_kJ_mol": -0.0009999999999763531
+      },
+      {
+        "temperature_K": 2100.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.0019999999999527063
+      },
+      {
+        "temperature_K": 2200.0,
+        "formation_H_error_kJ_mol": 0.00100000000009004,
+        "formation_G_error_kJ_mol": -0.0009999999999195097
+      },
+      {
+        "temperature_K": 2300.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0020999999999276042
+      },
+      {
+        "temperature_K": 2400.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0028000000000929504
+      },
+      {
+        "temperature_K": 2500.0,
+        "formation_H_error_kJ_mol": -0.0009999999998626663,
+        "formation_G_error_kJ_mol": -0.0034999999998603926
+      },
+      {
+        "temperature_K": 2600.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": 0.0022000000000730324
+      },
+      {
+        "temperature_K": 2700.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.000699999999881129
+      },
+      {
+        "temperature_K": 2800.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0020000000001232365
+      },
+      {
+        "temperature_K": 2900.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.001799999999946067
+      },
+      {
+        "temperature_K": 3000.0,
+        "formation_H_error_kJ_mol": -0.0019999999999527063,
+        "formation_G_error_kJ_mol": -0.006000000000028649
+      },
+      {
+        "temperature_K": 3100.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0007999999999128704
+      },
+      {
+        "temperature_K": 3200.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": 0.0022000000000446107
+      },
+      {
+        "temperature_K": 3300.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.005400000000065575
+      },
+      {
+        "temperature_K": 3400.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 5.684341886080802e-14
+      },
+      {
+        "temperature_K": 3500.0,
+        "formation_H_error_kJ_mol": 0.00100000000009004,
+        "formation_G_error_kJ_mol": 0.006000000000071282
+      },
+      {
+        "temperature_K": 3600.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": 0.0006000000001051831
+      },
+      {
+        "temperature_K": 3700.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.0036000000000058208
+      },
+      {
+        "temperature_K": 3800.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0018000000001023864
+      },
+      {
+        "temperature_K": 3900.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.006800000000048101
+      },
+      {
+        "temperature_K": 4000.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.003000000000120906
+      },
+      {
+        "temperature_K": 4100.0,
+        "formation_H_error_kJ_mol": 0.00100000000009004,
+        "formation_G_error_kJ_mol": -0.0039999999999551505
+      },
+      {
+        "temperature_K": 4200.0,
+        "formation_H_error_kJ_mol": 0.00100000000009004,
+        "formation_G_error_kJ_mol": -0.00539999999976537
+      },
+      {
+        "temperature_K": 4300.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.004999999999842686
+      },
+      {
+        "temperature_K": 4400.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.004000000000125681
+      },
+      {
+        "temperature_K": 4500.0,
+        "formation_H_error_kJ_mol": -0.0009999999998626663,
+        "formation_G_error_kJ_mol": 0.00450000000007833
+      },
+      {
+        "temperature_K": 4600.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": -0.0036000000000342425
+      },
+      {
+        "temperature_K": 4700.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": 0.0013000000000147338
+      },
+      {
+        "temperature_K": 4800.0,
+        "formation_H_error_kJ_mol": -0.0009999999998626663,
+        "formation_G_error_kJ_mol": -0.004199999999741522
+      },
+      {
+        "temperature_K": 4900.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.0007000000002506113
+      },
+      {
+        "temperature_K": 5000.0,
+        "formation_H_error_kJ_mol": -0.0019999999998390194,
+        "formation_G_error_kJ_mol": -0.008000000000009777
+      },
+      {
+        "temperature_K": 5100.0,
+        "formation_H_error_kJ_mol": 0.0,
+        "formation_G_error_kJ_mol": -0.001099999999951251
+      },
+      {
+        "temperature_K": 5200.0,
+        "formation_H_error_kJ_mol": -0.00100000000009004,
+        "formation_G_error_kJ_mol": -0.0014000000001885837
+      },
+      {
+        "temperature_K": 5300.0,
+        "formation_H_error_kJ_mol": -0.0009999999998626663,
+        "formation_G_error_kJ_mol": 0.004500000000064119
+      },
+      {
+        "temperature_K": 5400.0,
+        "formation_H_error_kJ_mol": 0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.008200000000158525
+      },
+      {
+        "temperature_K": 5500.0,
+        "formation_H_error_kJ_mol": 0.00100000000009004,
+        "formation_G_error_kJ_mol": 0.0075000000002205525
+      },
+      {
+        "temperature_K": 5600.0,
+        "formation_H_error_kJ_mol": -0.0009999999999763531,
+        "formation_G_error_kJ_mol": 0.004200000000111004
+      },
+      {
+        "temperature_K": 5700.0,
+        "formation_H_error_kJ_mol": 1.1368683772161603e-13,
+        "formation_G_error_kJ_mol": -0.0005999999999062311
+      },
+      {
+        "temperature_K": 5800.0,
+        "formation_H_error_kJ_mol": 0.0019999999999527063,
+        "formation_G_error_kJ_mol": 0.007999999999753982
+      },
+      {
+        "temperature_K": 5900.0,
+        "formation_H_error_kJ_mol": -0.0019999999999527063,
+        "formation_G_error_kJ_mol": 0.009700000000123055
+      },
+      {
+        "temperature_K": 6000.0,
+        "formation_H_error_kJ_mol": 0.00100000000009004,
+        "formation_G_error_kJ_mol": -0.0029999999999290594
+      }
+    ],
+    "printed_online_matching_nodes": 7,
+    "max_abs_formation_H_error_kJ_mol": 0.002000000000066393,
+    "max_abs_formation_G_error_kJ_mol": 0.009700000000123055
+  },
+  "energy_anchors": {
+    "reaction": "3 C(g) -> linear C3(g)",
+    "ATcT_version": "1.172",
+    "interpretation": "Balanced source energy anchors. 0 K atomization is the negative reaction energy; it is not a single C-C bond dissociation energy. NASA headers, not a polynomial extrapolation, supply 0 K increments.",
+    "uncertainty": "ATcT estimated 95 percent limits and the reported C3/C correlation are preserved in atct_evidence.json. The rounded correlation is not a full covariance record; no independent-error combination or source-difference uncertainty distribution is assigned.",
+    "reported_C3_C_correlation": 0.228,
+    "anchors": {
+      "0": {
+        "temperature_K": 0,
+        "JANAF_reaction_H_J_mol": -1322099.0,
+        "NASA_header_reaction_H_J_mol": -1302592.815,
+        "ATcT_reaction_H_J_mol": -1319773.0000000002,
+        "ATcT_minus_JANAF_reaction_H_J_mol": 2325.999999999767,
+        "ATcT_minus_NASA_reaction_H_J_mol": -17180.18500000029
+      },
+      "298": {
+        "temperature_K": 298.15,
+        "JANAF_reaction_H_J_mol": -1329945.9999999995,
+        "NASA_header_reaction_H_J_mol": -1310091.354,
+        "ATcT_reaction_H_J_mol": -1327268.0,
+        "ATcT_minus_JANAF_reaction_H_J_mol": 2677.9999999995343,
+        "ATcT_minus_NASA_reaction_H_J_mol": -17176.64599999995
+      }
+    }
+  },
+  "historical_entropy_comparison": {
+    "calorie_J": 4.184,
+    "conditional_1atm_to_1bar_shift_J_mol_K": 0.109443159416017,
+    "AtLast_convention": "Published Q, a 20 K five-point first derivative, common source mass and baseline R; the separate .pf/state-sum discrepancy is unresolved.",
+    "interpretation": "Jones quotes 2400/2700 K; the authors' ASMS abstract states 2400/2600 K for the same entropy numbers. Neither the journal article nor a resolution of this temperature discrepancy is available. The 1 atm conversion is conditional. These linked records are not independent measurements or validation of an adopted thermal model.",
+    "samples": [
+      {
+        "temperature_K": 2400,
+        "quoted_entropy_J_mol_K": 340.87048,
+        "if_quoted_at_1atm_entropy_at_1bar_J_mol_K": 340.979923159416,
+        "JANAF_entropy_J_mol_K": 328.161,
+        "NASA_entropy_J_mol_K": 339.8787814274598,
+        "AtLast_published_Q_entropy_J_mol_K": 334.4721918252717
+      },
+      {
+        "temperature_K": 2700,
+        "quoted_entropy_J_mol_K": 346.89544,
+        "if_quoted_at_1atm_entropy_at_1bar_J_mol_K": 347.004883159416,
+        "JANAF_entropy_J_mol_K": 334.379,
+        "NASA_entropy_J_mol_K": 346.4701989138343,
+        "AtLast_published_Q_entropy_J_mol_K": 340.2964263106096
+      }
+    ],
+    "primary_abstract_samples": [
+      {
+        "temperature_K": 2400,
+        "quoted_entropy_J_mol_K": 340.87048,
+        "if_quoted_at_1atm_entropy_at_1bar_J_mol_K": 340.979923159416,
+        "JANAF_entropy_J_mol_K": 328.161,
+        "NASA_entropy_J_mol_K": 339.8787814274598,
+        "AtLast_published_Q_entropy_J_mol_K": 334.4721918252717
+      },
+      {
+        "temperature_K": 2600,
+        "quoted_entropy_J_mol_K": 346.89544,
+        "if_quoted_at_1atm_entropy_at_1bar_J_mol_K": 347.004883159416,
+        "JANAF_entropy_J_mol_K": 332.376,
+        "NASA_entropy_J_mol_K": 344.3443653774663,
+        "AtLast_published_Q_entropy_J_mol_K": 338.4459361550919
+      }
+    ]
+  },
+  "fastchem_fit": {
+    "source_label": "C3 Carbon : C 3 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+    "coefficients": [
+      159040.09582911574,
+      -3.3936161589267044,
+      -6.277880805620953,
+      0.0007260494005513207,
+      -3.935256146101226e-08
+    ],
+    "diagnostic_range_K": [
+      1500,
+      4000
+    ],
+    "max_abs_JANAF_residual_ln_K": 0.011037760630557614,
+    "samples": [
+      {
+        "temperature_K": 1500.0,
+        "fit_minus_JANAF_ln_K": 0.011037760630557614,
+        "fit_minus_JANAF_reaction_H_J_mol": -294.04370781383477,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.10425609039162964,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": -0.7911008104555126,
+        "JANAF_molecular_Cp_J_mol_K": 48.71,
+        "NASA_molecular_Cp_J_mol_K": 53.35694591961828
+      },
+      {
+        "temperature_K": 1600.0,
+        "fit_minus_JANAF_ln_K": 0.009074512505307553,
+        "fit_minus_JANAF_reaction_H_J_mol": -369.08865977148525,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.15523071735378835,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": -0.7043421367170737,
+        "JANAF_molecular_Cp_J_mol_K": 49.267,
+        "NASA_molecular_Cp_J_mol_K": 53.6460407057564
+      },
+      {
+        "temperature_K": 1700.0,
+        "fit_minus_JANAF_ln_K": 0.0075090504024757365,
+        "fit_minus_JANAF_reaction_H_J_mol": -433.2209167624824,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.19240211452046196,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": -0.5878469111221722,
+        "JANAF_molecular_Cp_J_mol_K": 49.773,
+        "NASA_molecular_Cp_J_mol_K": 53.890241481919524
+      },
+      {
+        "temperature_K": 1800.0,
+        "fit_minus_JANAF_ln_K": 0.005628915514179766,
+        "fit_minus_JANAF_reaction_H_J_mol": -486.36682360060513,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.2234023832658636,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": -0.4436151336708072,
+        "JANAF_molecular_Cp_J_mol_K": 50.233,
+        "NASA_molecular_Cp_J_mol_K": 54.10580925677829
+      },
+      {
+        "temperature_K": 1900.0,
+        "fit_minus_JANAF_ln_K": 0.003804913235768481,
+        "fit_minus_JANAF_reaction_H_J_mol": -521.4527251007967,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.24281299382045063,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": -0.2876468043629945,
+        "JANAF_molecular_Cp_J_mol_K": 50.66,
+        "NASA_molecular_Cp_J_mol_K": 54.30733221745255
+      },
+      {
+        "temperature_K": 2000.0,
+        "fit_minus_JANAF_ln_K": 0.002239054890658565,
+        "fit_minus_JANAF_reaction_H_J_mol": -542.4049660780001,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.2525859448506367,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": -0.118941923198701,
+        "JANAF_molecular_Cp_J_mol_K": 51.053,
+        "NASA_molecular_Cp_J_mol_K": 54.507369755344996
+      },
+      {
+        "temperature_K": 2100.0,
+        "fit_minus_JANAF_ln_K": 0.0006866728983325743,
+        "fit_minus_JANAF_reaction_H_J_mol": -546.1498913462274,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.25436206068752654,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.060499509822026454,
+        "JANAF_molecular_Cp_J_mol_K": 51.417,
+        "NASA_molecular_Cp_J_mol_K": 54.716417482031915
+      },
+      {
+        "temperature_K": 2200.0,
+        "fit_minus_JANAF_ln_K": -0.0008396944771078552,
+        "fit_minus_JANAF_reaction_H_J_mol": -529.6138457185589,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.24771517457634218,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.2396774946992295,
+        "JANAF_molecular_Cp_J_mol_K": 51.76,
+        "NASA_molecular_Cp_J_mol_K": 54.94302450154875
+      },
+      {
+        "temperature_K": 2300.0,
+        "fit_minus_JANAF_ln_K": -0.002089779175513229,
+        "fit_minus_JANAF_reaction_H_J_mol": -496.7231740106363,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.23334198823090446,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.4165920314328879,
+        "JANAF_molecular_Cp_J_mol_K": 52.081,
+        "NASA_molecular_Cp_J_mol_K": 55.193975053567
+      },
+      {
+        "temperature_K": 2400.0,
+        "fit_minus_JANAF_ln_K": -0.002981920808515781,
+        "fit_minus_JANAF_reaction_H_J_mol": -447.40422103670426,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.2112114945246617,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.5902431200230112,
+        "JANAF_molecular_Cp_J_mol_K": 52.384,
+        "NASA_molecular_Cp_J_mol_K": 55.47448920895602
+      },
+      {
+        "temperature_K": 2500.0,
+        "fit_minus_JANAF_ln_K": -0.0037104676590473673,
+        "fit_minus_JANAF_reaction_H_J_mol": -379.5833316107746,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.1826838772912538,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.7536307604695907,
+        "JANAF_molecular_Cp_J_mol_K": 52.667,
+        "NASA_molecular_Cp_J_mol_K": 55.788419955359934
+      },
+      {
+        "temperature_K": 2600.0,
+        "fit_minus_JANAF_ln_K": -0.0044403142972022636,
+        "fit_minus_JANAF_reaction_H_J_mol": -298.18685054802336,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.1516060774476955,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.9067549527726317,
+        "JANAF_molecular_Cp_J_mol_K": 52.936,
+        "NASA_molecular_Cp_J_mol_K": 56.13843610999507
+      },
+      {
+        "temperature_K": 2700.0,
+        "fit_minus_JANAF_ln_K": -0.00484252243908756,
+        "fit_minus_JANAF_reaction_H_J_mol": -200.14112266153097,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.11438931352381587,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.04261569693214,
+        "JANAF_molecular_Cp_J_mol_K": 53.189,
+        "NASA_molecular_Cp_J_mol_K": 56.52618691770226
+      },
+      {
+        "temperature_K": 2800.0,
+        "fit_minus_JANAF_ln_K": -0.005233157533716337,
+        "fit_minus_JANAF_reaction_H_J_mol": -88.37249276624061,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.07507249724835674,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.1602129929480984,
+        "JANAF_molecular_Cp_J_mol_K": 53.43,
+        "NASA_molecular_Cp_J_mol_K": 56.9524475292023
+      },
+      {
+        "temperature_K": 2900.0,
+        "fit_minus_JANAF_ln_K": -0.005067148591550108,
+        "fit_minus_JANAF_reaction_H_J_mol": 31.192694323137403,
+        "fit_minus_JANAF_reaction_S_J_mol_K": -0.031374516054256674,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.2535468408205315,
+        "JANAF_molecular_Cp_J_mol_K": 53.659,
+        "NASA_molecular_Cp_J_mol_K": 57.41724621054175
+      },
+      {
+        "temperature_K": 3000.0,
+        "fit_minus_JANAF_ln_K": -0.0050450660588232665,
+        "fit_minus_JANAF_reaction_H_J_mol": 159.6280937930569,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.011262351445509466,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.3216172405494078,
+        "JANAF_molecular_Cp_J_mol_K": 53.877,
+        "NASA_molecular_Cp_J_mol_K": 57.91997487809861
+      },
+      {
+        "temperature_K": 3100.0,
+        "fit_minus_JANAF_ln_K": -0.004951935742557367,
+        "fit_minus_JANAF_reaction_H_J_mol": 297.0073608288076,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.05463614145480733,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.364424192134761,
+        "JANAF_molecular_Cp_J_mol_K": 54.084,
+        "NASA_molecular_Cp_J_mol_K": 58.459484808459315
+      },
+      {
+        "temperature_K": 3200.0,
+        "fit_minus_JANAF_ln_K": -0.004329398496416559,
+        "fit_minus_JANAF_reaction_H_J_mol": 434.4041506149806,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.09975467510969338,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.3729676955765573,
+        "JANAF_molecular_Cp_J_mol_K": 54.283,
+        "NASA_molecular_Cp_J_mol_K": 59.034169374155624
+      },
+      {
+        "temperature_K": 3300.0,
+        "fit_minus_JANAF_ln_K": -0.00387131257675577,
+        "fit_minus_JANAF_reaction_H_J_mol": 570.892118339194,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.1408097279153253,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.348247750874819,
+        "JANAF_molecular_Cp_J_mol_K": 54.476,
+        "NASA_molecular_Cp_J_mol_K": 59.64203553475449
+      },
+      {
+        "temperature_K": 3400.0,
+        "fit_minus_JANAF_ln_K": -0.002993286286688601,
+        "fit_minus_JANAF_reaction_H_J_mol": 700.5449191853404,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.1811550563537594,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.2872643580295424,
+        "JANAF_molecular_Cp_J_mol_K": 54.66,
+        "NASA_molecular_Cp_J_mol_K": 60.28076563939054
+      },
+      {
+        "temperature_K": 3500.0,
+        "fit_minus_JANAF_ln_K": -0.002265572813657357,
+        "fit_minus_JANAF_reaction_H_J_mol": 826.4362083405722,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.21728761048655088,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.194017517040729,
+        "JANAF_molecular_Cp_J_mol_K": 54.834,
+        "NASA_molecular_Cp_J_mol_K": 60.94777090967706
+      },
+      {
+        "temperature_K": 3600.0,
+        "fit_minus_JANAF_ln_K": -0.0014648712901372818,
+        "fit_minus_JANAF_reaction_H_J_mol": 939.6396409885492,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.24883139380347075,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 1.0635072279083744,
+        "JANAF_molecular_Cp_J_mol_K": 55.003,
+        "NASA_molecular_Cp_J_mol_K": 61.64023779060833
+      },
+      {
+        "temperature_K": 3700.0,
+        "fit_minus_JANAF_ln_K": -0.0005783407696267062,
+        "fit_minus_JANAF_reaction_H_J_mol": 1037.2288723168895,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.27552353494360204,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.8927334906324838,
+        "JANAF_molecular_Cp_J_mol_K": 55.164,
+        "NASA_molecular_Cp_J_mol_K": 62.3551681907636
+      },
+      {
+        "temperature_K": 3800.0,
+        "fit_minus_JANAF_ln_K": 0.00032571234862288634,
+        "fit_minus_JANAF_reaction_H_J_mol": 1115.2775575108826,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.29620221722871065,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.6836963052130436,
+        "JANAF_molecular_Cp_J_mol_K": 55.321,
+        "NASA_molecular_Cp_J_mol_K": 63.08941448534334
+      },
+      {
+        "temperature_K": 3900.0,
+        "fit_minus_JANAF_ln_K": 0.001090029465229847,
+        "fit_minus_JANAF_reaction_H_J_mol": 1172.8593517551199,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.309796176358077,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.432395671650065,
+        "JANAF_molecular_Cp_J_mol_K": 55.472,
+        "NASA_molecular_Cp_J_mol_K": 63.83971002677583
+      },
+      {
+        "temperature_K": 4000.0,
+        "fit_minus_JANAF_ln_K": 0.0022916153790593086,
+        "fit_minus_JANAF_reaction_H_J_mol": 1201.047910236055,
+        "fit_minus_JANAF_reaction_S_J_mol_K": 0.3193155279633402,
+        "fit_minus_JANAF_reaction_Cp_J_mol_K": 0.13783158994355738,
+        "JANAF_molecular_Cp_J_mol_K": 55.618,
+        "NASA_molecular_Cp_J_mol_K": 64.60269579675882
+      }
+    ]
+  },
+  "partition_comparison": {
+    "formula": "Qint = exp((H0-H(T)+T*S(T))/(R*T)) / ((2*pi*m*kB*T/h^2)^(3/2)*kB*T/p0)",
+    "JANAF_gas_constant_J_mol_K": 8.31441,
+    "NASA_gas_constant_J_mol_K": 8.31451,
+    "molar_mass_g_mol": 36.0321,
+    "nuclear_spin_divisor": 1,
+    "convention": "12C has spin zero; AtLast's spin/parity restrictions are already included. Use source R for Q inference and the explicit legacy molecular mass for both source comparisons.",
+    "scope": "The AtLast ground-electronic-state sum is a lower limit to an electronically complete partition function; state-sum numerical convergence does not certify high-temperature completeness. Isotopic mass conventions differ slightly.",
+    "definition_file_discrepancy": "The archived .def says Sigma+/Sigma- weights 6, conflicting with the original paper and actual 12C3 state weights 2J+1. No division by 6 is applied. Ground-state weight 1 and the low-temperature Q support the spin-zero convention.",
+    "partition_file_discrepancy": "The direct sum of all downloaded state weights/energies does not reproduce the published .pf at sampled temperatures. Using auxiliary calculated energies does not remove this discrepancy. Its cause is unresolved; this is not a certified replacement thermal model.",
+    "independent_state_sum": [
+      {
+        "temperature_K": 1.0,
+        "state_sum_over_published_Q": 0.9999707724999232,
+        "auxiliary_calculated_sum_over_published_Q": 0.9999603176629746,
+        "state_sum_Cp_J_mol_K": 31.924797246265832
+      },
+      {
+        "temperature_K": 300.0,
+        "state_sum_over_published_Q": 0.8577946237508075,
+        "auxiliary_calculated_sum_over_published_Q": 0.8577952968428405,
+        "state_sum_Cp_J_mol_K": 41.47355796483156
+      },
+      {
+        "temperature_K": 500.0,
+        "state_sum_over_published_Q": 0.9005595838812382,
+        "auxiliary_calculated_sum_over_published_Q": 0.9005574065678495,
+        "state_sum_Cp_J_mol_K": 43.03905316044717
+      },
+      {
+        "temperature_K": 1000.0,
+        "state_sum_over_published_Q": 0.9582775702606291,
+        "auxiliary_calculated_sum_over_published_Q": 0.9582760416568679,
+        "state_sum_Cp_J_mol_K": 48.44496457895534
+      },
+      {
+        "temperature_K": 1500.0,
+        "state_sum_over_published_Q": 0.980156937671794,
+        "auxiliary_calculated_sum_over_published_Q": 0.9801561797342327,
+        "state_sum_Cp_J_mol_K": 50.43981881558138
+      },
+      {
+        "temperature_K": 2000.0,
+        "state_sum_over_published_Q": 0.9894487759201046,
+        "auxiliary_calculated_sum_over_published_Q": 0.989448389612009,
+        "state_sum_Cp_J_mol_K": 50.62210028922516
+      },
+      {
+        "temperature_K": 3000.0,
+        "state_sum_over_published_Q": 0.9961795098611564,
+        "auxiliary_calculated_sum_over_published_Q": 0.9961793896721097,
+        "state_sum_Cp_J_mol_K": 47.06838636500464
+      },
+      {
+        "temperature_K": 4000.0,
+        "state_sum_over_published_Q": 0.9982338349252311,
+        "auxiliary_calculated_sum_over_published_Q": 0.9982337872999253,
+        "state_sum_Cp_J_mol_K": 40.48158033332318
+      }
+    ],
+    "caloric_diagnostic": {
+      "formula": "Cp/R = 5/2 + 2*T*d(ln Q)/dT + T^2*d2(ln Q)/dT2",
+      "method": "Five-point differences at exact 1 K nodes, steps 10, 20 and 40 K; spread measures differentiation stability, not physical uncertainty.",
+      "gas_constant_J_mol_K": 8.31446261815324,
+      "samples": [
+        {
+          "temperature_K": 1500.0,
+          "AtLast_Cp_J_mol_K_by_step_K": {
+            "10": 50.63989813349964,
+            "20": 50.6399464300803,
+            "40": 50.63997489328059
+          },
+          "step_spread_J_mol_K": 7.675978094567881e-05,
+          "JANAF_Cp_J_mol_K": 48.71,
+          "NASA_Cp_J_mol_K": 53.35694591961828
+        },
+        {
+          "temperature_K": 2000.0,
+          "AtLast_Cp_J_mol_K_by_step_K": {
+            "10": 50.820914230628176,
+            "20": 50.82088897884273,
+            "40": 50.820874255256236
+          },
+          "step_spread_J_mol_K": 3.997537194067036e-05,
+          "JANAF_Cp_J_mol_K": 51.053,
+          "NASA_Cp_J_mol_K": 54.507369755344996
+        },
+        {
+          "temperature_K": 3000.0,
+          "AtLast_Cp_J_mol_K_by_step_K": {
+            "10": 47.19258204527004,
+            "20": 47.192555037729484,
+            "40": 47.19255889187168
+          },
+          "step_spread_J_mol_K": 2.700754055950938e-05,
+          "JANAF_Cp_J_mol_K": 53.877,
+          "NASA_Cp_J_mol_K": 57.91997487809861
+        },
+        {
+          "temperature_K": 4000.0,
+          "AtLast_Cp_J_mol_K_by_step_K": {
+            "10": 40.551000516186456,
+            "20": 40.55100075458217,
+            "40": 40.551013518608634
+          },
+          "step_spread_J_mol_K": 1.3002422178942652e-05,
+          "JANAF_Cp_J_mol_K": 55.618,
+          "NASA_Cp_J_mol_K": 64.60269579675882
+        }
+      ]
+    },
+    "samples": [
+      {
+        "temperature_K": 300.0,
+        "AtLast_Q": 2705.4975,
+        "JANAF_inferred_Q": 2527.04169270085,
+        "NASA_inferred_Q": 2296.7658501414003,
+        "AtLast_over_JANAF": 1.0706184657794149,
+        "AtLast_over_NASA": 1.177959651321634
+      },
+      {
+        "temperature_K": 500.0,
+        "AtLast_Q": 8697.2237,
+        "JANAF_inferred_Q": 7752.930031266267,
+        "NASA_inferred_Q": 8010.744308335974,
+        "AtLast_over_JANAF": 1.1217982962474258,
+        "AtLast_over_NASA": 1.0856948324951123
+      },
+      {
+        "temperature_K": 1000.0,
+        "AtLast_Q": 48156.4306,
+        "JANAF_inferred_Q": 35986.494997860405,
+        "NASA_inferred_Q": 51925.15054671792,
+        "AtLast_over_JANAF": 1.3381806314525257,
+        "AtLast_over_NASA": 0.927420144052791
+      },
+      {
+        "temperature_K": 1500.0,
+        "AtLast_Q": 149793.3623,
+        "JANAF_inferred_Q": 97855.74266122164,
+        "NASA_inferred_Q": 179256.57068107434,
+        "AtLast_over_JANAF": 1.530756992142887,
+        "AtLast_over_NASA": 0.8356366616346018
+      },
+      {
+        "temperature_K": 2000.0,
+        "AtLast_Q": 357611.1891,
+        "JANAF_inferred_Q": 214013.55918654494,
+        "NASA_inferred_Q": 463495.8792593327,
+        "AtLast_over_JANAF": 1.670974448811854,
+        "AtLast_over_NASA": 0.7715520355250264
+      },
+      {
+        "temperature_K": 3000.0,
+        "AtLast_Q": 1298874.1073,
+        "JANAF_inferred_Q": 721909.2249728665,
+        "NASA_inferred_Q": 1941872.9060482124,
+        "AtLast_over_JANAF": 1.7992208194164845,
+        "AtLast_over_NASA": 0.6688769915139605
+      },
+      {
+        "temperature_K": 4000.0,
+        "AtLast_Q": 3243718.5259,
+        "JANAF_inferred_Q": 1855428.5347882947,
+        "NASA_inferred_Q": 5809203.085613928,
+        "AtLast_over_JANAF": 1.7482314543955797,
+        "AtLast_over_NASA": 0.5583758181794047
+      }
+    ]
+  },
+  "samples": [
+    {
+      "temperature_K": 500,
+      "properties": {
+        "C3": {
+          "janaf_H298_J_mol": 820064.0,
+          "nasa_H298_J_mol": 839943.8594971459,
+          "janaf_H_J_mol": 827675.9999999999,
+          "nasa_H_J_mol": 848709.5867850642,
+          "janaf_S_J_mol_K": 256.727,
+          "nasa_S_J_mol_K": 260.00397795570314,
+          "janaf_Cp_J_mol_K": 38.38,
+          "nasa_Cp_J_mol_K": 44.88335180141615,
+          "delta_G_J_mol": -19395.097807212733
+        },
+        "C": {
+          "janaf_H298_J_mol": 716670.0,
+          "nasa_H298_J_mol": 716675.9156789338,
+          "janaf_H_J_mol": 720872.0,
+          "nasa_H_J_mol": 720877.8677483936,
+          "janaf_S_J_mol_K": 168.863,
+          "nasa_S_J_mol_K": 168.86352089343163,
+          "janaf_Cp_J_mol_K": 20.804,
+          "nasa_Cp_J_mol_K": 20.804541972417862,
+          "delta_G_J_mol": -5.607301677747159
+        }
+      },
+      "reaction_delta_G_components_J_mol": {
+        "anchor": -19862.11246034433,
+        "enthalpy_increment": -1153.871079539298,
+        "entropy_at_298": 182.88792127317777,
+        "entropy_increment": 1454.8197164309613
+      },
+      "reaction_delta_G_J_mol": -19378.275902179492,
+      "molecular_delta_G_J_mol": -19395.097807212733,
+      "atomic_delta_G_J_mol": 16.82190503324091,
+      "janaf_over_nasa": 105.77791543606304,
+      "energy_aligned_janaf_over_nasa": 0.890133057507913,
+      "curated_over_nasa": null,
+      "janaf_internal_difference_dex": -4.937356628752829e-14,
+      "ln_Kp": {
+        "janaf_HS": 291.0612641057878,
+        "janaf_formation_columns": 291.0612641057877,
+        "nasa": 286.39992234694216,
+        "fastchem_fit": null,
+        "curated": null
+      },
+      "baseline_closure_ln_K": 1.687538997430238e-14
+    },
+    {
+      "temperature_K": 1000,
+      "properties": {
+        "C3": {
+          "janaf_H298_J_mol": 820064.0,
+          "nasa_H298_J_mol": 839943.8594971459,
+          "janaf_H_J_mol": 848540.9999999999,
+          "nasa_H_J_mol": 872822.994898914,
+          "janaf_S_J_mol_K": 285.39,
+          "nasa_S_J_mol_K": 293.19034099771307,
+          "janaf_Cp_J_mol_K": 44.815,
+          "nasa_Cp_J_mol_K": 50.84461263827095,
+          "delta_G_J_mol": -16481.653901201047
+        },
+        "C": {
+          "janaf_H298_J_mol": 716670.0,
+          "nasa_H298_J_mol": 716675.9156789338,
+          "janaf_H_J_mol": 731270.0,
+          "nasa_H_J_mol": 731275.5494481339,
+          "janaf_S_J_mol_K": 183.278,
+          "nasa_S_J_mol_K": 183.27828275531135,
+          "janaf_Cp_J_mol_K": 20.791,
+          "nasa_Cp_J_mol_K": 20.791145060921743,
+          "delta_G_J_mol": -5.266692822551477
+        }
+      },
+      "reaction_delta_G_components_J_mol": {
+        "anchor": -19862.11246034433,
+        "enthalpy_increment": -4403.2340941680595,
+        "entropy_at_298": 365.77584254635553,
+        "entropy_increment": 7433.716889232642
+      },
+      "reaction_delta_G_J_mol": -16465.853822733392,
+      "molecular_delta_G_J_mol": -16481.653901201047,
+      "atomic_delta_G_J_mol": 15.800078467655112,
+      "janaf_over_nasa": 7.245546592667821,
+      "energy_aligned_janaf_over_nasa": 0.6646624077946104,
+      "curated_over_nasa": null,
+      "janaf_internal_difference_dex": -5.223362012274471e-05,
+      "ln_Kp": {
+        "janaf_HS": 129.99336813905438,
+        "janaf_formation_columns": 129.99324786669933,
+        "nasa": 128.01298112200496,
+        "fastchem_fit": null,
+        "curated": null
+      },
+      "baseline_closure_ln_K": -3.375077994860476e-14
+    },
+    {
+      "temperature_K": 1500,
+      "properties": {
+        "C3": {
+          "janaf_H298_J_mol": 820064.0,
+          "nasa_H298_J_mol": 839943.8594971459,
+          "janaf_H_J_mol": 872015.0,
+          "nasa_H_J_mol": 898947.4638453615,
+          "janaf_S_J_mol_K": 304.372,
+          "nasa_S_J_mol_K": 314.3403867940931,
+          "janaf_Cp_J_mol_K": 48.71,
+          "nasa_Cp_J_mol_K": 53.35694591961828,
+          "delta_G_J_mol": -11979.883654221872
+        },
+        "C": {
+          "janaf_H298_J_mol": 716670.0,
+          "nasa_H298_J_mol": 716675.9156789338,
+          "janaf_H_J_mol": 741668.0,
+          "nasa_H_J_mol": 741675.317440115,
+          "janaf_S_J_mol_K": 191.71,
+          "nasa_S_J_mol_K": 191.71165462121508,
+          "janaf_Cp_J_mol_K": 20.814,
+          "nasa_Cp_J_mol_K": 20.808926877073713,
+          "delta_G_J_mol": -4.835508292430973
+        }
+      },
+      "reaction_delta_G_components_J_mol": {
+        "anchor": -19862.11246034433,
+        "enthalpy_increment": -7048.399064672063,
+        "entropy_at_298": 548.6637638195333,
+        "entropy_increment": 14396.47063185228
+      },
+      "reaction_delta_G_J_mol": -11965.37712934458,
+      "molecular_delta_G_J_mol": -11979.883654221872,
+      "atomic_delta_G_J_mol": 14.506524877291668,
+      "janaf_over_nasa": 2.610137036112003,
+      "energy_aligned_janaf_over_nasa": 0.5309047581879126,
+      "curated_over_nasa": 2.6391066898623574,
+      "janaf_internal_difference_dex": 3.4822413419277605e-05,
+      "ln_Kp": {
+        "janaf_HS": 75.92007994461017,
+        "janaf_formation_columns": 75.9201601261802,
+        "nasa": 74.96067722039639,
+        "fastchem_fit": 75.93111770524072,
+        "curated": 75.93111770524072
+      },
+      "baseline_closure_ln_K": 1.8096635301390052e-14
+    },
+    {
+      "temperature_K": 3000,
+      "properties": {
+        "C3": {
+          "janaf_H298_J_mol": 820064.0,
+          "nasa_H298_J_mol": 839943.8594971459,
+          "janaf_H_J_mol": 949598.0,
+          "nasa_H_J_mol": 981870.3498229631,
+          "janaf_S_J_mol_K": 340.019,
+          "nasa_S_J_mol_K": 352.4949434833427,
+          "janaf_Cp_J_mol_K": 53.877,
+          "nasa_Cp_J_mol_K": 57.91997487809861,
+          "delta_G_J_mol": 5155.480627064942
+        },
+        "C": {
+          "janaf_H298_J_mol": 716670.0,
+          "nasa_H298_J_mol": 716675.9156789338,
+          "janaf_H_J_mol": 773358.9999999999,
+          "nasa_H_J_mol": 773368.0155741504,
+          "janaf_S_J_mol_K": 206.322,
+          "nasa_S_J_mol_K": 206.32436488611887,
+          "janaf_Cp_J_mol_K": 21.621,
+          "nasa_Cp_J_mol_K": 21.61973968930901,
+          "delta_G_J_mol": -1.9209157938789758
+        }
+      },
+      "reaction_delta_G_components_J_mol": {
+        "anchor": -19862.11246034433,
+        "enthalpy_increment": -12383.190640167333,
+        "entropy_at_298": 1097.3275276390666,
+        "entropy_increment": 36309.21894731918
+      },
+      "reaction_delta_G_J_mol": 5161.243374446585,
+      "molecular_delta_G_J_mol": 5155.480627064942,
+      "atomic_delta_G_J_mol": 5.762747381642839,
+      "janaf_over_nasa": 0.8130860776007819,
+      "energy_aligned_janaf_over_nasa": 0.3667019159382028,
+      "curated_over_nasa": 0.8089943348627965,
+      "janaf_internal_difference_dex": 7.714619732426296e-15,
+      "ln_Kp": {
+        "janaf_HS": 21.39396633343007,
+        "janaf_formation_columns": 21.393966333430086,
+        "nasa": 21.60088463196119,
+        "fastchem_fit": 21.38892126737124,
+        "curated": 21.38892126737124
+      },
+      "baseline_closure_ln_K": 9.575673587391975e-15
+    }
+  ]
+}

@@ -24,7 +24,7 @@ components:
     provider: exogibbs
     model_id: exogibbs.h2_hirschmann2012
     path: mceg/contracts/h2_solubility.yaml
-    sha256: 29f4f049a9a563f14ee23c4031e26d7c021c0d6db8efa3c437978462a120e027
+    sha256: 2d013a193228e62001250253ca411d3a7694ce292d276bb231bff02e52464329
     settings:
       melt_composition: unknown
 connections:

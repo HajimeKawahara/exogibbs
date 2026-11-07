@@ -1,0 +1,855 @@
+{
+  "revision": "65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b",
+  "scope": "Native mixed-source database selections at declared conditions, not Ohno's unavailable original inputs. Original fit validity intervals are not retained in dispol files.",
+  "data_priority": {
+    "janaf": [
+      "dispol_BarklemCollet.dat",
+      "dispol_StockKitzmann_withoutTsuji.dat",
+      "dispol_WoitkeRefit.dat"
+    ],
+    "burcat": [
+      "dispol_BarklemCollet.dat",
+      "dispol_StockKitzmann_withoutTsuji.dat",
+      "dispol_WoitkeRefit.dat",
+      "dispol_BURCAT.dat"
+    ]
+  },
+  "network": "HHeCNOPS",
+  "instrumentation": "Only diagnostic writes of final lnK after TiC and primitive log densities; all temperatures use SMCHEM16.",
+  "filters": {
+    "charge": false,
+    "condensation": false,
+    "Natmax": 16
+  },
+  "upstream_source_sha256": {
+    "src16/MIEX.f90": "1400bbd5c90cd7afb6db14d38de575af593d13b429771b967fbf6ac4a3f212f0",
+    "src16/adapt_condensates.f": "7d48f57df9bfebcc049de57fb7d08ed61485422658be4018d42b73e06777cd51",
+    "src16/auto_structure.f": "1e1728a1613389c5f45967d8110964360d09f934aa31075356c589cb6bd65f44",
+    "src16/calc_opac.f": "2def3b06017cca4c283fab3f9d900ede6fec5b32aef5a43e6639380e01785f8e",
+    "src16/database.f": "f729c6226e33dd22a96dfbffde1e522f70cce9b5ce1bd9e959d8785b3195a812",
+    "src16/datamod.f": "85c218afa86d020cee93c1c0ab2d2e001eab98f031c6a4d1bb67921917cce3d8",
+    "src16/demo_phasediagram.f": "0e58dba66130df2edabce7235f470fc1ba07e998e50ccfe5d987507578c30997",
+    "src16/demo_structure.f": "f409c556337036a160bfa26535be18eadd6b0692da7300b77103dfdb208ad437",
+    "src16/demo_sweep.f": "0cf0e6571f388f636c450f90a4cfe4a1abeeee65a9b247d6d6307fdd5a7c2e4f",
+    "src16/disk_problem.f": "5fd101ea5ee855da2479430c73e6a3f5f4a15cf215bd3a8f4de1062e26be9fef",
+    "src16/effMedium.f": "a80448f04dc7dd9adae90615a6605344765c9f418f51f0e86d406d88c8864ecf",
+    "src16/equil_cond.f": "7dfd7ad196b0c7e71e9dea09ffbfdefdc1eb6bf401bbc15a627932123388ec6c",
+    "src16/fastmie.f": "ba74d4bf042423b107ea91218cc59b70457a062aa4955503cd378d7f1d093875",
+    "src16/gauss16.f": "c8b71be5d80de9a4a26d4df151480753cefee60cb73dc08b05155d80e2dace93",
+    "src16/gauss8.f": "d2b0b9e6030cffa69199a51335ec494c1363d4349530ac7bb0ba75a57aed9ea4",
+    "src16/gauss_nm.f": "2f6fe893f58a1979c67f6b03325bc1632eff747b2374eb764562fcd523278898",
+    "src16/ggchem.f": "6fb445f6df06a883e2a3f1805d867c095037115d22814e1fa84302759c2fcac1",
+    "src16/init.f": "57e1b6f71e84963167e5ddd6aa898ee8fbddadfceb8ef27a7615c57d4513cf64",
+    "src16/init_chemistry.f": "256be0f85d9f35b07cd3386167dfc9e9c16f70f3d70ca767376d9508a22833b9",
+    "src16/init_dustchem.f": "dc63c9e8ef1d68aaf55fb13e6dcd6aba94472ff713ff603ee611bfc08f97ffb2",
+    "src16/init_opac.f": "4efb30ce3325270feeb7d927aa5bcaae62a8309dcc6052f9a3cabbcfb40091a0",
+    "src16/is_nan.F": "d93e6ee421ba05728abeb2b57cb5c67979b2947ef166e1c39ca2226d740b8369",
+    "src16/kappaRoss.f90": "73ff937cee8f40b2be98ef42e0d537398fc3342405d58c8a068a80cd358fc609",
+    "src16/linpack_q.f90": "19a110f3b4a91eb6b775ebe479064d55e3e3ed3e92e353e35112315da081b6e8",
+    "src16/main.f": "a3649036f5211e21d109169a0af58981b12200435a13456e385b47f82364c789",
+    "src16/makefile.prodimo": "8abfe60148ca7009015618843883d95f583a9ea309cd50c0d19aed5858bac813",
+    "src16/massfrac.f": "6e77a352ee68e7b17f669983f1715c0051e2d0e46e2a22b71f5f6c8326467d7f",
+    "src16/nasa_polynomial.f": "a990d835310244fd7e7176cf252f4f65090f0a69f9ac994a8b1c6fa604ab3ea5",
+    "src16/nucleation.f": "19c6a7a7cd9ac67febd97f9f81b909e482a88b6d1a3d8da1e2e15f1a039d8fc6",
+    "src16/q_mie.F": "4f685c3b01a65494836bb908bd39145f3bea82f2581c766fc2a8843dc1a90dc9",
+    "src16/read_parameter.f": "8e7b658a81e9f5b227a7a8893eb6d815c29597072ff2e0e8885c0a73642446fa",
+    "src16/slatec_routines.f": "93dfa2eb508a4d26cea19348eaaa7d24e756d9296f96a38449968dee08928d41",
+    "src16/smchem16.f": "9cb8c5932c642eb6608f9268f83c12fc3ceef8ca2b6538d2f6da97ef595d53a1",
+    "src16/smchem8.f": "b132007bb0c812b93ed487e18755be16be3f4cc24d65c828e4b38b823c42ea79",
+    "src16/stindex.f": "769e6d05bc8285eb01f6dd6a7cf62914e78e86bba4d198b842d32a4c728e298f",
+    "src16/supersat.f": "6e5b85a3391ac76fc7f394cd7557af44e3d74b455ece3faf532ed493aeceafc2",
+    "src16/supersat_old.f": "c0f834d98addb2b2a2ec443e00f2c68fbf50d94185adff1b707053d51e1a69a1",
+    "src16/upper.f": "33470784321afc39d2c3253555725d60052d5754834e1f0e9915ad18ea5f4bf1"
+  },
+  "uninstrumented_output_byte_identical": {
+    "janaf": true,
+    "burcat": true
+  },
+  "selected_file_sha256": {
+    "mceg/reviews/ohno_ggchem_20261031.py": "44dcf829524441a8a21d0a52506c345eb5a837ad271e9b039b4b235065a425c5",
+    "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "results/ohno_p3/ggchem_upstream.zip": "4eb41336b01919f101496473c15e1d31ff9242422e220f00910d6aa73e0044cd",
+    "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/dispol_BarklemCollet.dat": "28f73bb6cc1aa460c6e46f23c3803a06a016eb6af89932513f62944cd62268dc",
+    "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/dispol_StockKitzmann_withoutTsuji.dat": "7c6cdd3ecd79b0d48860bb434d3634661b800a451e35c91bdf0e1d218b7dd157",
+    "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/dispol_WoitkeRefit.dat": "8af86f98678eee3fbaf66306338902cfd0f4485e0c3a84783b82dc4e95e0e1b2",
+    "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/dispol_BURCAT.dat": "9e198df6a4a669af376bcc23e767baa3a1e9a5354f97d948e5280784de273554"
+  },
+  "cases": {
+    "janaf": {
+      "elements": [
+        "H",
+        "He",
+        "C",
+        "N",
+        "O",
+        "P",
+        "S"
+      ],
+      "species_count": 91,
+      "molecule_count": 84,
+      "temperature_count": 121,
+      "pressure_bar": 0.001,
+      "temperature_range_K": [
+        200.0,
+        3000.0
+      ],
+      "P_molecules": {
+        "P2": {
+          "native_molecule_index": 5,
+          "display_name": "P2",
+          "composition": {
+            "P": 2
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "PH": {
+          "native_molecule_index": 10,
+          "display_name": "PH",
+          "composition": {
+            "P": 1,
+            "H": 1
+          },
+          "fit": 4,
+          "source": "dispol_WoitkeRefit.dat"
+        },
+        "CP": {
+          "native_molecule_index": 14,
+          "display_name": "CP",
+          "composition": {
+            "P": 1,
+            "C": 1
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "PN": {
+          "native_molecule_index": 17,
+          "display_name": "PN",
+          "composition": {
+            "P": 1,
+            "N": 1
+          },
+          "fit": 4,
+          "source": "dispol_WoitkeRefit.dat"
+        },
+        "PO": {
+          "native_molecule_index": 19,
+          "display_name": "PO",
+          "composition": {
+            "P": 1,
+            "O": 1
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "PS": {
+          "native_molecule_index": 21,
+          "display_name": "PS",
+          "composition": {
+            "P": 1,
+            "S": 1
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "PCH": {
+          "native_molecule_index": 25,
+          "display_name": "PCH",
+          "composition": {
+            "C": 1,
+            "H": 1,
+            "P": 1
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "PH2": {
+          "native_molecule_index": 57,
+          "display_name": "PH2",
+          "composition": {
+            "H": 2,
+            "P": 1
+          },
+          "fit": 4,
+          "source": "dispol_WoitkeRefit.dat"
+        },
+        "PH3": {
+          "native_molecule_index": 60,
+          "display_name": "PH3",
+          "composition": {
+            "H": 3,
+            "P": 1
+          },
+          "fit": 1,
+          "source": "dispol_WoitkeRefit.dat"
+        },
+        "PO2": {
+          "native_molecule_index": 70,
+          "display_name": "PO2",
+          "composition": {
+            "O": 2,
+            "P": 1
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "P4O6": {
+          "native_molecule_index": 74,
+          "display_name": "P4O6",
+          "composition": {
+            "O": 6,
+            "P": 4
+          },
+          "fit": 1,
+          "source": "dispol_WoitkeRefit.dat"
+        },
+        "P4O10": {
+          "native_molecule_index": 75,
+          "display_name": "P4O10",
+          "composition": {
+            "O": 10,
+            "P": 4
+          },
+          "fit": 1,
+          "source": "dispol_WoitkeRefit.dat"
+        },
+        "P4": {
+          "native_molecule_index": 76,
+          "display_name": "P4",
+          "composition": {
+            "P": 4
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "P4S3": {
+          "native_molecule_index": 77,
+          "display_name": "P4S3",
+          "composition": {
+            "P": 4,
+            "S": 3
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        }
+      },
+      "selected_source_counts": {
+        "dispol_StockKitzmann_withoutTsuji.dat": 73,
+        "dispol_WoitkeRefit.dat": 11
+      },
+      "name_collisions": {},
+      "closure": {
+        "max_element_relative_residual": 6.772360450213455e-15,
+        "max_mass_action_abs_ln": 1.0861072041734587e-09,
+        "max_pressure_relative_residual": 8.355316438724003e-11
+      },
+      "input_sha256": {
+        "results/ohno_p3/native_janaf/input.in": "237eec244c826dbbf9d9fd33dfb2195197c72a1c77296c91e1e9eee9bba678e2",
+        "results/ohno_p3/native_janaf/abundances.dat": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+        "results/ohno_p3/native_janaf/dispol.out": "c91ff12c00e31fb80688a44c79b0452959c9a48ed4cf679e636bdc844b8041c3"
+      }
+    },
+    "burcat": {
+      "elements": [
+        "H",
+        "He",
+        "C",
+        "N",
+        "O",
+        "P",
+        "S"
+      ],
+      "species_count": 1156,
+      "molecule_count": 1149,
+      "temperature_count": 121,
+      "pressure_bar": 0.001,
+      "temperature_range_K": [
+        200.0,
+        3000.0
+      ],
+      "P_molecules": {
+        "P2": {
+          "native_molecule_index": 5,
+          "display_name": "P2",
+          "composition": {
+            "P": 2
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PH": {
+          "native_molecule_index": 10,
+          "display_name": "PH",
+          "composition": {
+            "P": 1,
+            "H": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "CP": {
+          "native_molecule_index": 14,
+          "display_name": "CP",
+          "composition": {
+            "P": 1,
+            "C": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PN": {
+          "native_molecule_index": 17,
+          "display_name": "PN",
+          "composition": {
+            "P": 1,
+            "N": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PO": {
+          "native_molecule_index": 19,
+          "display_name": "PO",
+          "composition": {
+            "P": 1,
+            "O": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PS": {
+          "native_molecule_index": 21,
+          "display_name": "PS",
+          "composition": {
+            "P": 1,
+            "S": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PCH": {
+          "native_molecule_index": 25,
+          "display_name": "PCH",
+          "composition": {
+            "C": 1,
+            "H": 1,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PH2": {
+          "native_molecule_index": 57,
+          "display_name": "PH2",
+          "composition": {
+            "H": 2,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PH3": {
+          "native_molecule_index": 60,
+          "display_name": "PH3",
+          "composition": {
+            "H": 3,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PO2": {
+          "native_molecule_index": 70,
+          "display_name": "PO2",
+          "composition": {
+            "O": 2,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P4O6": {
+          "native_molecule_index": 74,
+          "display_name": "P4O6",
+          "composition": {
+            "O": 6,
+            "P": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P4O10": {
+          "native_molecule_index": 75,
+          "display_name": "P4O10",
+          "composition": {
+            "O": 10,
+            "P": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P4": {
+          "native_molecule_index": 76,
+          "display_name": "P4",
+          "composition": {
+            "P": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P4S3": {
+          "native_molecule_index": 77,
+          "display_name": "P4S3",
+          "composition": {
+            "P": 4,
+            "S": 3
+          },
+          "fit": 4,
+          "source": "dispol_StockKitzmann_withoutTsuji.dat"
+        },
+        "CH2PH": {
+          "native_molecule_index": 136,
+          "display_name": "CH2PH",
+          "composition": {
+            "C": 1,
+            "H": 3,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "CH5OP": {
+          "native_molecule_index": 182,
+          "display_name": "CH5OP",
+          "composition": {
+            "C": 1,
+            "H": 5,
+            "P": 1,
+            "O": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "CH3PH2": {
+          "native_molecule_index": 183,
+          "display_name": "CH3PH2",
+          "composition": {
+            "C": 1,
+            "H": 5,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "CH6P": {
+          "native_molecule_index": 185,
+          "display_name": "CH6P",
+          "composition": {
+            "C": 1,
+            "H": 6,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "CH6P2": {
+          "native_molecule_index": 186,
+          "display_name": "CH6P2",
+          "composition": {
+            "C": 1,
+            "H": 6,
+            "P": 2
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C2H7PO3": {
+          "native_molecule_index": 300,
+          "display_name": "C2H7PO3",
+          "composition": {
+            "C": 2,
+            "H": 7,
+            "P": 1,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C2H7P": {
+          "native_molecule_index": 301,
+          "display_name": "C2H7P",
+          "composition": {
+            "C": 2,
+            "H": 7,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C2H7P:1": {
+          "native_molecule_index": 302,
+          "display_name": "C2H7P:1",
+          "composition": {
+            "C": 2,
+            "H": 7,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C2H5PH3": {
+          "native_molecule_index": 305,
+          "display_name": "C2H5PH3",
+          "composition": {
+            "C": 2,
+            "H": 8,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C3H9PO3": {
+          "native_molecule_index": 418,
+          "display_name": "C3H9PO3",
+          "composition": {
+            "C": 3,
+            "H": 9,
+            "P": 1,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C3H9PO4": {
+          "native_molecule_index": 419,
+          "display_name": "C3H9PO4",
+          "composition": {
+            "C": 3,
+            "H": 9,
+            "P": 1,
+            "O": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C3H9P": {
+          "native_molecule_index": 420,
+          "display_name": "C3H9P",
+          "composition": {
+            "C": 3,
+            "H": 9,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C3H9P:1": {
+          "native_molecule_index": 421,
+          "display_name": "C3H9P:1",
+          "composition": {
+            "C": 3,
+            "H": 9,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C3N3P": {
+          "native_molecule_index": 423,
+          "display_name": "C3N3P",
+          "composition": {
+            "C": 3,
+            "N": 3,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C4H11P": {
+          "native_molecule_index": 553,
+          "display_name": "C4H11P",
+          "composition": {
+            "C": 4,
+            "H": 11,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C6H7P": {
+          "native_molecule_index": 733,
+          "display_name": "C6H7P",
+          "composition": {
+            "C": 6,
+            "H": 7,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C6H15PO3": {
+          "native_molecule_index": 809,
+          "display_name": "C6H15PO3",
+          "composition": {
+            "C": 6,
+            "H": 15,
+            "P": 1,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "C6H15P": {
+          "native_molecule_index": 810,
+          "display_name": "C6H15P",
+          "composition": {
+            "C": 6,
+            "H": 15,
+            "P": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "HPO": {
+          "native_molecule_index": 1082,
+          "display_name": "HPO",
+          "composition": {
+            "H": 1,
+            "P": 1,
+            "O": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "HPO2": {
+          "native_molecule_index": 1085,
+          "display_name": "HPO2",
+          "composition": {
+            "P": 1,
+            "O": 2,
+            "H": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "HPO3": {
+          "native_molecule_index": 1088,
+          "display_name": "HPO3",
+          "composition": {
+            "P": 1,
+            "O": 3,
+            "H": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "H2PO": {
+          "native_molecule_index": 1093,
+          "display_name": "H2PO",
+          "composition": {
+            "H": 2,
+            "P": 1,
+            "O": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2H2": {
+          "native_molecule_index": 1097,
+          "display_name": "P2H2",
+          "composition": {
+            "H": 2,
+            "P": 2
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "HOPH2": {
+          "native_molecule_index": 1099,
+          "display_name": "HOPH2",
+          "composition": {
+            "P": 1,
+            "O": 1,
+            "H": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "H3PO": {
+          "native_molecule_index": 1100,
+          "display_name": "H3PO",
+          "composition": {
+            "P": 1,
+            "O": 1,
+            "H": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "H3PO3": {
+          "native_molecule_index": 1101,
+          "display_name": "H3PO3",
+          "composition": {
+            "H": 3,
+            "P": 1,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "H3PO3:1": {
+          "native_molecule_index": 1102,
+          "display_name": "H3PO3:1",
+          "composition": {
+            "H": 3,
+            "P": 1,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "H3PO4": {
+          "native_molecule_index": 1103,
+          "display_name": "H3PO4",
+          "composition": {
+            "H": 3,
+            "P": 1,
+            "O": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "PO3": {
+          "native_molecule_index": 1137,
+          "display_name": "PO3",
+          "composition": {
+            "P": 1,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "HPO4": {
+          "native_molecule_index": 1138,
+          "display_name": "HPO4",
+          "composition": {
+            "P": 1,
+            "O": 4,
+            "H": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2H": {
+          "native_molecule_index": 1139,
+          "display_name": "P2H",
+          "composition": {
+            "P": 2,
+            "H": 1
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2H2:1": {
+          "native_molecule_index": 1140,
+          "display_name": "P2H2:1",
+          "composition": {
+            "P": 2,
+            "H": 2
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2H4": {
+          "native_molecule_index": 1141,
+          "display_name": "P2H4",
+          "composition": {
+            "P": 2,
+            "H": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2O3": {
+          "native_molecule_index": 1142,
+          "display_name": "P2O3",
+          "composition": {
+            "P": 2,
+            "O": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2O4": {
+          "native_molecule_index": 1143,
+          "display_name": "P2O4",
+          "composition": {
+            "P": 2,
+            "O": 4
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P2O5": {
+          "native_molecule_index": 1144,
+          "display_name": "P2O5",
+          "composition": {
+            "P": 2,
+            "O": 5
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P3": {
+          "native_molecule_index": 1145,
+          "display_name": "P3",
+          "composition": {
+            "P": 3
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P3O6": {
+          "native_molecule_index": 1146,
+          "display_name": "P3O6",
+          "composition": {
+            "P": 3,
+            "O": 6
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        },
+        "P4O7": {
+          "native_molecule_index": 1147,
+          "display_name": "P4O7",
+          "composition": {
+            "P": 4,
+            "O": 7
+          },
+          "fit": 8,
+          "source": "dispol_BURCAT.dat"
+        }
+      },
+      "selected_source_counts": {
+        "dispol_BURCAT.dat": 1148,
+        "dispol_StockKitzmann_withoutTsuji.dat": 1
+      },
+      "name_collisions": {
+        "NCCH2OH": 2,
+        "C2H3O2": 2
+      },
+      "closure": {
+        "max_element_relative_residual": 7.327471962526033e-15,
+        "max_mass_action_abs_ln": 3.3924152376130223e-09,
+        "max_pressure_relative_residual": 9.164258241156631e-11
+      },
+      "input_sha256": {
+        "results/ohno_p3/native_burcat/input.in": "6fd495561dfa3a1fe5105cb776dab0fa4cac6c244666eee2e5510e34b5080977",
+        "results/ohno_p3/native_burcat/abundances.dat": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+        "results/ohno_p3/native_burcat/dispol.out": "0daeb676b68ab9e19bd2a6488b2ea7ee3215bfdbda0682be4593cc9a3ef333c2"
+      }
+    }
+  },
+  "cases_artifact_sha256": "4c65b449a9d0ffb1a6a2c1a806ab31a8eaf8c2607d074351b794f8f97be89fc3"
+}

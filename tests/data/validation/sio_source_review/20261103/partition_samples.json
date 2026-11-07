@@ -1,0 +1,56 @@
+[
+  {
+    "temperature_K": 500,
+    "Q_states": 495.32269539298943,
+    "mean_energy_K": 553.7558118947405,
+    "variance_energy_K2": 348188.86754492455,
+    "excited_state_fraction": 1.0870974675942647e-41,
+    "Q_published": 495.3228,
+    "Cp_published_J_mol_K": 32.3643
+  },
+  {
+    "temperature_K": 1000,
+    "Q_states": 1162.9481528517263,
+    "mean_energy_K": 1371.4814968360604,
+    "variance_energy_K2": 1797154.003114607,
+    "excited_state_fraction": 1.1615599203754423e-20,
+    "Q_published": 1162.9481,
+    "Cp_published_J_mol_K": 35.7274
+  },
+  {
+    "temperature_K": 1500,
+    "Q_states": 2098.9292316045344,
+    "mean_energy_K": 2307.8435673094873,
+    "variance_energy_K2": 4338179.5477562295,
+    "excited_state_fraction": 1.3020117794481984e-13,
+    "Q_published": 2098.9287,
+    "Cp_published_J_mol_K": 36.815
+  },
+  {
+    "temperature_K": 2000,
+    "Q_states": 3318.643488762288,
+    "mean_energy_K": 3288.41804144537,
+    "variance_energy_K2": 7952768.342726861,
+    "excited_state_fraction": 4.6155989122147774e-10,
+    "Q_published": 3318.642,
+    "Cp_published_J_mol_K": 37.3149
+  },
+  {
+    "temperature_K": 3000,
+    "Q_states": 6637.4104578312445,
+    "mean_energy_K": 5312.196906986328,
+    "variance_energy_K2": 18481452.358205833,
+    "excited_state_fraction": 1.7797751737242173e-06,
+    "Q_published": 6637.406,
+    "Cp_published_J_mol_K": 37.8579
+  },
+  {
+    "temperature_K": 4000,
+    "Q_states": 11172.388487194998,
+    "mean_energy_K": 7394.517062552161,
+    "variance_energy_K2": 33878591.71056566,
+    "excited_state_fraction": 0.00011670726599606666,
+    "Q_published": 11172.3797,
+    "Cp_published_J_mol_K": 38.3889
+  }
+]

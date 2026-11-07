@@ -1,0 +1,68 @@
+{
+  "temperature_count": 2752,
+  "offgrid_count": 251,
+  "range_K": [
+    1500,
+    4000
+  ],
+  "models": [
+    {
+      "variant": "retained",
+      "species": "C2",
+      "jax_scalar_derivative_errors": {
+        "G_J_mol": 1.7462298274040222e-10,
+        "H_J_mol": 3.4924596548080444e-10,
+        "S_J_mol_K": 1.2789769243681803e-13,
+        "Cp_J_mol_K": 2.327027459614328e-13
+      },
+      "samples": [
+        {
+          "temperature_K": 1500.0,
+          "G_J_mol": -425679.6739123383,
+          "H_J_mol": -610785.2696482164,
+          "S_J_mol_K": -123.40373049058546,
+          "Cp_J_mol_K": -4.259494976513802
+        },
+        {
+          "temperature_K": 2000.0,
+          "G_J_mol": -363671.8964746805,
+          "H_J_mol": -612757.5780519936,
+          "S_J_mol_K": -124.54284078865659,
+          "Cp_J_mol_K": -3.6332095419711794
+        },
+        {
+          "temperature_K": 2500.0,
+          "G_J_mol": -301201.60151341336,
+          "H_J_mol": -614421.9500935638,
+          "S_J_mol_K": -125.28813943206013,
+          "Cp_J_mol_K": -3.027749527684693
+        },
+        {
+          "temperature_K": 3000.0,
+          "G_J_mol": -238424.28778669165,
+          "H_J_mol": -615788.7984830544,
+          "S_J_mol_K": -125.7881702321209,
+          "Cp_J_mol_K": -2.4431149336543445
+        },
+        {
+          "temperature_K": 4000.0,
+          "G_J_mol": -112321.81682191996,
+          "H_J_mol": -617671.5751463106,
+          "S_J_mol_K": -126.33743958109766,
+          "Cp_J_mol_K": -1.3363220063620567
+        }
+      ]
+    }
+  ],
+  "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks.",
+  "source_independent_property_errors": {
+    "retained:C2": {
+      "G_J_mol": 5.820766091346741e-11,
+      "H_J_mol": 3.4924596548080444e-10,
+      "S_J_mol_K": 2.842170943040401e-14,
+      "Cp_J_mol_K": 1.3322676295501878e-15
+    }
+  },
+  "curated_change": "none",
+  "source_scope": "Independent source expressions separate physical energy and thermal functions; numerical verification does not establish complete physical accuracy."
+}

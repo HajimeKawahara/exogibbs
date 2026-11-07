@@ -1,0 +1,23 @@
+{
+  "review_date": "2026-11-06",
+  "downloads": {
+    "NASA": {
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "inspection": "Official molecular and atomic coefficient/header records; official 300 K lower limits retained. H0 from printed H298 and H298-H0, not polynomial extrapolation."
+    },
+    "JANAF": {
+      "url": "https://janaf.nist.gov/tables/P-012.txt",
+      "sha256": "521d7fbdc1055c79d755dfc6957534c87e19b4418a00a386a2f06a650fc29ec8",
+      "inspection": "Full official table; atomic tables separately pinned. PH web enthalpy is the uncorrected red-P value, not an adoption recommendation."
+    }
+  },
+  "original_evaluation_access": "Gurvich original volume not obtained; selected NASA headers and evaluation lineage inspected. Missing ancestral full text does not block this bounded evidence review.",
+  "modern_paper": {
+    "doi": "10.1021/acs.jpca.6c00467",
+    "url": "https://arxiv.org/pdf/2601.02294",
+    "full_text_sha256": "b6d57f5ea45c1ee00fe4b1652e595c4df995edd102465bb82403b85571297949",
+    "inspection": "Downloaded PDF is published J. Phys. Chem. A 130 (2026),2943-2955. Table 4 visually inspected at p.2950. P2 comparison column is Gurvich footnote a, not ATcT; W5prelim is theoretical, not a new measurement."
+  },
+  "NASA_line_number_note": "screening_baseline_source_line_1based preserves the original screening file locator. It is not a line number in the official NASA download or nasa-selected.txt; the official source hash and selected species/header records identify the inspected source."
+}

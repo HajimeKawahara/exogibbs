@@ -1,0 +1,974 @@
+[
+  {
+    "species_id": "C2H1",
+    "molecule": "C2H",
+    "issue_label": "C2H",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "C2H"
+  },
+  {
+    "species_id": "O6P4",
+    "molecule": "P4O6",
+    "issue_label": "P4O6",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "P4O6"
+  },
+  {
+    "species_id": "C1H1N1_hcn",
+    "molecule": "HCN",
+    "issue_label": "HCN",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "HCN"
+  },
+  {
+    "species_id": "H2Na2O2",
+    "molecule": "(NaOH)2",
+    "issue_label": "(NaOH)2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "Na2O2H2"
+  },
+  {
+    "species_id": "H2P1",
+    "molecule": "PH2",
+    "issue_label": "PH2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "PH2"
+  },
+  {
+    "species_id": "O2P1",
+    "molecule": "PO2",
+    "issue_label": "PO2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "PO2"
+  },
+  {
+    "species_id": "O1S2",
+    "molecule": "S2O",
+    "issue_label": "S2O",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "S2O"
+  },
+  {
+    "species_id": "S5",
+    "molecule": "S5",
+    "issue_label": "S5",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "S5"
+  },
+  {
+    "species_id": "H1S1",
+    "molecule": "SH",
+    "issue_label": "SH",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "SH"
+  },
+  {
+    "species_id": "N3",
+    "molecule": "N3",
+    "issue_label": "N3",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "N3"
+  },
+  {
+    "species_id": "Al1H1",
+    "molecule": "AlH",
+    "issue_label": "AlH",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "ALH"
+  },
+  {
+    "species_id": "O1Si1",
+    "molecule": "SiO",
+    "issue_label": "SiO",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "SiO"
+  },
+  {
+    "species_id": "O1Ti1",
+    "molecule": "TiO",
+    "issue_label": "TiO",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "TiO"
+  },
+  {
+    "species_id": "O1V1",
+    "molecule": "VO",
+    "issue_label": "VO",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "VO"
+  },
+  {
+    "species_id": "H2K2O2",
+    "molecule": "(KOH)2",
+    "issue_label": "(KOH)2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "K2O2H2"
+  },
+  {
+    "species_id": "H1K1",
+    "molecule": "KH",
+    "issue_label": "KH",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "KH"
+  },
+  {
+    "species_id": "K1O1",
+    "molecule": "KO",
+    "issue_label": "KO",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "KO"
+  },
+  {
+    "species_id": "H1Na1",
+    "molecule": "NaH",
+    "issue_label": "NaH",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "NaH"
+  },
+  {
+    "species_id": "Na1O1",
+    "molecule": "NaO",
+    "issue_label": "NaO",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "NaO"
+  },
+  {
+    "species_id": "H1O2",
+    "molecule": "HO2",
+    "issue_label": "HO2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "HO2"
+  },
+  {
+    "species_id": "C3",
+    "molecule": "C3",
+    "issue_label": "C3",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "C3"
+  },
+  {
+    "species_id": "C4",
+    "molecule": "C4",
+    "issue_label": "C4",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "C4"
+  },
+  {
+    "species_id": "C5",
+    "molecule": "C5",
+    "issue_label": "C5",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "C5"
+  },
+  {
+    "species_id": "C1O1S1",
+    "molecule": "COS",
+    "issue_label": "COS",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "COS"
+  },
+  {
+    "species_id": "C1S1",
+    "molecule": "CS",
+    "issue_label": "CS",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "CS"
+  },
+  {
+    "species_id": "C1S2",
+    "molecule": "CS2",
+    "issue_label": "CS2",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "CS2"
+  },
+  {
+    "species_id": "H2S1",
+    "molecule": "H2S",
+    "issue_label": "H2S",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "H2S"
+  },
+  {
+    "species_id": "H2O4S1",
+    "molecule": "H2SO4",
+    "issue_label": "H2SO4",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "H2SO4"
+  },
+  {
+    "species_id": "N1S1",
+    "molecule": "NS (NASA: SN)",
+    "issue_label": "NS (NASA: SN)",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "SN"
+  },
+  {
+    "species_id": "S2",
+    "molecule": "S2",
+    "issue_label": "S2",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "S2"
+  },
+  {
+    "species_id": "S4",
+    "molecule": "S4",
+    "issue_label": "S4",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "S4"
+  },
+  {
+    "species_id": "S6",
+    "molecule": "S6",
+    "issue_label": "S6",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "S6"
+  },
+  {
+    "species_id": "S8",
+    "molecule": "S8",
+    "issue_label": "S8",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "S8"
+  },
+  {
+    "species_id": "O2S1",
+    "molecule": "SO2",
+    "issue_label": "SO2",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "SO2"
+  },
+  {
+    "species_id": "O3S1",
+    "molecule": "SO3",
+    "issue_label": "SO3",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "SO3"
+  },
+  {
+    "species_id": "N2O3",
+    "molecule": "N2O3",
+    "issue_label": "N2O3",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "N2O3"
+  },
+  {
+    "species_id": "Na2O4S1",
+    "molecule": "Na2SO4",
+    "issue_label": "Na2SO4",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "Na2SO4"
+  },
+  {
+    "species_id": "H1Na1O1",
+    "molecule": "NaOH",
+    "issue_label": "NaOH",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "NaOH"
+  },
+  {
+    "species_id": "C1P1",
+    "molecule": "CP",
+    "issue_label": "CP",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "CP"
+  },
+  {
+    "species_id": "H1P1",
+    "molecule": "PH",
+    "issue_label": "PH",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "PH"
+  },
+  {
+    "species_id": "H3P1",
+    "molecule": "PH3",
+    "issue_label": "PH3",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "PH3"
+  },
+  {
+    "species_id": "N1P1",
+    "molecule": "PN",
+    "issue_label": "PN",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "PN"
+  },
+  {
+    "species_id": "O1P1",
+    "molecule": "PO",
+    "issue_label": "PO",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "PO"
+  },
+  {
+    "species_id": "P1S1",
+    "molecule": "PS",
+    "issue_label": "PS",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "PS"
+  },
+  {
+    "species_id": "C2",
+    "molecule": "C2",
+    "issue_label": "C2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "C2"
+  },
+  {
+    "species_id": "C1H1",
+    "molecule": "CH",
+    "issue_label": "CH",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "CH"
+  },
+  {
+    "species_id": "C4N2",
+    "molecule": "C4N2",
+    "issue_label": "C4N2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "C4N2"
+  },
+  {
+    "species_id": "C1N1",
+    "molecule": "CN",
+    "issue_label": "CN",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "CN"
+  },
+  {
+    "species_id": "C2O1",
+    "molecule": "C2O",
+    "issue_label": "C2O",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "C2O"
+  },
+  {
+    "species_id": "C1H2O1",
+    "molecule": "CH2O (formaldehyde)",
+    "issue_label": "CH2O (formaldehyde)",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "HCHO,formaldehy"
+  },
+  {
+    "species_id": "H1N1",
+    "molecule": "NH",
+    "issue_label": "NH",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "NH"
+  },
+  {
+    "species_id": "O2Ti1",
+    "molecule": "TiO2",
+    "issue_label": "TiO2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "TiO2"
+  },
+  {
+    "species_id": "N1V1",
+    "molecule": "VN",
+    "issue_label": "VN",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "VN"
+  },
+  {
+    "species_id": "O2V1",
+    "molecule": "VO2",
+    "issue_label": "VO2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "VO2"
+  },
+  {
+    "species_id": "K2",
+    "molecule": "K2",
+    "issue_label": "K2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "K2"
+  },
+  {
+    "species_id": "C2K2N2",
+    "molecule": "K2C2N2",
+    "issue_label": "K2C2N2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "K2C2N2"
+  },
+  {
+    "species_id": "K2O4S1",
+    "molecule": "K2SO4",
+    "issue_label": "K2SO4",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "K2SO4"
+  },
+  {
+    "species_id": "C1K1N1",
+    "molecule": "KCN",
+    "issue_label": "KCN",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "KCN"
+  },
+  {
+    "species_id": "H1K1O1",
+    "molecule": "KOH",
+    "issue_label": "KOH",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "KOH"
+  },
+  {
+    "species_id": "Na2",
+    "molecule": "Na2",
+    "issue_label": "Na2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "Na2"
+  },
+  {
+    "species_id": "C1N1Na1",
+    "molecule": "NaCN",
+    "issue_label": "NaCN",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "NaCN"
+  },
+  {
+    "species_id": "P2",
+    "molecule": "P2",
+    "issue_label": "P2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "P2"
+  },
+  {
+    "species_id": "P4",
+    "molecule": "P4",
+    "issue_label": "P4",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "P4"
+  },
+  {
+    "species_id": "O10P4",
+    "molecule": "P4O10",
+    "issue_label": "P4O10",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "P4O10"
+  },
+  {
+    "species_id": "H2",
+    "molecule": "H2",
+    "issue_label": "H2",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "H2"
+  },
+  {
+    "species_id": "H2O1",
+    "molecule": "H2O",
+    "issue_label": "H2O",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "H2O"
+  },
+  {
+    "species_id": "H2O2",
+    "molecule": "H2O2",
+    "issue_label": "H2O2",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "H2O2"
+  },
+  {
+    "species_id": "O2",
+    "molecule": "O2",
+    "issue_label": "O2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "O2"
+  },
+  {
+    "species_id": "O3",
+    "molecule": "O3",
+    "issue_label": "O3",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "O3"
+  },
+  {
+    "species_id": "H1O1",
+    "molecule": "OH",
+    "issue_label": "OH",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "OH"
+  },
+  {
+    "species_id": "C2H4",
+    "molecule": "C2H4",
+    "issue_label": "C2H4",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "C2H4"
+  },
+  {
+    "species_id": "C1H3",
+    "molecule": "CH3",
+    "issue_label": "CH3",
+    "scope": "main93",
+    "historical_identity_status": "provisional",
+    "major_molecule": false,
+    "nasa_id": "CH3"
+  },
+  {
+    "species_id": "C1H4",
+    "molecule": "CH4",
+    "issue_label": "CH4",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "CH4"
+  },
+  {
+    "species_id": "C2N2",
+    "molecule": "C2N2",
+    "issue_label": "C2N2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "C2N2"
+  },
+  {
+    "species_id": "C3O2",
+    "molecule": "C3O2",
+    "issue_label": "C3O2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "C3O2"
+  },
+  {
+    "species_id": "C1O1",
+    "molecule": "CO",
+    "issue_label": "CO",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "CO"
+  },
+  {
+    "species_id": "C1O2",
+    "molecule": "CO2",
+    "issue_label": "CO2",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "CO2"
+  },
+  {
+    "species_id": "C1H1O1",
+    "molecule": "HCO",
+    "issue_label": "HCO",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "HCO"
+  },
+  {
+    "species_id": "S3",
+    "molecule": "S3",
+    "issue_label": "S3",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "S3"
+  },
+  {
+    "species_id": "S7",
+    "molecule": "S7",
+    "issue_label": "S7",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "S7"
+  },
+  {
+    "species_id": "O1S1",
+    "molecule": "SO",
+    "issue_label": "SO",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "SO"
+  },
+  {
+    "species_id": "H1N1O1",
+    "molecule": "HNO",
+    "issue_label": "HNO",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "HNO"
+  },
+  {
+    "species_id": "H1N1O3",
+    "molecule": "HNO3",
+    "issue_label": "HNO3",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "HNO3"
+  },
+  {
+    "species_id": "N2",
+    "molecule": "N2",
+    "issue_label": "N2",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "N2"
+  },
+  {
+    "species_id": "H4N2",
+    "molecule": "N2H4",
+    "issue_label": "N2H4",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "N2H4"
+  },
+  {
+    "species_id": "N2O1",
+    "molecule": "N2O",
+    "issue_label": "N2O",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "N2O"
+  },
+  {
+    "species_id": "N2O4",
+    "molecule": "N2O4",
+    "issue_label": "N2O4",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "N2O4"
+  },
+  {
+    "species_id": "N2O5",
+    "molecule": "N2O5",
+    "issue_label": "N2O5",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "N2O5"
+  },
+  {
+    "species_id": "H2N1",
+    "molecule": "NH2",
+    "issue_label": "NH2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "NH2"
+  },
+  {
+    "species_id": "H3N1",
+    "molecule": "NH3",
+    "issue_label": "NH3",
+    "scope": "main93",
+    "historical_identity_status": "reviewed",
+    "major_molecule": true,
+    "nasa_id": "NH3"
+  },
+  {
+    "species_id": "N1O1",
+    "molecule": "NO",
+    "issue_label": "NO",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "NO"
+  },
+  {
+    "species_id": "N1O2",
+    "molecule": "NO2",
+    "issue_label": "NO2",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "NO2"
+  },
+  {
+    "species_id": "N1O3",
+    "molecule": "NO3",
+    "issue_label": "NO3",
+    "scope": "main93",
+    "historical_identity_status": "provisional; source_identity_reviewed",
+    "major_molecule": false,
+    "nasa_id": "NO3"
+  },
+  {
+    "species_id": "C1H1N1O1",
+    "molecule": "HNCO",
+    "issue_label": "C1H1N1O1",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C1H2",
+    "molecule": "CH2",
+    "issue_label": "C1H2",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C1N1O1",
+    "molecule": "NCO",
+    "issue_label": "C1N1O1",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C1N2_cnn",
+    "molecule": "CNN",
+    "issue_label": "C1N2(CNN)",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C1N2_ncn",
+    "molecule": "NCN",
+    "issue_label": "C1N2(NCN)",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C2H2",
+    "molecule": "C2H2",
+    "issue_label": "C2H2",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C2H4O1",
+    "molecule": "oxirane",
+    "issue_label": "C2H4O1",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C2N1",
+    "molecule": "CNC",
+    "issue_label": "C2N1",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C2N2Na2",
+    "molecule": "Na2C2N2",
+    "issue_label": "C2N2Na2",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "H1N1O2cis",
+    "molecule": "cis-HNO2",
+    "issue_label": "H1N1O2(cis)",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "H1N1O2trans",
+    "molecule": "trans-HNO2",
+    "issue_label": "H1N1O2(trans)",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "H2N2",
+    "molecule": "cis-H2N2",
+    "issue_label": "H2N2",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C1H1P1",
+    "molecule": "HCP",
+    "issue_label": "C1H1P1",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "P4S3",
+    "molecule": "P4S3",
+    "issue_label": "P4S3",
+    "scope": "excluded_from_NASA14",
+    "historical_identity_status": "source_identity_reviewed; original_numerical_screen_exclusion_preserved",
+    "major_molecule": false,
+    "nasa_id": null
+  },
+  {
+    "species_id": "C3H1",
+    "molecule": "C3H",
+    "issue_label": "C3H",
+    "scope": "additional_C3H",
+    "historical_identity_status": "legacy_isomer_unresolved",
+    "major_molecule": false,
+    "nasa_id": null
+  }
+]

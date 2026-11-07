@@ -1,6 +1,74 @@
 Release notes
 =============
 
+v0.8.0
+------
+
+**This release updates the curated gas thermochemistry and its source evidence,
+and adds reusable fixed-support multiphase sensitivities.**
+
+Curated gas data and upgrading
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``exogibbs.presets.curated.chemsetup`` now selects ``curated-gas-v2``. The
+cumulative updates include reviewed molecular formation energies and thermal
+functions; the final :doc:`gas-v2 adoption <mceg/curated_gas_v2_adoption>`
+adds 28 molecular energy corrections and the evaluated O2 thermal function
+to the preceding CH2 dataset. The ion-inclusive and neutral networks retain
+537 and 421 species, respectively, on **1500--4000 K** with a **1 bar** standard
+pressure. See :doc:`presets/curated` for source choices and their limitations.
+
+.. important::
+
+   The default thermochemistry changes calculated abundances. To reproduce
+   v0.7.0's curated model, import ``chemsetup`` from
+   ``exogibbs.presets.curated_v1``. Use ``exogibbs.presets.curated_v2`` to pin
+   the new model explicitly; named intermediate presets also remain available.
+   Historical evidence and figures retain their original dataset identities.
+
+The :doc:`FastChem 4.0.4 comparison <mceg/curated_fastchem4_comparison>` covers
+108 molecules at five temperatures. It compares formation constants, not
+mixture abundances or physical accuracy. The packaged ``fastchem4`` preset
+continues to use its pinned v4.0.3 data.
+
+Fixed-support multiphase sensitivities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``exogibbs.api.multiphase.linearize_fixed_support`` re-audits a supplied
+equilibrium and returns a reusable local derivative operator. It supports
+forward and transpose products for temperature, pressure, elemental budgets
+and model parameters. Derivatives hold phase support fixed and do not
+differentiate phase selection; see :doc:`multiphase`.
+
+Evidence and repository maintenance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Optional provenance inspection now exposes versioned model records and
+species-level evidence without requiring MCEG for ordinary calculations.
+Source investigations, candidate studies and adopted models remain distinct.
+Offline review checks run separately in ``tests/model_evidence``; tests that
+require MCEG live in ``tests/model_contracts``. Retired condensate v1 design
+notes and trial scorecards have been removed from the repository root;
+historical versions remain in Git.
+
+Source distributions now contain the runtime package and required data.
+Tests, examples, documentation and archived scientific evidence remain in Git,
+keeping installation archives small without changing the packaged models.
+
+Scientific milestone: Gas curation v0.1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:doc:`Gas curation v0.1 <mceg/gas_curation_release_0_1>` (canonical ``0.1.0``)
+names the existing ``curated-gas-v2`` scientific snapshot at
+``f580e66157edbe6f604e2748d8e1a25d46d08b86``. Its manifest and aggregate MCEG
+record preserve the source selections, numerical evidence and unresolved
+physical limitations. The ``curated_v2`` factory, dataset, numerical functions
+and model identifier are unchanged. This is separate from the ExoGibbs
+software release number and creates no Git tag or runtime API.
+
+Record-only amendments use ``0.1.1``; numerical, adoption or domain changes
+require ``0.2.0``. Earlier release records remain immutable.
+
 v0.7.0
 ------
 

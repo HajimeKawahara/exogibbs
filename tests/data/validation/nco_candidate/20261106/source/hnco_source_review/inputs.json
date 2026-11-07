@@ -1,0 +1,93 @@
+{
+  "molecule": "HNCO",
+  "species_id": "C1H1N1O1",
+  "composition": {
+    "C": 1,
+    "H": 1,
+    "N": 1,
+    "O": 1
+  },
+  "cas": "75-13-8",
+  "temperatures_K": [
+    1500,
+    2000,
+    3000,
+    4000
+  ],
+  "tables": {
+    "HNCO": "C-053.txt",
+    "C": "C-003.txt",
+    "H": "H-001.txt",
+    "N": "N-002.txt",
+    "O": "O-001.txt"
+  },
+  "atct_version": "1.228",
+  "atct": {
+    "HNCO": {
+      "hf0_kJ_mol": -115.86,
+      "hf298_kJ_mol": -118.86,
+      "uncertainty_95pct_kJ_mol": 0.28,
+      "atct_id": "75-13-8*0",
+      "preferred_formula": "HNCO  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=149"
+    },
+    "C": {
+      "hf0_kJ_mol": 711.37,
+      "hf298_kJ_mol": 716.855,
+      "uncertainty_95pct_kJ_mol": 0.038,
+      "atct_id": "7440-44-0*0",
+      "preferred_formula": "C  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=21"
+    },
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "uncertainty_95pct_kJ_mol": 0.0,
+      "atct_id": "12385-13-6*0",
+      "preferred_formula": "H  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    },
+    "N": {
+      "hf0_kJ_mol": 470.655,
+      "hf298_kJ_mol": 472.518,
+      "uncertainty_95pct_kJ_mol": 0.021,
+      "atct_id": "17778-88-0*0",
+      "preferred_formula": "N  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=25"
+    },
+    "O": {
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "atct_id": "17778-80-2*0",
+      "preferred_formula": "O  (g)",
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    }
+  },
+  "inherited_source": "Chase 1998 JANAF (FastChem fit) [U]",
+  "fastchem_record": {
+    "species": "C1H1N1O1",
+    "record_name": "Hydrogen_Isocyanate",
+    "source_file": "FastChem4/logK/logK.dat",
+    "record_line_number": 169,
+    "coefficient_line_number": 170,
+    "record_line": "C1H1N1O1 Hydrogen_Isocyanate : C 1 H 1 N 1 O 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+    "coefficient_line": "   2.1042476147610892e+05  -4.3028500847829605e+00  -1.4292989030241188e+01   1.3304443197154070e-03  -7.2481719280098562e-08 ",
+    "coefficients": [
+      210424.76147610892,
+      -4.3028500847829605,
+      -14.292989030241188,
+      0.001330444319715407,
+      -7.248171928009856e-08
+    ],
+    "selected_temperature_segment_index": null,
+    "selected_temperature_segment_upper_bound": null,
+    "selected_temperature_segment_semantics": "gas logK.dat has one five-coefficient fit per species record; src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection",
+    "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+    "logk_file_function": "src/exogibbs/presets/fastchem.py::logk"
+  },
+  "current_model": "curated-tio2-v1",
+  "nasa_record_key": "HNCO",
+  "nasa_same_identity": true,
+  "exact_atct_id": "75-13-8*0"
+}

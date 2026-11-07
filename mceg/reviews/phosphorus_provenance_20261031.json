@@ -1,0 +1,345 @@
+{
+  "review_date": "2026-10-31",
+  "scope": "Historical P4O6 source disagreement and a provisional species-specific software recommendation; no production adoption or physical validation is asserted.",
+  "molecule": {
+    "formula": "P4O6",
+    "phase": "gas",
+    "cas": "10248-58-5",
+    "molar_basis": "one mole of P4O6, not P2O3",
+    "reference_temperature_K": 298.15
+  },
+  "anchors": {
+    "JANAF": {
+      "hf298_kJ_mol": -2214.307,
+      "gf298_kJ_mol": -2084.877,
+      "evaluation_date": "December 1962",
+      "reported_uncertainty_kJ_mol": 33.5,
+      "source": "janaf_evaluation"
+    },
+    "Burcat_Gurvich": {
+      "hf298_kJ_mol": -1606.0,
+      "reported_uncertainty_kJ_mol": 40.0,
+      "source": "burcat_snapshots",
+      "uncertainty_limit": "Source-reported uncertainty; neither a calibrated probability distribution nor independently validated here."
+    },
+    "Morgon_2012": {
+      "hf298_kJ_mol": -1706.3,
+      "method": "modified correlation-consistent composite calculation",
+      "source": "morgon_2012",
+      "inspection": "abstract only; no molecule-specific error bound adopted"
+    },
+    "Lee_2024": {
+      "hf298_kJ_mol": -1659.0,
+      "gf298_kJ_mol": -1531.0,
+      "temperature_K": 298.0,
+      "method": "G4 electronic energy with specified molecular and atomic references",
+      "source": "lee_2024",
+      "inspection": "Table 2 visually inspected; formation enthalpy and Gibbs energy kept distinct"
+    }
+  },
+  "sources": [
+    {
+      "id": "janaf_evaluation",
+      "urls": [
+        "https://janaf.nist.gov/tables/O-087.html",
+        "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf"
+      ],
+      "location": "O-087 298.15 K row and footer; printed p. 1803 / PDF page 87 evaluation notes",
+      "inspection": "inspected",
+      "source_role": "primary for table contents; compilation for original calorimetry",
+      "download_sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "finding": "Gas energy uses Koerner and Daniels liquid formation enthalpy plus Farr vaporization contribution. Evaluation remains December 1962; 1998 is publication, not reevaluation.",
+      "vaporization_kcal_mol": 11.46,
+      "vaporization_kJ_mol": 47.94864
+    },
+    {
+      "id": "koerner_daniels_1952",
+      "doi": "10.1063/1.1700148",
+      "url": "https://doi.org/10.1063/1.1700148",
+      "inspection": "not_inspected",
+      "finding": "Original full experiment unavailable. JANAF identifies red-phosphorus combustion in nitric oxide in a flow calorimeter; no independent reconstruction of its product analysis."
+    },
+    {
+      "id": "farr_1950",
+      "citation": "T.V.A. Chemical Engineering Report No. 8 (1950), as cited by JANAF",
+      "inspection": "not_inspected",
+      "finding": "Original vaporization report not recovered; the adopted increment was inspected in JANAF."
+    },
+    {
+      "id": "hartley_mccoubrey_1963",
+      "doi": "10.1038/198476a0",
+      "url": "https://www.nature.com/articles/198476a0",
+      "inspection": "partial",
+      "location": "Publisher abstract and bibliography, not subscription full text",
+      "finding": "Directly questions whether the old red-P/NO combustion products were conclusively identified as only P4O6 and P4O10. The new calorimetric derivation and any quantitative impurity correction remain uninspected."
+    },
+    {
+      "id": "gurvich_1989",
+      "citation": "Thermodynamic Properties of Individual Substances, fourth edition, volume 1; part 1 p. 413, part 2 p. 266, as identified by NASA",
+      "inspection": "not_inspected",
+      "finding": "Original evaluation pages were not recovered. Exact choice and weighting of experiments cannot be independently reconstructed."
+    },
+    {
+      "id": "nasa_2002",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "location": "NASA/TP-2002-211556 printed pp. 27 and 172",
+      "inspection": "inspected",
+      "download_sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "finding": "Selects -1606000 J/mol for P4O6 and explicitly identifies the Gurvich pages. CEA/Burcat agreement is common ancestry, not independent experimental replication."
+    },
+    {
+      "id": "burcat_snapshots",
+      "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
+      "inspection": "inspected",
+      "location": "P4O6 CAS10248-58-5; concrete 2016 and 2023 files in pinned GGChem archive plus mirror",
+      "finding": "Selects Gurvich1989 -1606 +/-40 kJ/mol, rejects JANAF anchor, and lists older Lewis -2144.519. The selected P4O6 polynomial has 200-6000 K representation bounds, not physical validation across that range."
+    },
+    {
+      "id": "wang_2016",
+      "url": "https://arxiv.org/pdf/1604.06371",
+      "location": "Section 4.2",
+      "inspection": "inspected",
+      "source_role": "primary atmospheric analysis; secondary account of historical calorimetry",
+      "finding": "Traces Gurvich/CEA to Hartley-McCoubrey and favors it over the older experiment. Also records the earlier opposing judgement of Fegley-Lodders. Historical link remains indirect without Gurvich pages."
+    },
+    {
+      "id": "morgon_2012",
+      "doi": "10.1002/qua.24178",
+      "url": "https://doi.org/10.1002/qua.24178",
+      "inspection": "partial",
+      "location": "Publisher abstract",
+      "finding": "Independent composite calculation reports -1706.3 kJ/mol. P4O6 is explicitly an exception to desired general accuracy; no general method error is assigned to this molecule."
+    },
+    {
+      "id": "lee_2024",
+      "doi": "10.3847/1538-4357/ad8915",
+      "urls": [
+        "https://arxiv.org/html/2409.06802v2",
+        "https://arxiv.org/pdf/2409.06802v2"
+      ],
+      "inspection": "inspected",
+      "location": "Section 2.1.1, Appendix A.2, Table 2 on author manuscript p. 18",
+      "download_sha256": "210c6091d6d5349b847d1dbaafb33f20b44df489c4d80828ce4b0cc6ca2bd754",
+      "finding": "Independent G4 result supports a much less negative P4O6 energy; the model separately adopts NASA/Gurvich and Burcat for consistency. Molecular calculation and database adoption are not counted as two experimental validations."
+    },
+    {
+      "id": "smoes_drowart_1973",
+      "doi": "10.1039/FS9730800139",
+      "url": "https://pubs.rsc.org/en/content/articlelanding/1973/fs/fs9730800139",
+      "inspection": "partial",
+      "location": "Primary abstract",
+      "finding": "Knudsen-cell mass spectrometry reports an atomization energy of 4385 (+40,-60) kJ/mol for P4O6. Full thermal/reference conversion to formation enthalpy was not inspected and is not performed here."
+    },
+    {
+      "id": "muenow_1970",
+      "doi": "10.1016/0022-1902(70)80154-3",
+      "url": "https://www.sciencedirect.com/science/article/pii/0022190270801543",
+      "inspection": "partial",
+      "location": "Primary abstract",
+      "finding": "Confirms vapor mass-spectrometric experiments; available abstract does not independently establish the 298 K formation enthalpy quoted by later authors."
+    },
+    {
+      "id": "bains_2023",
+      "doi": "10.1021/acsearthspacechem.3c00016",
+      "url": "https://arxiv.org/pdf/2305.17405",
+      "inspection": "inspected",
+      "finding": "Qualitative chemical constraints favor less stabilization than JANAF and improved measurements. Its numerical reconstruction is not adopted: phase labels and formation-entropy usage require clarification against the primary JANAF liquid-origin note and absolute-entropy column."
+    },
+    {
+      "id": "lodders_1999",
+      "doi": "10.1063/1.556046",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.556046.pdf",
+      "inspection": "inspected",
+      "location": "Sections 1 and 2 and tables reviewed in phosphorus_sources_20261030.json",
+      "finding": "Documents white/red-V phosphorus reference correction and PH/PH3/PN problems. It does not supply an explanation of the full P4O6 JANAF/Gurvich gap."
+    }
+  ],
+  "reference_checks": {
+    "Burcat_minus_JANAF_hf298_kJ_mol": 608.307,
+    "four_P_allotrope_correction_magnitude_kJ_mol": 69.84,
+    "old_Lewis_minus_JANAF_kJ_mol": 69.788,
+    "old_Lewis_correction_hypothesis": "Near equality with 4*17.46 is suggestive only; the old file lineage has not been reconstructed and does not explain the modern 608.307 gap.",
+    "molecular_normalization": "Both current records describe gas P4O6; no factor-of-two conversion is indicated.",
+    "pressure_standard": "Ideal-gas formation enthalpy is not shifted by changing 1 atm to 1 bar; pressure-reference Gibbs/entropy conversions remain necessary.",
+    "elemental_gauge": "If g_i changes by sum_e A_ei*c_e consistently, G changes by constant sum_e b_e*c_e at fixed inventory. Balanced reaction energies and equilibrium composition are invariant.",
+    "gas_constant": "P4O6 NASA7 H298 is -1605.9999975 kJ/mol with R=8.31451 and -1605.9926576 with R=8.314472; this convention difference is negligible relative to608.307.",
+    "limit": "These checks rule out simple bookkeeping explanations of the full gap; they do not reconstruct all historical laboratory conversions or the exact FastChem fit."
+  },
+  "other_gases": {
+    "H3PO4": {
+      "phase": "gas",
+      "selected_source": "Elke Goos G3B3, label T06/09",
+      "hf298_kcal_mol": -267.378,
+      "hf298_kJ_mol": -1118.709552,
+      "reported_uncertainty_kcal_mol": 2.0,
+      "inspection_limit": "Burcat record inspected; original calculation output not inspected. Liquid/crystalline acid records are distinct."
+    },
+    "HPO2": {
+      "phase": "gas",
+      "structure_alias": "HOPO",
+      "selected_source": "Haworth and Bacskay, JCP117(2002)11175, label T11/12",
+      "doi": "10.1063/1.1521760",
+      "hf298_kcal_mol": -112.0,
+      "hf298_kJ_mol": -468.608,
+      "reported_uncertainty_kcal_mol": 2.0,
+      "inspection_limit": "Burcat comment inspected; original paper tables not independently audited."
+    },
+    "P4S3": {
+      "selected_source": "Same Stock/Kitzmann fit in both native selections; Chase/JANAF1998 annotation in FastChem4",
+      "interpretation": "No changed-source driver in the Ohno experiment. Small abundance is specific to the declared sampled conditions."
+    }
+  },
+  "recommendation": {
+    "kind": "review_recommendation_not_production_adoption",
+    "species": "P4O6(g)",
+    "preference": "Pinned Gurvich-derived P4O6 record over the strongly stabilizing JANAF record, provisionally.",
+    "positive_evidence": [
+      "Specific criticism of old product identification, not database age alone.",
+      "Independent molecular calculations favor the less negative energy family.",
+      "Current curated already uses the corresponding FastChem4 branch; retaining its version preserves reproducibility."
+    ],
+    "not_established": [
+      "Exact -1606 value and source-reported +/-40 uncertainty.",
+      "All Burcat records are superior.",
+      "Complete cold phosphorus network or source fit intervals are physically validated.",
+      "Exact archived2016file was the input to the FastChem refit."
+    ],
+    "production_behavior": "Unchanged curated-gas-v1; P4O6 remains inherited_unreviewed, with the existing 1500-4000 K evaluation interval.",
+    "software_actions": [
+      "Keep source alternatives explicit and versioned.",
+      "Record source/phase/reference/temperature validity with each species choice.",
+      "Treat missing gases and condensed phases separately from energy replacement.",
+      "Report source sensitivity as alternative scenarios, not statistical error bars.",
+      "Require an explicit reviewed species decision and new dataset identity for any future release change."
+    ],
+    "physical_accuracy_status": "unknown"
+  },
+  "remaining_work": [
+    "Inspect original Gurvich1989 part1p413 and part2p266 and original1952/1963 calorimetry.",
+    "Recover exact FastChem P4O6 input, atomic references and fitting grid/weights.",
+    "Audit original H3PO4/HOPO computational provenance and common low-temperature validity.",
+    "Review relevant condensed phases and independent physical constraints for intended atmospheres."
+  ],
+  "local_input_sha256": {
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/ohno_p3/native_manifest.json": "feda8e6f0175029ee5087882e0d7e19c754e2f59d08f542a2a5f7e4b24eab356",
+    "tests/data/validation/ohno_p3/native27_manifest.json": "559ea22f73f10bf3c2633cff69447d739b21383212a219848afd7157d724c3bc",
+    "tests/data/validation/ohno_p3/summary.json.gz": "64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf"
+  },
+  "burcat_record_audit": {
+    "ggchem_2016": {
+      "path": "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/BURCAT/BURCAT.THR",
+      "sha256": "041ffb0cd9c6ef13900c045285d3b5b18b2ebff0552f57ed82b7fc7357981482",
+      "records": {
+        "P4O6": {
+          "native_name": "P4O6",
+          "line": 29276,
+          "polynomial_h298_kJ_per_mol": -1605.992657591101,
+          "coefficient_sha256": "c22c8066cfa353c5c96b3addaff6e322db9872a9dafe82af3adde6e319780a05",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -1605.999997530545,
+          "record_bytes_sha256": "8840229a4129c7daad9df7833dcdec3cb1f787560c59451497318200eb5e60ad"
+        },
+        "H3PO4": {
+          "native_name": "H3PO4",
+          "line": 25589,
+          "polynomial_h298_kJ_per_mol": -1118.7044347315968,
+          "coefficient_sha256": "447a2ac7df3201eeb9282669d55b715dc311883d007c6b804ea4115a1e119577",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -1118.709547596072,
+          "record_bytes_sha256": "1cbf89d6fa3bbafa2dcf52590a2cc4f59b93cb4f0b14775f6754c303084f9247"
+        },
+        "HPO2": {
+          "native_name": "HPO2",
+          "line": 25154,
+          "polynomial_h298_kJ_per_mol": -468.6058586247864,
+          "coefficient_sha256": "7abd83d4701c43c81e75272d23111af1d2650709dd0e986566d9667efacb1c8c",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -468.6080003149175,
+          "record_bytes_sha256": "4e2f9a844fe7866d098ad9626ac41a26f17ebecb428800e1223cbc50bff9c3a0"
+        }
+      },
+      "source_url": "https://github.com/pw31/GGchem/blob/65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/BURCAT/BURCAT.THR",
+      "header_last_species_added_date": "2016-10-05"
+    },
+    "ggchem_2023": {
+      "path": "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/BURCAT/BURCAT_NEW.THR",
+      "sha256": "8048d0050505b535265aa0652d399ff259dbf50740067e18d83d77da2ef59d50",
+      "records": {
+        "P4O6": {
+          "native_name": "P4O6",
+          "line": 32926,
+          "polynomial_h298_kJ_per_mol": -1605.992657591101,
+          "coefficient_sha256": "c22c8066cfa353c5c96b3addaff6e322db9872a9dafe82af3adde6e319780a05",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -1605.999997530545,
+          "record_bytes_sha256": "0cf0df81f73bf0151664f8365f430d3c37b6a021cc8892979eb3e834a903c27f"
+        },
+        "H3PO4": {
+          "native_name": "H3PO4",
+          "line": 28824,
+          "polynomial_h298_kJ_per_mol": -1118.7044347315968,
+          "coefficient_sha256": "447a2ac7df3201eeb9282669d55b715dc311883d007c6b804ea4115a1e119577",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -1118.709547596072,
+          "record_bytes_sha256": "636f172f81e2e440775406c74480a8a833b1facfe2f20e219a2768041fe35efc"
+        },
+        "HPO2": {
+          "native_name": "HOPO",
+          "line": 28388,
+          "polynomial_h298_kJ_per_mol": -468.6058586247864,
+          "coefficient_sha256": "7abd83d4701c43c81e75272d23111af1d2650709dd0e986566d9667efacb1c8c",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -468.6080003149175,
+          "record_bytes_sha256": "4c3b1191b5c76fc0e3fc6ebedc9e4812d9403dd118c307ff92c7f8704bfead53"
+        }
+      },
+      "source_url": "https://github.com/pw31/GGchem/blob/65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/BURCAT/BURCAT_NEW.THR",
+      "header_last_species_added_date": "2023-01-03"
+    },
+    "mirror_2023": {
+      "path": "results/p4o9_audit/BURCAT.THR.txt",
+      "sha256": "42a597ff852d1a2995f81d4fdca069f3cdcaef77ead5e3c66e02e80ed6699101",
+      "records": {
+        "P4O6": {
+          "native_name": "P4O6",
+          "line": 32926,
+          "polynomial_h298_kJ_per_mol": -1605.992657591101,
+          "coefficient_sha256": "c22c8066cfa353c5c96b3addaff6e322db9872a9dafe82af3adde6e319780a05",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -1605.999997530545,
+          "record_bytes_sha256": "8840229a4129c7daad9df7833dcdec3cb1f787560c59451497318200eb5e60ad"
+        },
+        "H3PO4": {
+          "native_name": "H3PO4",
+          "line": 28824,
+          "polynomial_h298_kJ_per_mol": -1118.7044347315968,
+          "coefficient_sha256": "447a2ac7df3201eeb9282669d55b715dc311883d007c6b804ea4115a1e119577",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -1118.709547596072,
+          "record_bytes_sha256": "1cbf89d6fa3bbafa2dcf52590a2cc4f59b93cb4f0b14775f6754c303084f9247"
+        },
+        "HPO2": {
+          "native_name": "HOPO",
+          "line": 28388,
+          "polynomial_h298_kJ_per_mol": -468.6058586247864,
+          "coefficient_sha256": "7abd83d4701c43c81e75272d23111af1d2650709dd0e986566d9667efacb1c8c",
+          "gas_constant_J_per_mol_K": 8.314472,
+          "polynomial_h298_with_R_8_31451_kJ_per_mol": -468.6080003149175,
+          "record_bytes_sha256": "1d4c2fe47f68f81eb5c77f9a1a6b5f83f171b5d381d967b3a83fd9b666644f24"
+        }
+      },
+      "source_url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
+      "header_last_species_added_date": "2023-01-03"
+    },
+    "all_three_selected_coefficients_equal": true,
+    "hash_algorithms": {
+      "file": "SHA256 of the unmodified complete file bytes.",
+      "record_bytes": "SHA256 of four complete NASA7 record lines including original line endings; starts at 1-based line recorded for the species.",
+      "coefficient": "Read first75columns of each of three coefficient lines as5fields of15columns; parse floats; retain first14values (high-T7 then low-T7, excluding15th auxiliary hf298/R value); SHA256 of json.dumps(coefficients).encode() using Python defaults (ASCII, comma-space separator). Header names and phase are excluded from this coefficient hash; species and gas-phase identity are checked separately.",
+      "gas_formation_enthalpy": "For low-T coefficients a1..a7 and T298.15: H=R*T*(a1+a2*T/2+a3*T**2/3+a4*T**3/4+a5*T**4/5+a6/T)/1000 kJ/mol; both R values recorded."
+    }
+  }
+}

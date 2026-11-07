@@ -1,0 +1,61 @@
+{
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "second_radiation_constant_cm_K": 1.4387768775039338,
+  "electronvolt_J_mol": 96485.33212331001,
+  "old_frequencies_cm-1": [
+    983,
+    538,
+    1034
+  ],
+  "partial_new_frequencies_cm-1": [
+    960,
+    291,
+    1034
+  ],
+  "frequency_scope": "Only Kim2014 ground-state symmetric stretch and bend replace Table V values. Unobserved antisymmetric stretch stays 1034 cm^-1. Zero-point energy is excluded: all partition energies are relative to v=0, keeping D0 fixed during the thermal calculation.",
+  "levels_eV": [
+    0,
+    0.1845,
+    0.813
+  ],
+  "weights": [
+    2,
+    2,
+    2
+  ],
+  "ground_weight": 2,
+  "electronic_scope": "Three doublet electronic origins from Kim2014; all three states are assigned identical rotational and vibrational partition factors. Added factor is Q_el/2 because Table IV already contains ground weight 2. This factorization is a limited diagnostic, not a complete state-specific partition sum.",
+  "printed_summary": {
+    "1": {
+      "temperature_K": 2057,
+      "H_T_kJ_mol": 169.5,
+      "uncertainty_kJ_mol": 4.2,
+      "H0_kJ_mol": 158.8
+    },
+    "2": {
+      "temperature_K": 1046,
+      "H_T_kJ_mol": -87.0,
+      "uncertainty_kJ_mol": 3.1,
+      "H0_kJ_mol": -73.8
+    },
+    "3": {
+      "temperature_K": 2076,
+      "H_T_kJ_mol": 82.0,
+      "uncertainty_kJ_mol": 2.9,
+      "H0_kJ_mol": 85.5
+    }
+  },
+  "limitations": [
+    "Table I contains published equilibrium estimates after ion fragmentation, multiple-ionization, cross-section and multiplier-gain corrections; the underlying ion-intensity readings and full calibration covariance are unavailable. No raw instrument reprocessing is claimed.",
+    "Unweighted second-law fits reproduce the printed reaction 1 and 2 slopes and standard errors. Reaction 3 does not reproduce the printed 82.0 +/- 2.9 kJ/mol; original fit weighting, grouping, unrounded observations or printing differences remain unresolved. No data points are removed or changed.",
+    "Table I prints reaction 2 average temperature as 1046 K although its observations span 1913-2186 K; the separately calculated harmonic mean is about 2046 K. The original value is retained, not silently corrected.",
+    "At 2087 K Table I prints lnK2=5.51 and H0(2)=-74.8 kJ/mol. They do not close in the present third-law replay; both were visually rechecked and retained. No inferred correction is treated as an observation.",
+    "Original Table IV is used for VO2. Current official JANAF V/VO thermal tables are used on the H0 reference; the exact historical 1975 JANAF printed pages have not been independently compared. JANAF formation enthalpies and logKf are not used as modern energy anchors.",
+    "Table IV does not explicitly state its pressure convention. Separate 1 bar and 1 atm assumptions are retained. Every reaction has Delta nu=0, so a common standard-pressure conversion cancels; mixing a 1 atm VO2 table with 1 bar V/VO tables does not. Experimental pressures quoted in atm do not by themselves establish the Table IV convention.",
+    "Complete reaction 1 and 3 third-law re-reductions remain unavailable without the original Eu/EuO thermal functions. Their selected historical VO2 energies share EuO and VO references and must not be pooled as independent measurements.",
+    "The modern VO anchor is Merriles2020 D0=6.545(2) eV to V(4F3/2)+O(3P2), retained in current curated spectroscopy provenance. Its uncertainty is a conservative assigned limit, not stated as one sigma; no new combined VO2 uncertainty is assigned.",
+    "The partial thermal change leaves geometry, rotation, antisymmetric stretch, anharmonicity, higher electronic states and state-specific rovibrational functions unresolved. The old bent geometry and old antisymmetric frequency are held, not revalidated.",
+    "Applying the same partial thermal model to the second-law reduction moves inferred H0 by +delta H(VO2), while the third-law reduction moves by +delta G(VO2). Their combined-model results differ by about 21 kJ/mol. This failure of method agreement prevents interpreting the approximately 1175 kJ/mol third-law endpoint as a validated new D0; original equilibrium calibration and a complete thermal model require further evaluation.",
+    "No selected rounded H0 is refitted as an observation, no covariance-free pooling is performed, and no newly recommended D0 or curated update follows from this partial re-reduction."
+  ]
+}

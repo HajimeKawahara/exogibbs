@@ -1,0 +1,268 @@
+{
+  "date": "2026-10-24",
+  "scope": "Literature/documentation-only addition to PR #298. No spectra, retrieval, preset or solver changes.",
+  "baseline_commit": "98eddbddca3da4f556878c2c21618d7f63496a65",
+  "mceg_revision": "0f7fd5fce4c310b050fe0d41f82010b7e8385a29",
+  "mceg_environment": {
+    "PYTHONPATH": "/home/kawahara/mceg/src"
+  },
+  "reviewed_file_sha256": {
+    "mceg/contracts/new_fastchem_logk.yaml": "48678155ca95d86a71e6b182ad1a95a6f5092662ce1405ac3ec0e6e30d35fd36",
+    "documents/mceg/new_fastchem_logk.rst": "6655a23000e6d9f2bd4868306cfc19d0b297c4727d2f168add19c5d0681c3d2f",
+    "mceg/reviews/new_fastchem_logk_public_sources_20261024.json": "89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe"
+  },
+  "history": {
+    "all_existing_contract_records_preserved": true,
+    "baseline_contract_sha256": "6c410b732feb769491f70fe928c39ec089d96780d6b0afbaa624256c84e543fb",
+    "original_numerical_validation_unchanged": true,
+    "prior_full_unit_suite": "1495 passed, 25 warnings in 578.73s (0:09:38)",
+    "full_suite_scope": "Completed for the preceding implementation commit; not repeated for this literature/documentation-only addition.",
+    "full_suite_log": "results/mceg/new_fastchem_logk_20261024/full_tests.log"
+  },
+  "source_record_checks": {
+    "references": 6,
+    "downloaded_copy_hashes_matched": 3,
+    "selected_ATcT_and_JANAF_values_match_offline_inputs": true
+  },
+  "hcn_arithmetic_check": {
+    "atct_D0_kJ_mol": 1268.3210000000001,
+    "janaf_implemented_D0_kJ_mol": 1262.513,
+    "delta_D0_kJ_mol": 5.80800000000022
+  },
+  "mceg_checks": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "mceg",
+        "check",
+        "mceg/contracts/new_fastchem_logk.yaml",
+        "--assessment",
+        "retrieval_metallicity_effect_public_sources",
+        "--root",
+        ".",
+        "--json"
+      ],
+      "exit_code": 0,
+      "summary": {
+        "PASS": 4,
+        "FAIL": 0,
+        "UNKNOWN": 1
+      },
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "3/3 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "20/20 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "4/4 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "UNKNOWN",
+          "message": "Stored support: unknown; claim=retrieval_metallicity_effect; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "Literature supplies no metallicity offset for these tables. The existing abundance result does not determine a spectrum or posterior shift, and retrieval execution is outside this task."
+          ]
+        }
+      ],
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "retrieval_metallicity_effect_public_sources",
+        "subject": "comparison_snapshot",
+        "context": "public_source_review"
+      },
+      "audited_evidence": [
+        "attribution_execution",
+        "retrieval_not_run",
+        "retrieval_literature_full_text"
+      ]
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "mceg",
+        "check",
+        "mceg/contracts/new_fastchem_logk.yaml",
+        "--assessment",
+        "whole_mixture_accuracy_public_sources",
+        "--root",
+        ".",
+        "--json"
+      ],
+      "exit_code": 0,
+      "summary": {
+        "PASS": 4,
+        "FAIL": 0,
+        "UNKNOWN": 1
+      },
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "4/4 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "20/20 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "7/7 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "UNKNOWN",
+          "message": "Stored support: unknown; claim=whole_mixture_accuracy; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "Source inspection clarifies the adopted energy and state conventions but supplies no independent whole-mixture physical constraint or calibrated uncertainty for the atmospheric calculation."
+          ]
+        }
+      ],
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "whole_mixture_accuracy_public_sources",
+        "subject": "comparison_snapshot",
+        "context": "public_source_review"
+      },
+      "audited_evidence": [
+        "source_choices",
+        "column_execution",
+        "thermochemical_sources_inspected",
+        "anion_reference_inspected"
+      ]
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "mceg",
+        "check",
+        "mceg/contracts/new_fastchem_logk.yaml",
+        "--assessment",
+        "molecular_attribution_review",
+        "--root",
+        ".",
+        "--json"
+      ],
+      "exit_code": 0,
+      "summary": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "2/2 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "20/20 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "3/3 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "PASS",
+          "message": "Stored support: supported; claim=molecular_attribution; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "The independent mass-action identity closes at all five samples. HCN is dominated by its energy/constant choice; SiS illustrates coupled composition effects."
+          ]
+        }
+      ],
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "molecular_attribution_review",
+        "subject": "comparison_snapshot",
+        "context": "attribution"
+      },
+      "audited_evidence": [
+        "source_choices",
+        "attribution_execution"
+      ]
+    }
+  ],
+  "reading_completion": {
+    "command": [
+      "python",
+      "-m",
+      "mceg",
+      "explain",
+      "mceg/contracts/new_fastchem_logk.yaml",
+      "--evidence",
+      "retrieval_literature",
+      "--json"
+    ],
+    "exit_code": 0,
+    "historical_inspection": "partial",
+    "completed_follow_up": "inspect_public_references",
+    "completion_evidence": [
+      "retrieval_literature_full_text",
+      "thermochemical_sources_inspected",
+      "anion_reference_inspected"
+    ],
+    "pending_reading_suggestions": []
+  },
+  "targeted_tests": {
+    "command": "PYTHONPATH=src JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -m pytest -q tests/unittests/examples/new_fastchem_logk_test.py tests/unittests/mceg_new_fastchem_logk_test.py",
+    "exit_code": 0,
+    "result": "11 passed in 2.39s",
+    "log": "results/mceg/new_fastchem_logk_public_sources_20261024/tests.log",
+    "sha256": "5e218085e78566ce1896c6c099555d33049bff06782e6cada0afcd87b142c051"
+  },
+  "docs": {
+    "command": "PYTHONPATH=/home/kawahara/mceg/src ./update_doc.sh -D plot_gallery=0",
+    "exit_code": 0,
+    "result": "Build succeeded; gallery execution disabled; one warning for unavailable Graphviz dot.",
+    "log": "results/mceg/new_fastchem_logk_public_sources_20261024/docs.log",
+    "sha256": "e015ede2d3c1c3c98f7e42420af9e27e06d007c5af6aba37e5fe8d39e8c75e26"
+  },
+  "interpretation": "Source-trace and hash checks verify declared records, not the papers or physical validity. Both new scientific assessments remain unknown; retrieval execution remains not_run."
+}

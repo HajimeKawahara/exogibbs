@@ -1,0 +1,283 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.sio_source_review.v1
+  name: SiO energy and normalized thermal review
+  description: Retain the existing NASA thermal plus ATcT balanced energy choice with modern normalized
+    partition evidence; separate planetary priority from physical validation.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:71a57cadc1ee2626b9d54484a80a156133a0adf2d03b5065bd5c1ff5244211b4
+    entry_points:
+    - mceg/reviews/sio_source_review.py
+assumptions:
+- statement: Balance neutral Si/O atoms within each source. Ground rovibrational D0, electronic well depth
+    De and an atomic term average are distinct.
+  evidence:
+  - literature
+  - source_replay
+- statement: SiOUVenIR 28Si16O nuclear-spin factor and rotational symmetry number are one; translation
+    is removed explicitly, while natural-isotope internal differences remain.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Frozen source and partition samples; archived finite gas grid.
+  conditions:
+  - Samples at 500, 1000, 1500, 2000, 3000, 4000 K; actual curated evaluated only on 1500-4000 K.
+  - 75 converged cases, 537 species, 1500-4000 K, 1e-6-100 bar and three C/O values; no new solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete energy/thermal uncertainty and planetary abundance accuracy, including melt and
+    condensation boundaries, are not quantified.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The current SiO polynomial retains NASA thermal shape with the original same-version, atom-balanced
+    ATcT 1.172 D0; raw legacy energy and thermal differences are separated.
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+- id: normalized_thermal_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: SiOUVenIR state sums agree with its separately published PF/Cp and remain close to NASA thermal
+    functions at the sampled nodes after explicit normalization, with internal isotope dependence retained.
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: The frozen source calculation and all archived SiO potentials and silicon budgets reproduce
+    offline.
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete SiO model has quantified physical accuracy for hot planetary atmospheres, including
+    gas/melt or condensate boundaries.
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+evidence:
+- id: literature
+  kind: literature
+  summary: Inspect official JANAF printed notes and tables, NASA coefficients, ATcT 1.172 index/atomic
+    provenance, NIST levels, full SiOUVenIR and Ito author manuscripts; record unavailable originals.
+  sources:
+  - tests/data/validation/sio_source_review/20261103/literature.json
+  - tests/data/validation/sio_source_review/20261103/sources.json
+  - documents/mceg/sio_source_review.rst
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+  subject: sio_sources_20261103
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/sio_source_review/20261103/literature.json
+    sha256: b243f307eecce2f423a00ff42b4014b92eebd93743524da36640db92e1aee54a
+  - source: tests/data/validation/sio_source_review/20261103/sources.json
+    sha256: 6e0f35e9244864b5aee22dc5c8f17dee76056f2c61f84e048ec544ede5ab903f
+  - source: documents/mceg/sio_source_review.rst
+    sha256: 790995411f9a9baaec8df822bc1184e410a654f3adb9515389a5804aea95f66c
+  provenance:
+    role: primary
+    location: documents/mceg/sio_source_review.rst
+    inspection: partial
+    note: State sums and source replays do not validate original energy accuracy or atmospheric applicability.
+      Original inspection and access gaps are explicit.
+- id: source_replay
+  kind: numerical_test
+  summary: Reproduce balanced source energies, the actual hybrid, selected full-state moments versus separately
+    published PF/Cp, and the conserved archived Si footprint.
+  sources:
+  - tests/data/validation/sio_source_review/20261103/partition_samples.json
+  - tests/data/validation/sio_source_review/20261103/comparison.json
+  - tests/data/validation/sio_source_review/20261103/receipt.json
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+  subject: sio_sources_20261103
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/sio_source_review/20261103/partition_samples.json
+    sha256: ac07044e6dc08cd2bcea05e829752387c8788ba323d783c7b9454f3824289f65
+  - source: tests/data/validation/sio_source_review/20261103/comparison.json
+    sha256: 8c267b94333f396b54bcceb409ff9604ba89384142a7cf358799e9650de549a1
+  - source: tests/data/validation/sio_source_review/20261103/receipt.json
+    sha256: 946e9aea664f350e59b98d1a4de6e2ccde4930c0aa03ba6664f57fa29dda76e6
+  provenance:
+    role: primary
+    location: documents/mceg/sio_source_review.rst
+    inspection: inspected
+    note: State sums and source replays do not validate original energy accuracy or atmospheric applicability.
+      Original inspection and access gaps are explicit.
+  result: passed
+subjects:
+- id: sio_sources_20261103
+  implementation: *id001
+  selected_files:
+    mceg/reviews/sio_source_review.py: 71a57cadc1ee2626b9d54484a80a156133a0adf2d03b5065bd5c1ff5244211b4
+    documents/mceg/sio_source_review.rst: 790995411f9a9baaec8df822bc1184e410a654f3adb9515389a5804aea95f66c
+    tests/model_evidence/sio_source_review_test.py: f10663af42b35d9627296c7a9e89639d76b19f07715b5a09807cabf10cdf5a7c
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    examples/comparisons/data/major_molecule_adoption.json: 2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    tests/data/validation/sio_source_review/20261103/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/sio_source_review/20261103/O-012.txt: e786b264b198a4e3fce25393c511dca8c24d2049651ff20c8f6f44079f064f45
+    tests/data/validation/sio_source_review/20261103/README.rst: 316f6f84781e1a4b8ede7ae0eac5d028a57fd50c48505f6527f526bfa876bbcd
+    tests/data/validation/sio_source_review/20261103/Si-005.txt: 269ee0967ede0a7277d9bfd946a1e9fa99f5fa02a8dd605f3ba036f63c3850a8
+    tests/data/validation/sio_source_review/20261103/literature.json: b243f307eecce2f423a00ff42b4014b92eebd93743524da36640db92e1aee54a
+    tests/data/validation/sio_source_review/20261103/nasa9_excerpt.txt: 5205c1d82d45e515c76599e35fd46e7ae433215c894816d2c7eeb9323a493b38
+    tests/data/validation/sio_source_review/20261103/partition_samples.json: ac07044e6dc08cd2bcea05e829752387c8788ba323d783c7b9454f3824289f65
+    tests/data/validation/sio_source_review/20261103/sources.json: 6e0f35e9244864b5aee22dc5c8f17dee76056f2c61f84e048ec544ede5ab903f
+    tests/data/validation/sio_source_review/20261103/comparison.json: 8c267b94333f396b54bcceb409ff9604ba89384142a7cf358799e9650de549a1
+    tests/data/validation/sio_source_review/20261103/receipt.json: 946e9aea664f350e59b98d1a4de6e2ccde4930c0aa03ba6664f57fa29dda76e6
+contexts:
+- id: source_review
+  scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
+    K; existing hydrogen-rich 75-case archive, not a lava model.
+  settings:
+    reaction: Si(g)+O(g)->SiO(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT 1.172 only
+    atomic_thermal: NASA retained for aligned comparisons
+    partition_normalization: Ground rovibrational zero, no extra nuclear spin or symmetry factor; translation
+      removed; internal isotope difference retained
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: sio_sources_20261103
+  context: source_review
+  method:
+    id: review_sio_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy construction, normalized thermal consistency and archived numerical
+      checks from complete physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - Current minus native NASA D0/k is 373.042867 K. Same-version Si+O-SiO gives 795.554 kJ/mol; common-D0
+    and common-atom JANAF/NASA thermal ratios are 0.99453-0.99714 over the four production-domain nodes.
+  status: supported
+  origin: reviewed
+- id: normalized_thermal_comparison_review
+  kind: evidence_support
+  claim: normalized_thermal_comparison
+  claim_revision: '1'
+  subject: sio_sources_20261103
+  context: source_review
+  method:
+    id: review_sio_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy construction, normalized thermal consistency and archived numerical
+      checks from complete physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - Full 174250-state summaries match published Q within 8e-7 and Cp within 0.0025 J/mol/K. Internal Q/NASA
+    is 0.99797-0.99825 at 1500-4000 K, with isotope differences explicit; maximum Cp difference 0.0632
+    J/mol/K.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: sio_sources_20261103
+  context: source_review
+  method:
+    id: review_sio_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy construction, normalized thermal consistency and archived numerical
+      checks from complete physical accuracy.
+  evidence:
+  - source_replay
+  reasons:
+  - Official tables and coefficients match original adoption inputs; current hybrid matches every archived
+    SiO potential and all 75 silicon budgets close.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: sio_sources_20261103
+  context: source_review
+  method:
+    id: review_sio_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy construction, normalized thermal consistency and archived numerical
+      checks from complete physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - No complete correlated energy uncertainty or hot-state error bound is established; no new substitution,
+    gas/melt model or atmospheric observation validates the hybrid.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: existing_energy_provenance
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Complete the same-version SiO energy provenance and covariance trail when accessible; use relevant
+    originals if their definitions could change the balanced anchor.
+  requires:
+  - ATcT 1.172 species 540 provenance page and reaction covariance; index and Si/O pages already inspected.
+  - Feller 2008 DOI 10.1063/1.3008061 original atomization table, or the relevant evaluated source sufficient
+    to resolve a concrete energy question; identify Karton 2011 ATcT bibliography 4414 before assigning
+    its DOI.
+  - Gurvich 1991 volume 2 part 1 p247 / part 2 p227 if needed to resolve legacy state assumptions; obtaining
+    every historical original is not a merge prerequisite.
+  completion: Record energy zero, source dependence and a justified uncertainty or its remaining covariance
+    limitation; keep current adoption unless a material correction is established.
+- id: specific_atmosphere_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Define an actual planetary composition and boundary model before translating source uncertainty
+    into abundance or spectral consequences.
+  requires:
+  - Separate hydrogen-rich gas footprints from hot mineral atmospheres and gas/melt, condensation or rainout
+    boundaries; Ito 2015 DOI 10.1088/0004-637X/801/2/144 motivates priority but uses CEA itself.
+  - For a proposed material thermal improvement, document isotope/energy-zero conventions, hot-state completeness,
+    caloric derivatives and interval joins, then run a conserved fixed-network finite substitution.
+  - SiOUVenIR DOI 10.1093/mnras/stab3267 full text and data are already inspected; its fixed De is not
+    independent validation of ATcT D0.
+  completion: Archive a scoped application or named candidate assessment; the present close thermal agreement
+    does not require production replacement.
+limitations:
+- statement: SiO-specific ATcT provenance URL was inaccessible; species values are verified in the same-version
+    index. Gurvich and original energy calculations remain partially uninspected and covariance is not
+    propagated.
+  evidence:
+  - literature
+- statement: The normalized partition agreement has residual isotope dependence and shared historical
+    spectroscopy; line-list opacity coverage is not a complete independent thermochemical validation.
+  evidence:
+  - literature
+  - source_replay
+- statement: The 99.9923 percent maximum silicon footprint is neither a source-substitution response nor
+    a lava atmosphere, observation or universal error bound.
+  evidence:
+  - source_replay

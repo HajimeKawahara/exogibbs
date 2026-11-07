@@ -1,0 +1,53 @@
+{
+  "id": "curated-cn-v1",
+  "species": "C1N1",
+  "reaction": "C(g) + N(g) -> CN(g)",
+  "base_dataset": "curated-cos-v1",
+  "base_data_sha256": "0e8c7801440f1951b7f6d7516fb9cfef42fe11b8b0f4de68a5039917daaa72a2",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_D0_J_mol": 750156,
+  "D0_J_mol": 745355,
+  "delta_D0_J_mol": -4801,
+  "delta_D0_over_R_K": -577.4275765601277,
+  "candidate_ATcT_version": "1.228",
+  "candidate_hf0_kJ_mol": {
+    "CN": 436.67,
+    "C": 711.37,
+    "N": 470.655
+  },
+  "representation": "ln K = a/T + b ln(T) + c + d T + e T^2 + delta(D0)/(R T). Retain every literal coefficient and fit/source residual; no thermal refit, isotope change or second energy alignment.",
+  "formal_fit_intercept_Ra_J_mol": 750234.1411869854,
+  "anchor_scope": "The physical source D0 values set only the energy difference. R*a is a formal extrapolated fit intercept, not an independently measured D0; the fit is never evaluated at zero temperature. Ground-level atomization already includes ZPE.",
+  "decision": {
+    "name": "CN",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "Retained literal JANAF-derived FastChem reaction thermal fit",
+    "energy_source": "ATcT 1.228 balanced C+N-CN physical atomization difference",
+    "reason": "Adopt the evaluated same-version gas-atom/molecule energy balance while preserving the supported thermal shape and inherited fit residual. Use only the physical JANAF-to-ATcT delta D0=-4801 J/mol; do not reset the formal fit intercept or add ZPE again.",
+    "condition": "1500-4000 K, one-bar standard pressure. Correlated reaction-energy covariance, complete thermal and isotope uncertainty, and planetary accuracy remain unquantified."
+  },
+  "sources": {
+    "atct": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+    "janaf": "https://janaf.nist.gov/tables/C-080.html",
+    "candidate": "tests/data/validation/cn_candidate/20261106/candidate.json",
+    "review": "documents/mceg/cn_candidate.rst",
+    "substitution": "tests/data/validation/cn_equilibrium_impact/20261106/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/cn_candidate/20261106/candidate.json": "0216d941ccae0422d563be63fc35726f6b218ec6cee909431060d3c0af0bda82",
+    "src/exogibbs/data/fastchem/logK/logK.dat": "dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806",
+    "tests/data/validation/cn_source_review/20261106/inputs.json": "72448b63029c849b857bb9af2de3a5ad5d16e57f918fec0623d85f39a6948fc6",
+    "tests/data/validation/cn_source_review/20261106/sources.json": "f70e01349c0278343a32c6008954c8c615281b61a72412f29a9454bc049b3e9a",
+    "tests/data/validation/cn_candidate/20261106/sources.json": "45076ea781649d19991f7ea194efd18ee2a65722d650cc1dc17d21d87e256fb4",
+    "tests/data/validation/c2h_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/n3_source_review/20261103/N-002.txt": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5",
+    "tests/data/validation/cn_source_review/20261106/C-080.txt": "7ca72c44c59a2109f1d1f763ed93b689ec604d34d8c8d09802418563a2e75f3a"
+  },
+  "interpretation": "CN energy adoption on the unchanged curated-cos-v1 background. G and H increase by 4801 J/mol; S and Cp remain unchanged. The physical source D0 is distinct from the fit intercept, whose 78.141 J/mol residual is retained. Numerical support does not establish full physical accuracy."
+}

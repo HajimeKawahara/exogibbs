@@ -1,0 +1,131 @@
+{
+  "temperature_count": 2752,
+  "maximum_current_h_error": 3.552713678800501e-15,
+  "independent_source_checks": [
+    {
+      "variant": "retained",
+      "independent_source_property_errors": {
+        "G_J_mol": 5.820766091346741e-11,
+        "H_J_mol": 5.820766091346741e-10,
+        "S_J_mol_K": 1.1368683772161603e-13,
+        "Cp_J_mol_K": 6.661338147750939e-15
+      }
+    },
+    {
+      "variant": "nasa",
+      "independent_source_property_errors": {
+        "G_J_mol": 1.2631062418222427e-08,
+        "H_J_mol": 3.6088749766349792e-09,
+        "S_J_mol_K": 4.376943252282217e-12,
+        "Cp_J_mol_K": 4.476419235288631e-13
+      }
+    }
+  ],
+  "jax_derivative_checks": {
+    "temperature_count": 2752,
+    "offgrid_count": 251,
+    "range_K": [
+      1500,
+      4000
+    ],
+    "models": [
+      {
+        "variant": "retained",
+        "species": "O3",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 1.7462298274040222e-10,
+          "H_J_mol": 6.984919309616089e-10,
+          "S_J_mol_K": 1.1368683772161603e-13,
+          "Cp_J_mol_K": 2.0605739337042905e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -220091.40324343886,
+            "H_J_mol": -619435.9228542836,
+            "S_J_mol_K": -266.2296797405631,
+            "Cp_J_mol_K": -6.000851178051958
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -86585.86297406715,
+            "H_J_mol": -621815.2048944194,
+            "S_J_mol_K": -267.61467096017617,
+            "Cp_J_mol_K": -3.6817597472871477
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": 47405.16402041568,
+            "H_J_mol": -623283.1653663656,
+            "S_J_mol_K": -268.27533175471257,
+            "Cp_J_mol_K": -2.355564905292943
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": 181644.56404165772,
+            "H_J_mol": -624336.2525645074,
+            "S_J_mol_K": -268.66027220205507,
+            "Cp_J_mol_K": -2.022266652069349
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 450671.3637680887,
+            "H_J_mol": -627183.600316919,
+            "S_J_mol_K": -269.46374102125196,
+            "Cp_J_mol_K": -4.334359911933983
+          }
+        ]
+      },
+      {
+        "variant": "nasa",
+        "species": "O3",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 8.498318493366241e-09,
+          "H_J_mol": 3.026798367500305e-09,
+          "S_J_mol_K": 2.1884716261411086e-12,
+          "Cp_J_mol_K": 9.734435479913373e-13
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": -220661.73329499655,
+            "H_J_mol": -617821.647691517,
+            "S_J_mol_K": -264.7732762643469,
+            "Cp_J_mol_K": -4.03142719251593
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": -88131.66441958648,
+            "H_J_mol": -617947.6067167633,
+            "S_J_mol_K": -264.90797114858844,
+            "Cp_J_mol_K": 4.950276085746298
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": 43792.0372911905,
+            "H_J_mol": -612167.3433693312,
+            "S_J_mol_K": -262.3837522642087,
+            "Cp_J_mol_K": 18.207266652865368
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": 173948.00921505477,
+            "H_J_mol": -600182.7166193418,
+            "S_J_mol_K": -258.04357527813215,
+            "Cp_J_mol_K": 28.93835322588206
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 427148.88961806404,
+            "H_J_mol": -567379.8489848673,
+            "S_J_mol_K": -248.63218465073285,
+            "Cp_J_mol_K": 32.44575797240869
+          }
+        ]
+      }
+    ],
+    "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks."
+  },
+  "production_change": "none",
+  "physical_accuracy": "unknown"
+}

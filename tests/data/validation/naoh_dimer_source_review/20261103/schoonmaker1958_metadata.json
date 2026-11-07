@@ -1,0 +1,70 @@
+{
+  "DOI": "10.1063/1.1744157",
+  "title": [
+    "Gaseous Species in the Vaporization of Sodium Hydroxide"
+  ],
+  "author": [
+    {
+      "given": "Richard C.",
+      "family": "Schoonmaker",
+      "sequence": "first",
+      "affiliation": [
+        {
+          "name": "Department of Chemistry, Cornell University, Ithaca, New York"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "Richard F.",
+      "family": "Porter",
+      "sequence": "additional",
+      "affiliation": [
+        {
+          "name": "Department of Chemistry, Cornell University, Ithaca, New York"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    }
+  ],
+  "published": {
+    "date-parts": [
+      [
+        1958,
+        3,
+        1
+      ]
+    ]
+  },
+  "container-title": [
+    "The Journal of Chemical Physics"
+  ],
+  "volume": "28",
+  "issue": "3",
+  "page": "454-457",
+  "link": [
+    {
+      "URL": "https://pubs.aip.org/aip/jcp/article-pdf/28/3/454/18814181/454_1_online.pdf",
+      "content-type": "application/pdf",
+      "content-version": "vor",
+      "intended-application": "syndication"
+    },
+    {
+      "URL": "https://pubs.aip.org/aip/jcp/article-pdf/28/3/454/18814181/454_1_online.pdf",
+      "content-type": "unspecified",
+      "content-version": "vor",
+      "intended-application": "similarity-checking"
+    }
+  ],
+  "URL": "https://doi.org/10.1063/1.1744157"
+}

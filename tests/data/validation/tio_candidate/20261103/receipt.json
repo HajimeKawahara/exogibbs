@@ -1,0 +1,21 @@
+{
+  "command": "PYTHONPATH=src python mceg/reviews/tio_candidate.py --extract ORIGINAL_SOURCE_DIRECTORY",
+  "selected_input_sha256": {
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "tests/data/validation/tio_source_review/20261103/exomol_nodes.json": "97fbab6ef85372a39e66cb87136af3e142175e868d98bbea83df0aba4f810840",
+    "tests/data/validation/tio_source_review/20261103/literature.json": "761518caaccc4ce5539686b8a06b355092e2d6019c789110535af97285914100",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468"
+  },
+  "output_sha256": {
+    "tests/data/validation/tio_candidate/20261103/candidate.json": "e4bcb67ff0bee98517d81f784a62a61099553865eedb79955862e5f099577662",
+    "tests/data/validation/tio_candidate/20261103/nodes.json": "615163f285bd51360efe5454d6b6e5d2cace1bfadc001fabb9529b527f351fb2",
+    "tests/data/validation/tio_candidate/20261103/off_knot_reference.json": "cfccd26f8f31b95cde3c87c51febff3403072f877281d658bd08d52aa4dfb600",
+    "tests/data/validation/tio_candidate/20261103/cutoff_sensitivity.json": "8faff50c3bbc81292130cd11d2f89c564c71a80a4c6e745c65a6de7cadbc96fe",
+    "tests/data/validation/tio_candidate/20261103/scientific_scope.json": "a3ceaec4a63a2432416d19037ea451bd68ce8e115a3721879c39fb2046e2cf00",
+    "tests/data/validation/tio_candidate/20261103/validation.json": "81d8bd1083f4356da7dfde4a9ff726761e7940f0eed2924102d92378000f1afc"
+  },
+  "external_sources": "Original full files are not vendored; URLs and hashes in candidate.json and scientific_scope.json",
+  "scope": "Six direct-state knots and 45 independent off-knot references; bound-state model fixed at central D0; no equilibrium solve or production change"
+}

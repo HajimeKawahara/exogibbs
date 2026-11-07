@@ -1,0 +1,95 @@
+{
+  "id": "k2_measured_D0_retained_thermal_20261106",
+  "molecule": "K2",
+  "species": "K2",
+  "baseline_dataset": "curated-ch2-v1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "tracked_elements": [
+    "K"
+  ],
+  "primary_variant": "measured_D0_retained_thermal",
+  "variants": [
+    {
+      "name": "measured_D0_retained_thermal",
+      "replacements": {
+        "K2": {
+          "kind": "retained_energy",
+          "temperature_range_K": [
+            1500,
+            4000
+          ],
+          "coefficients": [
+            6571.119110722273,
+            0.16919153723917368,
+            -9.500025174067957,
+            -0.0004247006030297946,
+            -9.327509623268344e-09
+          ],
+          "delta_GH_J_mol": -32.205333785786934
+        }
+      }
+    }
+  ],
+  "selected_variants": [
+    {
+      "name": "potential_2026_D0_retained_thermal",
+      "replacements": {
+        "K2": {
+          "kind": "retained_energy",
+          "temperature_range_K": [
+            1500,
+            4000
+          ],
+          "coefficients": [
+            6571.119110722273,
+            0.16919153723917368,
+            -9.500025174067957,
+            -0.0004247006030297946,
+            -9.327509623268344e-09
+          ],
+          "delta_GH_J_mol": -32.212828509756946
+        }
+      }
+    }
+  ],
+  "physical_energy": {
+    "retained_JANAF_D0_J_mol": 52660.999999999985,
+    "measured_D0_J_mol": 52693.20533378577,
+    "delta_D0_J_mol": 32.205333785786934,
+    "reported_D0_uncertainty_J_mol": 0.04785062625547881,
+    "formal_fit_intercept_Ra_J_mol": 54635.3242055327,
+    "measurement": {
+      "doi": "10.1063/1.2375120",
+      "D0_cm_inverse": 4404.808,
+      "reported_uncertainty_cm_inverse": 0.004,
+      "reference": "v=0,J=0 to ground-atom asymptote; not De.",
+      "access": "Complete article in author thesis inspected, section 4.1.4; center of gravity of atomic ground asymptote.",
+      "isotopologue": "39K2"
+    },
+    "ZPE_added_J_mol": 0.0
+  },
+  "source_sha256": {
+    "mceg/reviews/k2_candidate.py": "cd1753f3557c77b376ca505ee62dbb431e61fc5b71a3c92a4fc01cccba52ab9e",
+    "tests/data/validation/k2_candidate/20261106/sources.json": "f1610111686c3b47c67c0975e5eb85d996d9358934643cdec2e8cee4cd0ea9e4",
+    "mceg/reviews/pending_candidate.py": "f2054dbffdfa8b79a180547ade383736029d0ac5aabf709ddff5b70080f86a00",
+    "mceg/reviews/k2_source_review.py": "ee04744e470155d871e15916071a52d1213f7ea536a58b2a458bfe40c6132357",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/k2_source_review/20261106/literature.json": "f3a807c57e5ecfe46fdaa76eb4127993257d8bf314b9eb4768807f61cf857204",
+    "tests/data/validation/k2_source_review/20261106/bc-selected-rows.txt": "1603530becb211662a4dd768a4eae9438168d10c7f8a367f7b22fb2d18daec38",
+    "tests/data/validation/k2_source_review/20261106/K-011.txt": "e8f761c2b4128ba82a3fb6f0e742675dd81a165b73fbbcdb006fa8133b27ded8",
+    "tests/data/validation/k2_source_review/20261106/nasa-selected-records.txt": "4ba469e11021488a1e76f8191cb9431b1315d324bb1e62b71506639347744bd8",
+    "tests/data/validation/k2_source_review/20261106/inputs.json": "a367324bff5fe88acc4d84b850628a5c784f87ed8945408886264c9f6dfdf955",
+    "tests/data/validation/k2_source_review/20261106/bc-state-input.txt": "379ee63938dbc5b9529eeee902fc9d84c53374c9ad57bc41be9a3f9a8301cfdf",
+    "tests/data/validation/k2_source_review/20261106/receipt.json": "6d929fba82654851c62465de01729f4ade8ca8aa11199907a74c1eab078bbab8",
+    "tests/data/validation/k2_source_review/20261106/comparison.json": "8d7d1ea4a2e94b9c0f931396b4f576bdf65bc7bf794503d5de44dbfd06c5292a",
+    "tests/data/validation/k2_source_review/20261106/sources.json": "f89774722f9eff6b04874794ac0820b73bdddc63d27aea5bedc709979fe746cf",
+    "tests/data/validation/k2_source_review/20261106/K-005.txt": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+    "tests/data/validation/k2_candidate/20261106/ground_vibrational_levels.npz": "ce98ab31e17c191597d71c44fca67d59a9774819bab10c3a4422c024f1c6492c"
+  },
+  "residual_scope": "A constant physical D0 correction retains the entire inherited thermal fit, atomic-reference gauge and fit residual. S/Cp are exactly unchanged; no arbitrary 298K heat or ZPE is added.",
+  "thermal_scope": "No thermal adoption: BC2016/2022 normalization,2025 corrected-figure and official-supplement scope, and available modern-state completeness are separately audited.",
+  "curated_update": "none"
+}

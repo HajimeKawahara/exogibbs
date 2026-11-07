@@ -1,0 +1,148 @@
+{
+  "samples": [
+    {
+      "profile": "isothermal",
+      "species": "C1H1N1_hcn",
+      "temperature_K": 4000.0,
+      "pressure_bar": 70.79457843841388,
+      "K_new_over_curated": 0.8429369645503231,
+      "atom_product_ratio": 0.9717194430699602,
+      "abundance_new_over_curated": 0.8190982377359496,
+      "new_x": 9.614378251327558e-07,
+      "curated_x": 1.1737759658600216e-06,
+      "ln_factorization_residual": 3.2862601528904634e-14,
+      "atomic_ratios": {
+        "C1": {
+          "stoichiometry": 1,
+          "new_over_curated": 0.9785441275839564
+        },
+        "H1": {
+          "stoichiometry": 1,
+          "new_over_curated": 1.0001053443890642
+        },
+        "N1": {
+          "stoichiometry": 1,
+          "new_over_curated": 0.9929210766000828
+        }
+      }
+    },
+    {
+      "profile": "inverted",
+      "species": "C1H1N1_hcn",
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "K_new_over_curated": 0.753005681372609,
+      "atom_product_ratio": 0.9887404803327036,
+      "abundance_new_over_curated": 0.7445271990936414,
+      "new_x": 1.2243118627023482e-10,
+      "curated_x": 1.6444152264588562e-10,
+      "ln_factorization_residual": 4.463096558993129e-14,
+      "atomic_ratios": {
+        "C1": {
+          "stoichiometry": 1,
+          "new_over_curated": 1.0013443668802822
+        },
+        "H1": {
+          "stoichiometry": 1,
+          "new_over_curated": 0.9988939657668645
+        },
+        "N1": {
+          "stoichiometry": 1,
+          "new_over_curated": 0.9885063568216728
+        }
+      }
+    },
+    {
+      "profile": "inverted",
+      "species": "S2",
+      "temperature_K": 2725.0,
+      "pressure_bar": 0.0035481338923357567,
+      "K_new_over_curated": 0.7866777038450957,
+      "atom_product_ratio": 1.011488981815899,
+      "abundance_new_over_curated": 0.7957158296795296,
+      "new_x": 7.211059560573138e-11,
+      "curated_x": 9.062355292689545e-11,
+      "ln_factorization_residual": -1.9539925233402755e-14,
+      "atomic_ratios": {
+        "S1": {
+          "stoichiometry": 2,
+          "new_over_curated": 1.0057280854266222
+        }
+      }
+    },
+    {
+      "profile": "inverted",
+      "species": "H2S1",
+      "temperature_K": 2850.0,
+      "pressure_bar": 0.0019952623149688807,
+      "K_new_over_curated": 0.8805368464788539,
+      "atom_product_ratio": 1.0016399233048399,
+      "abundance_new_over_curated": 0.881980859374172,
+      "new_x": 2.5266685718061745e-09,
+      "curated_x": 2.8647657655507686e-09,
+      "ln_factorization_residual": 8.1601392309949e-15,
+      "atomic_ratios": {
+        "H1": {
+          "stoichiometry": 2,
+          "new_over_curated": 0.9997623428690405
+        },
+        "S1": {
+          "stoichiometry": 1,
+          "new_over_curated": 1.0021161868200994
+        }
+      }
+    },
+    {
+      "profile": "inverted",
+      "species": "S1Si1",
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "K_new_over_curated": 1.0,
+      "atom_product_ratio": 1.1096431321904872,
+      "abundance_new_over_curated": 1.1096431321905187,
+      "new_x": 1.0144229697963134e-06,
+      "curated_x": 9.141884812946721e-07,
+      "ln_factorization_residual": 2.842170943040401e-14,
+      "atomic_ratios": {
+        "S1": {
+          "stoichiometry": 1,
+          "new_over_curated": 1.0860586450319907
+        },
+        "Si1": {
+          "stoichiometry": 1,
+          "new_over_curated": 1.0217156663375224
+        }
+      }
+    }
+  ],
+  "HCN_energy_at_2500_K": {
+    "adopted_D0_eV": 13.1452208547001,
+    "janaf_D0_eV": 13.08502517653653,
+    "delta_D0_eV": 0.060195678163569966,
+    "energy_only_K_new_over_curated": 0.7562246920648531,
+    "remaining_thermal_and_fit_factor": 0.9957433144857323
+  },
+  "interpretation": "Fixed-T,P source sensitivity, not physical error bars. The atomic-product term is a coupled equilibrium response, not an isolated intervention on atomic-ion coefficients. No spectrum, metallicity retrieval, uncertainty distribution or whole-mixture physical validation was calculated.",
+  "selected_file_sha256": {
+    "examples/comparisons/compare_new_fastchem_logk.py": "59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88",
+    "examples/comparisons/demo_curated_atmosphere.py": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/presets/fastchem.py": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/FastChem4/logK/logK_condensates.dat": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467",
+    "src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat": "514c96d25474c18b6b9aff2c5a010282d98ccb4eead0c5134ca8ed9cc47d14c7",
+    "src/exogibbs/data/FastChem4/logK/logK_extended.dat": "c89505344db24ed8d253e509c1825b02e01810a1f086d70c3e0b2d8f854c38a3",
+    "src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat": "140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5",
+    "src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat": "9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68",
+    "src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606",
+    "mceg/reviews/new_fastchem_logk_20261024.py": "183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70",
+    "results/new_fastchem_logk/receipt.json": "b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4",
+    "results/new_fastchem_logk/logK.zip": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+    "results/new_fastchem_logk/isothermal.npz": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
+    "results/new_fastchem_logk/inverted.npz": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
+    "results/major_molecule_adoption/decisions.csv": "e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328"
+  }
+}

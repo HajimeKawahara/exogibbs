@@ -49,6 +49,13 @@ def build_jobs() -> tuple[Job, ...]:
         ("--output", "{output}/plagioclase_exsolution.png"),
         artifacts=("plagioclase_exsolution.png",),
     ))
+    jobs.append(Job(
+        "equilibrium_sensitivity", "examples/equilibrium_sensitivity.py",
+        ("--output", "{output}"),
+        artifacts=("temperature_response.png", "sensitivity_network.png",
+                   "response_matrix.png", "physical_controls.png", "methane_reduction.png",
+                   "response_matrices.csv", "validation.json"),
+    ))
     comparison = "examples/comparisons/"
     jobs.append(Job(
         "sun_yao_water", comparison + "compare_sun_yao_water.py",
@@ -105,6 +112,10 @@ def build_jobs() -> tuple[Job, ...]:
     jobs.append(Job("curated_atmosphere", comparison + "demo_curated_atmosphere.py",
                     ("--output-dir", "{output}"),
                     artifacts=("receipt.json", "summary.csv", "isothermal.png", "inverted.png")))
+    jobs.append(Job("new_fastchem_logk", comparison + "compare_new_fastchem_logk.py",
+                    ("--output-dir", "{output}"),
+                    artifacts=("receipt.json", "summary.csv", "isothermal.png", "inverted.png",
+                               "ion_constants.png", "residuals.png")))
     jobs.append(Job(
         "fastchem4_production_comparison", "benchmarks/fastchem4/run_production_comparison.py",
         ("--fastchem-executable", "{fastchem}", "--fastchem-source-root", "{fastchem_source}",

@@ -1,0 +1,160 @@
+{
+  "identity": {
+    "formula": "PO2",
+    "network_id": "O2P1",
+    "cas": "12164-97-5",
+    "charge": 0,
+    "phase": "gas",
+    "ground_state": "X 2A1",
+    "geometry": "bent O-P-O, C2v",
+    "janaf_rotational_symmetry": 2,
+    "janaf_electronic_weight": 2,
+    "excluded": "PO2-, PO3-, PO, condensed phosphorus oxides; total atomization is not single-bond PO+O dissociation."
+  },
+  "janaf_print": {
+    "source": "janaf-oxygen.pdf",
+    "pdf_page_1based": 32,
+    "printed_page": 1748,
+    "inspection": "Numerical table and explanatory notes visually inspected.",
+    "review_date": "September 1962 (1 bar); previous September 1962 (1 atm)",
+    "hf0_kJ_mol": -311.142,
+    "hf298_kJ_mol": -314.524,
+    "S298_J_mol_K": 253.685,
+    "H298_minus_H0_kJ_mol": 10.662,
+    "estimated_atomization_kcal_mol": 270,
+    "quoted_estimate_uncertainty_kcal_mol": 25,
+    "uncertainty_definition": "Historical estimate; no statistical confidence interpretation assigned.",
+    "estimated_frequencies_cm-1": [
+      980,
+      515,
+      1044
+    ],
+    "estimated_bond_length_A": 1.485,
+    "estimated_angle_deg": 134.4,
+    "energy_basis": "Brewer and Rosenblatt 1961, DOI 10.1021/cr60211a003; estimated dissociation energy, not a new 1998 experiment. Original paper not inspected.",
+    "thermal_basis": "Gordon 1960, Potter et al. 1960, Henderson and Scheffer 1960 estimates. Original reports not inspected.",
+    "printed_nodes": {
+      "298.15": {
+        "H_minus_H298_kJ_mol": 0,
+        "S_J_mol_K": 253.685
+      },
+      "500": {
+        "H_minus_H298_kJ_mol": 9.173,
+        "S_J_mol_K": 277.015
+      },
+      "1000": {
+        "H_minus_H298_kJ_mol": 35.571,
+        "S_J_mol_K": 313.359
+      },
+      "1500": {
+        "H_minus_H298_kJ_mol": 63.636,
+        "S_J_mol_K": 336.096
+      },
+      "3000": {
+        "H_minus_H298_kJ_mol": 149.857,
+        "S_J_mol_K": 375.899
+      }
+    },
+    "reference_cycle_limit": "The frozen source-balanced D0 is 1120.275 kJ/mol, whereas the note quotes an old estimate of 270 kcal/mol =1129.68 kJ/mol. The original 1962 atomic/reference cycle was not recovered; do not treat the note as an exact independent reconstruction of the current balanced tables."
+  },
+  "nasa_headers": {
+    "PO2": {
+      "printed_page": 170,
+      "hf298_J_mol": -281527.237,
+      "H298_minus_H0_J_mol": 10512.866,
+      "reference": "Gurvich 1989 volume 1 part 1 p408 and part 2 p260"
+    },
+    "P": {
+      "printed_page": 166,
+      "hf298_J_mol": 316500.0,
+      "H298_minus_H0_J_mol": 6197.428,
+      "reference": "Cox 1989; Martin 1985; Gordon 1999"
+    },
+    "O": {
+      "printed_page": 164,
+      "hf298_J_mol": 249175.003,
+      "H298_minus_H0_J_mol": 6725.403,
+      "reference": "Brix 1954; Moore 1976; Gordon 1999"
+    }
+  },
+  "nasa_inspection": "NASA/TP-2002-211556 Appendix D neutral PO2/P/O headers and all printed NASA9 coefficients agree with the frozen baseline to displayed precision. Source formula uses R=8.31451 J/mol/K; baseline decomposition uses a common R=8.31446261815324. Gurvich book pages were not obtained.",
+  "reference_convention": "NASA Appendix D explicitly labels P(cr) White, Ref-Elm. JANAF P(ref) has Hf298=0 and S298=41.077; existing phosphorus review identifies its white-P reference. Molecular Hf298 differences are not atomization differences. Each source is balanced with its own P/O gas atoms, including H298-H0, before comparison; no independent white/red-P offset is added.",
+  "cccbdb": {
+    "url": "https://cccbdb.nist.gov/exp2x.asp?casno=12164975&charge=0",
+    "hf298_kJ_mol": -281.53,
+    "hf0_kJ_mol": -278.0,
+    "quoted_uncertainty_kJ_mol": 10,
+    "uncertainty_definition": "Listed database uncertainty; confidence level not established from the uninspected Gurvich discussion.",
+    "S298_J_mol_K": 253.68,
+    "excited_states_cm-1": [
+      15447,
+      19000
+    ],
+    "excited_degeneracies": [
+      2,
+      2
+    ],
+    "ancestry": "All these thermochemical/excited-level entries cite Gurvich; not independent evidence for NASA."
+  },
+  "chen2023": {
+    "doi": "10.5194/acp-23-10643-2023",
+    "inspection": "Full open-access paper available; relevant methods, Table 3 (printed p10649/PDF p7), discussion and references inspected; Table 3 visually checked.",
+    "scope": "Ground-state PO2 X2A1 global MRCI(Q) CHIPR PES and P+O2 reaction dynamics, not a complete thermal-state partition model.",
+    "table3": {
+      "CHIPR_minimum_relative_to_separated_atoms_eV": -11.435,
+      "CHIPR_harmonic_frequencies_cm-1": [
+        1137.6,
+        464.7,
+        1460.0
+      ],
+      "Drowart1972_total_D0_eV_rounded": 11.26,
+      "Bauschlicher1999_ZPE_corrected_atomization_eV_rounded": 11.4,
+      "experimental_fundamentals_cm-1": [
+        1075.4,
+        397.3,
+        1327.5
+      ],
+      "fundamental_references": [
+        "Lei et al. 2001, 10.1021/jp011778p",
+        "Qian et al. 1995, 10.1016/0009-2614(95)00128-Q; Lawson et al. 2011"
+      ]
+    },
+    "caveat": "Table 3 juxtaposes an electronic PES well with experimental D0 and ZPE-corrected theory. These numbers are not all De or all D0. Older values are quotations checked in Chen, not direct inspection of those original papers."
+  },
+  "source_access_gaps": [
+    {
+      "doi": "10.1039/F29726801749",
+      "authors_year": "Drowart et al. 1972",
+      "title": "Determination by the mass spectrometric Knudsen cell method of the atomization energies of the molecules PO and PO2",
+      "status": "Crossref publisher-deposited bibliographic metadata inspected; RSC landing page HTTP403; full experiment not obtained. Only rounded D0 quoted in Chen is used here.",
+      "needed": "Experimental thermochemical cycle, pressure calibration, third-law thermal inputs, atomic reference, uncertainty and any PO fragmentation interference."
+    },
+    {
+      "doi": "10.1021/jp992409k",
+      "authors_year": "Bauschlicher 1999",
+      "title": "Heats of Formation for POn and POnH (n=1-3)",
+      "status": "Publisher abstract/method scope inspected, numerical result quoted by Chen only; original numerical tables and linked thermal fits not inspected.",
+      "needed": "Table 4 atomization terms, ZPE and atomic-reference definitions, uncertainty estimate, and associated 300-4000 K thermal-fit data."
+    },
+    {
+      "doi": null,
+      "authors_year": "Gurvich et al. 1989",
+      "title": "Thermodynamic Properties of Individual Substances, volume 1 part 1 p408, part 2 p260",
+      "status": "NASA and CCCBDB citations inspected, original book pages not obtained.",
+      "needed": "PO2 energy selection, source uncertainties, harmonic/anharmonic frequencies and excited-state construction."
+    },
+    {
+      "doi": "10.1021/jp011778p",
+      "authors_year": "Lei et al. 2001",
+      "title": "Free-Jet Electronic Spectroscopy of the PO2 Radical",
+      "status": "Publisher metadata and later numerical citation identified; original full spectroscopy article not inspected.",
+      "needed": "Ground-state assignments, anharmonicity and relation to the 15447/19000 cm-1 Gurvich entries."
+    }
+  ],
+  "decision": {
+    "production": "Retain inherited curated fit provisionally in this source-only review.",
+    "preferred_direction": "Re-evaluate the binding energy toward the weaker binding indicated by later experiment/theory, using a source-consistent atomization anchor. NASA/Gurvich is a concrete diagnostic candidate, not established as the best final model. Audit the thermal function separately against modern spectroscopy.",
+    "why_no_adoption": "The quantified 1962 estimate and obsolete thermal inputs justify follow-up, but later cited D0/theory differ and the complete source conventions and state sum have not yet been evaluated. No full replacement or abundance substitution has been tested.",
+    "scope_completion": "Initial source investigation is complete with MCEG follow-ups; these remaining scientific questions do not block merging this evidence-only record."
+  }
+}

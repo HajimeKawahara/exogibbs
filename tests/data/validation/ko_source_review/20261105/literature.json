@@ -1,0 +1,46 @@
+{
+  "decision": "Retain production provisionally; prioritize coupled-state thermochemistry over selecting NASA from the smaller apparent discrepancy.",
+  "primary": [
+    {
+      "doi": "10.1063/1.1511179",
+      "inspection": "Full seven-page paper read through primary institutional copy; Table I and sections III-V inspected.",
+      "findings": "Spin-orbit mixing produces an X Omega=1/2 state and two low excited Omega states; a single unmixed Sigma/Pi label is inadequate. Reported D0=66 +/-1 kcal/mol is a theoretical estimate, with neutral O asymptote fine structure explicitly neglected in the energetics discussion."
+    },
+    {
+      "doi": "10.1021/jp9034826",
+      "inspection": "Publisher abstract only; full article and supporting numerical tables unavailable in this review.",
+      "findings": "Calculated neutral KO hf298=55.9 kJ/mol; spin-free Sigma state lower than Pi by 1.1 kJ/mol at 0 K. These are not a complete spin-orbit thermal function."
+    }
+  ],
+  "Lee2002": {
+    "reported_D0_kcal_mol": 66.0,
+    "reported_D0_uncertainty_kcal_mol": 1.0,
+    "reported_hf0_kcal_mol": 13.6,
+    "Te_Omega_cm-1": [
+      0,
+      178,
+      434
+    ],
+    "ZPVE_cm-1": [
+      194.5,
+      195.3,
+      301.4
+    ],
+    "fundamental_cm-1": [
+      296.6,
+      387.2,
+      559.9
+    ]
+  },
+  "modern_hf298_kJ_mol": 55.9,
+  "limitations": [
+    "Do not treat Te gaps as rovibronic origins or construct an unqualified three-level correction; rotation, vibration and state mixing differ.",
+    "Lee 2002 explicitly requires multireference treatment of the long-range neutral dissociation region; its printed O fine-structure ordering is not used as an atomic reference.",
+    "JANAF 1967-era thermochemistry and Gurvich 1982 original source pages were not independently reaudited."
+  ],
+  "followups": [
+    "Acquire DOI 10.1021/jp9034826 full text and supporting Tables S1/S3/S6 to reconcile hf298, spin-orbit convention and neutral-atom asymptotes.",
+    "Build and validate derivative-consistent coupled-state thermal functions before a modern energy-plus-thermal candidate and finite substitution.",
+    "The missing follow-up source is not a merge gate for the scoped retain-and-record source audit."
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "scope": "Offline hash, identity, phase, selected-coefficient and numerical-anchor replay only; not physical validation.",
+  "passed": true,
+  "checks": [
+    {
+      "input": "src/exogibbs/data/curated/gas_v1.json",
+      "passed": true
+    },
+    {
+      "input": "src/exogibbs/presets/curated.py",
+      "passed": true
+    },
+    {
+      "input": "src/exogibbs/data/FastChem4/logK/logK.dat",
+      "passed": true
+    },
+    {
+      "input": "tests/data/validation/ohno_p3/native_manifest.json",
+      "passed": true
+    },
+    {
+      "input": "tests/data/validation/ohno_p3/native27_manifest.json",
+      "passed": true
+    },
+    {
+      "input": "tests/data/validation/ohno_p3/summary.json.gz",
+      "passed": true
+    },
+    {
+      "source": "ggchem_2016",
+      "species": "P4O6",
+      "passed": true
+    },
+    {
+      "source": "ggchem_2016",
+      "species": "H3PO4",
+      "passed": true
+    },
+    {
+      "source": "ggchem_2016",
+      "species": "HPO2",
+      "passed": true
+    },
+    {
+      "source": "ggchem_2023",
+      "species": "P4O6",
+      "passed": true
+    },
+    {
+      "source": "ggchem_2023",
+      "species": "H3PO4",
+      "passed": true
+    },
+    {
+      "source": "ggchem_2023",
+      "species": "HPO2",
+      "passed": true
+    },
+    {
+      "source": "mirror_2023",
+      "species": "P4O6",
+      "passed": true
+    },
+    {
+      "source": "mirror_2023",
+      "species": "H3PO4",
+      "passed": true
+    },
+    {
+      "source": "mirror_2023",
+      "species": "HPO2",
+      "passed": true
+    }
+  ]
+}

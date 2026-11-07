@@ -1,0 +1,294 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.h2o_source_review.v1
+  name: H2O balanced energy and evaluated thermal review
+  description: Prioritize the 2025 evaluated water thermal functions as a later candidate while retaining
+    production during source investigation; separate spectroscopy, normalization and numerical scope.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    entry_points:
+    - mceg/reviews/h2o_source_review.py
+assumptions:
+- statement: Balance H/O/H2O in ATcT 1.172 at ground-state zero. First H+OH dissociation and total 2H+O
+    atomization are different energies.
+  evidence:
+  - literature
+  - source_replay
+- statement: Raw water Q includes spin weights 3/1; thermochemical Q removes the product four, while published
+    2025 S already removes it. Numeric CSV enthalpy is J/mol despite its kJ/mol header.
+  evidence:
+  - literature
+  - source_replay
+- statement: Normalize translation to 18.01528 u at 1 bar but retain dominant-isotope internal states;
+    this is not a complete natural-isotope reaction or mixture.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Frozen source tables, full-state moments and existing current-default gas footprint.
+  conditions:
+  - 298.15, 300, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000 K diagnostics; production comparisons only
+    1500-4000 K.
+  - 75 converged cases, 537 species, 1500-4000 K, 1e-6-100 bar and three C/O values; no new solve.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete natural-isotope thermochemistry and atmospheric abundance accuracy are not quantified.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged H2O polynomial uses NASA thermal shape plus balanced ATcT 1.172 total atomization;
+    legacy energy and thermal differences are separated.
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+- id: normalized_thermal_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: Explicit spin, zero, mass, pressure and unit conventions reveal a material 2025/NASA thermal
+    residual, supporting a later evaluated-thermal candidate rather than immediate unverified adoption.
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: Frozen source comparisons, full-level summaries versus independent published files and every
+    archived H2O potential and oxygen budget reproduce offline.
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete water thermochemistry has quantified physical accuracy for planetary atmosphere
+    abundances across the declared production domain.
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Inspect primary full texts, official 2025 supplements, current ExoMol and same-version ATcT/NASA
+    data; record accessed scope and historical gaps.
+  sources:
+  - tests/data/validation/h2o_source_review/20261103/literature.json
+  - tests/data/validation/h2o_source_review/20261103/sources.json
+  - documents/mceg/h2o_source_review.rst
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+  subject: h2o_sources_20261103
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/h2o_source_review/20261103/literature.json
+    sha256: 1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1
+  - source: tests/data/validation/h2o_source_review/20261103/sources.json
+    sha256: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
+  - source: documents/mceg/h2o_source_review.rst
+    sha256: 716c36e80f4117615d4ab2fef47504ec7cd41266bd23abea8d7c0538426b4e10
+  provenance:
+    role: primary
+    location: documents/mceg/h2o_source_review.rst
+    inspection: partial
+    note: Source replay does not establish a unique unbound central-value correction, complete energy
+      uncertainty or atmospheric physical accuracy.
+- id: source_replay
+  kind: numerical_test
+  summary: Reproduce total atomization, unchanged hybrid, direct state moments, published PF/caloric identities
+    and current-default oxygen footprint.
+  sources:
+  - tests/data/validation/h2o_source_review/20261103/state_samples.json
+  - tests/data/validation/h2o_source_review/20261103/published_samples.json
+  - tests/data/validation/h2o_source_review/20261103/comparison.json
+  - tests/data/validation/h2o_source_review/20261103/receipt.json
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+  subject: h2o_sources_20261103
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/h2o_source_review/20261103/state_samples.json
+    sha256: d929a23dbaf43f20679ae629a902efdff9284c53e6a09ba5cae549f5ab61e8cd
+  - source: tests/data/validation/h2o_source_review/20261103/published_samples.json
+    sha256: b5402dd5cc887d11586796e5bff2c27562ac5aa0da3de8fd19ecc4435f7582d9
+  - source: tests/data/validation/h2o_source_review/20261103/comparison.json
+    sha256: 56d203878488f0b843aac110d66735943b244745a386b7a504a069ed192a3d0c
+  - source: tests/data/validation/h2o_source_review/20261103/receipt.json
+    sha256: 84433207664e5a9a4a0b92a295910186a8705fffe7d863d7af4b21efdfdc695e
+  provenance:
+    role: primary
+    location: documents/mceg/h2o_source_review.rst
+    inspection: inspected
+    note: Source replay does not establish a unique unbound central-value correction, complete energy
+      uncertainty or atmospheric physical accuracy.
+  result: passed
+subjects:
+- id: h2o_sources_20261103
+  implementation: *id001
+  selected_files:
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    documents/mceg/h2o_source_review.rst: 716c36e80f4117615d4ab2fef47504ec7cd41266bd23abea8d7c0538426b4e10
+    tests/model_evidence/h2o_source_review_test.py: e741f4fb3a30030cc10cbbad22d5c473fc589d5e2dd9b505fc28c56bdf0e83c8
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    examples/comparisons/data/major_molecule_adoption.json: 2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/data/validation/h2o_source_review/20261103/README.rst: c3f70bbe5fc281a6ee1987b2027db8e53cf050a36e1933ba6ead52d294bf4cc2
+    tests/data/validation/h2o_source_review/20261103/sources.json: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
+    tests/data/validation/h2o_source_review/20261103/literature.json: 1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1
+    tests/data/validation/h2o_source_review/20261103/state_samples.json: d929a23dbaf43f20679ae629a902efdff9284c53e6a09ba5cae549f5ab61e8cd
+    tests/data/validation/h2o_source_review/20261103/published_samples.json: b5402dd5cc887d11586796e5bff2c27562ac5aa0da3de8fd19ecc4435f7582d9
+    tests/data/validation/h2o_source_review/20261103/nasa9_excerpt.txt: aef29a4e5b7f841fa9cf32753c14bbeee4b7e96a991b77a0b496fcb87ef6d6e3
+    tests/data/validation/h2o_source_review/20261103/comparison.json: 56d203878488f0b843aac110d66735943b244745a386b7a504a069ed192a3d0c
+    tests/data/validation/h2o_source_review/20261103/receipt.json: 84433207664e5a9a4a0b92a295910186a8705fffe7d863d7af4b21efdfdc695e
+contexts:
+- id: source_review
+  scope: Neutral H2O, 2H(g)+O(g)->H2O(g), 1 bar; ten diagnostic nodes at 298.15-4000 K, curated only 1500-4000
+    K; existing 75-case current-default gas archive, no source substitution.
+  settings:
+    reaction: 2H(g)+O(g)->H2O(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT 1.172 total atomization
+    atomic_thermal: NASA retained
+    partition_normalization: Q_raw/4; already spin-free tabulated S; no extra symmetry divisor or ZPE;
+      explicit translational mass shift
+    thermal_candidate: 2025 evaluated functions; continuous candidate and finite substitution not implemented
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: h2o_sources_20261103
+  context: source_review
+  method:
+    id: review_h2o_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy, normalized modern thermochemistry and conserved archived numerical
+      evidence from complete physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - Same-version 2H+O-H2O gives 917.819 kJ/mol. Current/native-NASA energy correction D0/k is 5.019946969
+    K and actual curated potentials reconstruct at every archived node.
+  status: supported
+  origin: reviewed
+- id: normalized_thermal_comparison_review
+  kind: evidence_support
+  claim: normalized_thermal_comparison
+  claim_revision: '1'
+  subject: h2o_sources_20261103
+  context: source_review
+  method:
+    id: review_h2o_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy, normalized modern thermochemistry and conserved archived numerical
+      evidence from complete physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - At 4000 K normalized Q ratio is 0.982063 and Cp difference is -0.345498 J/mol/K. Separate published
+    moments verify enthalpy units and entropy normalization; direct-state/table scope and shared lineage
+    remain explicit.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: h2o_sources_20261103
+  context: source_review
+  method:
+    id: review_h2o_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy, normalized modern thermochemistry and conserved archived numerical
+      evidence from complete physical accuracy.
+  evidence:
+  - source_replay
+  reasons:
+  - Both complete supplied state sets are summarized. Current ExoMol Q/PF residual is below 1.2e-6 and
+    Cp residual below 0.0035 J/mol/K; all 75 current-default oxygen budgets close.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: h2o_sources_20261103
+  context: source_review
+  method:
+    id: review_h2o_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy, normalized modern thermochemistry and conserved archived numerical
+      evidence from complete physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  reasons:
+  - No natural-isotope reaction model, complete correlated-energy uncertainty, consistent continuous 2025
+    candidate or finite source substitution is established. The discrete-state/evaluated Cp scope difference
+    remains a concrete follow-up.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: continuous_thermal_candidate
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Build a continuous 2025 thermal candidate at the existing balanced ATcT anchor and NASA atomic
+    gauge, then compare it on a fixed equilibrium network.
+  requires:
+  - Full 2025 DOI 10.1063/5.0273661 and supplements 10.60893/figshare.jpr.29087330.v1, 10.60893/figshare.jpr.29087339.v1,
+    10.60893/figshare.jpr.29087342.v1 are already obtained.
+  - Resolve numeric J/mol enthalpy and already spin-free entropy before fitting; verify G/H/S/Cp derivatives,
+    interval joins and independent off-node values over 1500-4000 K.
+  - State whether evaluated-table additional contributions or only discrete PW2024 states are included;
+    compare the scopes and assess unbound/scattering consistency with separately represented OH/H species.
+  - Keep dominant-isotope internal states at aggregate mass explicit or implement a justified isotope
+    treatment; run conserved fixed-network finite substitution before adoption.
+  completion: Record the selected thermodynamic scope, fit errors and finite equilibrium response, then
+    make a separately justified production adoption decision.
+- id: existing_energy_provenance
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Complete the same-version reaction covariance trail or targeted historical provenance when needed
+    to resolve a concrete energy question.
+  requires:
+  - ATcT 1.172 covariance for 2H+O-H2O; individual rounded species uncertainties cannot be treated as
+    independent exact values.
+  - Original NASA header references Cox 1989, Woolley 1987 and TRC (10/88) tuv25, or sufficient evaluated
+    documentation for a concrete discrepancy; not every original is a merge prerequisite.
+  completion: Record a justified balanced-energy uncertainty or its remaining covariance limit without
+    conflating first dissociation with total atomization.
+limitations:
+- statement: Current ExoMol, PW2024 and evaluated thermochemistry share spectroscopic and potential-energy
+    inputs; agreement is not independent physical validation.
+  evidence:
+  - literature
+- statement: The 4000 K evaluated-minus-direct Cp difference 0.067981 J/mol/K exceeds published expanded
+    uncertainty 0.042. A unique central-value attribution to the unbound model is not established; few
+    above-threshold discrete states do not explain it.
+  evidence:
+  - literature
+  - source_replay
+- statement: Reaction covariance and some historical originals are unavailable; expanded thermal uncertainties
+    exclude whole-mixture and isotope-model uncertainty.
+  evidence:
+  - literature
+- statement: The 90.6116 percent oxygen footprint is an archived gas calculation, not a source-substitution
+    response or observed atmospheric validation.
+  evidence:
+  - source_replay

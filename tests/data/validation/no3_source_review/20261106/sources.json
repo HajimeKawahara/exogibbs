@@ -1,0 +1,56 @@
+{
+  "access_date": "2026-11-06",
+  "janaf": {
+    "database_doi": "10.18434/T42S31",
+    "files": [
+      {
+        "name": "NO3",
+        "file": "N-009.txt",
+        "url": "https://janaf.nist.gov/tables/N-009.txt",
+        "sha256": "1be1d90bc79b31542a3e190e8f072ce65dc71af3342ae66971a45d4620de8860"
+      },
+      {
+        "name": "N",
+        "file": "N-002.txt",
+        "url": "https://janaf.nist.gov/tables/N-002.txt",
+        "sha256": "1619206bfaf1125f6531433856da5283c38385ed78d5c8f066721027db1012e5"
+      },
+      {
+        "name": "O",
+        "file": "O-001.txt",
+        "url": "https://janaf.nist.gov/tables/O-001.txt",
+        "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+      }
+    ],
+    "inspection": "Official neutral-gas numerical tables inspected; this does not reconstruct every historical derivation or the original FastChem fit basis."
+  },
+  "nasa": {
+    "url": "https://cearun.grc.nasa.gov/cea/thermo.inp",
+    "original_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "report": "NASA/TP-2002-211556",
+    "selected_file": "nasa_selected_records.txt",
+    "inspection": "Official cached CEA records and all selected coefficients/headers checked against frozen screening records."
+  },
+  "atct": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+    "original_sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+    "inspection": "Exact gas-phase CAS identifiers and selected tabulated 0/298 K formation enthalpies; rounded marginal uncertainties, not a reaction covariance."
+  },
+  "references": [
+    {
+      "doi": "10.1039/D4CP02653E",
+      "url": "https://pubs.rsc.org/en/content/articlelanding/2024/cp/d4cp02653e",
+      "title": "2500 vibronic eigenstates of the NO3 radical (Larsson and Viel2024)",
+      "access": "Complete author preprint inspected; raw hash recorded outside repo, no full paper or state list committed",
+      "finding": "Nonadiabatic effects and finite-level completeness limits prevent treating the spectrum as a full hot partition function."
+    },
+    {
+      "doi": "10.1063/1.2715547",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/17430034/",
+      "title": "NO3 vibronic level structure I (Stanton2007)",
+      "access": "Primary abstract inspected; original full text not obtained",
+      "finding": "Earlier coupled-state assignment work; no complete high-temperature thermal validation inferred."
+    }
+  ],
+  "local_reference_scope": "The available refs_exogibbs_202611 and -2 collections were inventoried; relevant Gamache TIPS papers are used where indicated; no original Gurvich volume was present."
+}

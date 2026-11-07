@@ -1,0 +1,207 @@
+{
+  "molecule": "VN",
+  "species_id": "N1V1",
+  "composition": {
+    "V": 1,
+    "N": 1
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "VN": "N-018.txt",
+    "V": "V-005.txt",
+    "N": "N-002.txt"
+  },
+  "nasa9": {
+    "VN": {
+      "composition": {
+        "V": 1,
+        "N": 1
+      },
+      "reference": "Chase,1998 p1616.",
+      "source_line_1based": 10622,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -15817.37285,
+            486.816542,
+            -1.045200388,
+            0.01685261043,
+            -2.334616543e-05,
+            1.58871005e-08,
+            -4.27908088e-12,
+            59814.814,
+            31.44995263
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            1018619.667,
+            -3932.30557,
+            9.85682361,
+            -0.00328922171,
+            1.005181767e-06,
+            -1.243211436e-10,
+            5.48677656e-15,
+            85573.1834,
+            -35.52830762
+          ]
+        }
+      ],
+      "source_name": "VN",
+      "hf298_J_mol": 523000.0,
+      "h298_minus_h0_J_mol": 8799.744,
+      "mass_u": 64.9482
+    },
+    "V": {
+      "composition": {
+        "V": 1
+      },
+      "reference": "Hf:Gurvich,1982 p59. Sugar,1985. Gordon,1999.",
+      "source_line_1based": 10581,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -55353.7602,
+            559.333851,
+            2.675543482,
+            -0.00624304963,
+            1.565902337e-05,
+            -1.372845314e-08,
+            4.16838881e-12,
+            58206.6436,
+            9.52456749
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            1200390.3,
+            -5027.0053,
+            10.58830594,
+            -0.0050443261,
+            1.488547375e-06,
+            -1.785922508e-10,
+            8.113013866e-15,
+            91707.4091,
+            -47.6833632
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            2456040166.0,
+            -1339992.028,
+            278.1039851,
+            -0.02638937359,
+            1.303527149e-06,
+            -3.21468033e-11,
+            3.099999094e-16,
+            10871520.43,
+            -2439.95438
+          ]
+        }
+      ],
+      "source_name": "V",
+      "hf298_J_mol": 517267.064,
+      "h298_minus_h0_J_mol": 7907.064,
+      "mass_u": 50.9415
+    },
+    "N": {
+      "composition": {
+        "N": 1
+      },
+      "reference": "Hf:Cox,1989. Moore,1975. Gordon,1999.",
+      "source_line_1based": 7051,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            56104.6378,
+            4.193905036
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            88765.0138,
+            -107.12315,
+            2.362188287,
+            0.0002916720081,
+            -1.7295151e-07,
+            4.01265788e-11,
+            -2.677227571e-15,
+            56973.5133,
+            4.865231506
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            547518105.0,
+            -310757.498,
+            69.1678274,
+            -0.00684798813,
+            3.8275724e-07,
+            -1.098367709e-11,
+            1.277986024e-16,
+            2550585.618,
+            -584.8769753
+          ]
+        }
+      ],
+      "source_name": "N",
+      "hf298_J_mol": 472680.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 14.0067
+    }
+  },
+  "decision": "Retain production in this source review; prioritize a neutral-VN direct-D0 energy candidate using 4.9968(20) eV while preserving existing thermal functions and fit residuals.",
+  "follow_ups": [
+    "Construct a bounded energy-only candidate with the 2016 neutral ground-atom D0, preserving the physical-source D0 versus fitted-proxy residual distinction; execute fixed-network substitutions before adoption.",
+    "Audit excited electronic and rovibrational completeness separately; the 2025 single-potential thermodynamics and 2026 cation cycle do not replace a complete neutral thermal model."
+  ],
+  "limitations": [
+    "The 2016 and 2026 primary indexed abstracts were inspected; the complete original threshold/cycle uncertainty budgets were not available here.",
+    "The energy-only K ratio is a source sensitivity, not a newly evaluated abundance, complete partition function or production change.",
+    "The 2025 Kratzer paper uses De and 101325 Pa, while this review uses physical D0 and 100000 Pa; its JANAF comparison is not independent experimental validation."
+  ]
+}

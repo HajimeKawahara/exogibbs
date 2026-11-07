@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-05",
+  "downloads": {
+    "TIPS2025.pdf": {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+      "bytes": 773909,
+      "sha256": "9e10ce2fc4b90b486768bece3c21f6deaf0d96852ed85fd028e5b545225f1161",
+      "retrieved_utc": "2026-11-05T00:39:35.757204+00:00"
+    }
+  },
+  "hapi": {
+    "url": "https://raw.githubusercontent.com/hitranonline/hapi/5353f4021d4b344eb9dd3484feeab9d483f30faa/hapi/hapi.py",
+    "sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+    "source_file_read": "/tmp/ch4-literature/hapi.py",
+    "version": "1.3.0.0; TIPS_2025 arrays labelled Zenodo17191976 v1.2",
+    "extraction": "AST literal parsing only; no upstream code execution. Select TIPS_2025_ISOT_HASH and ISOQ_HASH at (19,1) for OCS or (53,1) for CS2. Preserve all 501 nodes as seven-significant-digit scientific notation.",
+    "scope": "July2026 v3 DOI10.5281/zenodo.21358149 release note corrects molecule62 C3H8/C3H4 labels; not independently compared byte-for-byte. This is a pinned v1.2 review, not a claim to vendor latest release."
+  },
+  "atct_1.228": {
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+    "access": "Official index viewed via web tool 2026-11-05; direct urllib download returned HTTP403. Displayed gas/ground values manually transcribed to inputs.json. No fabricated full HTML hash.",
+    "hf0_kJ_mol": {
+      "C": 711.37,
+      "S": 276.85,
+      "CS2": 115.17
+    },
+    "uncertainty": "Displayed marginal uncertainties are not propagated as independent; network covariance unavailable."
+  },
+  "inherited_sources": {
+    "NASA": "Official thermo.inp SHA fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363; selected coefficients/headers already pinned in major_molecule_reference.json.",
+    "JANAF": "Official C-094 March1961 evaluation for COS or C-099 December1976 evaluation for CS2; exact selected nodes already pinned in major_molecule_reference.json.",
+    "original_Gurvich": "1991 vol1/2 citation recorded in selected NASA record; underlying volumes not independently reaudited."
+  },
+  "local_ref_search": "Supplied ref collections inspected by filename; no dedicated OCS/CS2 thermochemical evaluation located. Open primary publications used."
+}

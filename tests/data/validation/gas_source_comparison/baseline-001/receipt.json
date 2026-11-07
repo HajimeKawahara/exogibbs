@@ -1,0 +1,54 @@
+{
+  "schema_version": "1",
+  "snapshot_id": "baseline-001",
+  "execution_kind": "fresh_portable_execution",
+  "executed_at_utc": "2026-11-01T23:07:06.137385+00:00",
+  "command": [
+    "/home/kawahara/miniconda3/bin/python",
+    "mceg/reviews/gas_source_comparison.py",
+    "--output-dir",
+    "results/gas_source_comparison/replay-002"
+  ],
+  "repository_head": "f37556abc89a699598e7d67a29ec2159ad2c1a3c",
+  "implementation_identity": "Selected file hashes include uncommitted files; repository HEAD alone does not identify this execution.",
+  "environment": {
+    "python": "3.12.7",
+    "platform": "Linux-6.8.0-111-generic-x86_64-with-glibc2.35",
+    "numpy": "2.1.0",
+    "jax": "0.6.2",
+    "jaxlib": "0.6.2",
+    "backend": "cpu",
+    "jax_enable_x64": true
+  },
+  "selected_input_sha256": {
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "src/exogibbs/data/ykb4/gibbs_matrices.npz": "2a23ba342773165e384124ad1521b7e6ffdc89b8226bd0d1e4713c2547d03dbf",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/presets/fastchem4.py": "9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76",
+    "src/exogibbs/presets/fastchem.py": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+    "src/exogibbs/thermo/standard.py": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "mceg/reviews/gas_source_comparison.py": "f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385"
+  },
+  "output_sha256": {
+    "comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "table.csv": "add7e0285f8ba6d5be73b37518cdcb5c5f8c06393867c822371d4f9f72948660",
+    "table.rst": "c20257508790fac3626dfc2990e731347a01328e1fdf147d4c8ead1e0c2335a3",
+    "table.md": "bcce582b80e8f55bbf00a894ba2de5e3836af2ed220697a59f29b91f916656d2"
+  },
+  "historical_table_replay": {
+    "result": "passed",
+    "rows": 93,
+    "max_difference_dex": 9.450773497121645e-15,
+    "absolute_tolerance_dex": 1e-10
+  },
+  "replay_tolerances": {
+    "absolute": 2e-11,
+    "relative": 2e-12,
+    "metadata_and_display_tables": "exact"
+  }
+}

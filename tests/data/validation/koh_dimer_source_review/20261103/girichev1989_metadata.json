@@ -1,0 +1,47 @@
+{
+  "DOI": "10.1007/bf00751899",
+  "title": [
+    "Structure, force fields, and vibration frequencies of dimeric molecules and thermodynamic characteristics of monomer-dimer equilibrium of potassium and cesium hydroxides according to gas-phase electron diffraction data"
+  ],
+  "author": [
+    {
+      "given": "G. V.",
+      "family": "Girichev",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "S. B.",
+      "family": "Lapshina",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    }
+  ],
+  "published": {
+    "date-parts": [
+      [
+        1989,
+        5
+      ]
+    ]
+  },
+  "container-title": [
+    "Journal of Structural Chemistry"
+  ],
+  "volume": "30",
+  "issue": "3",
+  "page": "403-408",
+  "URL": "https://doi.org/10.1007/bf00751899"
+}

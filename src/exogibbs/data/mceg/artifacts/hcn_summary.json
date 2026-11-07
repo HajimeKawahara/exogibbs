@@ -1,0 +1,438 @@
+{
+  "source_url": "https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6439534232",
+  "source_status": "preliminary; 2026-10-27 comment; no release adoption",
+  "git_head": "4258624c1b015eeaae4967e8e84e8af25f15c116",
+  "environment": {
+    "python": "3.10.9",
+    "jax": "0.6.2",
+    "numpy": "2.0.2",
+    "backend": "cpu",
+    "dtype": "float64"
+  },
+  "scope": "Two 161-layer profiles from #284/#298; fixed 537-species network and solar budget. Only standard logK.dat solved; other archives audited. No spectra or retrieval.",
+  "cases_passed": 966,
+  "input_audit": {
+    "logK.dat": {
+      "previous_sha256": "e66c639df7e4fa051ce47186f72773a0474d3f3c5ac5cb91a24d1bca459b5e67",
+      "updated_sha256": "3697abccf664aa5f531103b6c7aac6e77efcd4366f8b69d46b7e6ea29a10e0c5",
+      "records": 511,
+      "raw_added": [],
+      "raw_removed": [],
+      "explicit_aliases": {},
+      "changed_coefficients": [
+        "C1H1N1_hcn"
+      ],
+      "changed_compositions": []
+    },
+    "logK_extended.dat": {
+      "previous_sha256": "b3d396907485ec2297369b4f15cb6eb67b41532c0f4b355a24e62fb9a7d63e75",
+      "updated_sha256": "ac26c8ce3ae0a90a8b3e6de2205440d2e82c53d8c57127e8ba19cd41285191cb",
+      "records": 800,
+      "raw_added": [],
+      "raw_removed": [],
+      "explicit_aliases": {},
+      "changed_coefficients": [
+        "C1H1N1_hcn"
+      ],
+      "changed_compositions": []
+    },
+    "logK_hoeijmakers2019.dat": {
+      "previous_sha256": "d9fb4e4510ffc1e6bcd9372559898f971678fbd02c390ebcf33437d3fee3fe4a",
+      "updated_sha256": "6ee0fe65acf88b80621d2e3bab82ba32828835bf789cacb42c9687955d3d122b",
+      "records": 678,
+      "raw_added": [
+        "C1H1N1_hcn"
+      ],
+      "raw_removed": [
+        "C1H1N1_1"
+      ],
+      "explicit_aliases": {
+        "C1H1N1_1": "C1H1N1_hcn"
+      },
+      "changed_coefficients": [
+        "C1H1N1_hcn"
+      ],
+      "changed_compositions": []
+    }
+  },
+  "closure": [
+    {
+      "profile": "isothermal",
+      "model": "curated",
+      "layers": 161,
+      "element_relative_residual": 2.886700042374896e-06,
+      "charge_relative_residual": 6.219508998191676e-14,
+      "mass_action_max_abs_ln": 1.2967404927621828e-12
+    },
+    {
+      "profile": "isothermal",
+      "model": "previous",
+      "layers": 161,
+      "element_relative_residual": 2.9248249178516933e-06,
+      "charge_relative_residual": 3.803171097837166e-14,
+      "mass_action_max_abs_ln": 1.2008172234345693e-12
+    },
+    {
+      "profile": "isothermal",
+      "model": "updated",
+      "layers": 161,
+      "element_relative_residual": 2.8471045099917913e-06,
+      "charge_relative_residual": 6.634957851733582e-14,
+      "mass_action_max_abs_ln": 1.3145040611561853e-12
+    },
+    {
+      "profile": "inverted",
+      "model": "curated",
+      "layers": 161,
+      "element_relative_residual": 2.9094842860461042e-06,
+      "charge_relative_residual": 1.8190241994383206e-14,
+      "mass_action_max_abs_ln": 1.531219595563016e-12
+    },
+    {
+      "profile": "inverted",
+      "model": "previous",
+      "layers": 161,
+      "element_relative_residual": 2.7748788492189497e-06,
+      "charge_relative_residual": 4.220149656356166e-14,
+      "mass_action_max_abs_ln": 1.2079226507921703e-12
+    },
+    {
+      "profile": "inverted",
+      "model": "updated",
+      "layers": 161,
+      "element_relative_residual": 2.7226776392715716e-06,
+      "charge_relative_residual": 3.564987452091911e-14,
+      "mass_action_max_abs_ln": 1.255884285455977e-12
+    }
+  ],
+  "constants": [
+    {
+      "temperature_K": 1500.0,
+      "previous_over_curated": 0.6352885580166039,
+      "updated_over_curated": 0.9675206057737562
+    },
+    {
+      "temperature_K": 2000.0,
+      "previous_over_curated": 0.7065248550356324,
+      "updated_over_curated": 0.9671337912939316
+    },
+    {
+      "temperature_K": 2500.0,
+      "previous_over_curated": 0.753005681372609,
+      "updated_over_curated": 0.9673632060981938
+    },
+    {
+      "temperature_K": 3000.0,
+      "previous_over_curated": 0.7885201118185184,
+      "updated_over_curated": 0.9714526715590723
+    },
+    {
+      "temperature_K": 3500.0,
+      "previous_over_curated": 0.8180831349793042,
+      "updated_over_curated": 0.9784428886983249
+    },
+    {
+      "temperature_K": 4000.0,
+      "previous_over_curated": 0.8429369645503231,
+      "updated_over_curated": 0.9860748708662136
+    }
+  ],
+  "HCN_at_2500K_0p01bar": [
+    {
+      "profile": "inverted",
+      "numerator": "previous",
+      "denominator": "curated",
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "numerator_x": 1.2243118627023482e-10,
+      "denominator_x": 1.6444152264588562e-10,
+      "K_ratio": 0.753005681372609,
+      "atom_product": 0.9887404803327036,
+      "abundance_ratio": 0.7445271990936414,
+      "residual": 4.463096558993129e-14
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "numerator_x": 1.5728351439262355e-10,
+      "denominator_x": 1.6444152264588562e-10,
+      "K_ratio": 0.9673632060981938,
+      "atom_product": 0.9887401050503191,
+      "abundance_ratio": 0.9564707980193276,
+      "residual": -1.4654943925052066e-14
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "previous",
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "numerator_x": 1.5728351439262355e-10,
+      "denominator_x": 1.2243118627023482e-10,
+      "K_ratio": 1.28466919975271,
+      "atom_product": 0.9999996204439973,
+      "abundance_ratio": 1.2846687121487275,
+      "residual": -5.928590951498336e-14
+    }
+  ],
+  "HCN_extrema": [
+    {
+      "profile": "isothermal",
+      "numerator": "previous",
+      "denominator": "curated",
+      "species": "C1H1N1_hcn",
+      "ratio": 0.8190982377359496,
+      "temperature_K": 4000.0,
+      "pressure_bar": 70.79457843841388,
+      "numerator_x": 9.614378251327558e-07,
+      "denominator_x": 1.1737759658600216e-06
+    },
+    {
+      "profile": "isothermal",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "C1H1N1_hcn",
+      "ratio": 0.956194256143226,
+      "temperature_K": 4000.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.5992254950595222e-06,
+      "denominator_x": 1.6724901710975957e-06
+    },
+    {
+      "profile": "isothermal",
+      "numerator": "updated",
+      "denominator": "previous",
+      "species": "C1H1N1_hcn",
+      "ratio": 1.16980854958047,
+      "temperature_K": 4000.0,
+      "pressure_bar": 0.0001412537544622754,
+      "numerator_x": 1.0472284311187118e-12,
+      "denominator_x": 8.952135214726211e-13
+    },
+    {
+      "profile": "inverted",
+      "numerator": "previous",
+      "denominator": "curated",
+      "species": "C1H1N1_hcn",
+      "ratio": 0.7445271990936414,
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "numerator_x": 1.2243118627023482e-10,
+      "denominator_x": 1.6444152264588562e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "C1H1N1_hcn",
+      "ratio": 0.9533419495815396,
+      "temperature_K": 3400.0,
+      "pressure_bar": 39.81071705534978,
+      "numerator_x": 7.459888658898646e-07,
+      "denominator_x": 7.824987311397651e-07
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "previous",
+      "species": "C1H1N1_hcn",
+      "ratio": 1.2846687121487275,
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "numerator_x": 1.5728351439262355e-10,
+      "denominator_x": 1.2243118627023482e-10
+    }
+  ],
+  "largest_updated_over_curated": [
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "S2",
+      "ratio": 0.7957158296603798,
+      "temperature_K": 2725.0,
+      "pressure_bar": 0.0035481338923357567,
+      "numerator_x": 7.211059560399596e-11,
+      "denominator_x": 9.062355292689545e-11
+    },
+    {
+      "profile": "isothermal",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "S2",
+      "ratio": 0.8480244193783292,
+      "temperature_K": 4000.0,
+      "pressure_bar": 0.03162277660168379,
+      "numerator_x": 9.040957038644366e-13,
+      "denominator_x": 1.0661198937257164e-12
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "H2S1",
+      "ratio": 0.8819808593687073,
+      "temperature_K": 2850.0,
+      "pressure_bar": 0.0019952623149688807,
+      "numerator_x": 2.5266685717905197e-09,
+      "denominator_x": 2.8647657655507686e-09
+    },
+    {
+      "profile": "isothermal",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "H2S1",
+      "ratio": 0.8941031928906774,
+      "temperature_K": 4000.0,
+      "pressure_bar": 0.003981071705534973,
+      "numerator_x": 1.1089189872319554e-12,
+      "denominator_x": 1.2402583908091955e-12
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "S1Si1",
+      "ratio": 1.108983544212873,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.0138199820647493e-06,
+      "denominator_x": 9.141884812946721e-07
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "Si2",
+      "ratio": 1.10290345523073,
+      "temperature_K": 2962.5,
+      "pressure_bar": 0.7079457843841388,
+      "numerator_x": 1.0449499301111648e-12,
+      "denominator_x": 9.47453673442848e-13
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "O2Si1",
+      "ratio": 1.097362158158408,
+      "temperature_K": 2500.0,
+      "pressure_bar": 0.01,
+      "numerator_x": 1.2473633330659278e-10,
+      "denominator_x": 1.1366924982717204e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "C1O1S1",
+      "ratio": 1.0935402495854387,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 2.825356365965563e-10,
+      "denominator_x": 2.5836784398531794e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "Mg1S1",
+      "ratio": 1.0872771110031216,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.1805862385802986e-10,
+      "denominator_x": 1.0858190857076812e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "H1S1-",
+      "ratio": 1.0865073517068538,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 4.852984303988697e-10,
+      "denominator_x": 4.466591317918722e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "P1S1",
+      "ratio": 1.0863885555939132,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 2.1762583089828365e-10,
+      "denominator_x": 2.0032043763505104e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "S1-",
+      "ratio": 1.0862037823467887,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.5514664039057719e-10,
+      "denominator_x": 1.428338244738721e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "Mn1S1",
+      "ratio": 1.086198195388281,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.0931861073041396e-12,
+      "denominator_x": 1.0064333672671593e-12
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "Ni1S1",
+      "ratio": 1.0861062532243055,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.743256242356616e-10,
+      "denominator_x": 1.6050512895781976e-10
+    },
+    {
+      "profile": "inverted",
+      "numerator": "updated",
+      "denominator": "curated",
+      "species": "Fe1S1",
+      "ratio": 1.0860975496870098,
+      "temperature_K": 3500.0,
+      "pressure_bar": 100.0,
+      "numerator_x": 1.0236563110174283e-09,
+      "denominator_x": 9.425086276204419e-10
+    }
+  ],
+  "max_HCN_factorization_residual": 1.8135493107251932e-13,
+  "selected_file_sha256": {
+    "mceg/reviews/fastchem_hcn_20261028.py": "996b36aa6cfffab5a1640ac5d2467f076a62c11f443262847f5f32b33ae7a861",
+    "tests/data/validation/new_fastchem_logk/logK.zip": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+    "tests/data/validation/new_fastchem_hcn/logK_hcn.zip": "1eb830a1f3e1fa9b4034c6ed2e2c63652c324a709f63665c2e029df10d28159f",
+    "examples/comparisons/compare_new_fastchem_logk.py": "72323f7f6eaf9cbcda3cb8721ca22a13f80a677bfbf216da5f9336d0b35ba81f",
+    "examples/comparisons/demo_curated_atmosphere.py": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/presets/fastchem.py": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0"
+  },
+  "output_sha256": {
+    "comparison.pdf": "09ce2b3ce15cb1a660293c81e1ba26013054d0f7f071e997b4dd647bda9e8dc8",
+    "comparison.png": "a5059c157d2a1b63ab59fc9fcd6ebb2ba4396f1c2fc6311a962c2ae11f049af3",
+    "hcn_columns.csv": "5e97f096181363cc39a18205ea23ac97ab9c4e42b66648404b1538e2eeeb4392",
+    "inverted.npz": "1648dd459c60ae6f883b2d2d8f26ee9fa8ae0ab842ce2c1f6d51ee6c43c1c25d",
+    "isothermal.npz": "c5820dbaad2f8407aa1d937f78a26de1579cabbe6e27cd07f10cce0cf2e6cc98",
+    "species_extrema.csv": "f80b170af6df5e98402f1b7e381a25a913835dc6492b43e577dc6c3cfbb1fb88"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "molecule": "KO",
+  "reaction": "K(g) + O(g) -> KO(g)",
+  "standard_pressure_Pa": 100000,
+  "balanced_D0_J_mol": {
+    "nasa9": 269999.972,
+    "janaf": 263789.0
+  },
+  "source_samples": [
+    {
+      "temperature_K": 300,
+      "nasa_ln_K": 99.97803086993284,
+      "Q_nasa": 5361.3265877287695,
+      "nasa_common_R_Cp_J_mol_K": 35.37701822276442,
+      "janaf": {
+        "ln_K": 97.03296978430537,
+        "energy_ln_K_shift": -2.4894105760848957,
+        "molecular_thermal_ln_K_shift": -0.45564511910110284,
+        "atomic_thermal_ln_K_shift": -5.390441469188545e-06,
+        "Cp_J_mol_K": 36.001
+      }
+    },
+    {
+      "temperature_K": 500,
+      "nasa_ln_K": 56.04035601075144,
+      "Q_nasa": 11164.72392413523,
+      "nasa_common_R_Cp_J_mol_K": 36.9071933767997,
+      "janaf": {
+        "ln_K": 54.12797202520364,
+        "energy_ln_K_shift": -1.4936463456509372,
+        "molecular_thermal_ln_K_shift": -0.4189407761070427,
+        "atomic_thermal_ln_K_shift": 0.00020313621018175354,
+        "Cp_J_mol_K": 37.223
+      }
+    },
+    {
+      "temperature_K": 1000,
+      "nasa_ln_K": 22.90158478568147,
+      "Q_nasa": 35473.34321745757,
+      "nasa_common_R_Cp_J_mol_K": 38.0922973899735,
+      "janaf": {
+        "ln_K": 21.774467974000256,
+        "energy_ln_K_shift": -0.7468231728254686,
+        "molecular_thermal_ln_K_shift": -0.3805222391733558,
+        "atomic_thermal_ln_K_shift": 0.00022860031760885136,
+        "Cp_J_mol_K": 38.191
+      }
+    },
+    {
+      "temperature_K": 1500,
+      "nasa_ln_K": 11.776557218306845,
+      "Q_nasa": 74827.26293576638,
+      "nasa_common_R_Cp_J_mol_K": 38.84724891802688,
+      "curated_ln_K": 10.912812786799313,
+      "curated_over_nasa_K": 0.42158054371328063,
+      "curated_reaction_Cp_J_mol_K": -2.6564953770500828,
+      "nasa_reaction_Cp_J_mol_K": -2.7596631512502077,
+      "janaf": {
+        "ln_K": 10.913754041287048,
+        "energy_ln_K_shift": -0.4978821152169791,
+        "molecular_thermal_ln_K_shift": -0.3655261893432069,
+        "atomic_thermal_ln_K_shift": 0.0006051275403891054,
+        "Cp_J_mol_K": 38.761
+      }
+    },
+    {
+      "temperature_K": 2000,
+      "nasa_ln_K": 6.185175962693858,
+      "Q_nasa": 130668.8153061396,
+      "nasa_common_R_Cp_J_mol_K": 39.76439911400276,
+      "curated_ln_K": 5.453624104569154,
+      "curated_over_nasa_K": 0.48116171569045674,
+      "curated_reaction_Cp_J_mol_K": -2.4538457048400084,
+      "nasa_reaction_Cp_J_mol_K": -2.032821041030956,
+      "janaf": {
+        "ln_K": 5.453509394702328,
+        "energy_ln_K_shift": -0.3734115864127343,
+        "molecular_thermal_ln_K_shift": -0.35904935824547124,
+        "atomic_thermal_ln_K_shift": 0.0007943766666755891,
+        "Cp_J_mol_K": 39.27
+      }
+    },
+    {
+      "temperature_K": 2500,
+      "nasa_ln_K": 2.8177454669139372,
+      "Q_nasa": 204874.9672304765,
+      "nasa_common_R_Cp_J_mol_K": 41.00946831710895,
+      "curated_ln_K": 2.1628989998980988,
+      "curated_over_nasa_K": 0.5195218201995716,
+      "curated_reaction_Cp_J_mol_K": -2.888229420272348,
+      "nasa_reaction_Cp_J_mol_K": -1.492084606659199,
+      "janaf": {
+        "ln_K": 2.1616550371829186,
+        "energy_ln_K_shift": -0.29872926913018744,
+        "molecular_thermal_ln_K_shift": -0.3581463947207624,
+        "atomic_thermal_ln_K_shift": 0.0007852341199310331,
+        "Cp_J_mol_K": 39.76
+      }
+    },
+    {
+      "temperature_K": 3000,
+      "nasa_ln_K": 0.5665069227332946,
+      "Q_nasa": 299967.9845287686,
+      "nasa_common_R_Cp_J_mol_K": 42.25847194861308,
+      "curated_ln_K": -0.04268937822371521,
+      "curated_over_nasa_K": 0.5437877351789023,
+      "curated_reaction_Cp_J_mol_K": -3.9596465233470983,
+      "nasa_reaction_Cp_J_mol_K": -1.6220676002279035,
+      "janaf": {
+        "ln_K": -0.04397959116061462,
+        "energy_ln_K_shift": -0.24894105760848956,
+        "molecular_thermal_ln_K_shift": -0.36245235584165414,
+        "atomic_thermal_ln_K_shift": 0.0009068995562344639,
+        "Cp_J_mol_K": 40.243
+      }
+    },
+    {
+      "temperature_K": 3500,
+      "nasa_ln_K": -1.0464469749986165,
+      "Q_nasa": 418891.27374743664,
+      "nasa_common_R_Cp_J_mol_K": 43.128309029862386,
+      "curated_ln_K": -1.62954361214061,
+      "curated_over_nasa_K": 0.5581672461969018,
+      "curated_reaction_Cp_J_mol_K": -5.668097014064261,
+      "nasa_reaction_Cp_J_mol_K": -3.057950038951518,
+      "janaf": {
+        "ln_K": -1.6300684096590683,
+        "energy_ln_K_shift": -0.21337804937870533,
+        "molecular_thermal_ln_K_shift": -0.3713101725793493,
+        "atomic_thermal_ln_K_shift": 0.0010667872976029003,
+        "Cp_J_mol_K": 40.723
+      }
+    },
+    {
+      "temperature_K": 4000,
+      "nasa_ln_K": -2.262950549526048,
+      "Q_nasa": 564568.9737751738,
+      "nasa_common_R_Cp_J_mol_K": 43.336078467686306,
+      "curated_ln_K": -2.8319099728893926,
+      "curated_over_nasa_K": 0.5661142175401074,
+      "curated_reaction_Cp_J_mol_K": -8.013580892423837,
+      "nasa_reaction_Cp_J_mol_K": -6.220858173766555,
+      "janaf": {
+        "ln_K": -2.8313315100608145,
+        "energy_ln_K_shift": -0.18670579320636715,
+        "molecular_thermal_ln_K_shift": -0.3829501039369845,
+        "atomic_thermal_ln_K_shift": 0.001274936608584909,
+        "Cp_J_mol_K": 41.201
+      }
+    }
+  ],
+  "footprint": {
+    "model": "curated-oh-v1",
+    "cases": 75,
+    "species": 537,
+    "all_converged": true,
+    "maximum_abs_h_error": 1.7763568394002505e-15,
+    "maximum_element_fraction": 2.3505690274693668e-06,
+    "element": "K",
+    "case_index": 24,
+    "temperature_K": 4000.0,
+    "pressure_bar": 100.0,
+    "C_over_O": 0.5888436553555908,
+    "mole_fraction_at_maximum_share": 4.4168645248201084e-13,
+    "maximum_relative_element_residual": 4.227516114951868e-10
+  },
+  "literature_diagnostics": {
+    "Lee2002_reported_D0_J_mol": 276144.0,
+    "Lee2002_reported_uncertainty_J_mol": 4184.0,
+    "modern_minus_JANAF_hf298_kJ_mol": -15.228000000000002,
+    "scope": "Reported theoretical estimate; neglected atomic fine structure and coupled-state thermals remain explicit."
+  },
+  "production_change": "none",
+  "equilibrium_substitution": "not_run"
+}

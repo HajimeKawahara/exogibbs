@@ -1,0 +1,269 @@
+{
+  "baseline_dataset": "curated-cos-v1",
+  "curated_update": "none",
+  "reused_baseline_cases": 75,
+  "new_endpoint_solves": 75,
+  "primary_tolerance": 5e-14,
+  "strict_tolerance": 2e-14,
+  "networks": [
+    {
+      "network": "ions",
+      "species": 537,
+      "cases": 75,
+      "SO3_ratio_min": 0.9957593936584788,
+      "SO3_ratio_max": 0.998407660415946,
+      "highlighted_case": {
+        "case_index": 12,
+        "temperature_K": 2500.0,
+        "pressure_bar": 0.01,
+        "C_over_O": 0.5888436553555908,
+        "species": "O3S1",
+        "x_before": 3.8108651135000896e-20,
+        "x_after": 3.8011606463508364e-20,
+        "delta_x": -9.70446714925321e-23,
+        "ratio": 0.9974534739855067,
+        "sulfur_share_before": 1.8772479720606106e-15,
+        "sulfur_share_after": 1.8724675112641033e-15
+      },
+      "largest_absolute_response": {
+        "case_index": 55,
+        "temperature_K": 2000.0,
+        "pressure_bar": 1e-06,
+        "C_over_O": 1.5,
+        "species": "H1",
+        "x_before": 0.7156343895146178,
+        "x_after": 0.7156343895146239,
+        "delta_x": 6.106226635438361e-15,
+        "ratio": 1.0000000000000084,
+        "sulfur_share_before": 0.0,
+        "sulfur_share_after": 0.0
+      },
+      "species_extrema": [
+        {
+          "case_index": 12,
+          "temperature_K": 2500.0,
+          "pressure_bar": 0.01,
+          "C_over_O": 0.5888436553555908,
+          "species": "O3S1",
+          "x_before": 3.8108651135000896e-20,
+          "x_after": 3.8011606463508364e-20,
+          "delta_x": -9.70446714925321e-23,
+          "ratio": 0.9974534739855067,
+          "sulfur_share_before": 1.8772479720606106e-15,
+          "sulfur_share_after": 1.8724675112641033e-15
+        },
+        {
+          "case_index": 8,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 0.5888436553555908,
+          "species": "C1O1S1",
+          "x_before": 4.3933387781063654e-10,
+          "x_after": 4.3933387781071926e-10,
+          "delta_x": 8.271806125530277e-23,
+          "ratio": 1.0000000000001883,
+          "sulfur_share_before": 1.9430225883811668e-05,
+          "sulfur_share_after": 1.9430225883815256e-05
+        },
+        {
+          "case_index": 43,
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.0,
+          "species": "C1S2",
+          "x_before": 7.38610590216594e-12,
+          "x_after": 7.386105902169009e-12,
+          "delta_x": 3.069615554396001e-24,
+          "ratio": 1.0000000000004157,
+          "sulfur_share_before": 7.004553017409224e-07,
+          "sulfur_share_after": 7.004553017412136e-07
+        },
+        {
+          "case_index": 53,
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.5,
+          "species": "C1O1",
+          "x_before": 0.000799237119187099,
+          "x_after": 0.0007992371191870486,
+          "delta_x": -5.0415401020575956e-17,
+          "ratio": 0.9999999999999369,
+          "sulfur_share_before": 0.0,
+          "sulfur_share_after": 0.0
+        },
+        {
+          "case_index": 28,
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "C_over_O": 1.0,
+          "species": "H2S1",
+          "x_before": 7.5222685553637315e-06,
+          "x_after": 7.522268555364453e-06,
+          "delta_x": 7.216720710606639e-19,
+          "ratio": 1.000000000000096,
+          "sulfur_share_before": 0.3325028578918694,
+          "sulfur_share_after": 0.3325028578919007
+        },
+        {
+          "case_index": 0,
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "O2S1",
+          "x_before": 1.0923505928139406e-10,
+          "x_after": 1.0923505928141735e-10,
+          "delta_x": 2.3290304122196185e-23,
+          "ratio": 1.0000000000002132,
+          "sulfur_share_before": 4.866913935977662e-06,
+          "sulfur_share_after": 4.866913935978752e-06
+        },
+        {
+          "case_index": 5,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "O1S1",
+          "x_before": 3.566850131350264e-08,
+          "x_after": 3.566850131350771e-08,
+          "delta_x": 5.0689627937249536e-21,
+          "ratio": 1.000000000000142,
+          "sulfur_share_before": 0.0024551932148202216,
+          "sulfur_share_after": 0.0024551932148205793
+        },
+        {
+          "case_index": 30,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 1.0,
+          "species": "S1",
+          "x_before": 1.1316487706382313e-05,
+          "x_after": 1.1316487706381448e-05,
+          "delta_x": -8.656676720938949e-19,
+          "ratio": 0.9999999999999236,
+          "sulfur_share_before": 0.7791017320489898,
+          "sulfur_share_after": 0.7791017320489289
+        },
+        {
+          "case_index": 29,
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "C_over_O": 1.0,
+          "species": "H2O1",
+          "x_before": 0.0007533091010427794,
+          "x_after": 0.00075330910104276,
+          "delta_x": -1.940721888749053e-17,
+          "ratio": 0.9999999999999742,
+          "sulfur_share_before": 0.0,
+          "sulfur_share_after": 0.0
+        },
+        {
+          "case_index": 1,
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.0001,
+          "C_over_O": 0.5888436553555908,
+          "species": "C1O2",
+          "x_before": 6.486020482949987e-08,
+          "x_after": 6.486020482948535e-08,
+          "delta_x": -1.4518674111530742e-20,
+          "ratio": 0.9999999999997762,
+          "sulfur_share_before": 0.0,
+          "sulfur_share_after": 0.0
+        },
+        {
+          "case_index": 55,
+          "temperature_K": 2000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 1.5,
+          "species": "H1",
+          "x_before": 0.7156343895146178,
+          "x_after": 0.7156343895146239,
+          "delta_x": 6.106226635438361e-15,
+          "ratio": 1.0000000000000084,
+          "sulfur_share_before": 0.0,
+          "sulfur_share_after": 0.0
+        },
+        {
+          "case_index": 20,
+          "temperature_K": 4000.0,
+          "pressure_bar": 1e-06,
+          "C_over_O": 0.5888436553555908,
+          "species": "e1-",
+          "x_before": 0.00012411200421793368,
+          "x_after": 0.00012411200421793634,
+          "delta_x": 2.656295322589486e-18,
+          "ratio": 1.0000000000000213,
+          "sulfur_share_before": 0.0,
+          "sulfur_share_after": 0.0
+        }
+      ],
+      "max_constraint_residuals": {
+        "element_relative_residual": 1.4589423859629291e-06,
+        "mass_action_max_abs_ln": 1.6484591469634324e-12,
+        "HCOS_element_relative_residual": 2.9440919862103064e-12,
+        "charge_relative_residual": 1.9516399694714846e-14
+      },
+      "tight_case_indices": [
+        12,
+        27,
+        70
+      ],
+      "tolerance_stability": {
+        "all_delta_ln_x": 1.4575859665910684e-05,
+        "SO3_delta_ln_x": 1.7195134205394424e-12,
+        "visible_delta_ln_x": 1.4575858990895085e-06,
+        "absolute_delta_x": 3.3784489600048046e-14
+      },
+      "gibbs_ordering_resolved_cases": 0,
+      "gibbs_numerical_scale_max": 1.9308260589777397e-16,
+      "isolated_SO3_gibbs_signal_max": 5.810859858122956e-23,
+      "gibbs_interpretation": "Same-model total-G signs count as numerically resolved only when both feasibility-corrected exchanges exceed the displayed floating-point scale; unresolved cases are retained, and no physical bound is inferred.",
+      "gibbs_corrected_current_min": -2.508148132846729e-18,
+      "gibbs_corrected_candidate_max": 2.757840455490285e-18
+    }
+  ],
+  "independent_solver": [
+    {
+      "network": "ions",
+      "case_index": 24,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 3.3399736386524265e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.781518737942904e-11,
+          "mass_action_max_abs_ln": 4.282725285520428e-10
+        },
+        {
+          "dataset": "review-so3-atct1228",
+          "max_abs_delta_log10_x": 3.3399983254355705e-09,
+          "element_relative_residual": 4.2454874374534556e-11,
+          "charge_relative_residual": 1.781518737942904e-11,
+          "mass_action_max_abs_ln": 4.282725285520428e-10
+        }
+      ]
+    },
+    {
+      "network": "ions",
+      "case_index": 27,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 8.560364236148511e-09,
+          "element_relative_residual": 3.0963380793274384e-11,
+          "charge_relative_residual": 4.680142670517009e-12,
+          "mass_action_max_abs_ln": 1.3585577107733116e-10
+        },
+        {
+          "dataset": "review-so3-atct1228",
+          "max_abs_delta_log10_x": 8.56009268153393e-09,
+          "element_relative_residual": 3.0963380793274384e-11,
+          "charge_relative_residual": 4.680142670517009e-12,
+          "mass_action_max_abs_ln": 1.3585577107733116e-10
+        }
+      ]
+    }
+  ],
+  "new_control_solves": 11,
+  "baseline_reuse": "All species/elements/formula-matrix/budgets/potentials verified against named curated_cos; selected baseline controls are fresh cold solves.",
+  "scope": "Fixed element-aggregated ideal gas, 1500-4000 K; no condensation, transport, opacity or full physical uncertainty validation."
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": "1",
+  "source_url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.states.bz2",
+  "source_file_sha256": "28dfbbbb97877a472abfd308bbdefdbd9f312cc30f858f8ed9be5ea4070395e2",
+  "implementation_sha256": "7a5c3fe717951bd95787968f188bb96c260c49bf9b6ab99b52ea6157d902739a",
+  "executed_at_utc": "2026-11-02T05:24:48.796169+00:00",
+  "command": [
+    "/home/kawahara/miniconda3/bin/python",
+    "mceg/reviews/c3_source_review.py",
+    "--states-file",
+    "/tmp/c3-literature/atlast_states.bz2",
+    "--states-output",
+    "tests/data/validation/c3_source_review/20261102/state_sum_checks.json"
+  ],
+  "python": "3.12.7",
+  "numpy": "2.1.0",
+  "columns": "Energy column 2 in cm^-1, total weight column 3, J column 4, |l2| column 10; moments use final energies. Auxiliary calculated energies (column 18) provide a separate Q cross-check.",
+  "state_count": 2166503,
+  "all_weights_equal_2J_plus_1": true,
+  "minimum_energy_cm-1": 0.0,
+  "maximum_energy_cm-1": 19999.994928,
+  "maximum_J": 155.0,
+  "maximum_l2": 12.0,
+  "second_radiation_constant_cm_K": 1.4387768775039336,
+  "interpretation": "Moments of the downloaded finite ground-electronic-state list. Coverage fractions describe included states near declared bounds, not a measured missing-state tail or physical completeness.",
+  "samples": [
+    {
+      "temperature_K": 1.0,
+      "Q": 1.1215672184359138,
+      "Q_using_auxiliary_calculated_energies": 1.1215554922907922,
+      "mean_E_over_kT": 0.40318078065480667,
+      "mean_squared_E_over_kT": 1.502225290959346,
+      "fraction_E_above_15000_cm-1": 0.0,
+      "fraction_J_above_130": 0.0,
+      "fraction_l2_above_10": 0.0
+    },
+    {
+      "temperature_K": 300.0,
+      "Q": 2320.7612100712504,
+      "Q_using_auxiliary_calculated_energies": 2320.763031120063,
+      "mean_E_over_kT": 2.3407785501490888,
+      "mean_squared_E_over_kT": 7.96736670926937,
+      "fraction_E_above_15000_cm-1": 1.2070570021348922e-28,
+      "fraction_J_above_130": 2.786934644977322e-16,
+      "fraction_l2_above_10": 0.004080576605433305
+    },
+    {
+      "temperature_K": 500.0,
+      "Q": 7832.368156194044,
+      "Q_using_auxiliary_calculated_energies": 7832.349219612437,
+      "mean_E_over_kT": 2.429942837633057,
+      "mean_squared_E_over_kT": 8.581030476580256,
+      "fraction_E_above_15000_cm-1": 1.909916450484855e-16,
+      "fraction_J_above_130": 3.1400786259345267e-10,
+      "fraction_l2_above_10": 0.02219610866599633
+    },
+    {
+      "temperature_K": 1000.0,
+      "Q": 46147.22730779261,
+      "Q_using_auxiliary_calculated_energies": 46147.15369569167,
+      "mean_E_over_kT": 2.7303768231120715,
+      "mean_squared_E_over_kT": 10.781547576059973,
+      "fraction_E_above_15000_cm-1": 1.602962183375015e-07,
+      "fraction_J_above_130": 1.2487606530656467e-05,
+      "fraction_l2_above_10": 0.07354491389779312
+    },
+    {
+      "temperature_K": 1500.0,
+      "Q": 146821.00327552957,
+      "Q_using_auxiliary_calculated_energies": 146820.88974151385,
+      "mean_E_over_kT": 2.97793517546624,
+      "mean_squared_E_over_kT": 12.434613706157524,
+      "fraction_E_above_15000_cm-1": 0.00010396514439999459,
+      "fraction_J_above_130": 0.00044251770536521596,
+      "fraction_l2_above_10": 0.10592648257748959
+    },
+    {
+      "temperature_K": 2000.0,
+      "Q": 353837.95331032807,
+      "Q_using_auxiliary_calculated_energies": 353837.81516223063,
+      "mean_E_over_kT": 3.1310857661755063,
+      "mean_squared_E_over_kT": 13.39213729414103,
+      "fraction_E_above_15000_cm-1": 0.0021225290735110798,
+      "fraction_J_above_130": 0.0025900259002484337,
+      "fraction_l2_above_10": 0.12499845504901423
+    },
+    {
+      "temperature_K": 3000.0,
+      "Q": 1293911.7715814612,
+      "Q_using_auxiliary_calculated_energies": 1293911.6154710203,
+      "mean_E_over_kT": 3.229331496781048,
+      "mean_squared_E_over_kT": 13.589607592282167,
+      "fraction_E_above_15000_cm-1": 0.030897008612959933,
+      "fraction_J_above_130": 0.013887264300969647,
+      "fraction_l2_above_10": 0.14466934442010118
+    },
+    {
+      "temperature_K": 4000.0,
+      "Q": 3237989.5835271743,
+      "Q_using_auxiliary_calculated_energies": 3237989.4290440874,
+      "mean_E_over_kT": 3.114884120867894,
+      "mean_squared_E_over_kT": 12.071318088975033,
+      "fraction_E_above_15000_cm-1": 0.0934002959702391,
+      "fraction_J_above_130": 0.02897074274956056,
+      "fraction_l2_above_10": 0.1543030003220035
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "id": "curated-co2-v1",
+  "species": "C1O2",
+  "reaction": "C(g) + 2 O(g) -> CO2(g)",
+  "base_dataset": "curated-tio-v1",
+  "base_data_sha256": "52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1",
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_bar": 1.0,
+  "knots_K": [
+    1500.0,
+    1750.0,
+    2000.0,
+    2250.0,
+    2500.0,
+    2750.0,
+    3000.0,
+    3250.0,
+    3500.0,
+    3750.0,
+    4000.0
+  ],
+  "coefficients": [
+    [
+      -44167.52584238709,
+      -8786.577789564513,
+      -146.43427708333334,
+      6.995988275205704,
+      -0.4744168491156415,
+      0.02997585309815065
+    ],
+    [
+      -53093.98636175575,
+      -9060.206167036535,
+      -127.99305482142857,
+      5.394284288131701,
+      -0.3269979667649494,
+      0.0188314913873171
+    ],
+    [
+      -62277.09946580096,
+      -9301.22325822512,
+      -113.58387484375,
+      4.272435157602274,
+      -0.23407359011282836,
+      0.012412077273125988
+    ],
+    [
+      -71687.85582522507,
+      -9516.447936413899,
+      -102.04689013888888,
+      3.458946727723216,
+      -0.1727023956316458,
+      0.008505682950911364
+    ],
+    [
+      -81303.05590176281,
+      -9710.813157676279,
+      -92.6212075,
+      2.8523667791659335,
+      -0.13058880333744582,
+      0.006050168707233183
+    ],
+    [
+      -91103.76243879455,
+      -9887.990576708595,
+      -84.78713829545454,
+      2.3899878965436727,
+      -0.10059417633165424,
+      0.004486028881345305
+    ],
+    [
+      -101074.24627404951,
+      -10050.774836170793,
+      -78.175879375,
+      2.0321336651761186,
+      -0.0783283967857642,
+      0.0034717317878545373
+    ],
+    [
+      -111201.23971259512,
+      -10201.326148853468,
+      -72.51473144230768,
+      1.7533015488806143,
+      -0.061074295967230796,
+      0.002769408932635997
+    ],
+    [
+      -121473.38559622905,
+      -10341.326157230647,
+      -67.59357848214286,
+      1.5365113893523201,
+      -0.04727748563450973,
+      0.0022233311226287356
+    ],
+    [
+      -131880.813874707,
+      -10472.081773313801,
+      -63.24547591666667,
+      1.3694791756200004,
+      -0.03618162658552393,
+      0.0017549321194820777
+    ]
+  ],
+  "atomic_background_nasa9": [
+    -394890.4052,
+    1287.7915488,
+    -9.280398927,
+    0.001191573767,
+    -3.814301928e-07,
+    4.7904786949999997e-11,
+    -2.1871900444e-15,
+    -8224.686106703462,
+    -2.7941303480000004
+  ],
+  "D0_J_mol": 1598180.0,
+  "D0_over_k_K": 192216.87238218388,
+  "molecular_mass_u": 44.0095,
+  "nuclear_spin_factor": 1,
+  "energy_zero": "Lowest 12C16O2 rovibrational level; retained ATcT 1.172 total atomization to C(3P0)+2 O(3P2). No additional ZPE or symmetry correction.",
+  "isotope_convention": "626 lowest rovibrational zero, nuclear spin1, allowed-level exchange symmetry already counted, NASA molecular mass and atomic thermal functions, ATcT1.172 total atomization energy unchanged",
+  "source_constants": "Retain NIST2014 c2=1.43877736Kcm in internal moments; use currentSI translation and common modernR for calorics. Do not silently refit Hamiltonian constants.",
+  "representation": "C2 quintic Hermite of (G-H0)/R; H,S,Cp are analytic derivatives of one function",
+  "decision": {
+    "name": "CO2",
+    "status": "prefer_conditionally",
+    "source_group": "molecular",
+    "thermal_source": "NIST 2021 12C16O2 thermodynamic tables, Tashkun-Harvey 2025 evaluation",
+    "energy_source": "Retained atom-balanced ATcT 1.172 total atomization",
+    "reason": "Adopt the inspected modern effective-Hamiltonian thermodynamic evaluation, with explicit spin/mass/energy conventions, consistent derivatives and verified finite response. Agreement with NASA or a newer opacity release is not the selection criterion.",
+    "condition": "1500-4000 K, 1 bar standard pressure; representative 626 internal model at NASA elemental mass. Source covariance does not bound all isotope, continuum, dissociation-cutoff or atmospheric uncertainty.",
+    "isotope_convention": "626 lowest rovibrational zero, nuclear spin1, allowed-level exchange symmetry already counted, NASA molecular mass and atomic thermal functions, ATcT1.172 total atomization energy unchanged"
+  },
+  "sources": {
+    "paper": "https://doi.org/10.1063/5.0276615",
+    "dataset": "https://doi.org/10.18434/mds2-2364",
+    "source_table": "https://data.nist.gov/od/ds/mds2-2364/tcfun_626.txt",
+    "source_table_sha256": "22744b0b14b1ae0fc03062b1b26be039ce4653ea56e4aa67e24c3804b64b05af",
+    "review": "documents/mceg/co2_source_review.rst",
+    "candidate": "tests/data/validation/co2_candidate/20261104/candidate.json",
+    "substitution": "tests/data/validation/co2_equilibrium_impact/20261104/summary.json"
+  },
+  "source_sha256": {
+    "tests/data/validation/co2_candidate/20261104/candidate.json": "9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2"
+  },
+  "interpretation": "Single-species CO2 adoption on curated-tio-v1. Exact reviewed NIST626 C2 Gibbs coefficients and unchanged ATcT energy/NASA atom reference; fixed-isotope-average diagnostic is not adopted. Numerical and scoped scientific support do not establish complete natural-isotope or planetary physical accuracy."
+}

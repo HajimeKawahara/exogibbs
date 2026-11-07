@@ -1,0 +1,62 @@
+{
+  "molecule": "H2O2",
+  "species_id": "H2O2",
+  "composition": {
+    "H": 2,
+    "O": 2
+  },
+  "footprint_element": "O",
+  "temperatures_K": [
+    300,
+    500,
+    800,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "atomic_tables": {
+    "H": "tests/data/validation/oh_source_review/20261105/H-001.txt",
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt"
+  },
+  "molecular_janaf_table": "H-070.txt",
+  "atct_version": "1.228",
+  "atct": {
+    "H": {
+      "name": "Hydrogen atom",
+      "formula": "H  (g)",
+      "atct_id": "12385-13-6*0",
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "uncertainty_95pct_kJ_mol": 0.0,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=20"
+    },
+    "O": {
+      "name": "Oxygen atom",
+      "formula": "O  (g)",
+      "atct_id": "17778-80-2*0",
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    },
+    "H2O2": {
+      "name": "Hydrogen peroxide",
+      "formula": "HOOH  (g)",
+      "atct_id": "7722-84-1*0",
+      "hf0_kJ_mol": -129.4,
+      "hf298_kJ_mol": -135.386,
+      "uncertainty_95pct_kJ_mol": 0.057,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=66"
+    }
+  },
+  "partition": {
+    "file": "APTY.pf",
+    "nuclear_spin_divisor": 4,
+    "mass_u": 34.005479304,
+    "scope": "Principal isotope; nuclear-spin-normalized elemental proxy, not a natural isotope mixture."
+  }
+}

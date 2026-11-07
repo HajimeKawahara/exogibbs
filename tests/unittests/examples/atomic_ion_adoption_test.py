@@ -126,7 +126,7 @@ def test_threshold_updates_resolve_energy_errors_but_not_partition_errors():
 
 
 def test_evidence_identifies_the_evaluated_files_and_scientific_limits():
-    directory = ROOT / "results/atomic_ion_adoption"
+    directory = ROOT / "tests/data/validation/atomic_ion_adoption"
     receipt = json.loads((directory / "receipt.json").read_text())
     for name, expected in receipt["selected_file_sha256"].items():
         assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
@@ -136,5 +136,5 @@ def test_evidence_identifies_the_evaluated_files_and_scientific_limits():
     script_hash = receipt["selected_file_sha256"]["examples/comparisons/select_atomic_ions.py"]
     assert "revision: sha256:" + script_hash in contract
     assert "kind: physical_validation\n  status: unknown" in contract
-    assert "results/atomic_ion_adoption/receipt.json" in contract
-    assert "results/atomic_ion_adoption/tests.json" in contract
+    assert "tests/data/validation/atomic_ion_adoption/receipt.json" in contract
+    assert "tests/data/validation/atomic_ion_adoption/tests.json" in contract

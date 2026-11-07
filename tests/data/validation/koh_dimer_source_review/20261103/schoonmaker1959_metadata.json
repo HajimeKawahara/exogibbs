@@ -1,0 +1,56 @@
+{
+  "DOI": "10.1063/1.1730469",
+  "title": [
+    "Mass Spectrometric Study of Alkali Hydroxide Vapors"
+  ],
+  "author": [
+    {
+      "given": "Richard C.",
+      "family": "Schoonmaker",
+      "sequence": "first",
+      "affiliation": [
+        {
+          "name": "Department of Chemistry, Cornell University, Ithaca, New York"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "Richard F.",
+      "family": "Porter",
+      "sequence": "additional",
+      "affiliation": [
+        {
+          "name": "Department of Chemistry, Cornell University, Ithaca, New York"
+        }
+      ],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    }
+  ],
+  "published": {
+    "date-parts": [
+      [
+        1959,
+        9,
+        1
+      ]
+    ]
+  },
+  "container-title": [
+    "The Journal of Chemical Physics"
+  ],
+  "volume": "31",
+  "issue": "3",
+  "page": "830-833",
+  "URL": "https://doi.org/10.1063/1.1730469"
+}

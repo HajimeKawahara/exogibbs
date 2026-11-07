@@ -1,0 +1,336 @@
+{
+  "molecule": "S6",
+  "lowest_archived_E0_state": "S6_buckled",
+  "state_count": 4,
+  "pressure_Pa": 100000,
+  "atomic_mass_u": 32.065,
+  "electronic_degeneracy_policy": "One component per archived record; no extra spin or enantiomer factor.",
+  "scope": "A limited one-electronic-component RRHO diagnostic of the archived PBE0/0.96 entries. 1500-4000 K values stress-test extrapolation and do not establish physical validity. Missing electronic states, isomers, anharmonicity and counting remain unresolved.",
+  "rows": [
+    {
+      "temperature_K": 298.15,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 23336.323850352383,
+        "S_J_mol_K": 376.7462937128346,
+        "Cp_J_mol_K": 113.5909372524824,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 17.41682591568474,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 0.0
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 23336.5972631672,
+        "S_J_mol_K": 376.7472877176017,
+        "Cp_J_mol_K": 113.60188427842597,
+        "isomer_mixing_Cp_J_mol_K": 0.0109610763352306,
+        "internal_ln_Q": 17.416835173492036,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 9.111597822877998e-06,
+          "S6_branched": 1.3761975574153957e-07,
+          "S6_buckled": 0.9999907422355575,
+          "S6_chain_63": 8.546863381663072e-09
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 0.0
+      },
+      "listed_over_lowest_Q": 1.0000092578501496
+    },
+    {
+      "temperature_K": 500.0,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 47687.17994423804,
+        "S_J_mol_K": 438.863438504269,
+        "Cp_J_mol_K": 125.2062472226617,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 21.538140864834084,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 24350.85609388566
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 47731.58694054952,
+        "S_J_mol_K": 438.9632287833091,
+        "Cp_J_mol_K": 125.98960192720375,
+        "isomer_mixing_Cp_J_mol_K": 0.7850690813336364,
+        "internal_ln_Q": 21.539461008651095,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 0.001054439960702545,
+          "S6_branched": 0.00010908388155337572,
+          "S6_buckled": 0.9986807271895106,
+          "S6_chain_63": 0.00015574896823339872
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 24394.989677382317
+      },
+      "listed_over_lowest_Q": 1.0013210155904402,
+      "source_molecular_comparison": {
+        "janaf_S_J_mol_K": 415.817,
+        "nasa_S_J_mol_K": 419.79338198190203,
+        "janaf_Cp_J_mol_K": 125.018,
+        "nasa_Cp_J_mol_K": 125.0711042013246
+      }
+    },
+    {
+      "temperature_K": 1000.0,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 112185.5912213456,
+        "S_J_mol_K": 528.0571643285059,
+        "Cp_J_mol_K": 130.96363678163536,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 28.51088598977811,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 88849.26737099321
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 123785.09491247196,
+        "S_J_mol_K": 541.621623544166,
+        "Cp_J_mol_K": 194.70483115175716,
+        "isomer_mixing_Cp_J_mol_K": 63.77710730465322,
+        "internal_ln_Q": 28.747215818268003,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 0.02646647479302969,
+          "S6_branched": 0.01180792340975644,
+          "S6_buckled": 0.7895202247199191,
+          "S6_chain_63": 0.17220537707729544
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 100448.49764930476
+      },
+      "listed_over_lowest_Q": 1.2665919994066628,
+      "source_molecular_comparison": {
+        "janaf_S_J_mol_K": 504.893,
+        "nasa_S_J_mol_K": 509.089909617672,
+        "janaf_Cp_J_mol_K": 130.792,
+        "nasa_Cp_J_mol_K": 131.8987238876672
+      }
+    },
+    {
+      "temperature_K": 1500.0,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 178008.14888864377,
+        "S_J_mol_K": 581.4193398809948,
+        "Cp_J_mol_K": 132.10264520771688,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 33.13507014570513,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 154671.8250382914
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 220174.0923981879,
+        "S_J_mol_K": 620.2133203290592,
+        "Cp_J_mol_K": 170.2702089731866,
+        "isomer_mixing_Cp_J_mol_K": 38.21567200665831,
+        "internal_ln_Q": 34.41998198334769,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 0.028956986948843123,
+          "S6_branched": 0.021262477084024872,
+          "S6_buckled": 0.27667497487479226,
+          "S6_chain_63": 0.6731055610923399
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 196837.4951350207
+      },
+      "listed_over_lowest_Q": 3.6143492936162533,
+      "source_molecular_comparison": {
+        "janaf_S_J_mol_K": 558.207,
+        "nasa_S_J_mol_K": 563.446097640339,
+        "janaf_Cp_J_mol_K": 132.066,
+        "nasa_Cp_J_mol_K": 136.7064353399951
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 244174.88764459232,
+        "S_J_mol_K": 619.486546010934,
+        "Cp_J_mol_K": 132.5070313635071,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 36.58352596182189,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 220838.56379423995
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 296971.6648014555,
+        "S_J_mol_K": 664.5842448509541,
+        "Cp_J_mol_K": 143.1300007148028,
+        "isomer_mixing_Cp_J_mol_K": 10.655931616833861,
+        "internal_ln_Q": 38.83253604465776,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 0.01945278222407258,
+          "S6_branched": 0.018367547107121553,
+          "S6_buckled": 0.10550361272263607,
+          "S6_chain_63": 0.8566760579461724
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 273635.0675382883
+      },
+      "listed_over_lowest_Q": 9.478348410958704,
+      "source_molecular_comparison": {
+        "janaf_S_J_mol_K": 596.291,
+        "nasa_S_J_mol_K": 603.2881323587014,
+        "janaf_Cp_J_mol_K": 132.675,
+        "nasa_Cp_J_mol_K": 140.0240247938716
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 376856.2127138894,
+        "S_J_mol_K": 673.2802853580587,
+        "Cp_J_mol_K": 132.79772726435232,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 41.615045893844794,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 353519.88886353705
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 434237.42962472513,
+        "S_J_mol_K": 720.3490848333229,
+        "Cp_J_mol_K": 134.58119925967858,
+        "isomer_mixing_Cp_J_mol_K": 1.7992566983368414,
+        "internal_ln_Q": 44.97566322474076,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 0.011252696625762164,
+          "S6_branched": 0.013684721595481921,
+          "S6_buckled": 0.03471382241360998,
+          "S6_chain_63": 0.9403487593651433
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 410900.8323615579
+      },
+      "listed_over_lowest_Q": 28.806968823114616,
+      "source_molecular_comparison": {
+        "janaf_S_J_mol_K": 650.239,
+        "nasa_S_J_mol_K": 660.4137491363988,
+        "janaf_Cp_J_mol_K": 133.432,
+        "nasa_Cp_J_mol_K": 140.88379694939073
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "lowest_archived_state": {
+        "H_above_lowest_archived_E0_J_mol": 509712.27297978435,
+        "S_J_mol_K": 711.4998945838211,
+        "Cp_J_mol_K": 132.89983723756262,
+        "isomer_mixing_Cp_J_mol_K": 0.0,
+        "internal_ln_Q": 45.27499066193961,
+        "conditional_state_fractions": {
+          "S6_buckled": 1.0
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 486375.949129432
+      },
+      "listed_state_sum": {
+        "H_above_lowest_archived_E0_J_mol": 568135.541853914,
+        "S_J_mol_K": 758.8764011786437,
+        "Cp_J_mol_K": 133.49383525346965,
+        "isomer_mixing_Cp_J_mol_K": 0.6030238090471536,
+        "internal_ln_Q": 49.21639864959968,
+        "conditional_state_fractions": {
+          "S6_stack_S3": 0.008340717723651019,
+          "S6_branched": 0.011518725065137727,
+          "S6_buckled": 0.01942085116732413,
+          "S6_chain_63": 0.9607197060438842
+        },
+        "state_offsets_E0_J_mol": {
+          "S6_stack_S3": 28290.813269679482,
+          "S6_branched": 40918.80331400171,
+          "S6_buckled": 0.0,
+          "S6_chain_63": 57612.94744552368
+        },
+        "H_minus_H298_J_mol": 544798.9445907469
+      },
+      "listed_over_lowest_Q": 51.49104904745446,
+      "source_molecular_comparison": {
+        "janaf_S_J_mol_K": 688.708,
+        "nasa_S_J_mol_K": 700.6818226522718,
+        "janaf_Cp_J_mol_K": 134.024,
+        "nasa_Cp_J_mol_K": 138.84960674826317
+      }
+    }
+  ],
+  "curated_change": "none",
+  "new_equilibrium_solves": 0
+}

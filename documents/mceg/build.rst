@@ -61,3 +61,41 @@ without running numerical gallery examples:
 .. code-block:: bash
 
    ./update_doc.sh -D plot_gallery=0
+
+Refresh the package graph snapshot
+----------------------------------
+
+The :doc:`package_graph` embeds ``documents/_static/package-graph.html``,
+a self-contained MCEG Viewer export. Sphinx copies this checked-in snapshot
+with the other static assets, so ordinary documentation builds need neither
+Node.js nor a running viewer. Rebuild the snapshot when the bundled catalog
+or its contracts change; the offline evidence tests check their hashes.
+
+The snapshot uses the ExoGibbs v0.8.0 wheel. Standalone HTML export requires
+MCEG Viewer with **Save as HTML**, introduced in MCEG revision
+``e997ace64439a3e111136a84bff520150cf9b371``.
+To refresh it, use an environment containing the intended ExoGibbs release
+and MCEG with its ``graph`` command, then export the complete package catalog::
+
+   mkdir -p results
+   python -m mceg graph --package exogibbs > results/package-graph.json
+
+From the selected MCEG checkout, build and open its viewer::
+
+   cd viewer
+   npm ci
+   npm run build
+   npm run preview
+
+Open ``package-graph.json`` in the viewer, select English, and choose
+**Save as HTML**. Replace ``documents/_static/package-graph.html`` with the
+downloaded file. Keep the Viewer license in
+``documents/_static/package-graph-LICENSE.txt`` and retain the export's
+embedded notices when updating the viewer.
+The graph includes every record in the loaded export, regardless of the
+current search or filters. It does not embed linked papers.
+
+Run the offline snapshot checks and rebuild the manual::
+
+   pytest tests/model_evidence/package_graph_test.py
+   ./update_doc.sh -D plot_gallery=0 -W --keep-going

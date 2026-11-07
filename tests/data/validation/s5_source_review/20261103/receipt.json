@@ -1,0 +1,23 @@
+{
+  "review_date": "2026-11-03",
+  "command": "python mceg/reviews/s5_source_review.py --output tests/data/validation/s5_source_review/20261103/comparison.json",
+  "interpretation": "Offline source decomposition, official-row audit and existing-grid footprint. No new equilibrium solve, curated adoption or complete physical validation.",
+  "input_and_artifact_sha256": {
+    "mceg/reviews/s5_source_review.py": "df255e49f0ed412849e43e43968c91e27d4a94413a3180d2a5f8b7ebaaa6836d",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "tests/model_evidence/s5_source_review_test.py": "f4b84f06b45934d13d4ce1d04b5db1c7860cfbe6c8ec07bcd82b74f1d07b7c67",
+    "documents/mceg/s5_source_review.rst": "2b303ff7481f2f1f28a8e6f15d08cea5aeb77c16b3628f5662b2c17e6aca68c8",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/s2o_source_investigation/20261102/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "tests/data/validation/s5_source_review/20261103/sources.json": "e003253ecb49148e3476e3b73f70926af3a0e3628e51781214f5b446ea69186d",
+    "tests/data/validation/s5_source_review/20261103/janaf_s5_nodes.json": "e11d3481f01aaebcc06021f644deb2c82bd5447ec54cebaae8c5a9ae3ce07459",
+    "tests/data/validation/s5_source_review/20261103/nasa-s5.txt": "d2672ca97576a70aef3fd577397f1ad308d24e8a24082e54b67eaaf472770179",
+    "tests/data/validation/s5_source_review/20261103/comparison.json": "6e03ca97691160c679aedde7ee167fcf8a2749c06927ad1d9f98865f4198e2fd",
+    "tests/data/validation/s5_source_review/20261103/README.rst": "1b5256fb3a06c646a7b20a34346337d35713b5a1cc1d68b2df5d4868db011f6c"
+  }
+}

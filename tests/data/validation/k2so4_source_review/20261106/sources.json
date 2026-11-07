@@ -1,0 +1,43 @@
+{
+  "review_date": "2026-11-06",
+  "baseline": "e67b3e1a59d58ffff2eaf0cc495f526311348e25",
+  "janaf_downloads": [
+    {
+      "molecule": "K2SO4",
+      "file": "K-021.txt",
+      "url": "https://janaf.nist.gov/tables/K-021.txt",
+      "sha256": "74d08981961c24a2556bdc010dfee5e71b3277ae4245d6756fd79971d60e5cef",
+      "bytes": 4138,
+      "header": "Potassium Sulfate (K2SO4)\tK2O4S1(g)"
+    },
+    {
+      "molecule": "K",
+      "file": "K-005.txt",
+      "url": "https://janaf.nist.gov/tables/K-005.txt",
+      "sha256": "7729eda5976a6eacd68197b80eaadaf4f8bd1805f6673a08206c91827d1c407d",
+      "bytes": 3163,
+      "header": "Potassium (K)\tK1(g)"
+    },
+    {
+      "molecule": "S",
+      "file": "S-006.txt",
+      "url": "https://janaf.nist.gov/tables/S-006.txt",
+      "sha256": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+      "bytes": 3804,
+      "header": "Sulfur (S)\tS1(g)"
+    },
+    {
+      "molecule": "O",
+      "file": "O-001.txt",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "bytes": 3807,
+      "header": "Oxygen (O)\tO1(g)"
+    }
+  ],
+  "nasa_official": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Official selected records match frozen screening coefficients exactly; original Gurvich/Chase ancestry is separately bounded."
+  }
+}

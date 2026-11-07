@@ -6,7 +6,13 @@
 ExoGibbs
 ==================================
 
-Version 0.7
+Version |release|
+
+.. admonition:: MCEG Viewer
+
+   `Open the interactive package graph <_static/package-graph.html>`_
+   to explore the models and evidence bundled with ExoGibbs.
+   See the :doc:`viewer guide <mceg/package_graph>` for details.
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
@@ -32,12 +38,21 @@ Contents
    condensate_profile.rst
    multiphase.rst
    plagioclase_exsolution
+   equilibrium_sensitivity
 
 .. toctree::
    :maxdepth: 1
    :caption: THERMODYNAMICS AND PRESETS:
 
    presets/curated.rst
+   presets/curated_c2h.rst
+   presets/curated_tio.rst
+   presets/curated_co2.rst
+   presets/curated_h2o.rst
+   presets/curated_oh.rst
+   presets/curated_kh.rst
+   presets/curated_ho2.rst
+   presets/curated_cos.rst
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst

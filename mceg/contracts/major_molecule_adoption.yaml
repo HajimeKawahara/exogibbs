@@ -79,8 +79,8 @@ evidence:
   summary: Species-specific table distinguishing preferred, conditional and provisional choices.
   sources:
   - documents/major_molecule_adoption.rst
-  - results/major_molecule_adoption/adoption_table.csv
-  - results/major_molecule_adoption/decisions.csv
+  - tests/data/validation/major_molecule_adoption/adoption_table.csv
+  - tests/data/validation/major_molecule_adoption/decisions.csv
   - mceg/contracts/atomic_ion_adoption.yaml
   scope: The preceding atomic policy was approved by the user; these molecular decisions
     are a new source-adoption proposal. Provisional retention is not proof of optimality.
@@ -152,8 +152,8 @@ evidence:
   result: passed
   summary: All 350 source comparisons and 35 explicit decisions were generated offline.
   sources:
-  - results/major_molecule_adoption/receipt.json
-  - results/major_molecule_adoption/comparison.csv
+  - tests/data/validation/major_molecule_adoption/receipt.json
+  - tests/data/validation/major_molecule_adoption/comparison.csv
   scope: Common-energy CH4 CEA/JANAF ratio reaches about 2.94 at 6000 K; the CaH
     original-source discrepancy exceeds 1e9 at 300 K. These findings do not rank physical accuracy.
 - id: test_run
@@ -163,7 +163,7 @@ evidence:
     pressure conversion, source calorics, domain guards, conflicting evidence and receipt hashes.
   sources:
   - tests/unittests/examples/major_molecule_adoption_test.py
-  - results/major_molecule_adoption/tests.json
+  - tests/data/validation/major_molecule_adoption/tests.json
   scope: Twelve molecular-study tests and 32 prior atomic-ion/preset tests. The test
     receipt records actual execution; no full-package pass is inferred.
 limitations:

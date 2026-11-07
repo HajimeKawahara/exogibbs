@@ -1,0 +1,83 @@
+{
+  "review_date": "2026-11-03",
+  "downloads": [
+    {
+      "url": "https://janaf.nist.gov/tables/O-012.txt",
+      "file": "O-012.txt",
+      "bytes": 3937,
+      "sha256": "e786b264b198a4e3fce25393c511dca8c24d2049651ff20c8f6f44079f064f45",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/Si-005.txt",
+      "file": "Si-005.txt",
+      "bytes": 3545,
+      "sha256": "269ee0967ede0a7277d9bfd946a1e9fa99f5fa02a8dd605f3ba036f63c3850a8",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "file": "O-001.txt",
+      "bytes": 3807,
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "archived": true
+    },
+    {
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf?download=1",
+      "file": "oxygen.pdf",
+      "bytes": 8225185,
+      "sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "archived": false
+    },
+    {
+      "url": "https://arxiv.org/pdf/1501.05393",
+      "file": "ito.pdf",
+      "bytes": 3785107,
+      "sha256": "e823f11b525ebd2ab27e612ce0c647699a14389cdac459f53deafb602915884c",
+      "archived": false
+    },
+    {
+      "url": "https://arxiv.org/html/2111.04859v1",
+      "file": "paper.html",
+      "bytes": 560262,
+      "sha256": "55eb7354c6a66a321a0d616f3a803ff4357b45d98d7aaf69764f988f7e545355",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/SiO/28Si-16O/SiOUVenIR/28Si-16O__SiOUVenIR.pf",
+      "file": "pf",
+      "bytes": 250000,
+      "sha256": "bdd468fabb897535d91c05609d3264bd90455b63c17a32bcb11c7323b5238cc9",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/SiO/28Si-16O/SiOUVenIR/28Si-16O__SiOUVenIR.cp",
+      "file": "cp",
+      "bytes": 265428,
+      "sha256": "67283b5a7d6d118a1108b070ab00587bf31c32dd4047f0adec1fa8c42086e548",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/SiO/28Si-16O/SiOUVenIR/28Si-16O__SiOUVenIR.def.json",
+      "file": "def.json",
+      "bytes": 5238,
+      "sha256": "93ff877b60a1a3c869927f79aca0badb883ee4a32e334d1542f13e00d7ede08a",
+      "archived": false
+    },
+    {
+      "url": "https://www.exomol.com/db/SiO/28Si-16O/SiOUVenIR/28Si-16O__SiOUVenIR.states.bz2",
+      "file": "states.bz2",
+      "bytes": 3238766,
+      "sha256": "acf9fc1069c6a449a4bf2e706652eb0d7b649e6f2ff5bc4b0fbe6d00f98e0756",
+      "archived": false
+    },
+    {
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "file": "nasa-glenn.pdf",
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "archived": false,
+      "inspection": "Existing preceding-review download; SiO,Si,O coefficient blocks inspected here."
+    }
+  ],
+  "scope": "Compact numerical excerpts and state-moment summaries only; full papers/states are not redistributed. The full-state sum can be regenerated with the optional state_moments helper and the hashed original."
+}

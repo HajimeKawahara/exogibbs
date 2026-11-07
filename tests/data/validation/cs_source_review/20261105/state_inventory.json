@@ -1,0 +1,60 @@
+{
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "v"
+  ],
+  "number_of_states": 11497,
+  "maximum_energy_cm-1": 66286.878662,
+  "maximum_J": 258.0,
+  "maximum_v": 49.0,
+  "gtot_over_2Jplus1": [
+    1.0
+  ],
+  "metadata_maximum_energy_cm-1": 30000.0,
+  "metadata_maximum_temperature_K": 3000.0,
+  "metadata_version": 20160726,
+  "published_pf_first_last_T_K": [
+    1.0,
+    3000.0
+  ],
+  "published_pf_samples": [
+    [
+      1.0,
+      1.29
+    ],
+    [
+      150.0,
+      127.9835
+    ],
+    [
+      300.0,
+      256.3153
+    ],
+    [
+      500.0,
+      437.589
+    ],
+    [
+      1000.0,
+      1018.4723
+    ],
+    [
+      1500.0,
+      1828.2064
+    ],
+    [
+      2000.0,
+      2881.0665
+    ],
+    [
+      2500.0,
+      4183.6049
+    ],
+    [
+      3000.0,
+      5741.4663
+    ]
+  ]
+}

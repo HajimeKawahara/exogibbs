@@ -1,0 +1,258 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.gas_curation_release.v0_1
+  name: Gas curation release 0.1.0 record
+  description: Versioned inventory and provenance snapshot for the existing curated-gas-v2 scientific
+    selection. The 108-target registry keeps adopted/retained choices, provisional provenance and unresolved
+    physical questions distinct; no thermochemical replacement is performed by this record.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:f8ac775a45240d077a932c0ab7c7bed016c9e48652e561a430c3bde5f734bb0a
+    entry_points:
+    - mceg/releases/gas_curation/0.1.0.json
+assumptions:
+- statement: Curation version 0.1.0 identifies this record snapshot. It is separate from the package version,
+    curated-gas-v2 dataset name and physical-model identifier.
+  evidence:
+  - release_record_audit
+- statement: Source-specific follow-up scope and completion criteria remain authoritative. A source review
+    may be complete while a future thermal or energy candidate remains open.
+  evidence:
+  - release_record_audit
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original
+    NASA-screen rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific
+    snapshot at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable
+    at 1500-4000 K with one-bar standard pressure. This inventory is not a complete physical review of
+    every species in the 537-species ion-inclusive or 421-species neutral runtime network.'
+  conditions:
+  - Inventory, identifier, hash and record-link verification only.
+  - Existing numerical executions remain historical evidence; the release introduces zero new equilibrium
+    solves.
+  evidence:
+  - release_record_audit
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical accuracy and uncertainty remain source-specific and unquantified by this
+    aggregate release.
+  conditions: []
+  evidence:
+  - release_record_audit
+claims:
+- id: inventory
+  revision: '1'
+  kind: numerical_verification
+  statement: The release manifest enumerates the 108 molecular identifiers and their 93/14/1 screening
+    groups, with source-record associations and adopted or retained decisions kept distinct from provisional
+    source provenance.
+  scope: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original NASA-screen
+    rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific snapshot
+    at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable at 1500-4000
+    K with one-bar standard pressure. This inventory is not a complete physical review of every species
+    in the 537-species ion-inclusive or 421-species neutral runtime network.'
+- id: immutable_identity
+  revision: '1'
+  kind: numerical_verification
+  statement: Release 0.1.0 binds the named curated-gas-v2 factory, its data chain, referenced record revisions
+    and historical numerical receipts by recorded SHA-256 identities. The curation-release identifier
+    does not rename or change physical model exogibbs.curated_gas.v2.
+  scope: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original NASA-screen
+    rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific snapshot
+    at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable at 1500-4000
+    K with one-bar standard pressure. This inventory is not a complete physical review of every species
+    in the 537-species ion-inclusive or 421-species neutral runtime network.'
+- id: traceability
+  revision: '1'
+  kind: numerical_verification
+  statement: The manifest preserves referenced assessment identities and statuses, source-specific follow-up
+    definitions and recorded resolutions. A recorded resolution applies only to its stated task and evidence;
+    inclusion in this release neither closes remaining follow-ups nor promotes an unknown physical assessment
+    to supported.
+  scope: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original NASA-screen
+    rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific snapshot
+    at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable at 1500-4000
+    K with one-bar standard pressure. This inventory is not a complete physical review of every species
+    in the 537-species ion-inclusive or 421-species neutral runtime network.'
+- id: whole_physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: Independent physical evidence establishes complete thermochemical accuracy, correlated uncertainty,
+    state completeness and atmospheric predictive accuracy for every model column represented by this
+    release.
+  scope: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original NASA-screen
+    rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific snapshot
+    at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable at 1500-4000
+    K with one-bar standard pressure. This inventory is not a complete physical review of every species
+    in the 537-species ion-inclusive or 421-species neutral runtime network.'
+evidence:
+- id: release_record_audit
+  kind: numerical_test
+  summary: Registry checks compare the manifest with the frozen target inventory and existing model records,
+    resolve their recorded identities and retain source-specific assessment and follow-up scope.
+  sources:
+  - mceg/releases/gas_curation/0.1.0.json
+  - tests/data/validation/curated_fastchem4_comparison/20261106/targets.json
+  - tests/data/validation/curated_fastchem4_comparison/20261106/receipt.json
+  - mceg/contracts/curated_gas_v2_adoption.yaml
+  - src/exogibbs/data/curated/gas_v2.json
+  scope: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original NASA-screen
+    rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific snapshot
+    at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable at 1500-4000
+    K with one-bar standard pressure. This inventory is not a complete physical review of every species
+    in the 537-species ion-inclusive or 421-species neutral runtime network.'
+  subject: gas_curation_0_1_manifest
+  context: release_record_scope
+  result: passed
+  artifacts:
+  - source: mceg/releases/gas_curation/0.1.0.json
+    sha256: f8ac775a45240d077a932c0ab7c7bed016c9e48652e561a430c3bde5f734bb0a
+  - source: tests/data/validation/curated_fastchem4_comparison/20261106/targets.json
+    sha256: 13eb0e40306705dd22a2cfdcc00502cc1db498137f7989d6b056dde9f9e0ad53
+  - source: tests/data/validation/curated_fastchem4_comparison/20261106/receipt.json
+    sha256: 522cd621e852245e41c762bb83a6f3ea4b3a6650ad40042fbe044a7a3844c030
+  - source: mceg/contracts/curated_gas_v2_adoption.yaml
+    sha256: 54a6c17c06b3b976419060a2b757088d6adaa7762e6e38dfb5670c08e931bbe9
+  - source: src/exogibbs/data/curated/gas_v2.json
+    sha256: 8096a1dc9c0f6e15e222b7c6c9dc6d5693a1a6904913affb463a144034616261
+  provenance:
+    role: primary
+    location: mceg/releases/gas_curation/0.1.0.json
+    inspection: inspected
+    note: The manifest is a new registry of existing reviewed records. Its per-record hashes, assessment
+      IDs, follow-ups, resolutions and receipt references are checked against those records. These bookkeeping
+      checks are not new physical validation or reexecution of the historical numerical experiments.
+subjects:
+- id: gas_curation_0_1_manifest
+  implementation: *id001
+  selected_files:
+    mceg/releases/gas_curation/0.1.0.json: f8ac775a45240d077a932c0ab7c7bed016c9e48652e561a430c3bde5f734bb0a
+    tests/data/validation/curated_fastchem4_comparison/20261106/targets.json: 13eb0e40306705dd22a2cfdcc00502cc1db498137f7989d6b056dde9f9e0ad53
+    tests/data/validation/curated_fastchem4_comparison/20261106/receipt.json: 522cd621e852245e41c762bb83a6f3ea4b3a6650ad40042fbe044a7a3844c030
+    mceg/contracts/curated_gas_v2_adoption.yaml: 54a6c17c06b3b976419060a2b757088d6adaa7762e6e38dfb5670c08e931bbe9
+    src/exogibbs/data/curated/gas_v2.json: 8096a1dc9c0f6e15e222b7c6c9dc6d5693a1a6904913affb463a144034616261
+contexts:
+- id: release_record_scope
+  scope: 'Gas-curation release 0.1.0 records 108 identified neutral molecular columns: 93 original NASA-screen
+    rows, 14 original NASA identity/coverage exclusions and C3H. It freezes the reviewed scientific snapshot
+    at f580e66157edbe6f604e2748d8e1a25d46d08b86 and the existing curated-gas-v2 model, applicable at 1500-4000
+    K with one-bar standard pressure. This inventory is not a complete physical review of every species
+    in the 537-species ion-inclusive or 421-species neutral runtime network.'
+  settings:
+    release_id: gas-curation-v0.1.0
+    curation_version: 0.1.0
+    scientific_snapshot_revision: f580e66157edbe6f604e2748d8e1a25d46d08b86
+    physical_model_id: exogibbs.curated_gas.v2
+    dataset: curated-gas-v2
+    factory: exogibbs.presets.curated_v2.chemsetup
+    target_count: 108
+    new_equilibrium_solves: 0
+assessments:
+- id: inventory_review
+  kind: evidence_support
+  claim: inventory
+  claim_revision: '1'
+  subject: gas_curation_0_1_manifest
+  context: release_record_scope
+  method:
+    id: audit_versioned_gas_curation_records
+    revision: '1'
+    description: Verify finite inventory, immutable identities and record traceability without changing
+      source judgments.
+  evidence:
+  - release_record_audit
+  reasons:
+  - The manifest matches the frozen 108-target comparison inventory and retains the original 93/14/1 grouping
+    and literal molecular identifiers.
+  - Current model selection and inherited provenance status are recorded as separate attributes; retention
+    is not proof that an update is unnecessary.
+  status: supported
+  origin: reviewed
+- id: immutable_identity_review
+  kind: evidence_support
+  claim: immutable_identity
+  claim_revision: '1'
+  subject: gas_curation_0_1_manifest
+  context: release_record_scope
+  method:
+    id: audit_versioned_gas_curation_records
+    revision: '1'
+    description: Verify finite inventory, immutable identities and record traceability without changing
+      source judgments.
+  evidence:
+  - release_record_audit
+  reasons:
+  - The manifest and referenced existing artifacts are hash-pinned. Named factory/data identities and
+    the fixed scientific-snapshot commit are independent of a future public-default alias or documentation
+    rebuild.
+  - This is a curation record release. Existing coefficients, numerical receipts, source-model identifiers
+    and package version are not revised by this contract.
+  status: supported
+  origin: reviewed
+- id: traceability_review
+  kind: evidence_support
+  claim: traceability
+  claim_revision: '1'
+  subject: gas_curation_0_1_manifest
+  context: release_record_scope
+  method:
+    id: audit_versioned_gas_curation_records
+    revision: '1'
+    description: Verify finite inventory, immutable identities and record traceability without changing
+      source judgments.
+  evidence:
+  - release_record_audit
+  reasons:
+  - Per-target associations resolve to existing contract paths and assessment IDs. Their source-level
+    follow-ups and resolution evidence remain available in the pinned records referenced by the manifest.
+  - Supported inventory and hash checks establish record traceability only. Partial numerical/source reconciliation
+    does not establish full physical accuracy or automatically complete another follow-up.
+  status: supported
+  origin: reviewed
+- id: whole_physical_accuracy_review
+  kind: evidence_support
+  claim: whole_physical_accuracy
+  claim_revision: '1'
+  subject: gas_curation_0_1_manifest
+  context: release_record_scope
+  method:
+    id: audit_versioned_gas_curation_records
+    revision: '1'
+    description: Verify finite inventory, immutable identities and record traceability without changing
+      source judgments.
+  evidence:
+  - release_record_audit
+  reasons:
+  - A release number, complete inventory, successful replay and inter-database agreement provide no complete
+    independent physical uncertainty model.
+  - Inherited limitations, provisional sources, isotope/state conventions, high-temperature completeness
+    and molecule-specific unresolved inputs retain their original scope and assessment status.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: continue_source_specific_physical_work
+  target_kind: claim
+  target: whole_physical_accuracy
+  revision: '1'
+  action: Use the manifest record paths and source-specific follow-up IDs to select further physical investigations.
+    Preserve each existing completion criterion and recorded resolution; record any future selection change
+    in a separately identified curation version.
+  requires:
+  - Evidence appropriate to the individual source claim and its stated temperature, identity and reaction
+    scope.
+  completion: A future source-level assessment names the evidence and the exact claim or task it resolves.
+    This does not require closing every physical question before releasing the present inventory.
+limitations:
+- statement: The 14 original NASA identity/coverage exclusions and the separate C3H row are not silently
+    converted into NASA-supported identifications by release registration or FastChem record matching.
+  evidence:
+  - release_record_audit
+- statement: Supported release bookkeeping does not replace any source-level physical assessment. Adopted,
+    retained and provisional are not interchangeable judgments; existing unknowns remain unknown.
+  evidence:
+  - release_record_audit
+- statement: The registry preserves historical execution receipts without counting them as new release
+    calculations. A hash match establishes byte identity, not independent experimental accuracy.
+  evidence:
+  - release_record_audit

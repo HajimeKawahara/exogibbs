@@ -1,0 +1,57 @@
+{
+  "retrieved_date": "2026-11-03",
+  "sources": [
+    {
+      "id": "janaf_dimer",
+      "url": "https://janaf.nist.gov/tables/H-062.txt",
+      "file": "H-062.txt",
+      "sha256": "46c9347ba626444fd747de690d43c75369e326d68d768992cd2699a290b70761",
+      "inspection": "Official exact-node table, neutral hydroxide dimer, 1 bar. HTML dates evaluation December 1970 (1 bar).",
+      "archived": true
+    },
+    {
+      "id": "gurvich1996",
+      "doi": "10.1063/1.555982",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.555982.pdf",
+      "sha256": "99ea039f09de24d3de0f5d94ee4f1c220453aa52dfa2774e1babb526e118b28f",
+      "bytes": 6488642,
+      "inspection": "Sections 3.2.3-3.2.4 and corresponding bibliography read; printed pp 1268-1270 (PDF pp 59-61) visually checked. Numerical excerpts only.",
+      "archived": false,
+      "redistribution": "Full PDF, page images and extracted full text remain in ignored results; not vendored."
+    },
+    {
+      "id": "schoonmaker1958",
+      "doi": "10.1063/1.1744157",
+      "url": "https://doi.org/10.1063/1.1744157",
+      "metadata": "schoonmaker1958_metadata.json",
+      "inspection": "Publisher-deposited Crossref bibliographic metadata read; original publisher PDF request returned HTTP 403. Experimental interpretation here is from Gurvich 1996.",
+      "archived": false
+    },
+    {
+      "id": "rao1960",
+      "doi": "10.1063/1.1731491",
+      "url": "https://doi.org/10.1063/1.1731491",
+      "metadata": "rao1960_metadata.json",
+      "inspection": "Publisher-deposited Crossref bibliographic metadata read; original publisher PDF request returned HTTP 403. Experimental interpretation here is from Gurvich 1996.",
+      "archived": false
+    },
+    {
+      "id": "janaf1974",
+      "doi": "10.1063/1.3253143",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.3253143.pdf",
+      "sha256": "86a3894f0ef2aa0f70fc94b21b1f783fb86a894d6652e1dd472a96cf87c8bd7c",
+      "bytes": 12548829,
+      "inspection": "Printed p 449 (PDF p 140) text and image inspected: dimer identity, C2h geometry, symmetry 2, moment product, 12 estimated modes, formation-energy derivation and bibliography. Original 1-atm/cal table not substituted for modern 1-bar table.",
+      "archived": false,
+      "redistribution": "Full PDF and page image not vendored."
+    },
+    {
+      "id": "buchler1967",
+      "doi": "10.1063/1.1840711",
+      "url": "https://doi.org/10.1063/1.1840711",
+      "metadata": "buchler1967_metadata.json",
+      "inspection": "Publisher issue and Crossref title/abstract read, full text not inspected. The title/abstract concern Cs species; both JANAF1974 and Gurvich1996 cite it for NaOH dimer nonpolarity. This limited abstract does not establish whether NaOH is discussed in the full text. No citation error is inferred.",
+      "archived": false
+    }
+  ]
+}

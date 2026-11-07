@@ -1,0 +1,84 @@
+{
+  "review_date": "2026-11-03",
+  "sources": [
+    {
+      "id": "janaf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "inspection": "Printed pages1738 and1813 visually inspected; existing official acquisition reused; numerical nodes pinned in major_molecule_reference.json.",
+      "archived_full_file": false
+    },
+    {
+      "id": "janaf_web",
+      "url": "https://janaf.nist.gov/tables/O-022.html",
+      "inspection": "Official table inspected;December1973 evaluation.",
+      "archived_full_file": false
+    },
+    {
+      "id": "bc2016",
+      "doi": "10.1051/0004-6361/201526961",
+      "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table1.dat",
+      "inspection": "Existing pinned primary Table1 row and prior major_molecule source review; adopted Luo value, no claim of newly measured2016D0.",
+      "archived_full_file": false
+    },
+    {
+      "id": "jain2023",
+      "doi": "10.1063/5.0146365",
+      "url": "https://www.researchgate.net/publication/370012381_Near-thermo-neutral_electron_recombination_of_titanium_oxide_ions",
+      "inspection": "Published primary full text (CC-BY) rendered at this public mirror; Sections II-VI and Appendices B/C inspected.",
+      "archived_full_file": false
+    },
+    {
+      "id": "toto2019",
+      "doi": "10.1093/mnras/stz1818",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/19McMaHo.pdf",
+      "sha256": "3a4489d163bc931060ca997f445ca61fb2281734ea9a42ad7b76306f59c1ec3d",
+      "inspection": "Author-hosted published primary full text;Section4.2,Table9 and state-completeness discussion.",
+      "archived_full_file": false
+    },
+    {
+      "id": "toto2024",
+      "doi": "10.1093/rasti/rzae037",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/24McBoKe.pdf",
+      "sha256": "946049933ed98b633839f8b99a7ea8ecf593d7f88aa5d54cd0129ed2c9a8214d",
+      "inspection": "Author-hosted published primary full text;hybrid TiO state update,completeness versus line-position accuracy.",
+      "archived_full_file": false
+    },
+    {
+      "id": "hildenbrand1976",
+      "doi": "10.1016/0009-2614(76)80510-6",
+      "url": "https://www.sciencedirect.com/science/article/pii/0009261476805106",
+      "inspection": "Publisher abstract only;D0=662.7+/-6.3kJ/mol from exchange equilibria.",
+      "archived_full_file": false
+    },
+    {
+      "id": "huang2013",
+      "doi": "10.1063/1.4803161",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23656136/",
+      "inspection": "Primary abstract and bibliographic record;IE quoted by inspected Jain2023 full text.",
+      "archived_full_file": false
+    },
+    {
+      "id": "naulin1997",
+      "doi": "10.1016/S0009-2614(97)00019-5",
+      "url": "https://doi.org/10.1016/S0009-2614(97)00019-5",
+      "inspection": "Bibliographic lead only;not used quantitatively or as verified Luo ancestry.",
+      "archived_full_file": false
+    },
+    {
+      "id": "piette2020",
+      "doi": "10.1093/mnras/staa1592",
+      "url": "https://academic.oup.com/mnras/article/496/3/3870/5868254",
+      "inspection": "Primary abstract/introduction,opacity and inversion study;atmospheric motivation,not equilibrium validation.",
+      "archived_full_file": false
+    },
+    {
+      "id": "prinoth2022",
+      "doi": "10.1038/s41550-021-01581-z",
+      "url": "https://www.nature.com/articles/s41550-021-01581-z",
+      "inspection": "Primary abstract;WASP-189b TiO detection is motivation,not a universal abundance calibration.",
+      "archived_full_file": false
+    }
+  ],
+  "exomol": "Individual official PF/definition URLs and whole-file hashes are recorded in exomol_nodes.json;only selected numerical nodes and ground-state audit are committed."
+}

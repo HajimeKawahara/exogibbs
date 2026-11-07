@@ -1,0 +1,23 @@
+{
+  "current": "JANAF molecular thermal functions and JANAF balanced D0 with NASA atomic thermal anchors; piecewise quintic representation in gas_v1.json.",
+  "primary_sources": [
+    {
+      "doi": "10.1016/j.jqsrt.2025.109568",
+      "access": "Full author PDF sections3.4 and3.7, table3 inspected; published correction10.1016/j.jqsrt.2025.109618 tracked. Pinned official HAPI numerical arrays inspected offline.",
+      "finding": "Principal OCS changes from direct sum to harmonic-vibration/product approximation at3380K; table is offered through5000K."
+    },
+    {
+      "doi": "10.1093/mnras/stae1110",
+      "access": "Full publisher text section3.2 and official OYT8 PF/definition inspected.",
+      "finding": "OYT8 recommended maximum2000K. J<=223 does not converge by3000K. PF file nevertheless extends to5000K; values outside recommendation are finite-list diagnostics."
+    }
+  ],
+  "decision": "Retain current JANAF thermal functions provisionally; prioritize a same-version balanced ATcT1.228 energy-only candidate. Neither finite OYT8 levels nor joined TIPS tables justify immediate full-domain thermal replacement.",
+  "limitations": [
+    "Old Gurvich volumes and original JANAF evaluation derivations were not independently reaudited; source attribution and numerical reproduction are narrower claims.",
+    "ATcT version changes are evaluated-network differences, not statistically independent measurements; covariance and full physical uncertainty are absent.",
+    "One principal isotope partition function plus natural-mass translation is an elemental proxy, not an isotopic mixture.",
+    "Finite differences of rounded PF tables are caloric diagnostics with rounding and step checks, not a production derivative model. The direct/product crossover is not smooth.",
+    "No new equilibrium substitution; the archived hot gas grid does not establish relevance across all planetary atmospheres."
+  ]
+}

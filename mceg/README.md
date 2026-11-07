@@ -6,6 +6,28 @@ applicability, claims and scoped evidence. This checkout pilots its frozen
 [H2 solubility law](contracts/h2_solubility.yaml). MCEG is not an ExoGibbs
 runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
+For installed-package and species lookup, see the
+[optional inspection guide](../documents/mceg/optional_inspection.rst).
+`python mceg/build_catalog.py` copies the historical curated records and current
+`curated-gas-v2` records and study artifacts into a committed wheel catalog. Both this builder and
+`exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
+evidence snapshot; matching declared metadata does not validate a user's run.
+
+[Gas curation v0.1](../documents/mceg/gas_curation_release_0_1.rst), canonically
+`0.1.0`, records the scientific snapshot at
+`f580e66157edbe6f604e2748d8e1a25d46d08b86`. Its
+[manifest](releases/gas_curation/0.1.0.json) and
+[aggregate contract](contracts/gas_curation_release_0_1.yaml) supplement the
+existing `exogibbs.curated_gas.v2` record. Dataset `curated-gas-v2`, factory
+`curated_v2`, numerical thermochemistry and the software version are unchanged;
+no Git tag or new runtime API is introduced. Record-only changes use a new
+patch release such as `0.1.1`; numerical, adoption or domain changes require
+the next minor release, `0.2.0`. Earlier release records remain immutable.
+
+Saved evidence lives in [the offline validation fixtures](../tests/data/validation/README.rst).
+Historical records retain their original `results/` paths and hashes; the
+fixture guide explains how to resolve those paths after the relocation.
+
 The [2026-10-20 model inventory](model_inventory.md) adds v0.2 contracts for the
 solubility/magma survey, with separate numerical and physical Assessments and
 fresh receipts. The new records use the companion MCEG volatile-quantity
@@ -19,8 +41,8 @@ the older assessment IDs retain their historical scope.
 The [atomic-ion reference contract](contracts/atomic_ion_reference.yaml) records
 the separate gas-only audit of 49 FastChem4 atomic ions. Its
 [report](../documents/atomic_ion_audit.rst),
-[numerical receipt](../results/atomic_ion_audit/receipt.json) and
-[test receipt](../results/atomic_ion_audit/tests.json) describe the pinned sources,
+[numerical receipt](../tests/data/validation/atomic_ion_audit/receipt.json) and
+[test receipt](../tests/data/validation/atomic_ion_audit/tests.json) describe the pinned sources,
 47 numerical references and two anions without a stable bound-state reference.
 The audit uses the standard library; the existing MCEG v0.1 schema needs no
 extension. The sections below describe the original H2 pilot workflow.
@@ -28,8 +50,8 @@ extension. The sections below describe the original H2 pilot workflow.
 The [atomic-ion adoption contract](contracts/atomic_ion_adoption.yaml) records
 the subsequent [49-species source choices](../documents/atomic_ion_adoption.rst):
 43 NASA9 thermal models with spectroscopic threshold updates, four partition
-models, and two exclusions. The [new receipt](../results/atomic_ion_adoption/receipt.json)
-and [test record](../results/atomic_ion_adoption/tests.json) keep this study
+models, and two exclusions. The [new receipt](../tests/data/validation/atomic_ion_adoption/receipt.json)
+and [test record](../tests/data/validation/atomic_ion_adoption/tests.json) keep this study
 separate from the original audit. The CDS original has now been compared with
 the local partition copy. The choices are not a production preset; continuous
 partition representations and application-specific validation remain necessary.
@@ -38,32 +60,51 @@ The [major-molecule adoption contract](contracts/major_molecule_adoption.yaml)
 records [35 neutral-molecule source decisions](../documents/major_molecule_adoption.rst)
 following approval of the atomic policy. It distinguishes energy anchors from
 thermal functions and retains unresolved source choices explicitly. The
-[adoption table](../results/major_molecule_adoption/adoption_table.csv),
-[numerical receipt](../results/major_molecule_adoption/receipt.json) and
-[test record](../results/major_molecule_adoption/tests.json) are offline study
+[adoption table](../tests/data/validation/major_molecule_adoption/adoption_table.csv),
+[numerical receipt](../tests/data/validation/major_molecule_adoption/receipt.json) and
+[test record](../tests/data/validation/major_molecule_adoption/tests.json) are offline study
 artifacts. Neither this study nor its contract installs a runtime preset.
 
 The [gas-composition impact contract](contracts/gas_thermochemistry_impact.yaml)
 records the subsequent [fixed-network comparison](../documents/gas_thermochemistry_impact.rst)
 of the approved atomic and molecular choices. Its
-[receipt](../results/gas_thermochemistry_impact/receipt.json) distinguishes
+[receipt](../tests/data/validation/gas_thermochemistry_impact/receipt.json) distinguishes
 numerical verification, optional independent FastChem execution, and the limited
 physical evidence. All five models share the same 537 species and elemental
-budget. The [standalone FastChem run](../results/gas_thermochemistry_impact/fastchem_parity.csv)
+budget. The [standalone FastChem run](../tests/data/validation/gas_thermochemistry_impact/fastchem_parity.csv)
 now verifies all 100 cases using the
-[pinned v4.0.3 build](../results/gas_thermochemistry_impact/fastchem_build.json).
+[pinned v4.0.3 build](../tests/data/validation/gas_thermochemistry_impact/fastchem_build.json).
 This is implementation evidence; the complete hybrid's physical accuracy
 remains unestablished.
 
 The [curated gas contract](contracts/curated_gas.yaml) records the subsequent
 [continuous runtime preset](../documents/presets/curated.rst),
 `curated-gas-v1`, on 1500--4000 K. Its
-[validation receipt](../results/curated_gas_validation/receipt.json) covers
+[validation receipt](../tests/data/validation/curated_gas_validation/receipt.json) covers
 the 537-species ion-inclusive and 421-species neutral networks, continuous
 source representations and independent equilibrium comparisons. Runtime
 code consumes pinned numerical JSON only; MCEG remains an optional development
 tool. Earlier source-study contracts and their archived results are historical
 evidence and are not rewritten by this implementation.
+
+The [C2H correction contract](contracts/curated_c2h.yaml) records the adopted
+[historical C2H preset](../documents/presets/curated_c2h.rst), `curated-c2h-v1`:
+NASA thermal functions and balanced ATcT 1.172 atomization energy. Its
+[75-pair comparison](../tests/data/validation/c2h_equilibrium_impact/20261102/README.rst)
+changes C2H alone while re-equilibrating the same 537 species at each fixed
+budget. Source adoption is conditional; numerical verification does not
+establish whole-mixture physical accuracy. The packaged catalog binds this
+study to the new dataset and does not transfer the historical HCN study to it.
+
+The [preliminary FastChem comparison contract](contracts/new_fastchem_logk.yaml)
+adds a v0.2 record for [issue #297](https://github.com/HajimeKawahara/exogibbs/issues/297).
+It records the fixed-network column comparison and
+[five molecular attributions](../tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json),
+including the HCN energy difference and the coupled SiS response.
+[The guide](../documents/mceg/new_fastchem_logk.rst) separates supported numerical
+claims from unknown physical accuracy and unknown metallicity-retrieval effects.
+An authored cross-retrieval follow-up specifies the missing observation/model
+settings and required posterior comparisons; no retrieval has been executed.
 
 The curated receipt has a separate offline consistency check:
 
@@ -83,7 +124,7 @@ coverage of new compositions and conditions.
 
 The [2026-10-19 Hirschmann literature review](reviews/h2_literature_update/README.md)
 records inspection of the original published regression and material-specific
-run bounds. Its [offline replay result](../results/mceg/h2_literature_update.json)
+run bounds. Its [offline replay result](../tests/data/validation/mceg/h2_literature_update.json)
 preserves earlier evidence and unknown physical support. The archived baseline
 and authored review live here; MCEG provides optional generic tooling only.
 Replay requires MCEG `0.2.0rc2` or later and does not require the private PDF,
@@ -108,10 +149,10 @@ remain byte-identical to the previous H2 receipt. The eight scoped tests were
 freshly rerun with ExoEOS `9dc71506264b220fbd496259060cb67a95c1d11c`. No H2 scientific declaration,
 applicability assessment or consumer case input changed.
 
-[The current receipt](../results/mceg/h2_tests_c2d3e8b.json) and
-[JUnit report](../results/mceg/h2_tests_c2d3e8b.xml) preserve eight passing tests,
+[The current receipt](../tests/data/validation/mceg/h2_tests_c2d3e8b.json) and
+[JUnit report](../tests/data/validation/mceg/h2_tests_c2d3e8b.xml) preserve eight passing tests,
 the actual environment/imports and selected source hashes checked against Git
-objects. The [previous receipt](../results/mceg/h2_tests_748f9da.json) and older
+objects. The [previous receipt](../tests/data/validation/mceg/h2_tests_748f9da.json) and older
 records retain their original scope. This refresh validates the unchanged H2
 connection; it supplies no empirical evidence for the new Sun--Yao water law.
 The implementation revision is distinct from the commit publishing the contract.
@@ -126,14 +167,20 @@ PYTHONPATH=/path/to/mceg/src python -m mceg \
 ```
 
 Structure does not establish reference availability, source inspection,
-numerical correctness or scientific applicability. The ordinary provider suite
+numerical correctness or scientific applicability. The offline model-evidence suite
 checks the recorded local file hashes and the contract/guide references without
 importing MCEG. The reference check targets this pilot's fixed text layout;
 it does not parse or validate general YAML:
 
 ```bash
-PYTHONPATH=src python -m pytest -q tests/unittests/mceg_contract_test.py
+PYTHONPATH=src python -m pytest -q tests/model_evidence
 ```
+
+These checks cover review scripts and archived evidence, including studies that
+do not change `src/exogibbs/`. They run separately from `tests/unittests` in CI;
+package API and runtime-independence checks remain in the unit suite. Tests that
+import external MCEG remain optional under `tests/model_contracts/`. Historical
+receipts retain the test paths and hashes used when they were recorded.
 
 The receipt records the exact numerical test selection. Its optional ExoEOS
 connection check needs the audited ExoEOS checkout on PYTHONPATH. No ExoEOS or
@@ -195,3 +242,15 @@ Run `python -m mceg docs --config mceg/docs.yaml` to generate RST only, or
 `./update_doc.sh` from the repository root to regenerate and build HTML.
 See [the documentation build guide](../documents/mceg/build.rst) for installation,
 input selection and output locations. Generated files are ignored by Git.
+
+The C2H correction was adopted as an earlier `curated` default. Its scientific reason is the
+superseded JANAF energy estimate and the thermal discrepancy that persists after
+energy alignment. `curated_v1` preserves the original implementation exactly.
+That historical stage keeps the reviewed `curated-c2h-v1` data identity and passed
+[150 new cold solves](../tests/data/validation/curated_default_adoption/20261102/summary.json),
+75 per network. `default_adoption_review` supports that historical numerical claim;
+complete thermal support and whole-mixture physical accuracy remain unknown.
+Original study scripts are archived before their imports were made explicit;
+`reviews/curated_history.py` resolves their recorded paths. Original receipts,
+data hashes and numerical outputs are unchanged, and old HCN results remain
+attached to the original model only.

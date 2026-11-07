@@ -1,0 +1,67 @@
+{
+  "doi": "10.1063/1.1724828",
+  "url": "https://atct.anl.gov/~ruscic/reprints/Ruscic%202005.pdf",
+  "full_pdf_sha256": "7d951307d29c9cd60a897d14f7b5cb6c26ea05ccefe14de51e2d500d50bca032",
+  "printed_pages": [
+    593,
+    597,
+    598,
+    599
+  ],
+  "inspection": "Full CH2 section inspected; equilibrium and triplet-only three diagnostic nodes transcribed from distinct tables.",
+  "quantity_order": [
+    "temperature_K",
+    "Cp_J_mol_K",
+    "S_J_mol_K",
+    "H_minus_H0_kJ_mol"
+  ],
+  "equilibrated": [
+    [
+      1500,
+      52.639,
+      263.384,
+      64.207
+    ],
+    [
+      2000,
+      55.318,
+      278.942,
+      91.278
+    ],
+    [
+      3000,
+      57.266,
+      301.827,
+      147.784
+    ]
+  ],
+  "triplet_only": [
+    [
+      1500,
+      49.319,
+      260.474,
+      61.445
+    ],
+    [
+      2000,
+      52.381,
+      275.121,
+      86.939
+    ],
+    [
+      3000,
+      55.285,
+      297.003,
+      141.005
+    ]
+  ],
+  "singlet_T0_cm-1": [
+    3147,
+    11497
+  ],
+  "singlet_T0_uncertainty_cm-1": [
+    5,
+    10
+  ],
+  "approximation": "RRHO using separately specified ground and excited electronic states; printed table ends at 3000 K; not a complete anharmonic 4000 K validation."
+}

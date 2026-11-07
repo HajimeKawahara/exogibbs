@@ -1,0 +1,84 @@
+{
+  "repository": "https://github.com/pw31/GGchem",
+  "revision": "65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b",
+  "files": [
+    {
+      "path": "LICENSE",
+      "git_blob_sha1": "9cecc1d4669ee8af2ca727a5d8cde10cd8b2d7cc",
+      "sha256": "589ed823e9a84c56feb95ac58e7cf384626b9cbf4fda2a907bc36e103de1bad2",
+      "exact_upstream_blob_verified": true
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha1": "0cde9315585e305b7df8e2c61c5b272383e0e006",
+      "sha256": "073f1961ddb2fe11dc1510c8df3acfc8bcc86638b8615633edef592c1fb6f613",
+      "exact_upstream_blob_verified": true
+    },
+    {
+      "path": "src16/datamod.f",
+      "git_blob_sha1": "0c23b24dd9517f93235f7c192892a1e5d8fd93d0",
+      "sha256": "85c218afa86d020cee93c1c0ab2d2e001eab98f031c6a4d1bb67921917cce3d8",
+      "exact_upstream_blob_verified": true
+    },
+    {
+      "path": "src16/gauss16.f",
+      "git_blob_sha1": "025145b36dbd47c14600b938a0b1ee75fec0d697",
+      "sha256": "c8b71be5d80de9a4a26d4df151480753cefee60cb73dc08b05155d80e2dace93",
+      "exact_upstream_blob_verified": true
+    },
+    {
+      "path": "src16/is_nan.F",
+      "git_blob_sha1": "2584de2b0ba6747101a7d67943c4d233141303e5",
+      "sha256": "d93e6ee421ba05728abeb2b57cb5c67979b2947ef166e1c39ca2226d740b8369",
+      "exact_upstream_blob_verified": true
+    },
+    {
+      "path": "src16/smchem16.f",
+      "git_blob_sha1": "3a93e04d385c1e329aaa0792193b4051880d3f4f",
+      "sha256": "9cb8c5932c642eb6608f9268f83c12fc3ceef8ca2b6538d2f6da97ef595d53a1",
+      "exact_upstream_blob_verified": true
+    },
+    {
+      "path": "src16/stindex.f",
+      "git_blob_sha1": "638215a7f730391b2b92c262cafb61f79e327f30",
+      "sha256": "769e6d05bc8285eb01f6dd6a7cf62914e78e86bba4d198b842d32a4c728e298f",
+      "exact_upstream_blob_verified": true
+    }
+  ],
+  "adapter_sha256": "c4462b873e100912fed55a4ef7f533c2b36ab2943c68853b994e2487527fd75f",
+  "compiler": "GNU Fortran (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0",
+  "build_commands": [
+    [
+      "gfortran",
+      "-fdefault-real-8",
+      "-fdefault-double-8",
+      "-O2",
+      "-std=legacy",
+      "-c",
+      "$EXOGIBBS_ROOT/results/phosphorus_cold/ggchem/upstream/src16/datamod.f",
+      "$EXOGIBBS_ROOT/results/phosphorus_cold/ggchem/upstream/src16/gauss16.f",
+      "$EXOGIBBS_ROOT/results/phosphorus_cold/ggchem/upstream/src16/stindex.f",
+      "$EXOGIBBS_ROOT/results/phosphorus_cold/ggchem/upstream/src16/is_nan.F",
+      "$EXOGIBBS_ROOT/results/phosphorus_cold/ggchem/upstream/src16/smchem16.f"
+    ],
+    [
+      "gfortran",
+      "-fdefault-real-8",
+      "-fdefault-double-8",
+      "-O2",
+      "-std=legacy",
+      "$EXOGIBBS_ROOT/mceg/reviews/phosphorus_ggchem_driver.f90",
+      "datamod.o",
+      "gauss16.o",
+      "stindex.o",
+      "is_nan.o",
+      "smchem16.o",
+      "-o",
+      "$EXOGIBBS_ROOT/results/phosphorus_cold/ggchem/phosphorus_ggchem"
+    ]
+  ],
+  "binary_sha256": "9fe6d2b83c4ac83059e6390f2528a1a97dd437a2c91af018dcfc80a0225f0418",
+  "scope": "Unmodified SMCHEM16; independent NASA9 evaluation and pressure iteration in the adapter.",
+  "source_zip_sha256": "a31522d39d0c1a815845f712d94ea6cdee9292db2e11e55eb4b44a340637faf5",
+  "source_zip": "tests/data/validation/phosphorus_cold/ggchem_source.zip"
+}

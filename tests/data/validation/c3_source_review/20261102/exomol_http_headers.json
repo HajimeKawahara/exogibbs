@@ -1,0 +1,33 @@
+[
+  {
+    "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.pf",
+    "status": 200,
+    "headers": {
+      "Date": "Mon, 02 Nov 2026 05:18:39 GMT",
+      "Last-Modified": "Mon, 04 Mar 2024 17:39:13 GMT",
+      "ETag": "\"1e848-612d9342f9240\"",
+      "Content-Length": "125000"
+    }
+  },
+  {
+    "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.def",
+    "status": 200,
+    "headers": {
+      "Date": "Mon, 02 Nov 2026 05:18:40 GMT",
+      "Last-Modified": "Thu, 04 Jun 2026 14:58:05 GMT",
+      "ETag": "\"2014-6536ec57bd940\"",
+      "Content-Length": "8212"
+    }
+  },
+  {
+    "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.states.bz2",
+    "status": 200,
+    "headers": {
+      "Date": "Mon, 02 Nov 2026 05:18:41 GMT",
+      "Last-Modified": "Tue, 27 Jan 2026 12:22:39 GMT",
+      "ETag": "\"2a865eb-6495dadec61c0\"",
+      "Content-Length": "44590571",
+      "Content-Type": "application/x-bzip2"
+    }
+  }
+]

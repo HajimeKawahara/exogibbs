@@ -1,0 +1,57 @@
+{
+  "source_url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Hydrogen.pdf",
+  "printed_page": 1339,
+  "pdf_page_1based": 79,
+  "pdf_sha256": "7c06e41eb753635a560e491c41ed04d2a5608fce3a656843b858aefb8e138427",
+  "inspection": "Manually transcribed from rendered primary PDF; units match table header. The PDF and current online H-079 formation columns differ. Thermal columns match at these sampled nodes.",
+  "column_units": {
+    "temperature_K": "K",
+    "cp_J_mol_K": "J mol^-1 K^-1",
+    "entropy_J_mol_K": "J mol^-1 K^-1",
+    "enthalpy_increment_kJ_mol": "kJ mol^-1",
+    "formation_enthalpy_kJ_mol": "kJ mol^-1",
+    "formation_gibbs_kJ_mol": "kJ mol^-1"
+  },
+  "rows": [
+    {
+      "temperature_K": 298.15,
+      "cp_J_mol_K": 34.774,
+      "entropy_J_mol_K": 212.652,
+      "enthalpy_increment_kJ_mol": 0,
+      "formation_enthalpy_kJ_mol": 108.499,
+      "formation_gibbs_kJ_mol": 96.306
+    },
+    {
+      "temperature_K": 500,
+      "cp_J_mol_K": 38.43,
+      "entropy_J_mol_K": 231.466,
+      "enthalpy_increment_kJ_mol": 7.377,
+      "formation_enthalpy_kJ_mol": 104.065,
+      "formation_gibbs_kJ_mol": 89.512
+    },
+    {
+      "temperature_K": 1000,
+      "cp_J_mol_K": 47.278,
+      "entropy_J_mol_K": 261.0,
+      "enthalpy_increment_kJ_mol": 28.94,
+      "formation_enthalpy_kJ_mol": 97.668,
+      "formation_gibbs_kJ_mol": 77.753
+    },
+    {
+      "temperature_K": 1500,
+      "cp_J_mol_K": 52.104,
+      "entropy_J_mol_K": 281.202,
+      "enthalpy_increment_kJ_mol": 53.934,
+      "formation_enthalpy_kJ_mol": 32.627,
+      "formation_gibbs_kJ_mol": 85.642
+    },
+    {
+      "temperature_K": 3000,
+      "cp_J_mol_K": 56.417,
+      "entropy_J_mol_K": 319.071,
+      "enthalpy_increment_kJ_mol": 136.247,
+      "formation_enthalpy_kJ_mol": 34.194,
+      "formation_gibbs_kJ_mol": 137.942
+    }
+  ]
+}

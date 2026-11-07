@@ -1,0 +1,160 @@
+{
+  "review_date": "2026-11-03",
+  "decision": "Retain existing NASA thermal plus ATcT energy in this source review; prefer a bounded, convention-consistent NIST thermal candidate for further implementation and finite substitution.",
+  "sources": [
+    {
+      "id": "tashkun_harvey_2025",
+      "doi": "10.1063/5.0276615",
+      "citation": "J. Phys. Chem. Ref. Data 54, 023102 (2025)",
+      "url": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959695",
+      "file": "tashkun_harvey_2025.pdf",
+      "inspection": "Full NIST author manuscript, dated 7 May 2025",
+      "sha256": "62aa6bb406454eb5f52081d8c10bd301542b6b3b38c2243373e1b7e16247b983",
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "nist_thermochemistry",
+      "doi": "10.18434/mds2-2364",
+      "url": "https://data.nist.gov/od/id/mds2-2364",
+      "inspection": "All 12 isotope tables and natural table downloaded and read",
+      "public_data_year": 2021,
+      "paper_year": 2025,
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "ucl4000_2020",
+      "doi": "10.1093/mnras/staa1874",
+      "citation": "MNRAS 496, 5282-5291 (2020)",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/20YuMeFr.pdf",
+      "file": "ucl4000_2020.pdf",
+      "inspection": "Published full text",
+      "sha256": "85daad8be73732e015be442ce248c128e81bdf10a7d5668d5e8471a1a9c41c85",
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "dozen_2026",
+      "doi": "10.1093/mnras/staf2135",
+      "citation": "MNRAS 545, staf2135 (2026); online 2 December 2025",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25YuBaBo.pdf",
+      "file": "dozen_2026.pdf",
+      "inspection": "Published full text",
+      "sha256": "56e4214057cb451735aef0e3d7028250ad494fc376018514e764a7f6a41e81dc",
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "atct_1172",
+      "doi": "10.17038/CSE/2440254",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Versioned index and CO2 species 25/O species 21 provenance pages inspected; C species 20 provenance page inaccessible. Original individual combustion papers not inspected.",
+      "Hf0_kJ_mol": {
+        "C": 711.381,
+        "O": 246.844,
+        "CO2": -393.111
+      },
+      "CO2_major_contributors_percent": 91.1,
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "nasa",
+      "url": "https://ntrs.nasa.gov/citations/20020085330",
+      "inspection": "Official report metadata inspected; coefficients and source header read from frozen original adoption reference. Gurvich 1991 volume 2 part 1 p27 / part 2 p24 not retrieved.",
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "atomic_carbon",
+      "url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/carbontable5.htm",
+      "inspection": "Official C I ground and fine-structure level table read",
+      "ground_term": "3P0",
+      "fine_structure_cm-1": [
+        0,
+        16.41671,
+        43.4135
+      ],
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "atomic_oxygen",
+      "url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/oxygentable5.htm",
+      "inspection": "Official O I ground and fine-structure level table read",
+      "ground_term": "3P2",
+      "fine_structure_cm-1": [
+        0,
+        158.265,
+        226.977
+      ],
+      "access_date": "2026-11-03"
+    },
+    {
+      "id": "jwst_co2",
+      "doi": "10.1038/s41586-022-05269-w",
+      "url": "https://www.nature.com/articles/s41586-022-05269-w",
+      "inspection": "Primary article page and abstract inspected; CO2 detection near4.3um motivates priority, not validation of this model. Online2022/printNature614(2023).",
+      "access_date": "2026-11-03"
+    }
+  ],
+  "nist": {
+    "dataset_published_year": 2021,
+    "work_completed_year": 2020,
+    "paper_year": 2025,
+    "temperature_table_K": [
+      1,
+      6000
+    ],
+    "626_levels": 11590044,
+    "626_Jmax": 342,
+    "626_energy_cut_cm-1": 44000,
+    "626_ZPE_cm-1": 2531.8282,
+    "energy_cut_interpretation": "CO+O dissociation cutoff, not total C+2O atomization D0",
+    "R_J_mol_K": 8.3144598,
+    "c2_K_cm": 1.43877736,
+    "KB_J_K": 1.38064852e-23,
+    "h_J_s": 6.62607004e-34,
+    "amu_kg": 1.66053886e-27,
+    "standard_pressure_Pa": 100000,
+    "nuclear_spin_included": true,
+    "natural_mixture": "Abundance-weighted thermodynamic properties; no extra ideal-mixture entropy. Do not directly insert natural S into the NASA atomic convention.",
+    "equation_5": "Author PDF prints plus before squared mean. Independent published Q/H/S/Cp identities and equation18 support variance minus; table values are not modified.",
+    "high_temperature_warning": "Natural table warns no molecular dissociation above about3500K; distinguish frozen species from reacting mixture Cp, retaining bound-state/cutoff/continuum limits.",
+    "uncertainty": "Standard uncertainty propagated from effective-Hamiltonian parameter covariance; does not bound every systematic error."
+  },
+  "exomol": {
+    "UCL-4000": {
+      "definition_version": "20200630",
+      "current_states": 3562798,
+      "current_Jmax": 230,
+      "paper_line_states": 3480477,
+      "paper_line_Jmax": 202,
+      "upper_energy_cm-1": 36000,
+      "NIST_paper_table6_UCL_Q": {
+        "1000": 2838,
+        "2000": 24622,
+        "3000": 114728,
+        "4000": 376550
+      },
+      "current_distributed_PF_interpretation": "Numerically matches current states cut at26000cm-1; release intent/history unconfirmed. Full states match Table6 instead."
+    },
+    "Dozen": {
+      "definition_version": "20260115",
+      "current_states": 3646814,
+      "current_Jmax": 250,
+      "upper_energy_cm-1": 36000,
+      "main_line_list_scope_K": 3000,
+      "minor_line_list_scope_K": 2000
+    },
+    "shared_inputs": "Ames2 PES/TROVE for both; empirical CDSD/HITRAN data overlap NIST spectroscopic ancestry. New transition intensities are not new equilibrium validation.",
+    "626_mass_u": 43.989829239132,
+    "626_nuclear_spin_factor": 1,
+    "626_symmetry": "Allowed levels already enforce exchange symmetry; no second division by2.",
+    "626_zero": "Lowest rovibrational state; no second ZPE correction."
+  },
+  "uninspected_originals": [
+    "Gurvich1991 volume2 part1 p27 and part2 p24",
+    "Individual ATcT graphite combustion papers",
+    "ATcT1.172 C-specific provenance page"
+  ],
+  "not_merge_gates": [
+    "Complete historical paper retrieval",
+    "Full ATcT reaction covariance",
+    "UCL distributed-file release history; the identified cutoff can be avoided by using full states/NIST tables."
+  ]
+}

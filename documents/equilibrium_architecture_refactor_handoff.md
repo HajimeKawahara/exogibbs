@@ -92,7 +92,7 @@ Authoritative production documents:
 3. `documents/fixed_support_solver_v2_design.md`
 4. `documents/condensate_profile.rst`
 5. `benchmarks/fixed_support_v2/README.md`
-6. `refactory_strategy.md`
+6. [Legacy cleanup decision record at v0.7.0](https://github.com/HajimeKawahara/exogibbs/blob/v0.7.0/refactory_strategy.md) (historical)
 
 ## 4. Validation checkpoint inherited from PR #140
 

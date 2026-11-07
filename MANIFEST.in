@@ -53,7 +53,25 @@ include src/exogibbs/data/nasa9/NOTICE.txt
 
 # Versioned, reviewed gas thermochemistry
 include src/exogibbs/data/curated/gas_v1.json
+include src/exogibbs/data/curated/gas_v2.json
+include src/exogibbs/data/curated/c2h_v1.json
+include src/exogibbs/data/curated/tio_v1.json
+include src/exogibbs/data/curated/co2_v1.json
+include src/exogibbs/data/curated/h2o_v1.json
+include src/exogibbs/data/curated/oh_v1.json
+include src/exogibbs/data/curated/kh_v1.json
+include src/exogibbs/data/curated/ho2_v1.json
+include src/exogibbs/data/curated/cos_v1.json
+include src/exogibbs/data/curated/cn_v1.json
+include src/exogibbs/data/curated/ps_v1.json
+include src/exogibbs/data/curated/tio2_v1.json
+include src/exogibbs/data/curated/hcp_v1.json
+include src/exogibbs/data/curated/c2h2_v1.json
+include src/exogibbs/data/curated/ch2_v1.json
 include src/exogibbs/data/curated/README.rst
+
+# Optional scientific records; reading them never requires MCEG at runtime.
+recursive-include src/exogibbs/data/mceg *.json *.yaml
 
 # Pinned absolute standard-state references for multiphase connections
 include src/exogibbs/data/young2023/standard_states.json
@@ -66,5 +84,19 @@ include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
 # Unvalidated transcription retained in the repository but not distributed
 recursive-exclude src/exogibbs/data/sharp_huebner *
 
-# Documentation submodule is published separately
+# Runtime code and required data ship in distributions. Development material
+# and archived scientific evidence remain available in the Git repository.
+prune .github
+prune benchmarks
 prune doc_ExoGibbs
+prune docs
+prune documents
+prune examples
+prune external_data
+prune logs
+prune mceg
+prune ref
+prune reports
+prune results
+prune tests
+exclude .gitignore .gitmodules AGENTS.md run_examples.sh update_doc.sh

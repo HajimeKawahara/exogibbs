@@ -39,7 +39,7 @@ jobs:
             echo "scientific=true" >> "$GITHUB_OUTPUT"
           elif git diff --quiet "$BASE_SHA...$HEAD_SHA" -- \
             examples benchmarks src/exogibbs \
-            tests/unittests/examples tests/unittests/benchmarks \
+            tests/unittests/examples tests/unittests/benchmarks tests/data \
             .github/workflows/main.yml pyproject.toml; then
             echo "scientific=false" >> "$GITHUB_OUTPUT"
           else
@@ -84,6 +84,31 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: results/pytest.xml
+
+  model-evidence:
+    name: Offline model evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test deps
+        run: |
+          python -m pip install -e .
+          python -m pip install pytest matplotlib==3.9.1
+      - name: Run review-script and archived-evidence checks
+        run: |
+          mkdir -p results
+          pytest tests/model_evidence --durations=20 --junitxml=results/model-evidence.xml
+      - name: Upload model-evidence results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Model Evidence Results (Python 3.11)
+          path: results/model-evidence.xml
 
   scientific:
     name: Scientific regressions

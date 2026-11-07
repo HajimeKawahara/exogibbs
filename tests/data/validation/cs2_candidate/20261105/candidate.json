@@ -1,0 +1,51 @@
+{
+  "id": "cs2_retained_nasa_thermal_atct1228_candidate_v1",
+  "species": "C1S2",
+  "reaction": "C(g)+2 S(g)->CS2(g)",
+  "composition": {
+    "C": 1,
+    "S": 2
+  },
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "standard_pressure_Pa": 100000,
+  "gas_constant_J_mol_K": 8.31446261815324,
+  "base_dataset": "curated-cos-v1",
+  "baseline_ATcT_version": "1.172",
+  "candidate_ATcT_version": "1.228",
+  "baseline_hf0_kJ_mol": {
+    "C": 711.381,
+    "S": 276.83,
+    "CS2": 115.88
+  },
+  "candidate_hf0_kJ_mol": {
+    "C": 711.37,
+    "S": 276.85,
+    "CS2": 115.17
+  },
+  "base_D0_J_mol": 1149161.0,
+  "D0_J_mol": 1149900.0,
+  "delta_D0_J_mol": 739.0,
+  "delta_D0_over_R_K": 88.88127037657455,
+  "original_reaction_coefficients": [
+    -290657.11879999994,
+    305.3618268,
+    -2.143804896,
+    0.002452146352,
+    -1.085151917728e-06,
+    1.8553147419e-10,
+    -1.02500512842e-14,
+    -141430.04878506047,
+    -19.670007488000003
+  ],
+  "representation": "Retain the exact adopted NASA9 reaction; subtract only delta(D0/R) from G/R. No thermal refit, isotope change or double energy alignment.",
+  "uncertainty_scope": "Evaluated central values in two correlated ATcT versions; version shift is not an independent measurement or a significance test. Reaction covariance and full thermal uncertainty are unavailable.",
+  "source_sha256": {
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "tests/data/validation/cs2_source_review/20261105/inputs.json": "673a28041b60f2f505ebd82f15229bd5809bde45f34c151bcb74d3a9418eebaa",
+    "tests/data/validation/cs2_source_review/20261105/sources.json": "6d17ec9beeb05397af07750b4f26cfc0dd944e388eee6fb723cbdd7bd79f19f1"
+  }
+}

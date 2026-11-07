@@ -1,17 +1,39 @@
 inventory_version: '0.1'
 scope: 2026-10-20 solubility/magma inventory at 7dc3ce1183c0b3d74e24cde502f638cac3625b83. Scan all packaged
-  source/data and four explicitly listed archived study scripts. Solubility laws, existing contracts
-  and located preset/buffer/connection families are mapped. Other files remain unreviewed, not implicitly
-  support-only. Other examples and downloaded inputs are outside scope.
+  source/data and four explicitly listed archived study scripts. Solubility laws, existing contracts and
+  located preset/buffer/connection families are mapped. Other files remain unreviewed, not implicitly
+  support-only. The 2026-10-24 extension registers the preliminary FastChem comparison and its molecular-attribution
+  review. The 2026-11-02 extension maps the corrected curated default and the preserved original; both
+  default modes have new numerical closure checks. Other examples and downloaded inputs are outside scope.
 source_roots:
 - src/exogibbs
 - examples/comparisons/audit_atomic_ions.py
 - examples/comparisons/select_atomic_ions.py
 - examples/comparisons/select_major_molecules.py
 - examples/comparisons/compare_gas_thermochemistry.py
+- examples/comparisons/compare_new_fastchem_logk.py
+- mceg/reviews/new_fastchem_logk_20261024.py
 contract_roots:
 - mceg/contracts
 files:
+  src/exogibbs/presets/curated_c2h.py:
+    sha256: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    role: model
+    note: C2H default adoption, explicit legacy selection, or historical comparison replay; physical support
+      remains scoped.
+  src/exogibbs/data/curated/c2h_v1.json:
+    sha256: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    role: model
+    note: NASA CCH thermal functions with balanced ATcT 1.172 atomization energy; conditional adoption.
+  examples/comparisons/compare_new_fastchem_logk.py:
+    sha256: a1b23a6319269bd235d0c749a559aaedfbc8006ab5fd63574e855fd61494f63c
+    role: model
+    note: C2H default adoption, explicit legacy selection, or historical comparison replay; physical support
+      remains scoped.
+  mceg/reviews/new_fastchem_logk_20261024.py:
+    sha256: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
+    role: support
+    note: Five-sample mass-action attribution; no spectra or retrieval execution.
   examples/comparisons/audit_atomic_ions.py:
     sha256: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     role: model
@@ -58,10 +80,10 @@ files:
     note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
       inventory, not physical validation or exhaustive variant review.
   src/exogibbs/presets/curated.py:
-    sha256: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    sha256: 14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1
     role: model
-    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
-      inventory, not physical validation or exhaustive variant review.
+    note: C2H default adoption, explicit legacy selection, or historical comparison replay; physical support
+      remains scoped.
   src/exogibbs/presets/fastchem.py:
     sha256: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
     role: model
@@ -115,7 +137,52 @@ files:
     role: model
     note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
       inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/curated_v1.py:
+    sha256: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    role: model
+    note: C2H default adoption, explicit legacy selection, or historical comparison replay; physical support
+      remains scoped.
 models:
+- id: exogibbs.curated_c2h.ions_true
+  description: Corrected curated default; 75 new cold solves for this mode. Original substitution and
+    independent-solver evidence remain ion-inclusive.
+  bindings:
+  - path: src/exogibbs/presets/curated.py
+    symbol: chemsetup
+    settings:
+      ions: true
+  - path: src/exogibbs/presets/curated_c2h.py
+    symbol: chemsetup
+    settings:
+      ions: true
+  - path: src/exogibbs/data/curated/c2h_v1.json
+  contracts:
+  - path: mceg/contracts/curated_c2h.yaml
+    model_id: exogibbs.curated_c2h.v1
+- id: exogibbs.curated_c2h.ions_false
+  description: Corrected curated default; 75 new cold solves for this mode. Original substitution and
+    independent-solver evidence remain ion-inclusive.
+  bindings:
+  - path: src/exogibbs/presets/curated.py
+    symbol: chemsetup
+    settings:
+      ions: false
+  - path: src/exogibbs/presets/curated_c2h.py
+    symbol: chemsetup
+    settings:
+      ions: false
+  - path: src/exogibbs/data/curated/c2h_v1.json
+  contracts:
+  - path: mceg/contracts/curated_c2h.yaml
+    model_id: exogibbs.curated_c2h.v1
+- id: exogibbs.new_fastchem_logk_comparison
+  description: Preliminary-data source sensitivity with molecular attribution and an unexecuted retrieval follow-up.
+  bindings:
+  - path: examples/comparisons/compare_new_fastchem_logk.py
+    symbol: comparison_setups
+  contracts:
+  - path: mceg/contracts/new_fastchem_logk.yaml
+    model_id: exogibbs.new_fastchem_logk_comparison.v1
 - id: exogibbs.h2_solubility
   description: Auxiliary solubility law h2_solubility; linear/log entry points share the same scientific
     identity.
@@ -223,9 +290,9 @@ models:
   - path: mceg/contracts/gas_thermochemistry_impact.yaml
     model_id: exogibbs.gas_thermochemistry_impact.v1
 - id: exogibbs.curated_gas.ions_true
-  description: Curated-gas source choices with ions=True; shared family contract.
+  description: Preserved curated-gas-v1, explicitly selected for historical reproduction.
   bindings:
-  - path: src/exogibbs/presets/curated.py
+  - path: src/exogibbs/presets/curated_v1.py
     symbol: chemsetup
     settings:
       ions: true
@@ -234,9 +301,9 @@ models:
   - path: mceg/contracts/curated_gas.yaml
     model_id: exogibbs.curated_gas.v1
 - id: exogibbs.curated_gas.ions_false
-  description: Curated-gas source choices with ions=False; shared family contract.
+  description: Preserved curated-gas-v1, explicitly selected for historical reproduction.
   bindings:
-  - path: src/exogibbs/presets/curated.py
+  - path: src/exogibbs/presets/curated_v1.py
     symbol: chemsetup
     settings:
       ions: false

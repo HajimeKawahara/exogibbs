@@ -1,0 +1,274 @@
+{
+  "molecule": "Na2SO4",
+  "species_id": "Na2O4S1",
+  "composition": {
+    "Na": 2,
+    "S": 1,
+    "O": 4
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "Na2SO4": "Na-026.txt",
+    "Na": "Na-005.txt",
+    "S": "S-006.txt",
+    "O": "O-001.txt"
+  },
+  "nasa9": {
+    "Na2SO4": {
+      "composition": {
+        "Na": 2,
+        "S": 1,
+        "O": 4
+      },
+      "reference": "Gurvich,1982 pt1 p349 pt2 p385.",
+      "source_line_1based": 7685,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            83442.8321,
+            -1210.880769,
+            8.742353,
+            0.0360079663,
+            -5.11764596e-05,
+            3.48156904e-08,
+            -9.32193122e-12,
+            -121738.7045,
+            -20.61505785
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -575448.311,
+            -981.706034,
+            19.73310397,
+            -0.000293639552,
+            6.49870817e-08,
+            -7.4624794e-12,
+            3.46249166e-16,
+            -127059.7762,
+            -76.67871596
+          ]
+        }
+      ],
+      "source_name": "Na2SO4",
+      "hf298_J_mol": -1040132.302,
+      "h298_minus_h0_J_mol": 20971.698,
+      "mass_u": 142.04214
+    },
+    "Na": {
+      "composition": {
+        "Na": 1
+      },
+      "reference": "Hf:Cox,1989. Martin,W.C.,1981. Gordon,1999.",
+      "source_line_1based": 7465,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            0.0,
+            0.0,
+            2.5,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            12183.82949,
+            4.24402818
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            952572.338,
+            -2623.807254,
+            5.16259662,
+            -0.001210218586,
+            2.306301844e-07,
+            -1.249597843e-11,
+            7.22677119e-16,
+            29129.63564,
+            -15.19717061
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            1592533392.0,
+            -971783.666,
+            223.8443963,
+            -0.02380930558,
+            1.352018117e-06,
+            -3.93697111e-11,
+            4.630689121e-16,
+            7748677.26,
+            -1939.615505
+          ]
+        }
+      ],
+      "source_name": "Na",
+      "hf298_J_mol": 107500.0,
+      "h298_minus_h0_J_mol": 6197.428,
+      "mass_u": 22.98977
+    },
+    "S": {
+      "composition": {
+        "S": 1
+      },
+      "reference": "Hf: Cox,1989 p22. Martin,W.C.,1990. Gordon,1999.",
+      "source_line_1based": 8804,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -317.484182,
+            -192.4704923,
+            4.68682593,
+            -0.0058413656,
+            7.53853352e-06,
+            -4.86358604e-09,
+            1.256976992e-12,
+            33235.9218,
+            -5.718523969
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -485424.479,
+            1438.830408,
+            1.258504116,
+            0.000379799043,
+            1.630685864e-09,
+            -9.54709585e-12,
+            8.041466646e-16,
+            23349.9527,
+            15.59554855
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            -130200541.4,
+            69093.6202,
+            -11.76228025,
+            0.00160154085,
+            -1.05053334e-07,
+            4.34182902e-12,
+            -7.675621927e-17,
+            -526148.503,
+            132.2195251
+          ]
+        }
+      ],
+      "source_name": "S",
+      "hf298_J_mol": 277170.0,
+      "h298_minus_h0_J_mol": 6657.425,
+      "mass_u": 32.065
+    },
+    "O": {
+      "composition": {
+        "O": 1
+      },
+      "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+      "source_line_1based": 7864,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -7953.6113,
+            160.7177787,
+            1.966226438,
+            0.00101367031,
+            -1.110415423e-06,
+            6.5175075e-10,
+            -1.584779251e-13,
+            28403.62437,
+            8.40424182
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            261902.0262,
+            -729.872203,
+            3.31717727,
+            -0.000428133436,
+            1.036104594e-07,
+            -9.43830433e-12,
+            2.725038297e-16,
+            33924.2806,
+            -0.667958535
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            177900426.4,
+            -108232.8257,
+            28.10778365,
+            -0.002975232262,
+            1.854997534e-07,
+            -5.79623154e-12,
+            7.191720164e-17,
+            889094.263,
+            -218.1728151
+          ]
+        }
+      ],
+      "source_name": "O",
+      "hf298_J_mol": 249175.003,
+      "h298_minus_h0_J_mol": 6725.403,
+      "mass_u": 15.9994
+    }
+  },
+  "decision": "Retain Na2SO4: the gas identity and old thermal construction can be audited, but current vapor studies do not independently supply a complete replacement standard-state function. Revisit energy and low-frequency thermal inputs before a candidate.",
+  "follow_ups": [
+    "Reconcile the 1979/1985 molecular sublimation measurements with condensed-phase anchors and fragmentation/decomposition corrections before selecting a new gas formation energy.",
+    "Replace estimated low-frequency molecular modes only with an explicit gas-phase structural/thermal model; evaluate derivative-consistent G/H/S/Cp and high-temperature extrapolation separately."
+  ],
+  "limitations": [
+    "JANAF thermal inputs mix measured matrix/electron-diffraction constraints with estimated modes; numerical ancestry agreement is not full physical validation.",
+    "2011 mass-spectrometric partial pressures are approximate and contain fragmentation/cross-section assumptions; they are not isolated formation constants from neutral atoms.",
+    "No new equilibrium substitution, complete physical uncertainty or cold/oxidizing/condensed-phase validation."
+  ]
+}

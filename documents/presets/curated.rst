@@ -3,9 +3,65 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The first dataset, ``curated-gas-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-gas-v2``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
+
+:doc:`Gas curation v0.1 <../mceg/gas_curation_release_0_1>` (canonical version
+``0.1.0``) records this scientific snapshot separately from the software
+version. It retains the dataset, ``curated_v2`` factory and numerical model;
+the release manifest pins its sources and evidence.
+
+The :doc:`gas-v2 adoption <../mceg/curated_gas_v2_adoption>` combines 27 reviewed
+recommendations, changing 28 species because cis/trans-HNO2 are updated together.
+It adopts bounded energy corrections while retaining existing thermal fits,
+except for O2, which uses the evaluated 2025 natural-isotope thermal model.
+HNCO/NCO and NO2/N2O4 are also updated together. NaCN, KCN and C2N2 retain their
+existing functions. The full combined model receives its own production
+equilibrium verification; individual candidate abundance changes are not
+treated as results for the combined model.
+
+The preceding updates retain the existing thermal functions and change only
+reviewed formation energies: :doc:`HCP <../mceg/curated_hcp_adoption>` uses the
+CCCBDB correction, followed by ATcT 1.228 energy updates for
+:doc:`acetylene <../mceg/curated_c2h2_adoption>` and
+:doc:`CH2 <../mceg/curated_ch2_adoption>`.
+Reaction G and H increase by 62.308, 1.135 and 4.948 kJ/mol, respectively;
+S, Cp and inherited fit residuals are unchanged. Alternative thermal models
+remain controls. In particular, the CH2 reconstruction exposes an unresolved
+inconsistency in the published combined caloric table and is not adopted.
+
+The preceding :doc:`TiO2 update <../mceg/curated_tio2_adoption>` adds measured rotational and
+vibrational thermal functions with retained energy. It follows the
+:doc:`PS thermal update <../mceg/ps_curated_adoption>` and
+:doc:`CN energy update <../mceg/curated_cn_adoption>` on the COS base.
+The :doc:`COS update <curated_cos>` adopts balanced ATcT energy while retaining
+its JANAF molecular and NASA atomic thermal functions on the HO2 base.
+The :doc:`HO2 update <curated_ho2>` replaces the obsolete JANAF formation energy
+with exact NASA thermal functions and balanced ATcT energy on the KH base.
+The :doc:`KH update <curated_kh>` adopts the spectroscopic KH energy while
+retaining its thermal functions, layered over the OH version.
+The :doc:`OH update <curated_oh>` replaces inherited JANAF OH with the
+reviewed NASA thermal functions and balanced ATcT 1.172 energy. It retains the
+:doc:`evaluated H2O update <curated_h2o>`,
+:doc:`NIST 626 CO2 update <curated_co2>`, :doc:`TiO update <curated_tio>`
+and :doc:`C2H correction <curated_c2h>`.
+The source preference is supported within the declared gas-model domain;
+complete physical uncertainty remains unquantified.
+
+Use ``curated_v1.chemsetup``, ``curated_c2h.chemsetup``,
+``curated_tio.chemsetup``, ``curated_co2.chemsetup`` or ``curated_h2o.chemsetup``
+to reproduce the earlier datasets, or ``curated_oh.chemsetup`` for the preceding OH version, and
+``curated_kh.chemsetup``, ``curated_ho2.chemsetup`` and ``curated_cos.chemsetup``
+for those versions. ``curated_cn.chemsetup`` and ``curated_ps.chemsetup`` retain
+the intermediate CN and CN/PS stages. ``curated_tio2.chemsetup``,
+``curated_hcp.chemsetup`` and ``curated_c2h2.chemsetup`` preserve their successive
+versions. ``curated_ch2.chemsetup`` preserves the preceding default.
+Use ``curated_v2.chemsetup`` to select the current version explicitly. Each supports
+``ions=False`` and retains its identity and historical evidence. Changing one
+formation function can alter coupled abundances throughout the network.
+See the adoption guides for source choices and cumulative
+production verification.
 
 Migration from the Ni/Co-only preset
 ------------------------------------
@@ -197,9 +253,37 @@ The model combines :doc:`../atomic_ion_adoption` and
   Co+, C-, Ca- and Ge- use the adopted partition models. N- and Zn- are excluded.
 * 35 major molecules carry explicit preferred, conditional or provisional
   decisions; 23 change numerical constants and 12 retain the existing fits.
-* 427 other species retain pinned FastChem4 constants and are marked
-  ``inherited_unreviewed``. The 27 atoms and electron define the zero reference
+* C2H uses NASA thermal functions with balanced ATcT 1.172 atomization energy,
+  conditionally preferred over the inherited fit.
+* TiO uses TOTO state thermodynamics and Jain D0 = 6.824 +/- 0.010 eV, with
+  explicit representative-isotope and neutral-atom reference conventions.
+* CO2 uses the NIST 626 thermal model with unchanged balanced ATcT 1.172
+  atomization energy, explicit isotope conventions and consistent derivatives.
+* H2O uses the evaluated 2025 thermal model with unchanged balanced ATcT 1.172
+  total atomization energy, explicit nuclear-spin and isotope conventions,
+  and analytically consistent G, H, S and Cp.
+* OH uses the exact NASA9 reaction with balanced ATcT 1.172 atomization
+  energy, replacing the inherited JANAF electronic/caloric defect.
+* KH and COS retain their thermal functions with reviewed dissociation energies.
+  HO2 uses NASA thermal functions with balanced ATcT energy.
+* CN retains the literal thermal fit with the same-version ATcT 1.228 energy
+  difference. PS adds the resolved POPS thermal difference while retaining its
+  source energy and fit residual. TiO2 adds measured rigid-rotor/harmonic-oscillator
+  thermals, retaining its JANAF energy and fit residual.
+* HCP, C2H2 and CH2 retain their thermal functions with the adopted energy
+  corrections described above. Gas-v2 adds the 28-species correction ledger
+  and the evaluated O2 thermal difference.
+* Other retained FastChem choices remain identified in per-species provenance.
+  ``inherited_unreviewed`` is a policy metadata label, not proof that no later
+  source review exists. The 27 atoms and electron define the zero reference
   gauge. This is not a claim that all 537 species have been independently audited.
+
+For known thermochemical differences and optional MCEG inspection, see
+:doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
+provides a record lookup without requiring MCEG. The default matches
+``exogibbs.curated_gas.v2`` and retains all preceding curated updates.
+The earlier HCN comparison belongs to
+``curated_v1``; it is not evidence for the changed default.
 
 Use ``setup.metadata["species_provenance"][species]`` for a species decision,
 ``["sources"]`` for source references, and ``["abundances"]`` for the reference
@@ -208,9 +292,13 @@ studies' review scopes and physical follow-ups; the setup's
 ``temperature_range_K`` gives the runtime domain. Dataset, baseline and abundance
 file hashes are checked at construction. No online resources are read.
 
-JANAF CH4/COS/TiO/VO H, S and Cp fix the value and first two derivatives of a
+JANAF CH4/COS/VO H, S and Cp fix the value and first two derivatives of a
 piecewise quintic free energy at 1500, 2000, 3000 and 4000 K. This produces a
 C2 representation, tested against 22 unused JANAF rows per molecule. The
+TiO representation uses six TOTO state-sum knots, spaced by 500 K over the
+same interval, with independent off-knot checks of G, H, S and Cp. CO2 uses
+eleven NIST knots. H2O uses a degree-8 Cp/R polynomial with analytical H/S
+integrals anchored at 1500 K, checked against withheld evaluated rows. The
 five required neutral/cation partition functions use positive Boltzmann sums
 fitted to the adopted BC tables; evaluated anion levels are summed directly.
 The fitted excitation terms are numerical coefficients, not newly identified
@@ -233,6 +321,22 @@ For charge the denominator is the total
 absolute charge carried by all species plus the absolute requested net charge.
 Diagonal regularization of signed constraints scales with their own matrix diagonal;
 a fixed absolute shift previously overwhelmed weakly ionized cases.
+
+The current default's cumulative verification and scope are recorded in
+:doc:`../mceg/curated_gas_v2_adoption`. The preceding HCP, C2H2 and CH2 stages
+remain in :doc:`../mceg/curated_hcp_adoption`,
+:doc:`../mceg/curated_c2h2_adoption` and :doc:`../mceg/curated_ch2_adoption`.
+The preceding TiO2, CN and PS stages remain in
+:doc:`../mceg/curated_tio2_adoption`,
+:doc:`../mceg/curated_cn_adoption` and :doc:`../mceg/ps_curated_adoption`.
+The preceding COS stage remains in :doc:`curated_cos`; KH/HO2 and OH remain in
+:doc:`curated_kh`, :doc:`curated_ho2` and :doc:`curated_oh`. The preceding combined CO2/H2O execution remains in
+:doc:`curated_h2o`, and the CO2-only execution remains in
+:doc:`curated_co2`.
+The earlier TiO execution remains in :doc:`curated_tio`.
+The previous C2H default's 75 cold solves per network remain in
+:doc:`curated_c2h`. The following figures describe **curated-gas-v1** and
+remain historical evidence, without being reassigned to the corrected default.
 
 At the default tolerance, all 20 original ion-inclusive test conditions satisfy
 relative charge error below 1e-10 in float64. The explicit ``1e-13`` setting
@@ -258,6 +362,9 @@ preset's model.
 
 Atmospheric column demonstration
 --------------------------------
+
+This historical demonstration explicitly selects ``curated_v1``. Its figures
+and reported abundance ratios describe the original dataset.
 
 ``examples/comparisons/demo_curated_atmosphere.py`` compares two prescribed
 solar-composition columns, each with 161 layers from 1e-6 to 100 bar. A 4000 K
@@ -296,7 +403,7 @@ The no-argument ``fastchem4.chemsetup()`` excludes ions, so it is deliberately
 not the charge-inclusive baseline. All **966 layer/model calculations** pass
 element, charge and mass-action checks.
 
-.. figure:: ../../results/curated_atmosphere/isothermal.png
+.. figure:: ../../tests/data/validation/curated_atmosphere/isothermal.png
    :width: 100%
 
    Isothermal column. Pressure increases downward. Absolute mole fractions
@@ -341,7 +448,7 @@ between neutral and ionized species, while charge neutrality couples electrons
 to the entire network. Source-adoption reasons are in :doc:`../atomic_ion_adoption`;
 an abundance ratio is not an independent measurement of thermochemical accuracy.
 
-.. figure:: ../../results/curated_atmosphere/inverted.png
+.. figure:: ../../tests/data/validation/curated_atmosphere/inverted.png
    :width: 100%
 
    Prescribed temperature inversion. The largest electron and H- reductions
@@ -354,28 +461,33 @@ Reproduce both figures and the full primitive arrays offline::
    JAX_PLATFORMS=cpu python examples/comparisons/demo_curated_atmosphere.py \
        --output-dir /tmp/exogibbs_curated_atmosphere
 
-The :download:`column receipt <../../results/curated_atmosphere/receipt.json>`
+The :download:`column receipt <../../tests/data/validation/curated_atmosphere/receipt.json>`
 records the profiles, catalogs, closure diagnostics and input/output hashes.
-The :download:`per-species extrema <../../results/curated_atmosphere/summary.csv>`
+The :download:`per-species extrema <../../tests/data/validation/curated_atmosphere/summary.csv>`
 include both legacy baselines. PDF figures are available for
-:download:`the isothermal column <../../results/curated_atmosphere/isothermal.pdf>`
-and :download:`the inverted column <../../results/curated_atmosphere/inverted.pdf>`.
+:download:`the isothermal column <../../tests/data/validation/curated_atmosphere/isothermal.pdf>`
+and :download:`the inverted column <../../tests/data/validation/curated_atmosphere/inverted.pdf>`.
 
 Artifacts and reproduction
 --------------------------
 
-* :download:`Validation receipt <../../results/curated_gas_validation/receipt.json>`
-  and :download:`thermal representation checks <../../results/curated_gas_validation/thermal_checks.json>`.
-* :download:`Solver diagnostics <../../results/curated_gas_validation/diagnostics.csv>`,
-  :download:`default-tolerance charge checks <../../results/curated_gas_validation/default_charge.csv>`,
-  and :download:`independent FastChem comparison <../../results/curated_gas_validation/fastchem_parity.csv>`.
-* :download:`Ion-inclusive arrays <../../results/curated_gas_validation/ions.npz>`
-  and :download:`neutral arrays <../../results/curated_gas_validation/neutral.npz>`.
+Current default evidence is in :doc:`../mceg/curated_gas_v2_adoption` and the
+:doc:`Gas curation v0.1 record <../mceg/gas_curation_release_0_1>`. The artifacts
+below belong to **curated-gas-v1**; the reproduction scripts explicitly select
+``curated_v1`` and preserve their original numerical scope.
+
+* :download:`Validation receipt <../../tests/data/validation/curated_gas_validation/receipt.json>`
+  and :download:`thermal representation checks <../../tests/data/validation/curated_gas_validation/thermal_checks.json>`.
+* :download:`Solver diagnostics <../../tests/data/validation/curated_gas_validation/diagnostics.csv>`,
+  :download:`default-tolerance charge checks <../../tests/data/validation/curated_gas_validation/default_charge.csv>`,
+  and :download:`independent FastChem comparison <../../tests/data/validation/curated_gas_validation/fastchem_parity.csv>`.
+* :download:`Ion-inclusive arrays <../../tests/data/validation/curated_gas_validation/ions.npz>`
+  and :download:`neutral arrays <../../tests/data/validation/curated_gas_validation/neutral.npz>`.
 * :download:`MCEG model contract <../../mceg/contracts/curated_gas.yaml>`.
-* :download:`Wheel/sdist and isolated-import verification <../../results/curated_gas_validation/packaging.json>`.
-* :download:`Initial preset regression record <../../results/curated_gas_validation/tests.json>`
-  and :download:`initial full PR test run, including the atmosphere demo <../../results/curated_gas_validation/pr_tests.json>`.
-* :download:`Full regression and usage checks after integrating PR #283 <../../results/curated_gas_validation/merge_tests.json>`.
+* :download:`Wheel/sdist and isolated-import verification <../../tests/data/validation/curated_gas_validation/packaging.json>`.
+* :download:`Initial preset regression record <../../tests/data/validation/curated_gas_validation/tests.json>`
+  and :download:`initial full PR test run, including the atmosphere demo <../../tests/data/validation/curated_gas_validation/pr_tests.json>`.
+* :download:`Full regression and usage checks after integrating PR #283 <../../tests/data/validation/curated_gas_validation/merge_tests.json>`.
 
 Reproduce the offline checks in a scratch directory::
 

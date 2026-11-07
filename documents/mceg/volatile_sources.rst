@@ -101,7 +101,7 @@ assessment intentionally remains unknown and its comparison evidence is
 MCEG reports ``recorded_support: UNKNOWN`` for that assessment; the check
 command itself can still exit successfully when the records are well formed.
 
-The saved ``results/mceg/20261021_volatile_sources/comparison.json`` contains
+The saved ``tests/data/validation/mceg/20261021_volatile_sources/comparison.json`` contains
 29 diagnostics: 18 adopted-expression comparisons agree; one additional N2
 control agrees at 1 GPa; ten alternative-expression comparisons differ.
 The replay exits unsuccessfully if an adopted-expression comparison changes.

@@ -1,0 +1,113 @@
+{
+  "review_date": "2026-10-24",
+  "issue": "https://github.com/HajimeKawahara/exogibbs/issues/297",
+  "scope": "Inspect the public references requested for the preliminary FastChem comparison. Spectral calculations and metallicity retrieval are outside this task at the user's request.",
+  "inspection_note": "Locations below identify the portions inspected, not a reproduction of each paper or its upstream measurements. Original PDFs, extracted article text and page images are not redistributed. Copy hashes identify downloaded bytes; web-reader-only sources have no byte hash.",
+  "sources": [
+    {
+      "id": "al_refaie_2022",
+      "title": "A Comparison of Chemical Models of Exoplanet Atmospheres Enabled by TauREx 3.1",
+      "doi": "10.3847/1538-4357/ac6dcd",
+      "public_url": "https://discovery.ucl.ac.uk/id/eprint/10151374/1/Al-Refaie_2022_ApJ_932_123.pdf",
+      "access": "Published full-text PDF from the author's institutional repository; Table 1 also inspected on a rendered page.",
+      "copy_sha256": "d6abc63ae99253dd7e3dddaef17d65698ba6a21b2b06cb2503c3133152057c4f",
+      "locations": "Table 1 (p. 2); sections 2.2-2.3 (pp. 6-7), 3.2-3.2.1 (pp. 10-11), 4-5 (pp. 16-18). Printed page numbers.",
+      "findings": [
+        "The published experiment uses a cloud-free, isothermal 1500 K HD 209458b analogue, solar metallicity and C/O=0.5, with simulated JWST uncertainties and unscattered spectra; 49 equilibrium and seven free-chemistry retrievals.",
+        "Matching elements and physical assumptions gives consistent posteriors despite different thermochemical implementations. The reported large biases concern mismatched elements or condensation. Matching elements does not mean identical molecular catalogs."
+      ],
+      "application": "Neither its bias magnitude nor its small matched-case differences quantify the effect of the present 2500-4000 K table comparison."
+    },
+    {
+      "id": "ruscic_2014",
+      "title": "Uncertainty quantification in thermochemistry, benchmarking electronic structure computations, and Active Thermochemical Tables",
+      "doi": "10.1002/qua.24605",
+      "public_url": "https://onlinelibrary.wiley.com/doi/full/10.1002/qua.24605",
+      "access": "Open-access publisher full-text HTML inspected with the web reader; direct local download returned HTTP 403.",
+      "locations": "Expression of uncertainties in thermochemistry; Type A and Type B uncertainties; Additional terms in the uncertainty; The role of benchmarks and their accuracy; Active Thermochemical Tables.",
+      "findings": [
+        "Thermochemical uncertainties conventionally express estimated 95% confidence limits, approximately twice the standard deviation. Correlation changes uncertainty propagation.",
+        "Converting atomization energies to formation enthalpies requires atomic-reference uncertainties; conversion to 298.15 K also requires thermal increments. Spread among theoretical methods measures differences of biases, not their absolute uncertainty."
+      ],
+      "application": "Do not use table-to-table differences as independent Gaussian error bars."
+    },
+    {
+      "id": "harding_2008",
+      "title": "High-accuracy extrapolated ab initio thermochemistry. III. Additional improvements and overview",
+      "doi": "10.1063/1.2835612",
+      "public_url": "https://atct.anl.gov/~ruscic/reprints/Harding%202008.pdf",
+      "access": "Public author PDF inspected through the web reader's PDF text. Direct download returned HTTP 403 and page rendering was unavailable; no visual transcription audit is claimed.",
+      "locations": "Section II (p. 114111-2); Table I heading and HCN rows (pp. 114111-3 to 114111-4).",
+      "findings": [
+        "Table I includes zero-point corrections: HCN HEAT-345QP atomization energy is 1268.59 kJ/mol. Its ATcT benchmark is 1268.26 +/- 0.17 kJ/mol from version 1.064, with 95% confidence limits."
+      ],
+      "application": "The historical benchmark is not ATcT 1.172. The current HCN provenance credits this calculation, so agreement with it is not independent validation of that network."
+    },
+    {
+      "id": "atct_1172",
+      "title": "Active Thermochemical Tables, Thermochemical Network version 1.172",
+      "doi": "10.17038/CSE/2440254",
+      "public_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=47",
+      "additional_urls": [
+        "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=19",
+        "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=24"
+      ],
+      "access": "Official versioned HTML tables inspected with the web reader; direct local HCN download returned HTTP 403.",
+      "locations": "HCN summary, top contributors (TN 2754.4), correlated-species table and uncertainty footer; H and N summaries. C is also listed in the HCN correlation table.",
+      "selected_hf0_kJ_mol": {"H": 216.034, "C": 711.381, "N": 470.583, "HCN": 129.677},
+      "findings": [
+        "HCN Hf(298.15 K)=129.293 kJ/mol; displayed uncertainty +/-0.087 kJ/mol is an estimated 95% confidence limit. HCN and C have correlation 0.331.",
+        "The network lists HCN atomization 1268.59 +/-0.56 kJ/mol as a Harding 2008 input. This input uncertainty is the network's stated assessment. The top 20 contributors cover only 37.6% of HCN provenance."
+      ],
+      "application": "The selected correlations are not a complete covariance matrix. No correlated uncertainty propagation was performed."
+    },
+    {
+      "id": "janaf_srd13",
+      "title": "NIST-JANAF Thermochemical Tables, SRD 13",
+      "doi": "10.18434/T42S31",
+      "public_url": "https://janaf.nist.gov/tables/C-052.html",
+      "additional_urls": [
+        "https://janaf.nist.gov/tables/H-001.html",
+        "https://janaf.nist.gov/tables/C-003.html",
+        "https://janaf.nist.gov/tables/N-002.html"
+      ],
+      "access": "Official numerical HTML tables; HCN response downloaded, atomic rows inspected with the web reader.",
+      "hcn_copy_sha256": "1849df2e7e4674537f62b63ff8a18c3b964bd71d478a64052bf2fbe8a43de6e2",
+      "locations": "Headers and 0/298.15 K rows; HCN evaluation-date footer.",
+      "selected_hf0_kJ_mol": {"H": 216.035, "C": 711.185, "N": 470.820, "HCN": 135.529},
+      "findings": [
+        "HCN Hf(298.15 K)=135.143 kJ/mol. Standard pressure is 0.1 MPa (1 bar); the HCN evaluation is dated December 1969."
+      ],
+      "application": "Table values and conventions were checked, not the original experiments underlying the historical evaluation."
+    },
+    {
+      "id": "andersen_1999",
+      "title": "Binding Energies in Atomic Negative Ions: III",
+      "doi": "10.1063/1.556047",
+      "public_url": "https://srd.nist.gov/jpcrdreprint/1.556047.pdf",
+      "access": "Public NIST full-text PDF; first page of Table 3 also inspected on a rendered page.",
+      "copy_sha256": "459652551ab3346d77366e91b79a30aa10727719592cb69ddf23a280f25fd2a5",
+      "locations": "Sections 6-7 and Tables 3-4 (printed pp. 1526-1529; PDF pages 17-20).",
+      "findings": [
+        "The compilation distinguishes neutral parent and anion states, selected electron affinities, bound excited terms, metastable states, and fine-structure intervals. Not every listed state is a stable ground-state anion."
+      ],
+      "application": "These distinctions matter when choosing a ground-state approximation or a partition sum. Reading the reference does not reconstruct Daniel's fitted coefficients or isolate the remaining anion differences."
+    }
+  ],
+  "hcn_energy_cross_check": {
+    "basis": "Derived from the selected public table entries and the existing offline adoption helper; no new equilibrium solve.",
+    "reaction": "HCN -> H + C + N at 0 K",
+    "atct_D0_kJ_mol": 1268.321,
+    "janaf_D0_from_displayed_hf0_kJ_mol": 1262.511,
+    "janaf_D0_from_298K_reference_and_thermal_increments_kJ_mol": 1262.513,
+    "implemented_delta_D0_kJ_mol": 5.808,
+    "note": "The existing helper uses Hf(298.15 K) + [H(0)-H(298.15 K)] in a common elemental reference gauge. The two rounded JANAF routes differ by 0.002 kJ/mol; the archived 0.06019568 eV shift uses the latter route. This is not an uncertainty estimate.",
+    "implementation": "examples/comparisons/select_major_molecules.py:assigned_h0 and atomization_kelvin",
+    "numerical_evidence": "results/mceg/new_fastchem_logk_20261024/attribution.json"
+  },
+  "remaining_limits": [
+    "The requested six references are accessible for the declared inspection scopes; no additional user-supplied copy is required for this review.",
+    "Full thermochemical-network reconstruction, complete covariance, the preliminary atomic-fit construction and independent whole-mixture validation remain unreviewed or unavailable.",
+    "Retrieved-metallicity effects and whole-mixture physical accuracy remain unknown. The historical controlled-cross-retrieval proposal is deferred and is not required to complete this task."
+  ]
+}

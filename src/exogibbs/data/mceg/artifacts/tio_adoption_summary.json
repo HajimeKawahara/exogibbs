@@ -1,0 +1,25 @@
+{
+  "dataset": "curated-tio-v1",
+  "legacy_dataset": "curated-c2h-v1",
+  "epsilon_crit": 5e-14,
+  "method": "vmap_cold",
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_element_relative_residual": 1.3478286881251052e-06,
+      "max_mass_action_abs_ln": 1.1937117960769683e-12,
+      "max_charge_relative_residual": 2.1487740009576205e-14,
+      "max_abs_delta_ln_x_from_candidate": 2.543251525821688e-05
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_element_relative_residual": 1.3415327504162546e-06,
+      "max_mass_action_abs_ln": 1.1368683772161603e-12
+    }
+  ],
+  "scope": "TiO default adoption and numerical closure in both networks; ion mode also replays the archived candidate. No new independent-solver or physical validation."
+}

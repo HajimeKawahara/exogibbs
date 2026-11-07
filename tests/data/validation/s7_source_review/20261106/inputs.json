@@ -1,0 +1,142 @@
+{
+  "molecule": "S7",
+  "species_id": "S7",
+  "composition": {
+    "S": 7
+  },
+  "temperatures_K": [
+    1500.0,
+    2000.0,
+    3000.0,
+    4000.0
+  ],
+  "tables": {
+    "S7": "S-020.txt",
+    "S": "S-006.txt"
+  },
+  "nasa9": {
+    "S7": {
+      "composition": {
+        "S": 7
+      },
+      "reference": "Gurvich,1989 pt1 p283 pt2 p171.",
+      "source_line_1based": 9200,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            123365.5613,
+            -3200.54364,
+            30.15678887,
+            -0.02197472483,
+            2.487892075e-05,
+            -1.506049557e-08,
+            3.76892599e-12,
+            23900.05896,
+            -127.5978171
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -272639.6041,
+            -73.7321522,
+            19.05771987,
+            -2.394575885e-05,
+            5.4426713e-09,
+            -6.37966348e-13,
+            3.008212993e-17,
+            7308.45883,
+            -61.59112428
+          ]
+        }
+      ],
+      "source_name": "S7",
+      "hf298_J_mol": 111890.369,
+      "h298_minus_h0_J_mol": 26274.368,
+      "mass_u": 224.455
+    },
+    "S": {
+      "composition": {
+        "S": 1
+      },
+      "reference": "Hf: Cox,1989 p22. Martin,W.C.,1990. Gordon,1999.",
+      "source_line_1based": 8804,
+      "intervals": [
+        {
+          "bounds_K": [
+            200.0,
+            1000.0
+          ],
+          "coefficients": [
+            -317.484182,
+            -192.4704923,
+            4.68682593,
+            -0.0058413656,
+            7.53853352e-06,
+            -4.86358604e-09,
+            1.256976992e-12,
+            33235.9218,
+            -5.718523969
+          ]
+        },
+        {
+          "bounds_K": [
+            1000.0,
+            6000.0
+          ],
+          "coefficients": [
+            -485424.479,
+            1438.830408,
+            1.258504116,
+            0.000379799043,
+            1.630685864e-09,
+            -9.54709585e-12,
+            8.041466646e-16,
+            23349.9527,
+            15.59554855
+          ]
+        },
+        {
+          "bounds_K": [
+            6000.0,
+            20000.0
+          ],
+          "coefficients": [
+            -130200541.4,
+            69093.6202,
+            -11.76228025,
+            0.00160154085,
+            -1.05053334e-07,
+            4.34182902e-12,
+            -7.675621927e-17,
+            -526148.503,
+            132.2195251
+          ]
+        }
+      ],
+      "source_name": "S",
+      "hf298_J_mol": 277170.0,
+      "h298_minus_h0_J_mol": 6657.425,
+      "mass_u": 32.065
+    }
+  },
+  "decision": "Retain S7 for this source-only review; prioritize a state-resolved, energy-aligned sulfur-isomer thermal candidate only when its individual-species inputs are assembled. The current hot H-rich footprint is trace.",
+  "energy_alignment": "H298",
+  "follow_ups": [
+    "Construct individual-species RRHO/isomer thermodynamics from the 2016 and 2023 structures and frequency inputs; keep the mixed-vapor chemical potential separate.",
+    "Choose one balanced formation-energy reference and assess missing isomers, anharmonicity and the high-temperature extrapolation before any finite-network substitution."
+  ],
+  "limitations": [
+    "JANAF has no numerical zero-K molecular row; H298 alignment is not physical-D0 alignment.",
+    "The isolated printed 298.15 K free-energy-function cell is inconsistent with H298=0 and S298; it is not used in H/S reconstruction.",
+    "The 2016 mixed-vapor potential and 2023 finite-composition stability indicators are not standalone species formation functions.",
+    "No production change, fresh equilibrium solve, complete physical uncertainty or general atmosphere validation."
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "molecule": "C2O",
+  "evaluated_energy": {
+    "version": "1.228",
+    "D0_J_mol": 1292503.0000000002,
+    "minus_janaf_D0_J_mol": -94081.99999999977,
+    "minus_nasa_D0_J_mol": -89681.86199999973,
+    "energy_only_K_multiplier_retaining_janaf_thermal": {
+      "1500": 0.0005294655420570845,
+      "2000": 0.003490424721159725,
+      "3000": 0.023010118253870067,
+      "4000": 0.05907981652950291
+    },
+    "uncertainty": "Marginal species uncertainties are recorded; reaction covariance is not inferred by independent quadrature."
+  },
+  "species_id": "C2O1",
+  "reaction": "2 C(g) + 1 O(g) -> C2O(g)",
+  "standard_pressure_Pa": 100000,
+  "R_J_mol_K": 8.31446261815324,
+  "NASA_native_R_J_mol_K": 8.31451,
+  "nasa_D0_J_mol": 1382184.862,
+  "janaf_D0_J_mol": 1386585.0,
+  "NASA_coefficients_matched": 72,
+  "samples": [
+    {
+      "temperature_K": 1500,
+      "properties": {
+        "C2O": {
+          "nasa": {
+            "H_J_mol": 356525.98858369293,
+            "S_J_mol_K": 318.02190049853766,
+            "Cp_J_mol_K": 60.35607929829084,
+            "G_J_mol": -120506.86216411355
+          },
+          "janaf": {
+            "H_J_mol": 352456.0,
+            "S_J_mol_K": 317.732,
+            "Cp_J_mol_K": 61.258,
+            "G_J_mol": -124142.00000000006
+          }
+        },
+        "C": {
+          "nasa": {
+            "H_J_mol": 741679.5440447498,
+            "S_J_mol_K": 191.71274713346253,
+            "Cp_J_mol_K": 20.809045461452502,
+            "G_J_mol": 454110.423344556
+          },
+          "janaf": {
+            "H_J_mol": 741668.0,
+            "S_J_mol_K": 191.71,
+            "Cp_J_mol_K": 20.814,
+            "G_J_mol": 454103.0
+          }
+        },
+        "O": {
+          "nasa": {
+            "H_J_mol": 274471.1962395405,
+            "S_J_mol_K": 195.25595178745834,
+            "Cp_J_mol_K": 20.84817947894006,
+            "G_J_mol": -18412.73144164699
+          },
+          "janaf": {
+            "H_J_mol": 274469.0,
+            "S_J_mol_K": 195.254,
+            "Cp_J_mol_K": 20.845,
+            "G_J_mol": -18412.0
+          }
+        }
+      },
+      "reaction": {
+        "nasa": {
+          "G_J_mol": -1010314.9774115786,
+          "H_J_mol": -1401304.2957453472,
+          "S_J_mol_K": -260.65954555584574,
+          "Cp_J_mol_K": -2.1101911035542287,
+          "ln_K": 81.00864111215276
+        },
+        "janaf": {
+          "G_J_mol": -1013936.0,
+          "H_J_mol": -1405349.0,
+          "S_J_mol_K": -260.942,
+          "Cp_J_mol_K": -1.2149999999999963,
+          "ln_K": 81.29898038840099
+        },
+        "curated": {
+          "G_J_mol": -1014096.1023904812,
+          "H_J_mol": -1405776.9073045806,
+          "S_J_mol_K": -261.1205366093996,
+          "Cp_J_mol_K": -2.1136752274706505,
+          "ln_K": 81.31181764943508
+        }
+      },
+      "delta_H0_J_mol": -4400.138000000035,
+      "delta_Hthermal_J_mol": 355.43374534728355,
+      "minus_T_delta_S_J_mol": 423.6816662314027,
+      "reaction_delta_G_J_mol": -3621.022588421358,
+      "janaf_over_nasa": 1.3368809830553405,
+      "H0_aligned_janaf_over_nasa": 0.9394405909000016,
+      "curated_over_nasa": 1.3541535019212354,
+      "curated_over_janaf": 1.0129200123906466
+    },
+    {
+      "temperature_K": 2000,
+      "properties": {
+        "C2O": {
+          "nasa": {
+            "H_J_mol": 387320.4050913438,
+            "S_J_mol_K": 335.7238660690659,
+            "Cp_J_mol_K": 62.6830311401851,
+            "G_J_mol": -284127.32704678795
+          },
+          "janaf": {
+            "H_J_mol": 383700.99999999994,
+            "S_J_mol_K": 335.695,
+            "Cp_J_mol_K": 63.481,
+            "G_J_mol": -287689.00000000006
+          }
+        },
+        "C": {
+          "nasa": {
+            "H_J_mol": 752112.802508821,
+            "S_J_mol_K": 197.71468681128408,
+            "Cp_J_mol_K": 20.9531073196878,
+            "G_J_mol": 356683.42888625286
+          },
+          "janaf": {
+            "H_J_mol": 752103.0,
+            "S_J_mol_K": 197.713,
+            "Cp_J_mol_K": 20.952,
+            "G_J_mol": 356677.0
+          }
+        },
+        "O": {
+          "nasa": {
+            "H_J_mol": 284888.4970002312,
+            "S_J_mol_K": 201.24985381044442,
+            "Cp_J_mol_K": 20.825729572295472,
+            "G_J_mol": -117611.21062065766
+          },
+          "janaf": {
+            "H_J_mol": 284886.0,
+            "S_J_mol_K": 201.247,
+            "Cp_J_mol_K": 20.826,
+            "G_J_mol": -117608.0
+          }
+        }
+      },
+      "reaction": {
+        "nasa": {
+          "G_J_mol": -879882.974198636,
+          "H_J_mol": -1401793.6969265295,
+          "S_J_mol_K": -260.95536136394674,
+          "Cp_J_mol_K": -0.048913071485969795,
+          "ln_K": 52.912798734434055
+        },
+        "janaf": {
+          "G_J_mol": -883435.0,
+          "H_J_mol": -1405391.0,
+          "S_J_mol_K": -260.978,
+          "Cp_J_mol_K": 0.7509999999999977,
+          "ln_K": 53.12640398858534
+        },
+        "curated": {
+          "G_J_mol": -883452.8627594152,
+          "H_J_mol": -1406065.5209870965,
+          "S_J_mol_K": -261.30632911384055,
+          "Cp_J_mol_K": 0.7390482299387565,
+          "ln_K": 53.12747818665655
+        }
+      },
+      "delta_H0_J_mol": -4400.138000000035,
+      "delta_Hthermal_J_mol": 802.8349265294091,
+      "minus_T_delta_S_J_mol": 45.27727210654575,
+      "reaction_delta_G_J_mol": -3552.025801363983,
+      "janaf_over_nasa": 1.238133810133393,
+      "H0_aligned_janaf_over_nasa": 0.9502765554660889,
+      "curated_over_nasa": 1.2394645256822234,
+      "curated_over_janaf": 1.0010747752286056
+    },
+    {
+      "temperature_K": 3000,
+      "properties": {
+        "C2O": {
+          "nasa": {
+            "H_J_mol": 451540.7900971165,
+            "S_J_mol_K": 361.72568271649374,
+            "Cp_J_mol_K": 65.40209175733595,
+            "G_J_mol": -633636.2580523647
+          },
+          "janaf": {
+            "H_J_mol": 448140.99999999994,
+            "S_J_mol_K": 361.803,
+            "Cp_J_mol_K": 64.952,
+            "G_J_mol": -637268.0
+          }
+        },
+        "C": {
+          "nasa": {
+            "H_J_mol": 773372.4227867973,
+            "S_J_mol_K": 206.3255406722026,
+            "Cp_J_mol_K": 21.619862894288094,
+            "G_J_mol": 154395.8007701895
+          },
+          "janaf": {
+            "H_J_mol": 773358.9999999999,
+            "S_J_mol_K": 206.322,
+            "Cp_J_mol_K": 21.621,
+            "G_J_mol": 154392.99999999988
+          }
+        },
+        "O": {
+          "nasa": {
+            "H_J_mol": 305748.63061117707,
+            "S_J_mol_K": 209.7064328970011,
+            "Cp_J_mol_K": 20.938590011086205,
+            "G_J_mol": -323370.66807982617
+          },
+          "janaf": {
+            "H_J_mol": 305747.0,
+            "S_J_mol_K": 209.704,
+            "Cp_J_mol_K": 20.937,
+            "G_J_mol": -323365.0
+          }
+        }
+      },
+      "reaction": {
+        "nasa": {
+          "G_J_mol": -619057.1915129175,
+          "H_J_mol": -1400952.6860876551,
+          "S_J_mol_K": -260.63183152491257,
+          "Cp_J_mol_K": 1.2237759576735598,
+          "ln_K": 24.818488776464825
+        },
+        "janaf": {
+          "G_J_mol": -622688.9999999998,
+          "H_J_mol": -1404323.9999999998,
+          "S_J_mol_K": -260.545,
+          "Cp_J_mol_K": 0.7729999999999997,
+          "ln_K": 24.96409082973334
+        },
+        "curated": {
+          "G_J_mol": -622515.9325134353,
+          "H_J_mol": -1404014.9551720337,
+          "S_J_mol_K": -260.49967421953284,
+          "Cp_J_mol_K": 2.4813943303083392,
+          "ln_K": 24.957152418336523
+        }
+      },
+      "delta_H0_J_mol": -4400.138000000035,
+      "delta_Hthermal_J_mol": 1028.8240876553755,
+      "minus_T_delta_S_J_mol": -260.49457473766324,
+      "reaction_delta_G_J_mol": -3631.8084870822495,
+      "janaf_over_nasa": 1.1567357772256421,
+      "H0_aligned_janaf_over_nasa": 0.9696666432323097,
+      "curated_over_nasa": 1.1487376477689601,
+      "curated_over_janaf": 0.993085603804989
+    },
+    {
+      "temperature_K": 4000,
+      "properties": {
+        "C2O": {
+          "nasa": {
+            "H_J_mol": 517567.1919250634,
+            "S_J_mol_K": 380.71314758648026,
+            "Cp_J_mol_K": 66.44034178231163,
+            "G_J_mol": -1005285.3984208576
+          },
+          "janaf": {
+            "H_J_mol": 513117.99999999994,
+            "S_J_mol_K": 380.496,
+            "Cp_J_mol_K": 64.89,
+            "G_J_mol": -1008866.0
+          }
+        },
+        "C": {
+          "nasa": {
+            "H_J_mol": 795375.1300494274,
+            "S_J_mol_K": 212.65015948449775,
+            "Cp_J_mol_K": 22.3634675583649,
+            "G_J_mol": -55225.50788856356
+          },
+          "janaf": {
+            "H_J_mol": 795365.0,
+            "S_J_mol_K": 212.648,
+            "Cp_J_mol_K": 22.363,
+            "G_J_mol": -55227.0
+          }
+        },
+        "O": {
+          "nasa": {
+            "H_J_mol": 326851.4047613032,
+            "S_J_mol_K": 215.77481862386333,
+            "Cp_J_mol_K": 21.301950933929643,
+            "G_J_mol": -536247.8697341501
+          },
+          "janaf": {
+            "H_J_mol": 326848.0,
+            "S_J_mol_K": 215.772,
+            "Cp_J_mol_K": 21.302,
+            "G_J_mol": -536240.0
+          }
+        }
+      },
+      "reaction": {
+        "nasa": {
+          "G_J_mol": -358586.5129095804,
+          "H_J_mol": -1400034.4729350945,
+          "S_J_mol_K": -260.36199000637856,
+          "Cp_J_mol_K": 0.4114557316521932,
+          "ln_K": 10.782011098548528
+        },
+        "janaf": {
+          "G_J_mol": -362172.0,
+          "H_J_mol": -1404460.0,
+          "S_J_mol_K": -260.572,
+          "Cp_J_mol_K": -1.1379999999999981,
+          "ln_K": 10.889819842633544
+        },
+        "curated": {
+          "G_J_mol": -362285.9021662628,
+          "H_J_mol": -1402864.1104662344,
+          "S_J_mol_K": -260.1445520749928,
+          "Cp_J_mol_K": -1.060393988587168,
+          "ln_K": 10.893244663078766
+        }
+      },
+      "delta_H0_J_mol": -4400.138000000035,
+      "delta_Hthermal_J_mol": -25.3890649053792,
+      "minus_T_delta_S_J_mol": 840.0399744857623,
+      "reaction_delta_G_J_mol": -3585.4870904196287,
+      "janaf_over_nasa": 1.1138346975395679,
+      "H0_aligned_janaf_over_nasa": 0.9758025719605964,
+      "curated_over_nasa": 1.1176559211516224,
+      "curated_over_janaf": 1.003430691843678
+    }
+  ],
+  "modern": [],
+  "footprint": {
+    "model": "curated-tio2-v1",
+    "cases": 75,
+    "species": 537,
+    "all_converged": true,
+    "maximum_element": "C",
+    "maximum_element_fraction": 8.565107829460301e-06,
+    "maximum_share_condition": {
+      "case_index": 74,
+      "temperature_K": 4000.0,
+      "pressure_bar": 100.0,
+      "C_over_O": 1.5
+    },
+    "maximum_mole_fraction": 5.030590114988584e-09,
+    "maximum_mole_fraction_condition": {
+      "case_index": 74,
+      "temperature_K": 4000.0,
+      "pressure_bar": 100.0,
+      "C_over_O": 1.5
+    },
+    "maximum_abs_target_h_error": 0.0
+  },
+  "curated_change": "none",
+  "new_equilibrium_solves": 0,
+  "physical_accuracy": "unknown"
+}

@@ -1,0 +1,194 @@
+{
+  "continuous": {
+    "temperature_count": 2752,
+    "offgrid_count": 251,
+    "range_K": [
+      1500,
+      4000
+    ],
+    "models": [
+      {
+        "variant": "measured_D0_retained_thermal",
+        "species": "K2",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 8.731149137020111e-11,
+          "H_J_mol": 1.7462298274040222e-10,
+          "S_J_mol_K": 4.263256414560601e-14,
+          "Cp_J_mol_K": 7.105427357601002e-14
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": 56589.05938298988,
+            "H_J_mol": -61026.01267240145,
+            "S_J_mol_K": -78.41004803692755,
+            "Cp_J_mol_K": -10.23370375783435
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": 96667.79675162674,
+            "H_J_mol": -67219.53694847603,
+            "S_J_mol_K": -81.94366685005139,
+            "Cp_J_mol_K": -14.579169961505574
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": 138567.05128930605,
+            "H_J_mol": -75643.95924894858,
+            "S_J_mol_K": -85.68440421530185,
+            "Cp_J_mol_K": -19.157295855426185
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": 182381.08225309456,
+            "H_J_mol": -86415.60941894377,
+            "S_J_mol_K": -89.59889722401277,
+            "Cp_J_mol_K": -23.96808143959618
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 276074.6340469762,
+            "H_J_mol": -115465.91274800086,
+            "S_J_mol_K": -97.88513669874426,
+            "Cp_J_mol_K": -34.28763167868434
+          }
+        ]
+      },
+      {
+        "variant": "potential_2026_D0_retained_thermal",
+        "species": "K2",
+        "jax_scalar_derivative_errors": {
+          "G_J_mol": 1.1641532182693481e-10,
+          "H_J_mol": 2.0372681319713593e-10,
+          "S_J_mol_K": 4.263256414560601e-14,
+          "Cp_J_mol_K": 7.105427357601002e-14
+        },
+        "samples": [
+          {
+            "temperature_K": 1500.0,
+            "G_J_mol": 56589.05188826591,
+            "H_J_mol": -61026.02016712542,
+            "S_J_mol_K": -78.41004803692755,
+            "Cp_J_mol_K": -10.23370375783435
+          },
+          {
+            "temperature_K": 2000.0,
+            "G_J_mol": 96667.78925690278,
+            "H_J_mol": -67219.54444320001,
+            "S_J_mol_K": -81.94366685005139,
+            "Cp_J_mol_K": -14.579169961505574
+          },
+          {
+            "temperature_K": 2500.0,
+            "G_J_mol": 138567.0437945821,
+            "H_J_mol": -75643.96674367253,
+            "S_J_mol_K": -85.68440421530185,
+            "Cp_J_mol_K": -19.157295855426185
+          },
+          {
+            "temperature_K": 3000.0,
+            "G_J_mol": 182381.0747583706,
+            "H_J_mol": -86415.61691366773,
+            "S_J_mol_K": -89.59889722401277,
+            "Cp_J_mol_K": -23.96808143959618
+          },
+          {
+            "temperature_K": 4000.0,
+            "G_J_mol": 276074.62655225216,
+            "H_J_mol": -115465.92024272488,
+            "S_J_mol_K": -97.88513669874426,
+            "Cp_J_mol_K": -34.28763167868434
+          }
+        ]
+      }
+    ],
+    "scope": "Numerical single-potential consistency only; source and physical accuracy require molecule-specific checks."
+  },
+  "samples": [
+    {
+      "temperature_K": 1500.0,
+      "difference": {
+        "G_J_mol": -32.205333785786934,
+        "H_J_mol": -32.205333785786934,
+        "S_J_mol_K": 0.0,
+        "Cp_J_mol_K": 0.0
+      },
+      "fixed_atomic_activity_K_factor": 1.002585611168007
+    },
+    {
+      "temperature_K": 2000.0,
+      "difference": {
+        "G_J_mol": -32.20533378577966,
+        "H_J_mol": -32.20533378577966,
+        "S_J_mol_K": 0.0,
+        "Cp_J_mol_K": 0.0
+      },
+      "fixed_atomic_activity_K_factor": 1.0019385822953972
+    },
+    {
+      "temperature_K": 2500.0,
+      "difference": {
+        "G_J_mol": -32.20533378582331,
+        "H_J_mol": -32.20533378579421,
+        "S_J_mol_K": 0.0,
+        "Cp_J_mol_K": 0.0
+      },
+      "fixed_atomic_activity_K_factor": 1.0015505654210968
+    },
+    {
+      "temperature_K": 3000.0,
+      "difference": {
+        "G_J_mol": -32.20533378579421,
+        "H_J_mol": -32.20533378579421,
+        "S_J_mol_K": 0.0,
+        "Cp_J_mol_K": 0.0
+      },
+      "fixed_atomic_activity_K_factor": 1.0012919709894845
+    },
+    {
+      "temperature_K": 4000.0,
+      "difference": {
+        "G_J_mol": -32.205333785736,
+        "H_J_mol": -32.205333785765106,
+        "S_J_mol_K": 0.0,
+        "Cp_J_mol_K": 0.0
+      },
+      "fixed_atomic_activity_K_factor": 1.00096882183982
+    }
+  ],
+  "thermal_adoption": "none",
+  "BC_state_count": 8,
+  "BC_shallow_a3Sigma_u_state_present": false,
+  "BC_quantities_are_node_diagnostics_not_continuous_GHSCp": true,
+  "ground_J0_audit": {
+    "count": 86,
+    "De_cm_inverse": 4450.903,
+    "E00_cm_inverse": 46.09437349,
+    "D0_cm_inverse": 4404.80862651,
+    "D0_minus_primary_J_mol": 0.007494723970012274,
+    "maximum_reported_grid_change_cm_inverse": 9.095e-12,
+    "scope": "Complete listed J0 vibrational spectrum only; no claim of complete J>0/electronic/isotope partition function.",
+    "vibrational_J0_diagnostics": [
+      {
+        "temperature_K": 1500.0,
+        "Q_v_J0_unweighted": 13.29480458130215,
+        "v_ge_70_fraction": 0.018014703785226113
+      },
+      {
+        "temperature_K": 2000.0,
+        "Q_v_J0_unweighted": 18.13396139039065,
+        "v_ge_70_fraction": 0.03775638093418756
+      },
+      {
+        "temperature_K": 3000.0,
+        "Q_v_J0_unweighted": 27.153589268795155,
+        "v_ge_70_fraction": 0.07208568440041435
+      },
+      {
+        "temperature_K": 4000.0,
+        "Q_v_J0_unweighted": 34.64012301492406,
+        "v_ge_70_fraction": 0.09554338851010194
+      }
+    ]
+  }
+}
