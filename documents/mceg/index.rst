@@ -4,6 +4,9 @@ Models and evidence
 Start with a calculation case to follow its model connections, or browse the
 catalog for assumptions, limitations and primary-source links.
 
+The :doc:`package_graph` provides an interactive view of the model records
+bundled with ExoGibbs, including their evidence and follow-ups.
+
 The H2 example connects a pure-hydrogen EOS to a solubility law at 1700 K and
 7500 bar. Combined physical accuracy remains unknown. The diagram describes
 the selected connection; it is not a coupled atmosphere--interior solution.
@@ -20,6 +23,7 @@ HCN differences with optional MCEG tooling.
 
    _generated/cases
    _generated/catalog
+   package_graph
    optional_inspection
    gas_curation_release_0_1
    vo2_source_review
