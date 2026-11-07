@@ -6,7 +6,13 @@
 ExoGibbs
 ==================================
 
-Version 0.7
+Version |release|
+
+.. admonition:: MCEG Viewer
+
+   `Open the interactive package graph <_static/package-graph.html>`_
+   to explore the models and evidence bundled with ExoGibbs.
+   See the :doc:`viewer guide <mceg/package_graph>` for details.
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
