@@ -164,10 +164,11 @@ def test_revalidation_pins_model_code_and_preserves_original_execution():
     assert amendment["baseline_dataset"] == "curated-c2h-v1"
     assert amendment["new_equilibrium_solves"] == 0
     for name, digest in amendment["current_file_sha256"].items():
-        # The archive resolver can evolve; preserve its exact recorded bytes.
+        # Archive tools can evolve; preserve their exact recorded bytes.
         # Every model/data input still checks its actual current path.
         path = (historical_source(ROOT, name, digest)
-                if name == "mceg/reviews/curated_adoption_history.py" else ROOT / name)
+                if name in ("mceg/reviews/curated_adoption_history.py",
+                            "tests/model_evidence/vo2_equilibrium_impact_test.py") else ROOT / name)
         assert file_hash(path) == digest, name
     for name, digest in amendment["original_file_sha256"].items():
         assert file_hash(REVALIDATION / "source" / name) == digest, name

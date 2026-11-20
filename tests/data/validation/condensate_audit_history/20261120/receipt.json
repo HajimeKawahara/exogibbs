@@ -4,7 +4,8 @@
   "recorded_utc": "2026-11-20",
   "source_sha256": {
     "src/exogibbs/equilibrium/condensate/audit.py": "81f646e7576bfd61f222f74bd7c7a9292f335900f29a192a37606ae1ebe24674",
-    "mceg/reviews/curated_adoption_history.py": "098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff"
+    "mceg/reviews/curated_adoption_history.py": "098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff",
+    "tests/model_evidence/vo2_equilibrium_impact_test.py": "14ef80cc2c7d1a99440a8be5d73a4e315446e6b546f6354a8a72aaeb343c4fd8"
   },
   "scope": "Exact source bytes retained before the optional log-amount audit update. These satisfy existing immutable evidence receipts; they are not a new execution or a relabeling of prior results."
 }
