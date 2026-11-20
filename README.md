@@ -57,11 +57,12 @@ Other packaged presets include [YKB4](documents/presets/ykb4.rst),
 Install `exogibbs[fastchem]` for the optional FastChem grid backend or comparison
 tools; the native solvers and packaged data do not require `pyfastchem`.
 
-To inspect scientific support and known thermochemical differences, start with
-[`exogibbs.provenance.describe(chem)`](documents/mceg/optional_inspection.rst).
-MCEG is optional: calculations and provenance lookup work without it, while
-its species-level report explains each version’s adoption and open questions.
-The bundled HCN comparison belongs to the original `curated_v1` dataset.
+Scientific support and known thermochemical differences are recorded under
+the repository's `mceg/` directory; see the
+[optional inspection guide](documents/mceg/optional_inspection.rst).
+These records are not bundled with the installed package. MCEG is optional
+and is not required for calculations. The archived HCN comparison belongs
+to the original `curated_v1` dataset.
 
 ## Learn more
 

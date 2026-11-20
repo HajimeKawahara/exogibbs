@@ -1,0 +1,73 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=68", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "exogibbs"
+dynamic = ["version"]
+description = "Differentiable Thermochemical Equilibrium Solver for Exoplanet Atmospheres"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+authors = [
+  { name = "Hajime Kawahara", email = "divrot@gmail.com" }
+]
+maintainers = [
+  { name = "Hajime Kawahara", email = "divrot@gmail.com" }
+]
+license = { text = "GPL-3.0-or-later" }
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: OS Independent",
+]
+
+dependencies = [
+  "jax >=0.4.30",
+  "numpy",
+  "scipy",
+  "tqdm",
+  "pandas",
+  "xarray",
+  "thermochem",
+]
+
+[project.optional-dependencies]
+fastchem = [
+  "pyfastchem",
+]
+docs = [
+  "matplotlib ==3.9.1",
+  "sphinx ==7.4.7",
+  "sphinx-gallery ==0.19.0",
+  "sphinx-rtd-theme ==3.1.0",
+  "sphinxemoji ==0.3.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/HajimeKawahara/exogibbs"
+Repository = "https://github.com/HajimeKawahara/exogibbs"
+Issues = "https://github.com/HajimeKawahara/exogibbs/issues"
+
+[tool.setuptools]
+include-package-data = true
+package-dir = { "" = "src" }
+
+[tool.setuptools.exclude-package-data]
+exogibbs = ["data/sharp_huebner/*"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+  "smoke: fast, representative API smoke tests",
+  "scientific: full physical scenarios and literature regressions, run separately in CI",
+]
+
+# setuptools-scm
+[tool.setuptools_scm]
+write_to = "src/exogibbs/exogibbs_version.py"
+write_to_template = "__version__ = \"{version}\"\n"

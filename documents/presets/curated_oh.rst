@@ -135,7 +135,7 @@ The earlier H2O runner now explicitly selects ``curated_h2o``. Its
 historical contract and the OH candidate contract resolve original
 files to their byte-identical snapshots. They are not rebound to the
 new default. Scoped source selection and production adoption are
-supported in ``mceg/contracts/curated_oh.yaml`` and the packaged catalog;
+supported in ``mceg/contracts/curated_oh.yaml``;
 the physical-accuracy assessment remains unknown.
 
 Offline verification::

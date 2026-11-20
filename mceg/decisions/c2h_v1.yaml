@@ -1,0 +1,242 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_c2h.v1.decisions",
+    "name": "Curated gas default with reviewed C2H correction: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1",
+      "entry_points": [
+        "exogibbs.presets.curated.chemsetup",
+        "exogibbs.presets.curated_c2h.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "conditional_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "The conditional NASA/ATcT source choice has complete primary-source and high-temperature thermal support.",
+      "scope": "Only the stated source choice or sampled gas-only application, never all atmospheres."
+    },
+    {
+      "id": "whole_mixture_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The corrected complete gas model has quantified physical accuracy across its evaluation domain and applications.",
+      "scope": "Only the stated source choice or sampled gas-only application, never all atmospheres."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/c2h_v1.json",
+        "mceg/contracts/curated_c2h.yaml"
+      ],
+      "scope": "curated-c2h-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/c2h_v1.json",
+          "sha256": "b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48"
+        },
+        {
+          "source": "mceg/contracts/curated_c2h.yaml",
+          "sha256": "800fb4cd9074a31c66635c5b98311bc099fa11d3f908905a0148c2c1e59bc2e1"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs/tree/a541a7441a39b100c3ea5b5621f7723811c03b9c",
+        "revision": "sha256:b18ff4dab8a3144ee234ad2feced37645db05a353198f2fd36a1bdb35471d236",
+        "entry_points": [
+          "exogibbs.presets.curated_c2h.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/c2h_equilibrium_impact.py": "5f8904ba945f03e467695b401d47527d7a11faad325d0c66e600e970fdc71657",
+        "mceg/reviews/build_c2h_correction.py": "41eb1ae90f25a4adbbcaf4d39e8f9f14659010b528b362ff2e9ff70db6828fb2",
+        "examples/comparisons/compare_gas_thermochemistry.py": "f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228",
+        "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+        "src/exogibbs/presets/curated_v1.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+        "tests/data/validation/curated_default_adoption/20261102/source/src/exogibbs/presets/curated_c2h.py": "b18ff4dab8a3144ee234ad2feced37645db05a353198f2fd36a1bdb35471d236",
+        "src/exogibbs/thermo/standard.py": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1",
+        "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+        "src/exogibbs/data/curated/c2h_v1.json": "b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48",
+        "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+        "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+        "src/exogibbs/equilibrium/gas/__init__.py": "54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5",
+        "src/exogibbs/equilibrium/gas/grid/__init__.py": "04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e",
+        "src/exogibbs/equilibrium/gas/grid/build.py": "7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161",
+        "src/exogibbs/equilibrium/gas/grid/initialization.py": "afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380",
+        "src/exogibbs/equilibrium/gas/grid/interpolation.py": "8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6",
+        "src/exogibbs/equilibrium/gas/grid/service.py": "2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836",
+        "src/exogibbs/equilibrium/gas/grid/storage.py": "689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75",
+        "src/exogibbs/equilibrium/gas/grid/types.py": "6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23",
+        "src/exogibbs/equilibrium/gas/initialization.py": "dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3",
+        "src/exogibbs/equilibrium/gas/kernel/__init__.py": "e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db",
+        "src/exogibbs/equilibrium/gas/kernel/autodiff.py": "15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376",
+        "src/exogibbs/equilibrium/gas/kernel/diagnostics.py": "d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732",
+        "src/exogibbs/equilibrium/gas/kernel/equations.py": "120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366",
+        "src/exogibbs/equilibrium/gas/kernel/sensitivities.py": "ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1",
+        "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+        "src/exogibbs/equilibrium/gas/profile.py": "a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f",
+        "src/exogibbs/equilibrium/gas/solve.py": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+        "src/exogibbs/equilibrium/gas/types.py": "ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543",
+        "tests/data/validation/c2h_source_review/20261102/sources.json": "caca02ff6f9c52b8d6444ca3260fe2bc3dc500892e47836007676158a23ce5cf",
+        "tests/data/validation/c2h_source_review/20261102/literature.json": "2754eb691526157d3cd0bc0ffbafcb3f337938e135daf182bb36d53f525548c3",
+        "tests/data/validation/c2h_source_review/20261102/nasa_selected_records.txt": "2d7c62c06fe7f94c719bd5f12cda550f2d2ef04f75499e917e4e7b01bf38f156"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "fixed_network_grid",
+      "scope": "Finite single-species substitution, cold restarts and selected independent solver verification.",
+      "settings": {
+        "network": "537 species; ions=True",
+        "temperatures_K": "1500,2000,2500,3000,4000",
+        "pressures_bar": "1e-6,1e-4,0.01,1,100",
+        "standard_pressure_bar": 1,
+        "carbon_to_oxygen": "0.5888436553555908,1,1.5",
+        "budgets": "equilibria.npz budget array, normalized nuclear sum=1; zero net charge",
+        "formula_matrix": "equilibria.npz; identical in each pair",
+        "primary_tolerance": 1e-13,
+        "strict_tolerance": 5e-14,
+        "endpoint_solves": 150,
+        "strict_cold_solves": 150,
+        "lambda_solves": 5,
+        "independent_fastchem_solves": 2,
+        "dtype": "float64",
+        "backend": "cpu"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "conditional_selection_review",
+      "kind": "evidence_support",
+      "claim": "conditional_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "fixed_network_grid",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The NASA/ATcT source is now the default scientific choice because the old JANAF energy estimate is superseded and its thermal discrepancy remains after energy alignment. Original-paper and high-temperature thermal uncertainty gaps still prevent a claim of complete physical support."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    },
+    {
+      "id": "whole_mixture_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "whole_mixture_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "fixed_network_grid",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "No independent atmospheric measurements, full thermal uncertainty or omitted-physics validation establish this claim."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_C2H1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-c2h-v1 use for C2H1?",
+      "scope": "curated-c2h-v1, C2H1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K; high-temperature physical uncertainty remains unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-gas-v1 thermochemistry for C2H1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: C2H; source_group: molecular; thermal_source: nasa9; energy_source: atct"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Replace the 1967 JANAF estimate with identified NASA CCH thermal functions and balanced ATcT 1.172 D0."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "a0f399dcb5a263e2a4b1a40c8f49bd9f1af64b5f53dfc02510ad63f042a84e15"
+        },
+        {
+          "kind": "assessment",
+          "id": "conditional_selection_review",
+          "sha256": "a044401e7b79ba40f777143e1c7ac971108a9492f1d23c6c88ffd0670ec4bb07"
+        },
+        {
+          "kind": "assessment",
+          "id": "whole_mixture_accuracy_review",
+          "sha256": "21032852945431ee829366fca532ca14c305f49d8bdcda874c83f58c75eb6b95"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "fixed_network_grid",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K; high-temperature physical uncertainty remains unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

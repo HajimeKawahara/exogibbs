@@ -8,7 +8,9 @@ import MCEG, MyST or scientific providers. The existing API documentation may
 still import this package.
 
 Install Graphviz (the ``dot`` executable), this package's documentation extras,
-and a checkout of MCEG containing the ``docs`` command. With sibling checkouts
+and a checkout of MCEG containing the ``docs`` command and schema 0.4 Decision
+support (`PR #24 <https://github.com/HajimeKawahara/mceg/pull/24>`_). CI pins
+commit ``692759a77449abd006218b7c1a09cd43c43d2ff3``. With sibling checkouts
 and Python 3.10 or newer:
 
 .. code-block:: bash
@@ -35,14 +37,15 @@ Paths in ``mceg/docs.yaml`` resolve relative to that configuration file.
 ``contracts`` selects provider roots and explicit contract patterns; ``cases``
 selects authored calculation connections. ``source_root`` and ``output`` identify
 the Sphinx tree and its dedicated generated directory. The catalog includes all
-``mceg/contracts/*.yaml`` contracts in this repository. Archived reviews and
-unregistered models are separate; the catalog is not a complete model inventory.
+``mceg/contracts/*.yaml`` and ``mceg/decisions/*.yaml`` records in this repository.
+Archived reviews and unregistered models are separate; the catalog is not a
+complete model inventory.
 
 Each model has a short overview and separate Applicability, Assessments,
-Evidence, References and Implementation & records pages. Evidence and Assessment
-records have individual pages. Technical metadata can be expanded; unknown
-support and source-review gaps remain visible. No current assessment is selected
-from a historical list.
+Evidence, Decisions, References and Implementation & records pages. Evidence,
+Assessment and Decision records have individual pages. Technical metadata can
+be expanded; unknown support and source-review gaps remain visible. No current
+assessment is selected from a historical list.
 
 Local source downloads contain build-checkout files. Recorded implementation
 revisions and artifact hashes are displayed without rechecking those bytes.

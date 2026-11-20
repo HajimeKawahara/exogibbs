@@ -279,8 +279,8 @@ The model combines :doc:`../atomic_ion_adoption` and
   gauge. This is not a claim that all 537 species have been independently audited.
 
 For known thermochemical differences and optional MCEG inspection, see
-:doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
-provides a record lookup without requiring MCEG. The default matches
+:doc:`../mceg/optional_inspection`. The repository record
+``mceg/contracts/curated_gas_v2_adoption.yaml`` describes the default model
 ``exogibbs.curated_gas.v2`` and retains all preceding curated updates.
 The earlier HCN comparison belongs to
 ``curated_v1``; it is not evidence for the changed default.

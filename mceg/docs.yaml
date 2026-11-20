@@ -6,5 +6,6 @@ contracts:
     root: ..
     paths:
       - mceg/contracts/*.yaml
+      - mceg/decisions/*.yaml
 cases:
   - ../examples/comparisons/mceg/h2-solubility.yaml
