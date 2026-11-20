@@ -30,6 +30,7 @@ Contents
 
    equilibrium_solvers.rst
    condensate_profile.rst
+   condensate_audit.rst
    multiphase.rst
    plagioclase_exsolution
    equilibrium_sensitivity
