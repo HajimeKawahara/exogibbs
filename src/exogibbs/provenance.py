@@ -50,6 +50,8 @@ def describe(setup: "ChemicalSetup") -> Dict[str, Any]:
                   and item["identity"]["data_sha256"] == digest
                   and all(type(settings.get(key)) is type(value) and settings.get(key) == value
                           for key, value in item["identity"]["settings"].items())), None)
+    decisions = next((record for record in model["records"]
+                      if record["id"] == "source_decisions"), None) if model else None
     return {
         "provider": "exogibbs",
         "package_version": __version__,
@@ -69,6 +71,9 @@ def describe(setup: "ChemicalSetup") -> Dict[str, Any]:
         "explain_command": shlex.join([
             "mceg", "explain", "--catalog", str(catalog_path), "--model", model["id"],
         ]) if model else None,
+        "decisions_command": shlex.join([
+            "mceg", "explain", str(catalog_path.parent / decisions["path"]),
+        ]) if decisions else None,
     }
 
 

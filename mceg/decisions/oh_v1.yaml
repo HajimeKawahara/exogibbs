@@ -1,0 +1,205 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_oh.v1.decisions",
+    "name": "Curated gas default with NASA/ATcT OH: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444",
+      "entry_points": [
+        "exogibbs.presets.curated.chemsetup",
+        "exogibbs.presets.curated_oh.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "The NASA thermal reaction with balanced ATcT 1.172 energy is scientifically preferred to inherited JANAF OH within the bounded gas model.",
+      "scope": "curated-oh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-h2o-v1. Only OH changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=425.604 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The complete adopted gas model has quantified physical uncertainty and validated planetary atmospheric abundance accuracy.",
+      "scope": "curated-oh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-h2o-v1. Only OH changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=425.604 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/oh_v1.json",
+        "mceg/contracts/curated_oh.yaml"
+      ],
+      "scope": "curated-oh-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/oh_v1.json",
+          "sha256": "f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081"
+        },
+        {
+          "source": "mceg/contracts/curated_oh.yaml",
+          "sha256": "bd6cb2c0916b297b2466e96b8ca73b94cd3fd2096881fb85170262474ea9327c"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444",
+        "entry_points": [
+          "exogibbs.presets.curated.chemsetup",
+          "exogibbs.presets.curated_oh.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/oh_v1.json": "f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-oh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-h2o-v1. Only OH changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172 D0=425.604 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.",
+      "settings": {
+        "dataset": "curated-oh-v1",
+        "base_dataset": "curated-h2o-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_anchor": "ATcT 1.172 balanced 425.604 kJ/mol",
+        "thermal_source": "Exact reviewed OH-H-O NASA9 reaction, energy constant shifted once",
+        "previous_follow_up": "OH candidate production choice completed by authorized adoption; full physical scope remains unknown"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The inspected IUPAC evaluation identifies a JANAF electronic/caloric defect. Exact NASA reaction and derivative checks plus conserved finite substitutions support the replacement. MYTHOS at identical energy and atomic references differs by less than 0.098 percent in K; this is a thermal sensitivity, not a full uncertainty estimate."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Shared source ancestry, isotope/continuum completeness, same-version ATcT covariance and application-specific atmospheric observational validation remain unquantified; numerical closure does not resolve them."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_H1O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-oh-v1 use for H1O1?",
+      "scope": "curated-oh-v1, H1O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, 1 bar standard pressure. Shared source ancestry, isotope approximation, continuum and ATcT covariance limits remain; complete atmospheric physical accuracy is unknown.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-h2o-v1 thermochemistry for H1O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: OH; source_group: molecular; thermal_source: NASA CEA / Gurvich OH thermal functions; energy_source: ATcT 1.172 balanced H+O-OH atomization"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Replace the inherited JANAF electronic/caloric defect using the exact reviewed NASA9 reaction and balanced ATcT energy. Dense caloric checks and conserved finite substitutions support the bounded adoption; MYTHOS is a smaller thermal control."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "3653ad2d672d142c04ff6e1b1659c2dd3ffad9bb1484c62d933060dd5ecbde33"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c5305baed5f6edc29270243e557c4b802314fc7a80438c9dc934b004a0197db3"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "c2399be5ab20d92c33d7fb50703b0c61f7fb7116319c8b52d0ee9f69c66964a4"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, 1 bar standard pressure. Shared source ancestry, isotope approximation, continuum and ATcT covariance limits remain; complete atmospheric physical accuracy is unknown.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

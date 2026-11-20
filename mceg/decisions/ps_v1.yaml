@@ -1,0 +1,213 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_ps.v1.decisions",
+    "name": "Curated PS thermals on the cumulative CN base: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33",
+      "entry_points": [
+        "exogibbs.presets.curated_ps.chemsetup",
+        "mceg/reviews/build_ps_adoption.py",
+        "mceg/reviews/curated_ps_adoption.py"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "Adopt the authorized scoped POPS thermal update for explicit ground/excited-state calorics with retained energy and a4Pi limitations; this is a conditional scientific preference, not a decisive physical-accuracy claim.",
+      "scope": "Named curated-ps-v1 on curated-cn-v1,1500-4000K,one-bar standard pressure. Only P1S1 receives the reviewed fixed-cutoff POPS-minus-NASA/Gurvich molecular thermal difference; Lodders D0=438 kJ/mol and inherited fit/source residual retained. Both537-species ion-inclusive and421-species neutral networks; no full atmospheric validation."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The complete adopted gas model has quantified physical uncertainty and validated planetary abundance accuracy.",
+      "scope": "Named curated-ps-v1 on curated-cn-v1,1500-4000K,one-bar standard pressure. Only P1S1 receives the reviewed fixed-cutoff POPS-minus-NASA/Gurvich molecular thermal difference; Lodders D0=438 kJ/mol and inherited fit/source residual retained. Both537-species ion-inclusive and421-species neutral networks; no full atmospheric validation."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/ps_v1.json",
+        "mceg/contracts/curated_ps.yaml"
+      ],
+      "scope": "curated-ps-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/ps_v1.json",
+          "sha256": "d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6"
+        },
+        {
+          "source": "mceg/contracts/curated_ps.yaml",
+          "sha256": "9c3f029d2bba565569becaae982d38f71ccab24b2a44282cccbd8f4cf1efcf8d"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:73e7c0f4c93386d8a7047ec0e4dd2ac983aee62ab6588790c268cd34bfe24b33",
+        "entry_points": [
+          "exogibbs.presets.curated_ps.chemsetup",
+          "mceg/reviews/build_ps_adoption.py",
+          "mceg/reviews/curated_ps_adoption.py"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/ps_v1.json": "d070f0fd64fe89039994ff37ec2d1f6586ed66190f97f48c38b6e13f196d90d6"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "curated_ps_production",
+      "scope": "Named curated-ps-v1 on curated-cn-v1,1500-4000K,one-bar standard pressure. Only P1S1 receives the reviewed fixed-cutoff POPS-minus-NASA/Gurvich molecular thermal difference; Lodders D0=438 kJ/mol and inherited fit/source residual retained. Both537-species ion-inclusive and421-species neutral networks; no full atmospheric validation.",
+      "settings": {
+        "dataset": "curated-ps-v1",
+        "base_dataset": "curated-cn-v1",
+        "temperature_range_K": "1500–4000",
+        "pressure_range_bar": "1e-6–100",
+        "standard_pressure_bar": 1,
+        "ion_species": 537,
+        "neutral_species": 421,
+        "new_production_solves": 150,
+        "tighter_reference_solves": 6,
+        "independent_solver_comparisons": 2,
+        "delta_D0_J_mol": 0,
+        "polynomial_degree": 18,
+        "public_default_scope": "Namedstage; subsequentTiO2 activation retains thisupdate"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "curated_ps_production",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The retained D0=438 +/-10 kJ/mol, native NASA R, molecular H0 gauge, central cutoff, spin divisor and natural-mass proxy exactly follow the reviewed source definition; deltaD0=0.",
+        "Explicit X/B/a thermodynamics motivates adoption. a4Pi supplies1.57709%Q at4000K but is unrefined abinitio; unknown full accuracy does not negate the scoped choice or create a missing-literature merge gate."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "curated_ps_production",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Unrefined a4Pi energy/coupling, higher-state completeness, isotope-mixture approximation, correlated energy uncertainty and non-equilibrium/condensed/observational planetary physics remain unquantified."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_P1S1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-ps-v1 use for P1S1?",
+      "scope": "curated-ps-v1, P1S1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K and one-bar standard pressure. 31P32S internal levels with retained natural-mass translation; incomplete excited-state, isotope and planetary uncertainty.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-cn-v1 thermochemistry for P1S1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: PS; source_group: molecular; thermal_source: POPS2017 resolved states, fixed central-D0 cutoff; NASA/Gurvich molecular thermal subtraction; energy_source: Retained Lodders2004 D0=438 +/-10 kJ/mol"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Adopt the authorized scoped POPS update for explicit ground/excited-state calorics, preserving current energy, atomic functions and fit/source residual. The a4Pi component remains unrefined ab initio; this is not a decisive accuracy or new precision-standard claim."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "9e22231559208994d441b953cbaf6b484fac34ede7f9e359689d83a6dc38eb0e"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "a863d81db4293a8ffba2b71f997861e1d5486bf5a2092f94e96080af58eee69c"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "26982c30f9f3f087dc4a06d82af6395d16a311d0a2d2e73bddab304829cdc7cc"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "curated_ps_production",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K and one-bar standard pressure. 31P32S internal levels with retained natural-mass translation; incomplete excited-state, isotope and planetary uncertainty.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-11-06"
+RECORD_VERSION = "2026-11-20"
 GAS_CURATION_RELEASE_SHA256 = "f8ac775a45240d077a932c0ab7c7bed016c9e48652e561a430c3bde5f734bb0a"
 
 
@@ -584,6 +584,21 @@ def build_catalog(output: Path = OUTPUT) -> None:
         "links": ["https://github.com/HajimeKawahara/exogibbs/blob/develop/"
                   "documents/mceg/gas_curation_release_0_1.rst"],
     })
+    for layer in release["dataset"]["base_data_chain"]:
+        model = next(model for model in catalog["models"] if model["dataset"] == layer["id"])
+        data = json.loads((ROOT / layer["path"]).read_text())
+        choices = data.get("decisions") or {data["species"]: data["decision"]}
+        path = f"decisions/{Path(layer['path']).stem}.yaml"
+        model["records"].append({
+            "id": "source_decisions", **copy(f"mceg/{path}", path),
+            "species": sorted(choices),
+            "summary": (
+                "MCEG Decision records transcribe the archived source choices, reasons and "
+                "limitations. Inspect this contract with mceg explain and --decision ID. "
+                "A selected option does not establish physical accuracy. The numerical "
+                "dataset and historical review remain unchanged."
+            ),
+        })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
 
 

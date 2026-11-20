@@ -1,0 +1,213 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_tio.v1.decisions",
+    "name": "Curated gas default with modern TiO thermochemistry: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651",
+      "entry_points": [
+        "exogibbs.presets.curated.chemsetup",
+        "exogibbs.presets.curated_tio.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "TOTO/Jain is scientifically preferred over the preceding JANAF/BC TiO hybrid for the explicitly scoped curated gas model.",
+      "scope": "The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical atmosphere validation."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The adopted complete gas model has quantified thermochemical uncertainty and validated physical atmospheric abundance accuracy.",
+      "scope": "The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical atmosphere validation."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/tio_v1.json",
+        "mceg/contracts/curated_tio.yaml"
+      ],
+      "scope": "curated-tio-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/tio_v1.json",
+          "sha256": "52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1"
+        },
+        {
+          "source": "mceg/contracts/curated_tio.yaml",
+          "sha256": "924c8a810f2a98a12a63d3205a4d4ab731956f7dbe924f2d52985bce42045b23"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651",
+        "entry_points": [
+          "exogibbs.presets.curated.chemsetup",
+          "exogibbs.presets.curated_tio.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/tio_v1.json": "52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical atmosphere validation.",
+      "settings": {
+        "dataset": "curated-tio-v1",
+        "base_dataset": "curated-c2h-v1",
+        "temperature_min_K": 1500,
+        "temperature_max_K": 4000,
+        "pressure_min_bar": 1e-06,
+        "pressure_max_bar": 100,
+        "C_over_O": "0.5888436553555908, 1, 1.5",
+        "standard_pressure_bar": 1,
+        "D0_eV": 6.824,
+        "molecular_mass_u": 63.8664,
+        "nuclear_spin_factor": 1,
+        "network_modes": "ions=True (537 species); ions=False (421 species)",
+        "cases_per_network": 75,
+        "solver_tolerance": 5e-14,
+        "production_adoption": true
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "An identified obsolete thermal assumption is replaced by modern state-resolved thermodynamics and a more precise, explicitly referenced measured ground energy. The representative-isotope approximation is declared and checked; the legacy D0 is compatible within its quoted uncertainty. Full physical accuracy is not required to prefer the better supported scoped source model."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Numerical checks do not supply missing complete state, isotope or correlated thermochemical uncertainty, nor validate condensation, cold traps, transport, nonideality, irradiation or observed spectra."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_O1Ti1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-tio-v1 use for O1Ti1?",
+      "scope": "curated-tio-v1, O1Ti1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, 1 bar standard pressure, representative-isotope approximation; complete high-temperature and atmospheric physical uncertainty remains unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-c2h-v1 thermochemistry for O1Ti1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: TiO; source_group: molecular; thermal_source: ExoMol TOTO 20240509 bound-state moments; energy_source: Jain et al. 2023 ground-state D0; isotope_convention: 48Ti16O internal levels represent elemental TiO; NASA natural-mass translation and atoms; not a complete natural-isotope or isotope-resolved reaction"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Replace the JANAF 1973 low-state estimates with modern explicit levels and a more precise ground-state threshold. The older 6.869 +/- 0.061 eV energy is not disproved by the compatible 6.824 +/- 0.010 eV result."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "9d93160b69efb75f67da00d8cdd93feb09d2c6688afe77ce6de75863d985080b"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "258bf2ea0fd07b0ffb8202b3947e0d588fa287f0bd8b5cef5bc8f20e93424c5d"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "8cec21d41a7e18aa7570b884e1604347962261a5d437cb9517e8930a58cdeea7"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, 1 bar standard pressure, representative-isotope approximation; complete high-temperature and atmospheric physical uncertainty remains unquantified.",
+        "48Ti16O internal levels represent elemental TiO; NASA natural-mass translation and atoms; not a complete natural-isotope or isotope-resolved reaction",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

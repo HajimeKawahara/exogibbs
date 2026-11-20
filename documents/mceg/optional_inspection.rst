@@ -18,6 +18,7 @@ Start from your setup
    print(info["notice"])
    print(info["record_version"])
    print(info["explain_command"])
+   print(info["decisions_command"])
 
 The returned dictionary can be saved with ``json.dump``. It describes declared
 setup metadata, not a saved execution or its temperature, pressure and elemental
@@ -65,7 +66,8 @@ is equivalent to:
 ``--json`` produces a machine-readable report. The package option identifies
 the installed distribution; MCEG reads its files without importing ExoGibbs or
 running a calculation. Older MCEG releases without these options can still
-read the individual YAML contracts in ``data/mceg/contracts``.
+read compatible individual YAML contracts in ``data/mceg/contracts``. The
+additional schema 0.4 records require MCEG's Decision support.
 
 The HCN report links the revised preliminary FastChem comparison, numerical
 checks, unknown physical accuracy, and pending source-reconstruction work.
@@ -83,6 +85,41 @@ included in the wheel; a copied contract does not establish that those files
 were checked on your machine. See :doc:`fastchem_hcn_followup` for the complete
 comparison, source audit and replay procedure.
 
+Inspect a source choice
+-----------------------
+
+Curated source choices live in native schema 0.4 Decision records in
+``mceg/decisions``. Existing contracts retain their historical contents. Use an
+MCEG checkout containing
+`PR #24 <https://github.com/HajimeKawahara/mceg/pull/24>`_ to inspect a choice
+and its recorded basis:
+
+.. code-block:: console
+
+   mceg explain mceg/decisions/c2h_v1.yaml \
+     --decision source_choice_C2H1 --investigation
+   mceg check mceg/decisions/c2h_v1.yaml --decision source_choice_C2H1
+
+For an installed preset, ``describe(setup)["decisions_command"]`` returns the
+equivalent ``mceg explain`` command for its bundled Decision records. Run it to
+see the available IDs, then append ``--decision ID --investigation`` for one
+choice. For example, ``curated_c2h.chemsetup()`` exposes
+``source_choice_C2H1``. The field is ``None`` when the declared metadata has no
+matching Decision record. Constructing the command does not require MCEG.
+
+The records transcribe the archived choices without a new scientific review.
+A selected option does not establish physical accuracy: unknown Assessment
+outcomes and source limitations remain separate. Basis fingerprints identify
+the recorded premises; a changed premise calls for review without replacing
+the historical choice. ``--decision-revision 1`` selects an exact revision.
+
+The pinned numerical JSON files retain their original ``decision`` or
+``decisions`` fields, and presets still expose ``species_provenance`` metadata.
+These are frozen compatibility snapshots, preserving dataset hashes and the
+existing API. Author subsequent Decision revisions in ``mceg/decisions``,
+retaining earlier revisions and their premises. Calculations continue to read
+packaged numerical data without importing MCEG or evaluating Decision records.
+
 Records and their updates
 -------------------------
 
@@ -93,8 +130,9 @@ can be selected explicitly with ``--catalog``. The report identifies the
 selected snapshot and hashes. Ordinary calculations perform no evidence lookup
 or network access.
 
-Maintainers edit the canonical records in ``mceg/contracts`` and the archived
-study outputs, then regenerate the committed distribution files:
+Maintainers edit the canonical records in ``mceg/contracts`` and
+``mceg/decisions`` and the archived study outputs, then regenerate the committed
+distribution files:
 
 .. code-block:: console
 

@@ -1,0 +1,1476 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_gas.v2.decisions",
+    "name": "Curated gas v2 combined molecular adoption: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:d17b0393cb94596082c650abe90d9bdf7c46a4185a23c48ab1e16f76e7817f66",
+      "entry_points": [
+        "exogibbs.presets.curated_v2.chemsetup",
+        "exogibbs.presets.curated.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "Adopt atom-balanced selected energies while retaining atomic thermals and empirical source-fit residuals, and replace only O2 molecular thermals by the evaluated natural-isotope model minus its NASA proxy. CNN remains provisional; C4N2 uses NASA529.2kJ/mol, not NIST529.3; N2O5 and P4S3 use distinct H298 anchors with no invented physical D0. Coordinated HNCO/NCO, NO2/N2O4 and cis/trans-HNO2 replacements apply each species once.",
+      "scope": "curated-gas-v2 on pinned curated-ch2-v1; 27 source decisions update 28 molecular species on 1500-4000 K at one-bar standard pressure. Fixed 537-species ion-inclusive and 421-species neutral networks; complete physical uncertainty and atmospheric accuracy remain unquantified."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "Complete physical uncertainty and planetary atmospheric abundance accuracy of the adopted model are established.",
+      "scope": "curated-gas-v2 on pinned curated-ch2-v1; 27 source decisions update 28 molecular species on 1500-4000 K at one-bar standard pressure. Fixed 537-species ion-inclusive and 421-species neutral networks; complete physical uncertainty and atmospheric accuracy remain unquantified."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/gas_v2.json",
+        "mceg/contracts/curated_gas_v2_adoption.yaml"
+      ],
+      "scope": "curated-gas-v2 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/gas_v2.json",
+          "sha256": "8096a1dc9c0f6e15e222b7c6c9dc6d5693a1a6904913affb463a144034616261"
+        },
+        {
+          "source": "mceg/contracts/curated_gas_v2_adoption.yaml",
+          "sha256": "54a6c17c06b3b976419060a2b757088d6adaa7762e6e38dfb5670c08e931bbe9"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:d17b0393cb94596082c650abe90d9bdf7c46a4185a23c48ab1e16f76e7817f66",
+        "entry_points": [
+          "exogibbs.presets.curated_v2.chemsetup",
+          "exogibbs.presets.curated.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/gas_v2.json": "8096a1dc9c0f6e15e222b7c6c9dc6d5693a1a6904913affb463a144034616261"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-gas-v2 on pinned curated-ch2-v1; 27 source decisions update 28 molecular species on 1500-4000 K at one-bar standard pressure. Fixed 537-species ion-inclusive and 421-species neutral networks; complete physical uncertainty and atmospheric accuracy remain unquantified.",
+      "settings": {
+        "dataset": "curated-gas-v2",
+        "base_dataset": "curated-ch2-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "selected_reviews": 27,
+        "unique_updated_species": 28,
+        "thermal_update": "O2 only; evaluated natural-isotope molecular correction with retained source-fit/proxy residual"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Adopt atom-balanced selected energies while retaining atomic thermals and empirical source-fit residuals, and replace only O2 molecular thermals by the evaluated natural-isotope model minus its NASA proxy. CNN remains provisional; C4N2 uses NASA529.2kJ/mol, not NIST529.3; N2O5 and P4S3 use distinct H298 anchors with no invented physical D0. Coordinated HNCO/NCO, NO2/N2O4 and cis/trans-HNO2 replacements apply each species once.",
+        "Source-specific qualifications permit conditional adoption without claiming a fully modern caloric network or complete physical error bounds."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "ATcT covariance, CNN theoretical provenance, retained high-temperature excited-state/large-amplitude thermals, isotopic conventions and empirical-fit residuals leave full physical uncertainty unquantified. Source marginal widths and finite numerical controls are not a complete reaction or atmospheric uncertainty model.",
+        "Numerical ideal-gas closure and solver agreement do not validate condensation,transport,photochemistry or all atmospheric applications."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_C1H1N1O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C1H1N1O1?",
+      "scope": "curated-gas-v2, C1H1N1O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C1H1N1O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: HNCO; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend retained-thermal ATcT energy adoption, with HNCO/NCO bookkeeping reviewed jointly before production selection. A low-temperature partition table is not extrapolated into the hot candidate."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C1H1O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C1H1O1?",
+      "scope": "curated-gas-v2, C1H1O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C1H1O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: HCO; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the retained-thermal ATcT energy update. Retain NASA as a distinct thermal/reference sensitivity, without declaring it the superior full-range thermal function."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C1N1O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C1N1O1?",
+      "scope": "curated-gas-v2, C1N1O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C1N1O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: NCO; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the retained-thermal ATcT energy update, coordinating its production selection with HNCO. Separate and joint fixed-network variants quantify coupled response; they do not provide reaction covariance or validate an entire rovibronic model."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C1N2_cnn",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C1N2_cnn?",
+      "scope": "curated-gas-v2, C1N2_cnn, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C1N2_cnn."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: CNN; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "A provisional retained-thermal ATcT energy update is scientifically supported as one bounded improvement. Do not describe the retained thermal model as validated: a source-resolved vibration/electronic update remains necessary for a stronger full-function claim. NASA is a sensitivity, not an automatic replacement."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C1N2_ncn",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C1N2_ncn?",
+      "scope": "curated-gas-v2, C1N2_ncn, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C1N2_ncn."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: NCN; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the current evaluated ATcT energy with retained thermals. Keep NASA as a separate sensitivity and the2026 measurement as corroboration. Full excited-state thermal accuracy remains unknown."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C2?",
+      "scope": "curated-gas-v2, C2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: C2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend retained thermals with the ATcT energy. The measured ground-referenced dissociation supports the physical change independently of equilibrium fitting. A later eight-state thermal candidate should make dissociation and isotope conventions explicit."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C2N1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C2N1?",
+      "scope": "curated-gas-v2, C2N1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C2N1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: CNC; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the evaluated energy as a bounded correction, retaining the present thermal function and its residual. The separate NASA result quantifies remaining thermal sensitivity; a complete Renner-Teller thermal update is deferred and full physical accuracy remains unknown."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C2O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C2O1?",
+      "scope": "curated-gas-v2, C2O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C2O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: C2O; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the evaluated energy as a bounded improvement while retaining the literal thermal function. The old electronic model remains a material inherited limitation; NASA sensitivity does not resolve its physical completeness. A complete thermal update is deferred, not silently invented."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C3O2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C3O2?",
+      "scope": "curated-gas-v2, C3O2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C3O2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: C3O2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the same-version ATcT physical energy correction as a scoped future update, preserving the existing thermal model and fit residual. The source cycle supports G/H +1698 J/mol; the NASA alternative changes the thermal/gauge construction and can reverse the response, without demonstrated physical superiority. Negligible abundance in this grid does not by itself validate or invalidate its energy source."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_C4N2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for C4N2?",
+      "scope": "curated-gas-v2, C4N2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for C4N2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: NASA_header_balanced_D0_corrected_energy; name: C4N2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "A bounded corrected-energy update using the explicitly selected NASA physical anchor is supported by the documented combustion correction. Prefer retaining thermals for that step; the second full NASA model is a sensitivity. This trace-species update has low immediate priority on the tested grid."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_H1N1O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for H1N1O1?",
+      "scope": "curated-gas-v2, H1N1O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for H1N1O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: HNO; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the retained-thermal ATcT energy correction; the NASA thermal alternative is a quantified sensitivity without demonstrated physical superiority."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_H1N1O2cis",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for H1N1O2cis?",
+      "scope": "curated-gas-v2, H1N1O2cis, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for H1N1O2cis."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: cis-HNO2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the coordinated cis/trans ATcT energy candidate as the internally consistent evaluated option. Keep the 2023 measured-gap hybrid and its quoted-width edges as explicit alternatives; do not adopt a mixed-isomer thermal function."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_H1N1O2trans",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for H1N1O2trans?",
+      "scope": "curated-gas-v2, H1N1O2trans, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for H1N1O2trans."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: trans-HNO2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the coordinated cis/trans ATcT energy candidate as the internally consistent evaluated option. Keep the 2023 measured-gap hybrid and its quoted-width edges as explicit alternatives; do not adopt a mixed-isomer thermal function."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_H2N1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for H2N1?",
+      "scope": "curated-gas-v2, H2N1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for H2N1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: NH2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the retained-thermal ATcT energy update for a separately authorized bounded adoption. Keep the NASA thermal candidate as a measured model contrast; full-range superiority is not established. The2026 spin-convention issue does not block this energy decision."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_H2N2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for H2N2?",
+      "scope": "curated-gas-v2, H2N2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for H2N2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: cis-H2N2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the exact-isomer retained-thermal ATcT energy change. Do not replace cis with a NASA isomer-mixture function; a separate cis-resolved thermal model can be assessed later."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_H4N2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for H4N2?",
+      "scope": "curated-gas-v2, H4N2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for H4N2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: N2H4; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the retained-thermal ATcT energy update; do not adopt the substantially different NASA thermal function until torsional and inversion treatments are reconciled."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_K2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for K2?",
+      "scope": "curated-gas-v2, K2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure; atomic gauge and entire inherited residual retained. G/H change by the stated constant; S/Cp remain unchanged. No added ZPE, H298 offset, symmetry or nuclear-spin correction. The empirical R*a intercept is not the physical JANAF D0. Keep both values separate. Measured anchor uncertainty is not propagated as complete thermal or atmospheric uncertainty. No source inspected establishes a complete corrected hot state inventory. Missing shallow a3Sigma-u, rotational/near-dissociation and other electronic coverage remain unresolved. Gibbs changes below the recorded optimizer diagnostic scale are not claims of an exact sign or physical superiority. 39K2 principal-isotope D0 is used as a bounded central-energy proxy for the inherited element-aggregate thermal species, not as a measured natural-isotope mean. 2006 D0 is relative to atomic ground-asymptote center of gravity; full article was inspected through author thesis. 2026 potential D0=4404.80862651cm^-1 differs by0.007494723970012274J/mol, within the reported2006 uncertainty. Its86 J=0 levels do not establish J>0/electronic/minor-isotope thermal completeness.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for K2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: Measured_ground_vibrational_D0; name: K2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer a direct measured ground-vibrational binding energy with an explicit ground-atom asymptote, while preserving the literal thermal fit and its source residual."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure; atomic gauge and entire inherited residual retained. G/H change by the stated constant; S/Cp remain unchanged. No added ZPE, H298 offset, symmetry or nuclear-spin correction. The empirical R*a intercept is not the physical JANAF D0. Keep both values separate. Measured anchor uncertainty is not propagated as complete thermal or atmospheric uncertainty. No source inspected establishes a complete corrected hot state inventory. Missing shallow a3Sigma-u, rotational/near-dissociation and other electronic coverage remain unresolved. Gibbs changes below the recorded optimizer diagnostic scale are not claims of an exact sign or physical superiority. 39K2 principal-isotope D0 is used as a bounded central-energy proxy for the inherited element-aggregate thermal species, not as a measured natural-isotope mean. 2006 D0 is relative to atomic ground-asymptote center of gravity; full article was inspected through author thesis. 2026 potential D0=4404.80862651cm^-1 differs by0.007494723970012274J/mol, within the reported2006 uncertainty. Its86 J=0 levels do not establish J>0/electronic/minor-isotope thermal completeness.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N1O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N1O1?",
+      "scope": "curated-gas-v2, N1O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N1O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: NO; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the ATcT energy update with the existing thermal function; no additional thermal replacement is justified."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N1O2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N1O2?",
+      "scope": "curated-gas-v2, N1O2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N1O2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: NO2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the retained-thermal ATcT energy update, with NASA thermals retained only as a sensitivity; coordinate any adoption with the N2O4 energy cycle."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N1O3",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N1O3?",
+      "scope": "curated-gas-v2, N1O3, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N1O3."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: NO3; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the retained-thermal ATcT energy correction. Do not turn the incomplete modern vibronic levels into a hot thermal replacement."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N1V1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N1V1?",
+      "scope": "curated-gas-v2, N1V1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N1V1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: neutral_VN_measured_D0; name: VN; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the measured neutral-D0 update with retained thermals. The narrow threshold width is separately propagated at selected conditions; no cation energy, well depth or second zero-point correction is used."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N2O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N2O1?",
+      "scope": "curated-gas-v2, N2O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N2O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: N2O; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the retained-thermal ATcT energy candidate for a bounded update; keep NASA plus ATcT as a tested thermal sensitivity, not an established improvement."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N2O4",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N2O4?",
+      "scope": "curated-gas-v2, N2O4, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N2O4."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: N2O4; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend coordinated retained-thermal NO2 and N2O4 ATcT energy updates; the dimer-only result is an isolation control."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_N2O5",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for N2O5?",
+      "scope": "curated-gas-v2, N2O5, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for N2O5."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_reaction_H298; name: N2O5; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Recommend the retained-thermal ATcT H298 energy correction; keep NASA plus ATcT as a tested thermal sensitivity, with thermal superiority unresolved."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_Na2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for Na2?",
+      "scope": "curated-gas-v2, Na2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure; atomic gauge and entire inherited residual retained. G/H change by the stated constant; S/Cp remain unchanged. No added ZPE, H298 offset, symmetry or nuclear-spin correction. The empirical R*a intercept is not the physical JANAF D0. Keep both values separate. Measured anchor uncertainty is not propagated as complete thermal or atmospheric uncertainty. No source inspected establishes a complete corrected hot state inventory. Missing shallow a3Sigma-u, rotational/near-dissociation and other electronic coverage remain unresolved. Gibbs changes below the recorded optimizer diagnostic scale are not claims of an exact sign or physical superiority. 23Na2 is the naturally monoisotopic convention. The original primary publisher abstract is inspected; full1996 original paper remains unavailable, explicitly bounded rather than an indefinite adoption gate.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for Na2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: Measured_ground_vibrational_D0; name: Na2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer a direct measured ground-vibrational binding energy with an explicit ground-atom asymptote, while preserving the literal thermal fit and its source residual."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure; atomic gauge and entire inherited residual retained. G/H change by the stated constant; S/Cp remain unchanged. No added ZPE, H298 offset, symmetry or nuclear-spin correction. The empirical R*a intercept is not the physical JANAF D0. Keep both values separate. Measured anchor uncertainty is not propagated as complete thermal or atmospheric uncertainty. No source inspected establishes a complete corrected hot state inventory. Missing shallow a3Sigma-u, rotational/near-dissociation and other electronic coverage remain unresolved. Gibbs changes below the recorded optimizer diagnostic scale are not claims of an exact sign or physical superiority. 23Na2 is the naturally monoisotopic convention. The original primary publisher abstract is inspected; full1996 original paper remains unavailable, explicitly bounded rather than an indefinite adoption gate.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_O2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for O2?",
+      "scope": "curated-gas-v2, O2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K only, despite original evaluation table extending to 5000 K. Natural-isotope mass translation, authors Cp correction and rotational/electronic/nuclear statistical conventions are already included. No extra spin3, symmetry2, isotope mixing or mass term. The inherited residual is defined against NASA molecular/atomic thermal proxies and physical JANAF D0. It is retained; this is not a pure JANAF table replacement or a full thermochemical refit. ATcT balanced rounded central values only; complete atom/molecule reaction covariance is not propagated. The 15946-level manifold from2019 underlies2025 constants/uncertainty reevaluation. Unbound-state uncertainty, scattering/continuum assignment, isotope-network and atmospheric physical accuracy remain unknown. The fit uses inverse expanded Cp uncertainty only as numerical weighting. Small fit error is not a new physical covariance or confidence interval.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for O2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: O2; source_group: molecular; thermal_source: 2025 evaluated natural-isotope thermals; retained NASA-proxy fit residual"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the evaluated source with explicit natural-isotope thermodynamic conventions and uncertainty treatment, plus same-version balanced ATcT energy; preference is not based on the small abundance response or closeness to NASA."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K only, despite original evaluation table extending to 5000 K. Natural-isotope mass translation, authors Cp correction and rotational/electronic/nuclear statistical conventions are already included. No extra spin3, symmetry2, isotope mixing or mass term. The inherited residual is defined against NASA molecular/atomic thermal proxies and physical JANAF D0. It is retained; this is not a pure JANAF table replacement or a full thermochemical refit. ATcT balanced rounded central values only; complete atom/molecule reaction covariance is not propagated. The 15946-level manifold from2019 underlies2025 constants/uncertainty reevaluation. Unbound-state uncertainty, scattering/continuum assignment, isotope-network and atmospheric physical accuracy remain unknown. The fit uses inverse expanded Cp uncertainty only as numerical weighting. Small fit error is not a new physical covariance or confidence interval.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_O3",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for O3?",
+      "scope": "curated-gas-v2, O3, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for O3."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: ATcT_1.228_balanced_D0; name: O3; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Prefer the same-version ATcT energy correction as a bounded future update: physical D0 increases by 1099 J/mol, so G/H decrease by that amount. Retain the thermal fit until its larger NASA difference has an independent physical resolution. This is an ideal-gas equilibrium source decision, not an ozone photochemistry prediction."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    },
+    {
+      "id": "source_choice_P4S3",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-gas-v2 use for P4S3?",
+      "scope": "curated-gas-v2, P4S3, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ch2-v1 thermochemistry for P4S3."
+        },
+        {
+          "id": "recorded_source",
+          "description": "energy_source: preferred_cycle_Hf298_at_retained_atomic_reference; name: P4S3; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "If updating this estimated source, prefer the2019 cycle-based H298 energy while retaining explicit thermal limitations. This is scientifically supported but very low priority for the tested hot gas. A tiny bulk response is not evidence of general irrelevance; a full cage thermal model remains deferred."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "eba07dfd2055c8b103929fa2dfc429cca7321d2ae87ba1de697b6f9f305369b4"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c69426a6b0eddd3ba4e7afa3c2926a6fad7ff57fbc813517cdbd646e4fecccc2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "328f18848fb4dd2d06568a80f5cb3f32f4306f1cc1e5a5879102e2eadeff06d6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K,1bar standard pressure. Physical energy is separate from the fit intercept; atomic gauge and fit residual are retained. Source-specific thermal completeness and full reaction covariance remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

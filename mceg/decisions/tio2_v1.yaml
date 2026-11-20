@@ -1,0 +1,203 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_tio2.v1.decisions",
+    "name": "Curated TiO2 measured thermals on the CN/PS base: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f",
+      "entry_points": [
+        "exogibbs.presets.curated_tio2.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "Measured ground-state rotation and bending are preferable central thermal inputs within the declared RRHO approximation; adopt the reviewed retained-energy correction with explicit physical limits.",
+      "scope": "curated-tio2-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ps-v1. Only TiO2 receives the measured ground-state RRHO molecular thermal difference, retaining JANAF source D0 and full fit residual to NASA proxy. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The complete adopted gas model has quantified physical uncertainty and validated planetary atmospheric abundance accuracy.",
+      "scope": "curated-tio2-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ps-v1. Only TiO2 receives the measured ground-state RRHO molecular thermal difference, retaining JANAF source D0 and full fit residual to NASA proxy. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/tio2_v1.json",
+        "mceg/contracts/curated_tio2_adoption.yaml"
+      ],
+      "scope": "curated-tio2-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/tio2_v1.json",
+          "sha256": "7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43"
+        },
+        {
+          "source": "mceg/contracts/curated_tio2_adoption.yaml",
+          "sha256": "1d4b389e031285c8674271d55a576b3ef102201bfaee52a35ac468b2124772c6"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:876144aecb85f204cbf683415f4be3b2b92f266170e3ce312270a32d7cb5414f",
+        "entry_points": [
+          "exogibbs.presets.curated_tio2.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/tio2_v1.json": "7e07c9ed020ef1cd377f00e95eb5bbaee451788a3d75d377d1872fe66ee9aa43"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-tio2-v1 on 1500-4000 K at one-bar standard pressure, inheriting curated-ps-v1. Only TiO2 receives the measured ground-state RRHO molecular thermal difference, retaining JANAF source D0 and full fit residual to NASA proxy. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.",
+      "settings": {
+        "dataset": "curated-tio2-v1",
+        "base_dataset": "curated-ps-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_anchor": "Retained JANAF source D0=1267.776 kJ/mol",
+        "thermal_source": "Measured ground-state RRHO correction, retaining fit residual to NASA thermal proxy",
+        "previous_follow_up": "Authorized bounded TiO2 thermal adoption completed; complete physical accuracy remains unknown"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Measured rotation/bend improve the central inputs within the same RRHO approximation. The earlier 9-11% K shift exceeds selected bend/electronic sensitivities, but they do not bound all missing physics. SourceD0=1267.776 kJ/mol and complete current-fit residuals to NASA molecular thermal proxy are retained; no new energy or excited-state correction is adopted."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Ground-state RRHO neglects anharmonicity, centrifugal distortion, complete excited manifolds and isotope-mixture effects. Retained source energy uncertainty and lack of planetary condensation/transport/opacity validation are not resolved by numerical agreement."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_O2Ti1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-tio2-v1 use for O2Ti1?",
+      "scope": "curated-tio2-v1, O2Ti1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K and one-bar standard pressure. Ground-state RRHO, JANAF mean mass and principal-isotopologue rotation; anharmonicity, full electronic/isotope treatment and complete atmospheric physical accuracy remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-ps-v1 thermochemistry for O2Ti1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: TiO2; source_group: molecular; thermal_source: Measured ground-state rotation and gas fundamentals treated as harmonic frequencies; retained fit residual to NASA thermal proxy; energy_source: Retained JANAF source D0 = 1267.776 kJ/mol"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Within the declared RRHO approximation, measured rotation and bending are preferable central inputs to the 1973 estimated geometry and bend. Adopt the exact evaluated bounded thermal correction without a separate energy change; fresh cumulative-network validation accompanies the candidate evidence."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "ec8e7cd8889295fb806c535ff3f8d69b64434956dd9d68df1a8ff9a604e9ea5f"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "706e997e1b3f297022bbfdaa49dcf6e4456359de88ad40121b01d873e67ee57a"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "46875c9593bac2d2cf92db03142f5e8edc801cfa6f59bad34f2590ee2a237701"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K and one-bar standard pressure. Ground-state RRHO, JANAF mean mass and principal-isotopologue rotation; anharmonicity, full electronic/isotope treatment and complete atmospheric physical accuracy remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

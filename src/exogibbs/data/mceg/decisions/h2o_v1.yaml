@@ -1,0 +1,207 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_h2o.v1.decisions",
+    "name": "Curated gas default with evaluated H2O and NIST CO2: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f",
+      "entry_points": [
+        "exogibbs.presets.curated.chemsetup",
+        "exogibbs.presets.curated_h2o.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "The evaluated 2025 water thermal source is scientifically preferred for this explicitly bounded gas model, with retained ATcT energy and documented isotope/scattering scope.",
+      "scope": "curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O) internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The complete adopted gas model has quantified physical uncertainty and validated planetary atmospheric abundance accuracy.",
+      "scope": "curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O) internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/h2o_v1.json",
+        "mceg/contracts/curated_h2o.yaml"
+      ],
+      "scope": "curated-h2o-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/h2o_v1.json",
+          "sha256": "6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6"
+        },
+        {
+          "source": "mceg/contracts/curated_h2o.yaml",
+          "sha256": "74635901ee8eee959f646b8d7c749cf5403edca4864f2006d119b7c6f630995e"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f",
+        "entry_points": [
+          "exogibbs.presets.curated.chemsetup",
+          "exogibbs.presets.curated_h2o.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/h2o_v1.json": "6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O) internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.",
+      "settings": {
+        "dataset": "curated-h2o-v1",
+        "base_dataset": "curated-co2-v1",
+        "comparison_dataset": "curated-tio-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_anchor": "ATcT 1.172 retained 917.819 kJ/mol",
+        "thermal_source": "2025 evaluated Cp and analytical H/S integrals, exact reviewed coefficients",
+        "previous_follow_up": "h2o_candidate/scoped_production_choice completed by the authorized production adoption; physical-scope limits remain"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The modern thermodynamic evaluation, derivative-consistent representation and finite sensitivity support the source choice. The evaluated/discrete water difference is at most 0.00423 percent on the candidate grid, much smaller than the NASA-to-modern effect; this does not erase physical-scope limitations."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The application-specific isotope/scattering/energy uncertainty and observational atmospheric validation are not established by numerical or source-choice evidence."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_H2O1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-h2o-v1 use for H2O1?",
+      "scope": "curated-h2o-v1, H2O1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, 1 bar standard pressure; dominant-isotope internal states at aggregate mass. Scattering interaction assignment and complete atmospheric physical uncertainty remain explicit limitations.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-co2-v1 thermochemistry for H2O1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: H2O; source_group: molecular; thermal_source: Furtenbacher, Harvey and Csaszar 2025 evaluated thermochemistry; energy_source: ATcT 1.172 balanced total atomization, retained; isotope_convention: H2(16O), dominant isotope representing element-aggregate H2O; not a complete natural-isotope reaction"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Replace the inherited NASA thermal functions with the modern evaluated thermochemical source. The exact reviewed continuous model preserves caloric derivatives, and conserved finite substitutions resolve the response; its discrete-state alternative has a much smaller effect on this grid."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "e3df8111321290cb99520461ce970abbe97839ffe16fdff179095da63d18fdcd"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "fa9920213c826af889c833a6861b58a2a10e862425bce51c3eb709dc79f1666f"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "785428d0d0167da37c49f4e6b4678a4151dacac2b65f94105f0082691704478a"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, 1 bar standard pressure; dominant-isotope internal states at aggregate mass. Scattering interaction assignment and complete atmospheric physical uncertainty remain explicit limitations.",
+        "H2(16O), dominant isotope representing element-aggregate H2O; not a complete natural-isotope reaction",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

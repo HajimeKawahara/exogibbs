@@ -97,6 +97,10 @@ def test_internal_packages_do_not_import_public_api_modules() -> None:
     assert observed == set()
 
 
+def test_runtime_does_not_import_optional_mceg() -> None:
+    assert _imports_under(SOURCE_ROOT, "mceg") == set()
+
+
 def test_stable_packages_do_not_import_experimental_modules() -> None:
     observed = set()
     for package in (

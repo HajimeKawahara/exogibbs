@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_ch2.v1.decisions",
+    "name": "Curated CH2 retained-thermal energy adoption: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701",
+      "entry_points": [
+        "exogibbs.presets.curated_ch2.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "Adopt the same-version regular CH2 ATcT ground energy while preserving literal thermals and source-fit residual. The independently reconstructed RRHO thermal sensitivity is not adopted because the printed component/equilibrium table discrepancy and high-temperature physical limits remain unresolved.",
+      "scope": "curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "Complete physical uncertainty and atmospheric abundance accuracy of the adopted model are established.",
+      "scope": "curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/ch2_v1.json",
+        "mceg/contracts/curated_ch2_adoption.yaml"
+      ],
+      "scope": "curated-ch2-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/ch2_v1.json",
+          "sha256": "a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536"
+        },
+        {
+          "source": "mceg/contracts/curated_ch2_adoption.yaml",
+          "sha256": "b03bf6512c509638faea7ad196cd0e62dd2960d48bed02873c9004006f740d6d"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:89df53276ea87748ebd5b2e5b12daea653257090c17fb7aeda1e5b12623f4701",
+        "entry_points": [
+          "exogibbs.presets.curated_ch2.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/ch2_v1.json": "a2d353156b957c38b6f3ff44af1bf735d60e58cf1089f99b7b9358e01ad81536"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-ch2-v1 on curated-c2h2-v1, 1500-4000 K, one-bar standard pressure; energy-only CH2 adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown.",
+      "settings": {
+        "dataset": "curated-ch2-v1",
+        "base_dataset": "curated-c2h2-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_increase_J_mol": 4948,
+        "thermal_source": "Retained literal JANAF-derived thermal fit and atomic background"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Adopt the same-version regular CH2 ATcT ground energy while preserving literal thermals and source-fit residual. The independently reconstructed RRHO thermal sensitivity is not adopted because the printed component/equilibrium table discrepancy and high-temperature physical limits remain unresolved. The balanced physical energy difference is separate from the formal R*a fit intercept; preserve their residual rather than relabeling the intercept as D0."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "1500-4000 K, one-bar standard pressure. Regular equilibrated CH2 is distinct from partial triplet-only species. ATcT covariance, large-amplitude/anharmonic/Renner-Teller thermals, isotope mixtures and planetary physical accuracy remain unquantified. Numerical ideal-gas verification does not validate condensation, photochemistry or atmospheric kinetics."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_C1H2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-ch2-v1 use for C1H2?",
+      "scope": "curated-ch2-v1, C1H2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, one-bar standard pressure. Regular equilibrated CH2 is distinct from partial triplet-only species. ATcT covariance, large-amplitude/anharmonic/Renner-Teller thermals, isotope mixtures and planetary physical accuracy remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-c2h2-v1 thermochemistry for C1H2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: CH2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit; energy_source: ATcT 1.228 balanced C+2H-CH2 physical atomization difference"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Adopt the same-version regular CH2 ATcT ground energy while preserving literal thermals and source-fit residual. The independently reconstructed RRHO thermal sensitivity is not adopted because the printed component/equilibrium table discrepancy and high-temperature physical limits remain unresolved."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "ee9aaab2b59c49ceb948c10ab5e6aee75ad03bbec80f0d9225378fff8fa7b6e5"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "d9f835b83e703e3097bd851a5dc0956196a14a246328e0f143f2bebb9ece85df"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "9a1d9e024abaff2726fdfd41595e3f94f85e160c5e671db3cef36581ac65acaf"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, one-bar standard pressure. Regular equilibrated CH2 is distinct from partial triplet-only species. ATcT covariance, large-amplitude/anharmonic/Renner-Teller thermals, isotope mixtures and planetary physical accuracy remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

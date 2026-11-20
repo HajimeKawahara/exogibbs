@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_hcp.v1.decisions",
+    "name": "Curated HCP retained-thermal energy adoption: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:08f44b9d2b51a61576beb6f0cc6cfd20a133ffff21f06f966e7eb681b998038a",
+      "entry_points": [
+        "exogibbs.presets.curated_hcp.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "Adopt the inspected CCCBDB evaluated formation-energy correction on the unchanged JANAF elemental gauge. The independent 2001 theory is a sensitivity control, not a second additive correction.",
+      "scope": "curated-hcp-v1 on curated-tio2-v1, 1500-4000 K, one-bar standard pressure; energy-only HCP adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "Complete physical uncertainty and atmospheric abundance accuracy of the adopted model are established.",
+      "scope": "curated-hcp-v1 on curated-tio2-v1, 1500-4000 K, one-bar standard pressure; energy-only HCP adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/hcp_v1.json",
+        "mceg/contracts/curated_hcp_adoption.yaml"
+      ],
+      "scope": "curated-hcp-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/hcp_v1.json",
+          "sha256": "7a193d32ca1b2796924a9ad024ee09396382cff530083f6ad2f24947b9061249"
+        },
+        {
+          "source": "mceg/contracts/curated_hcp_adoption.yaml",
+          "sha256": "4ad07409ac5dcbef52be03d2c6d54992a4d4cc73ddb5e29c00a73b7297bce6df"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:08f44b9d2b51a61576beb6f0cc6cfd20a133ffff21f06f966e7eb681b998038a",
+        "entry_points": [
+          "exogibbs.presets.curated_hcp.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/hcp_v1.json": "7a193d32ca1b2796924a9ad024ee09396382cff530083f6ad2f24947b9061249"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-hcp-v1 on curated-tio2-v1, 1500-4000 K, one-bar standard pressure; energy-only HCP adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown.",
+      "settings": {
+        "dataset": "curated-hcp-v1",
+        "base_dataset": "curated-tio2-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_increase_J_mol": 62308,
+        "thermal_source": "Retained literal JANAF-derived thermal fit and atomic background"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Adopt the inspected CCCBDB evaluated formation-energy correction on the unchanged JANAF elemental gauge. The independent 2001 theory is a sensitivity control, not a second additive correction. The balanced physical energy difference is separate from the formal R*a fit intercept; preserve their residual rather than relabeling the intercept as D0."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "1500-4000 K, one-bar standard pressure. CCCBDB is a CP-based JANAF adjustment, not an independent HCP measurement. Its reported +/-20 kJ/mol is not a complete reaction covariance. Retained thermals and high-temperature physical accuracy remain limited. Numerical ideal-gas verification does not validate condensation, photochemistry or atmospheric kinetics."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_C1H1P1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-hcp-v1 use for C1H1P1?",
+      "scope": "curated-hcp-v1, C1H1P1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, one-bar standard pressure. CCCBDB is a CP-based JANAF adjustment, not an independent HCP measurement. Its reported +/-20 kJ/mol is not a complete reaction covariance. Retained thermals and high-temperature physical accuracy remain limited.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-tio2-v1 thermochemistry for C1H1P1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: HCP; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit; energy_source: NIST CCCBDB CP-based adjustment to JANAF HCP formation energy"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Adopt the inspected CCCBDB evaluated formation-energy correction on the unchanged JANAF elemental gauge. The independent 2001 theory is a sensitivity control, not a second additive correction."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "e60af610b58f505ad6274db4754a742e772f418651ea34a910eab7fd64900dd6"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c6a22b9d09c50c3b46e48cec39c799a1ba182376f2d0a05db56058625aa746b0"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "a853c5bba8993d7a927e26ecda0d98a65dc9675ed666cba043cbaac2f2a9693f"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, one-bar standard pressure. CCCBDB is a CP-based JANAF adjustment, not an independent HCP measurement. Its reported +/-20 kJ/mol is not a complete reaction covariance. Retained thermals and high-temperature physical accuracy remain limited.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

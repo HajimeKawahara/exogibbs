@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_cn.v1.decisions",
+    "name": "Curated CN balanced energy adoption: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68",
+      "entry_points": [
+        "exogibbs.presets.curated_cn.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "The balanced ATcT 1.228 central CN energy is preferred while retaining supported thermal shape and the literal fit residual.",
+      "scope": "curated-cn-v1 on the unchanged curated-cos-v1 base, 1500-4000 K and one-bar standard pressure; only the physical CN energy difference changes. Both fixed ideal-gas networks are numerically verified; complete physical accuracy remains unknown."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The complete adopted model has quantified physical uncertainty and validated atmospheric abundance accuracy.",
+      "scope": "curated-cn-v1 on the unchanged curated-cos-v1 base, 1500-4000 K and one-bar standard pressure; only the physical CN energy difference changes. Both fixed ideal-gas networks are numerically verified; complete physical accuracy remains unknown."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/cn_v1.json",
+        "mceg/contracts/curated_cn_adoption.yaml"
+      ],
+      "scope": "curated-cn-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/cn_v1.json",
+          "sha256": "28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47"
+        },
+        {
+          "source": "mceg/contracts/curated_cn_adoption.yaml",
+          "sha256": "30aaa298b5bf408f898055964539727c83e55552b5f9968a099fb940ed930faf"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:8641c4f12c45018b79b0150731aebe521c783811f2b5d0117728c9a643faef68",
+        "entry_points": [
+          "exogibbs.presets.curated_cn.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/cn_v1.json": "28dc909f1d71e0618812be34c98246d14175156b161d7eb2b7e5dbafaa1baf47"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-cn-v1 on the unchanged curated-cos-v1 base, 1500-4000 K and one-bar standard pressure; only the physical CN energy difference changes. Both fixed ideal-gas networks are numerically verified; complete physical accuracy remains unknown.",
+      "settings": {
+        "dataset": "curated-cn-v1",
+        "base_dataset": "curated-cos-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_anchor": "ATcT 1.228 balanced 745.355 kJ/mol; delta from physical JANAF 750.156 kJ/mol",
+        "thermal_source": "Retained literal JANAF-derived thermal fit and atomic background"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Same-version evaluated central energy is preferred; independent thermal review supports preserving thermal shape. Physical energy delta and formal fit residual are kept separate."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Full correlated reaction covariance, thermal/isotope completeness and application-specific atmospheric validation remain unquantified."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_C1N1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-cn-v1 use for C1N1?",
+      "scope": "curated-cn-v1, C1N1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, one-bar standard pressure. Correlated reaction-energy covariance, complete thermal and isotope uncertainty, and planetary accuracy remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-cos-v1 thermochemistry for C1N1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: CN; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit; energy_source: ATcT 1.228 balanced C+N-CN physical atomization difference"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Adopt the evaluated same-version gas-atom/molecule energy balance while preserving the supported thermal shape and inherited fit residual. Use only the physical JANAF-to-ATcT delta D0=-4801 J/mol; do not reset the formal fit intercept or add ZPE again."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "740846cfe10012a7d3b0f1242bcd423f22b0c1470f948d8e7b464016c7aaae2a"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "64414714ccd47987c4658d3feb758f8ccdbf39f24869d3653365b9321d604fb2"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "ad39e5e78517fb4935b379bd9a025b809f02638326358a346c968f27121417de"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, one-bar standard pressure. Correlated reaction-energy covariance, complete thermal and isotope uncertainty, and planetary accuracy remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

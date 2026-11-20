@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
   "provider": "exogibbs",
-  "record_version": "2026-11-06",
+  "record_version": "2026-11-20",
   "models": [
     {
       "id": "exogibbs.curated_gas.v1",
@@ -449,6 +449,96 @@
             "https://github.com/HajimeKawahara/exogibbs/issues/297#issuecomment-6457152016",
             "https://github.com/HajimeKawahara/exogibbs/blob/d09e8e16275db5151158b884a53a3ff2c3cd31b6/documents/mceg/fastchem_hcn_followup.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/gas_v1.yaml",
+          "sha256": "f29c8b550c44039c08f7a52c6f21a48e2f00b48f7fa1c93d542b07e28bfe758a",
+          "species": [
+            "Al1+",
+            "Al1-",
+            "Al1H1",
+            "Ar1+",
+            "C1+",
+            "C1-",
+            "C1H1N1_hcn",
+            "C1H1N1_hnc",
+            "C1H4",
+            "C1O1",
+            "C1O1S1",
+            "C1O2",
+            "C1S1",
+            "C1S2",
+            "Ca1+",
+            "Ca1-",
+            "Ca1H1",
+            "Cl1+",
+            "Cl1-",
+            "Co1+",
+            "Co1-",
+            "Co1H1",
+            "Cr1+",
+            "Cr1-",
+            "Cr1H1",
+            "Cu1+",
+            "Cu1-",
+            "Cu1H1",
+            "F1+",
+            "F1-",
+            "Fe1+",
+            "Fe1-",
+            "Fe1H1",
+            "Ge1+",
+            "Ge1-",
+            "Ge1H1",
+            "H1+",
+            "H1-",
+            "H1K1",
+            "H1Mg1",
+            "H1Mn1",
+            "H1Na1",
+            "H1Ni1",
+            "H1S1",
+            "H1Ti1",
+            "H1Zn1",
+            "H2",
+            "H2O1",
+            "H2S1",
+            "H3N1",
+            "He1+",
+            "K1+",
+            "K1-",
+            "Mg1+",
+            "Mn1+",
+            "N1+",
+            "N2",
+            "Na1+",
+            "Na1-",
+            "Ne1+",
+            "Ni1+",
+            "Ni1-",
+            "O1+",
+            "O1-",
+            "O1S1",
+            "O1Si1",
+            "O1Ti1",
+            "O1V1",
+            "O2S1",
+            "O3S1",
+            "P1+",
+            "P1-",
+            "S1+",
+            "S1-",
+            "S2",
+            "Si1+",
+            "Si1-",
+            "Ti1+",
+            "Ti1-",
+            "V1+",
+            "V1-",
+            "Zn1+"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -896,6 +986,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/310"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/c2h_v1.yaml",
+          "sha256": "acc0637c9110826be7623dca5c545e4fdbbe67aff5449ef55fe2d82c36c7c762",
+          "species": [
+            "C2H1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -1338,6 +1437,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/325"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/tio_v1.yaml",
+          "sha256": "1dce6f990d2794c6e13eb238cb4bf4bf2a1ba4203f0806d574a54923adf6041b",
+          "species": [
+            "O1Ti1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -1780,6 +1888,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/329"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/co2_v1.yaml",
+          "sha256": "34cf8378aa7733e952d4b6b440fc38dd99df8c7ee99514d9a85bb6222133ce4b",
+          "species": [
+            "C1O2"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -2222,6 +2339,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/330"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/h2o_v1.yaml",
+          "sha256": "8a2e9eb16d0d386a216c3e4a15f23cfda2611e40e1f3dda7901b218723a66c34",
+          "species": [
+            "H2O1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -2670,6 +2796,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/334"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/oh_v1.yaml",
+          "sha256": "78ddb89866ad00ab16b1a51f5feccda2641200a75f1f02812bdacff2e2c99e52",
+          "species": [
+            "H1O1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -3118,6 +3253,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/339"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/kh_v1.yaml",
+          "sha256": "7343d00cc7958e6bb6668a0d3a58e96f04e0279291fae484e2d814bf90fc5603",
+          "species": [
+            "H1K1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -3572,6 +3716,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/342"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/ho2_v1.yaml",
+          "sha256": "a6479dc4182c6d4c72c427227894b6891bf5e1e4e9bf67be647faa9ef08dbb9e",
+          "species": [
+            "H1O2"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -4026,6 +4179,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/345"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/cos_v1.yaml",
+          "sha256": "92b42a2e557d990bce7f1bb6007cd1832a8b046f0fbf122ef7cd155ddd77c8d8",
+          "species": [
+            "C1O1S1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -4486,6 +4648,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/curated_cn_adoption.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/cn_v1.yaml",
+          "sha256": "d400fea8ffa2de784daa917ff02c1b8a705c6234acdf636c1b2bc969bbeebabb",
+          "species": [
+            "C1N1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -4952,6 +5123,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/ps_curated_adoption.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/ps_v1.yaml",
+          "sha256": "258a3bd7bd2743021263f1d20a56591041a43833c2e767502bab4021a567e655",
+          "species": [
+            "P1S1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -5424,6 +5604,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/curated_tio2_adoption.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/tio2_v1.yaml",
+          "sha256": "08b35d103ab79e15156bc472aaa49ad9a7826abb59d1cd6897aaf7c3ad3a4557",
+          "species": [
+            "O2Ti1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -5902,6 +6091,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/curated_hcp_adoption.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/hcp_v1.yaml",
+          "sha256": "cdf31440adba4f41251bd13b712ec39b66ec93d6975792055566158f9f73c9bc",
+          "species": [
+            "C1H1P1"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -6386,6 +6584,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/curated_c2h2_adoption.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/c2h2_v1.yaml",
+          "sha256": "f6ddfb36e6a6f6ce8975756f46e2c0356dd9f038d1010df3238ad99135b6ff56",
+          "species": [
+            "C2H2"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -6876,6 +7083,15 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/curated_ch2_adoption.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/ch2_v1.yaml",
+          "sha256": "ecafa588894b96c20b2699d3ae72d9a0a5329b1960cf9200b725aad6727b972b",
+          "species": [
+            "C1H2"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     },
@@ -7585,6 +7801,42 @@
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/blob/develop/documents/mceg/gas_curation_release_0_1.rst"
           ]
+        },
+        {
+          "id": "source_decisions",
+          "path": "decisions/gas_v2.yaml",
+          "sha256": "d0a9a24c88bb418eaf13fc29be440f4fbd6bc67a9bd4e2b99e56e7be14485959",
+          "species": [
+            "C1H1N1O1",
+            "C1H1O1",
+            "C1N1O1",
+            "C1N2_cnn",
+            "C1N2_ncn",
+            "C2",
+            "C2N1",
+            "C2O1",
+            "C3O2",
+            "C4N2",
+            "H1N1O1",
+            "H1N1O2cis",
+            "H1N1O2trans",
+            "H2N1",
+            "H2N2",
+            "H4N2",
+            "K2",
+            "N1O1",
+            "N1O2",
+            "N1O3",
+            "N1V1",
+            "N2O1",
+            "N2O4",
+            "N2O5",
+            "Na2",
+            "O2",
+            "O3",
+            "P4S3"
+          ],
+          "summary": "MCEG Decision records transcribe the archived source choices, reasons and limitations. Inspect this contract with mceg explain and --decision ID. A selected option does not establish physical accuracy. The numerical dataset and historical review remain unchanged."
         }
       ]
     }

@@ -13,6 +13,19 @@ For installed-package and species lookup, see the
 `exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
 evidence snapshot; matching declared metadata does not validate a user's run.
 
+Curated source choices are maintained as native schema `"0.4"` Decision records
+in `mceg/decisions`, using the support added in
+[MCEG #24](https://github.com/HajimeKawahara/mceg/pull/24). They retain the archived
+choices, reasons and limitations, with fingerprints of their recorded basis.
+The `decision`/`decisions` fields in pinned numerical JSON and the
+`species_provenance` setup metadata remain frozen compatibility snapshots;
+they are not the place to author subsequent decision revisions. Existing
+contracts remain unchanged. No numerical data, assessment outcomes or runtime
+dependencies change in this migration.
+`exogibbs.provenance.describe(setup)["decisions_command"]` locates the bundled
+records for a matching setup. See the
+[inspection guide](../documents/mceg/optional_inspection.rst) for commands.
+
 [Gas curation v0.1](../documents/mceg/gas_curation_release_0_1.rst), canonically
 `0.1.0`, records the scientific snapshot at
 `f580e66157edbe6f604e2748d8e1a25d46d08b86`. Its

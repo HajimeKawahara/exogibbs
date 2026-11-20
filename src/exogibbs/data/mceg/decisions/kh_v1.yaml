@@ -1,0 +1,205 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_kh.v1.decisions",
+    "name": "Curated gas with spectroscopic KH energy: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10",
+      "entry_points": [
+        "exogibbs.presets.curated.chemsetup",
+        "exogibbs.presets.curated_kh.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "The spectroscopic KH dissociation energy with retained thermal functions is scientifically preferred to the larger inherited JANAF energy in the bounded gas model.",
+      "scope": "curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral networks; complete physical accuracy remains unknown."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "The complete adopted gas model has quantified physical uncertainty and validated atmospheric abundance accuracy.",
+      "scope": "curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral networks; complete physical accuracy remains unknown."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/kh_v1.json",
+        "mceg/contracts/curated_kh.yaml"
+      ],
+      "scope": "curated-kh-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/kh_v1.json",
+          "sha256": "d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328"
+        },
+        {
+          "source": "mceg/contracts/curated_kh.yaml",
+          "sha256": "af8c4bedf80c98fe623ffcbc8358376d818fdbaa8115e174d507ff37a33579b0"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10",
+        "entry_points": [
+          "exogibbs.presets.curated.chemsetup",
+          "exogibbs.presets.curated_kh.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/kh_v1.json": "d808d0b1e5f65fabcb09759c0961b5974d2de99e7d208b914dc6a73169f52328"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral networks; complete physical accuracy remains unknown.",
+      "settings": {
+        "dataset": "curated-kh-v1",
+        "base_dataset": "curated-oh-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_anchor": "Zemke 1988 D0=14282.6 cm-1",
+        "thermal_source": "Exact retained JANAF/FastChem fit and atomic convention",
+        "previous_follow_up": "Authorized KH candidate production choice completed; complete physical scope remains unknown"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The inspected abstract supplies D0=14282.6 cm-1; the exact energy correction avoids a new fit and unsupported spin/ZPE changes. Conserved finite substitutions and smaller same-D0 NASA thermal-reference controls support this source choice. The De uncertainty is not reused as a D0 error bar."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "The precision D0 uncertainty, inherited thermal-fit accuracy, isotope/continuum contributions and application-specific atmospheric validation remain unquantified. Numerical closure cannot resolve shared source errors."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_H1K1",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-kh-v1 use for H1K1?",
+      "scope": "curated-kh-v1, H1K1, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K and 1 bar standard pressure. The abstract's +/-0.6 cm-1 belongs to De, not a complete D0 uncertainty. Thermal/isotope/continuum and full atmospheric accuracy remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-oh-v1 thermochemistry for H1K1."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: KH; source_group: molecular; thermal_source: Retained JANAF/FastChem five-coefficient fit and atomic convention; energy_source: Zemke et al. 1988 spectroscopic D0=14282.6 cm-1"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Replace the larger inherited balanced JANAF energy by the inspected spectroscopic D0, retaining the exact current thermal fit. Conserved finite substitutions and smaller NASA thermal-reference controls support the bounded update."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "af575f47c1bafd0f84c2e83dc26f302aac191ea71e6070ac4078f84b335920e0"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "c19cb2ea785c0c83cf89d5f827523bb64072f4f0105d9c65cf5bd635813a50ad"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "3e3b7c0e75778d936c9acccd1a0c597290f01e1a519603ce4c4750355f771eb1"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K and 1 bar standard pressure. The abstract's +/-0.6 cm-1 belongs to De, not a complete D0 uncertainty. Thermal/isotope/continuum and full atmospheric accuracy remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

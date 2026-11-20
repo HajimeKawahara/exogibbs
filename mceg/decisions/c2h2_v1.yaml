@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.4",
+  "model": {
+    "id": "exogibbs.curated_c2h2.v1.decisions",
+    "name": "Curated C2H2 retained-thermal energy adoption: source decisions",
+    "description": "Historical source choices transcribed from the pinned dataset and review contract. These Decision records preserve the choices and their limitations; they introduce no new scientific review or numerical data.",
+    "implementation": {
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "revision": "sha256:fda4ea4fdff2d99ff041bf0b4b648afdf903d812ba35b30283b33033f0445bb6",
+      "entry_points": [
+        "exogibbs.presets.curated_c2h2.chemsetup"
+      ]
+    }
+  },
+  "assumptions": [],
+  "domains": [
+    {
+      "kind": "scientific_applicability",
+      "status": "unknown",
+      "description": "Recording a historical choice does not establish complete physical accuracy.",
+      "conditions": [],
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "scientific_selection",
+      "revision": "1",
+      "kind": "theoretical",
+      "statement": "Adopt the same-version ATcT balanced energy difference, retaining all literal thermal coefficients and source-fit residual. The NASA thermal alternative remains a sensitivity and is not adopted.",
+      "scope": "curated-c2h2-v1 on curated-hcp-v1, 1500-4000 K, one-bar standard pressure; energy-only C2H2 adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown."
+    },
+    {
+      "id": "physical_accuracy",
+      "revision": "1",
+      "kind": "physical_validation",
+      "statement": "Complete physical uncertainty and atmospheric abundance accuracy of the adopted model are established.",
+      "scope": "curated-c2h2-v1 on curated-hcp-v1, 1500-4000 K, one-bar standard pressure; energy-only C2H2 adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "archived_review",
+      "kind": "theory",
+      "summary": "Pinned provider source choices and their original scientific review; numerical data and previous assessments remain historical records.",
+      "sources": [
+        "src/exogibbs/data/curated/c2h2_v1.json",
+        "mceg/contracts/curated_c2h2_adoption.yaml"
+      ],
+      "scope": "curated-c2h2-v1 historical source selection only; not a new literature or numerical validation.",
+      "artifacts": [
+        {
+          "source": "src/exogibbs/data/curated/c2h2_v1.json",
+          "sha256": "cdd7f4348e05477c158b9fe0f9e3250b2d3f71d2e6fdd3cb8d051aa147bb169e"
+        },
+        {
+          "source": "mceg/contracts/curated_c2h2_adoption.yaml",
+          "sha256": "bc20bb3346f13e4cc3519c6e9fff8f109ca49518526ca7b037d7058fa6dca421"
+        }
+      ],
+      "provenance": {
+        "role": "secondary",
+        "location": "decision or decisions in the numerical JSON; Claims and Assessments in the review contract.",
+        "inspection": "inspected",
+        "note": "The provider records were inspected for transcription. Their underlying papers and calculations were not repeated."
+      }
+    }
+  ],
+  "subjects": [
+    {
+      "id": "archived_preset",
+      "implementation": {
+        "repository": "https://github.com/HajimeKawahara/exogibbs",
+        "revision": "sha256:fda4ea4fdff2d99ff041bf0b4b648afdf903d812ba35b30283b33033f0445bb6",
+        "entry_points": [
+          "exogibbs.presets.curated_c2h2.chemsetup"
+        ]
+      },
+      "selected_files": {
+        "src/exogibbs/data/curated/c2h2_v1.json": "cdd7f4348e05477c158b9fe0f9e3250b2d3f71d2e6fdd3cb8d051aa147bb169e"
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "id": "production_gas_domain",
+      "scope": "curated-c2h2-v1 on curated-hcp-v1, 1500-4000 K, one-bar standard pressure; energy-only C2H2 adoption with unchanged thermals and source-fit residual. Actual fixed 537-species ion-inclusive and 421-species neutral factories are numerically verified; complete physical accuracy remains unknown.",
+      "settings": {
+        "dataset": "curated-c2h2-v1",
+        "base_dataset": "curated-hcp-v1",
+        "temperature_range_K": "1500-4000",
+        "standard_pressure_bar": 1,
+        "networks": "ions and neutral",
+        "energy_increase_J_mol": 1135,
+        "thermal_source": "Retained literal JANAF-derived thermal fit and atomic background"
+      }
+    }
+  ],
+  "assessments": [
+    {
+      "id": "scientific_selection_review",
+      "kind": "evidence_support",
+      "claim": "scientific_selection",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "Adopt the same-version ATcT balanced energy difference, retaining all literal thermal coefficients and source-fit residual. The NASA thermal alternative remains a sensitivity and is not adopted. The balanced physical energy difference is separate from the formal R*a fit intercept; preserve their residual rather than relabeling the intercept as D0."
+      ],
+      "status": "supported",
+      "origin": "reviewed"
+    },
+    {
+      "id": "physical_accuracy_review",
+      "kind": "evidence_support",
+      "claim": "physical_accuracy",
+      "claim_revision": "1",
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "method": {
+        "id": "archived_review_transcription",
+        "revision": "1",
+        "description": "Preserve the cited claim, prose scope, reasons and outcome from the pinned review contract; no new scientific assessment or solver execution."
+      },
+      "evidence": [
+        "archived_review"
+      ],
+      "reasons": [
+        "1500-4000 K, one-bar standard pressure. Marginal ATcT uncertainties do not specify correlated atomization uncertainty. Complete hot rovibrational state-sum convergence, isotope mixtures and atmospheric accuracy remain unquantified. Numerical ideal-gas verification does not validate condensation, photochemistry or atmospheric kinetics."
+      ],
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The original provider JSON and metadata remain frozen compatibility snapshots. Only recorded alternatives are listed; missing alternatives have not been reconstructed.",
+      "evidence": [
+        "archived_review"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "source_choice_C2H2",
+      "revision": "1",
+      "question": "Which thermochemistry source should curated-c2h2-v1 use for C2H2?",
+      "scope": "curated-c2h2-v1, C2H2, 1500-4000 K, 1 bar standard pressure. Archived review condition: 1500-4000 K, one-bar standard pressure. Marginal ATcT uncertainties do not specify correlated atomization uncertainty. Complete hot rovibrational state-sum convergence, isotope mixtures and atmospheric accuracy remain unquantified.",
+      "options": [
+        {
+          "id": "retain_base",
+          "description": "Retain curated-hcp-v1 thermochemistry for C2H2."
+        },
+        {
+          "id": "recorded_source",
+          "description": "name: C2H2; source_group: molecular; thermal_source: Retained literal JANAF-derived FastChem reaction thermal fit; energy_source: ATcT 1.228 balanced 2C+2H-C2H2 physical atomization difference"
+        }
+      ],
+      "selected": "recorded_source",
+      "reasons": [
+        "Adopt the same-version ATcT balanced energy difference, retaining all literal thermal coefficients and source-fit residual. The NASA thermal alternative remains a sensitivity and is not adopted."
+      ],
+      "basis": [
+        {
+          "kind": "evidence",
+          "id": "archived_review",
+          "sha256": "a6a9283abea70ad9f5494e0d90212fed5a4a190fdbd5a7bbb4886fbecb564845"
+        },
+        {
+          "kind": "assessment",
+          "id": "scientific_selection_review",
+          "sha256": "cd2ae7a28412daa41519d093483bd0e6c63e743d2f75a2d189890e68cd905d75"
+        },
+        {
+          "kind": "assessment",
+          "id": "physical_accuracy_review",
+          "sha256": "8a294ae9f08f0d7db8daac1662d15dba8a4a62dcb8db39e323d28ef51185cae6"
+        }
+      ],
+      "subject": "archived_preset",
+      "context": "production_gas_domain",
+      "limitations": [
+        "Archived source-choice status: prefer_conditionally. This is a choice, not a scientific-support assessment.",
+        "1500-4000 K, one-bar standard pressure. Marginal ATcT uncertainties do not specify correlated atomization uncertainty. Complete hot rovibrational state-sum convergence, isotope mixtures and atmospheric accuracy remain unquantified.",
+        "Complete physical accuracy remains unestablished; the cited unknown assessments retain their original scope."
+      ],
+      "reconsider_when": [
+        "Revisit this choice if new source evidence changes the recorded comparison or resolves the stated limitations."
+      ]
+    }
+  ]
+}

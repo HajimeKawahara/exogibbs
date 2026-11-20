@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import runpy
+import shlex
 import shutil
 import subprocess
 import sys
@@ -61,10 +62,30 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     assert describe(curated_v1.chemsetup())["model_id"] == "exogibbs.curated_gas.v1"
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
-    assert [r["id"] for r in model["records"]] == ["c2h_correction"]
+    assert [r["id"] for r in model["records"]] == ["c2h_correction", "source_decisions"]
     assert "whole_mixture_accuracy_review" in model["records"][0]["assessments"]
     assert "unquantified" in model["records"][0]["summary"]
     assert describe(curated_c2h.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
+def test_source_decisions_are_packaged_for_each_frozen_dataset():
+    catalog = json.loads(evidence_catalog().read_text())
+    assert len(catalog["models"]) == 16
+    for model in catalog["models"]:
+        record = next(r for r in model["records"] if r["id"] == "source_decisions")
+        assert record["path"].startswith("decisions/")
+        assert (evidence_catalog().parent / record["path"]).read_bytes() == (
+            ROOT / "mceg" / record["path"]
+        ).read_bytes()
+
+
+def test_describe_links_the_frozen_datasets_source_decisions(setup):
+    command = shlex.split(describe(setup)["decisions_command"])
+    assert command[:2] == ["mceg", "explain"]
+    path = evidence_catalog().parent / "decisions/gas_v2.yaml"
+    assert command[2:] == [str(path)]
+    contract = json.loads(path.read_text())
+    assert len(contract["decisions"]) == 28
 
 
 
@@ -328,6 +349,7 @@ def test_different_network_or_data_does_not_inherit_review(setup, changes):
     assert description["record_match"] == "no_matching_record"
     assert description["model_id"] is None
     assert description["explain_command"] is None
+    assert description["decisions_command"] is None
     assert json.loads(json.dumps(description)) == description
 
 
@@ -346,10 +368,22 @@ class BlockMCEG(importlib.abc.MetaPathFinder):
         if fullname == "mceg" or fullname.startswith("mceg."):
             raise AssertionError("MCEG must remain optional")
 sys.meta_path.insert(0, BlockMCEG())
-from exogibbs.presets import curated
+from exogibbs.presets import (
+    curated, curated_c2h, curated_c2h2, curated_ch2, curated_cn, curated_co2,
+    curated_cos, curated_h2o, curated_hcp, curated_ho2, curated_kh, curated_oh,
+    curated_ps, curated_tio, curated_tio2, curated_v1, curated_v2,
+)
 from exogibbs.api.gas import solve
 from exogibbs.provenance import describe
 import numpy as np
+for preset in (
+    curated_v1, curated_c2h, curated_tio, curated_co2, curated_h2o, curated_oh,
+    curated_kh, curated_ho2, curated_cos, curated_cn, curated_ps, curated_tio2,
+    curated_hcp, curated_c2h2, curated_ch2, curated_v2,
+):
+    candidate = preset.chemsetup()
+    assert np.isfinite(candidate.hvector_func(2500.)).all()
+    assert describe(candidate)["record_match"] == "declared_metadata"
 setup = curated.chemsetup()
 result, diagnostics = solve(setup, 2500., .01, setup.element_vector_reference,
                             return_diagnostics=True)
