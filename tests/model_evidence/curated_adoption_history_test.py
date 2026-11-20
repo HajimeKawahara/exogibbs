@@ -30,3 +30,15 @@ def test_adoption_resolver_matches_the_recorded_version_and_rejects_changes(tmp_
     snapshots[0].write_bytes(b"changed old source")
     with pytest.raises(ValueError, match="recorded hash"):
         historical_source(tmp_path, name, expected)
+
+
+def test_original_audit_and_resolver_bytes_remain_available():
+    import json
+
+    directory = ROOT / "tests/data/validation/condensate_audit_history/20261120"
+    receipt = json.loads((directory / "receipt.json").read_text())
+    for name, expected in receipt["source_sha256"].items():
+        assert historical_source(ROOT, name, expected) == directory / "source" / name
+        assert sha256((directory / "source" / name).read_bytes()).hexdigest() == expected
+        with pytest.raises(ValueError, match="recorded hash"):
+            historical_source(ROOT, name, "0" * 64)
