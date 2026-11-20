@@ -13,7 +13,10 @@ RECEIPT = ROOT / "tests/data/validation/mceg/20261020_model_survey/receipt.json"
 def test_model_survey_selected_files_and_artifacts() -> None:
     receipt = json.loads(RECEIPT.read_text())
     for name, expected in receipt["selected_file_sha256"].items():
-        actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+        # Preserve the survey's configuration when later packaging policy changes.
+        archived = RECEIPT.parent / "source" / name
+        path = archived if archived.is_file() else ROOT / name
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
         assert actual == expected, f"Review model-survey evidence after changing {name}"
     for name, expected in receipt["artifacts"].items():
         path = ROOT / "tests/data/validation" / Path(name).relative_to("results")

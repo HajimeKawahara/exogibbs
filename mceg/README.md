@@ -6,12 +6,11 @@ applicability, claims and scoped evidence. This checkout pilots its frozen
 [H2 solubility law](contracts/h2_solubility.yaml). MCEG is not an ExoGibbs
 runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
-For installed-package and species lookup, see the
-[optional inspection guide](../documents/mceg/optional_inspection.rst).
-`python mceg/build_catalog.py` copies the historical curated records and current
-`curated-gas-v2` records and study artifacts into a committed wheel catalog. Both this builder and
-`exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
-evidence snapshot; matching declared metadata does not validate a user's run.
+Scientific records are maintained only in this repository's `mceg/` directory;
+they are not copied into the installed package. Read the contracts and Decisions
+directly with optional MCEG, following the
+[inspection guide](../documents/mceg/optional_inspection.rst). These historical
+records do not validate a user's calculation conditions.
 
 Curated source choices are maintained as native schema `"0.4"` Decision records
 in `mceg/decisions`, using the support added in
@@ -22,9 +21,6 @@ The `decision`/`decisions` fields in pinned numerical JSON and the
 they are not the place to author subsequent decision revisions. Existing
 contracts remain unchanged. No numerical data, assessment outcomes or runtime
 dependencies change in this migration.
-`exogibbs.provenance.describe(setup)["decisions_command"]` locates the bundled
-records for a matching setup. See the
-[inspection guide](../documents/mceg/optional_inspection.rst) for commands.
 
 [Gas curation v0.1](../documents/mceg/gas_curation_release_0_1.rst), canonically
 `0.1.0`, records the scientific snapshot at
@@ -106,8 +102,8 @@ NASA thermal functions and balanced ATcT 1.172 atomization energy. Its
 [75-pair comparison](../tests/data/validation/c2h_equilibrium_impact/20261102/README.rst)
 changes C2H alone while re-equilibrating the same 537 species at each fixed
 budget. Source adoption is conditional; numerical verification does not
-establish whole-mixture physical accuracy. The packaged catalog binds this
-study to the new dataset and does not transfer the historical HCN study to it.
+establish whole-mixture physical accuracy. The contract scopes this study to
+the C2H dataset; the historical HCN study remains separate.
 
 The [preliminary FastChem comparison contract](contracts/new_fastchem_logk.yaml)
 adds a v0.2 record for [issue #297](https://github.com/HajimeKawahara/exogibbs/issues/297).

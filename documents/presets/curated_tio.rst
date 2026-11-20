@@ -160,9 +160,8 @@ directory::
 
 MCEG separately records supported ``scientific_selection_review`` and
 ``production_adoption_review``, with ``physical_accuracy_review`` remaining
-``unknown``. The packaged ion-inclusive lookup is
-``exogibbs.curated_tio.v1``; neutral-mode verification is recorded directly
-in the same contract. The earlier C2H and HCN records retain their dataset
+``unknown``. The ``exogibbs.curated_tio.v1`` contract records verification for
+both network modes. The earlier C2H and HCN records retain their dataset
 identities and are not rebound to subsequent defaults.
 
 Reproduction and limits

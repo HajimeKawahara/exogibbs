@@ -44,9 +44,6 @@ Thermochemical inputs
 .. automodule:: exogibbs.thermo.models
    :members: ChemicalSetup
 
-.. automodule:: exogibbs.provenance
-   :members: describe, evidence_catalog
-
 .. automodule:: exogibbs.thermo.fugacity
    :members: LogFugacityCoefficientFunction
 

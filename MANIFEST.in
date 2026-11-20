@@ -70,8 +70,8 @@ include src/exogibbs/data/curated/c2h2_v1.json
 include src/exogibbs/data/curated/ch2_v1.json
 include src/exogibbs/data/curated/README.rst
 
-# Optional scientific records; reading them never requires MCEG at runtime.
-recursive-include src/exogibbs/data/mceg *.json *.yaml
+# Scientific records live only in the repository's mceg/ directory.
+prune src/exogibbs/data/mceg
 
 # Pinned absolute standard-state references for multiphase connections
 include src/exogibbs/data/young2023/standard_states.json

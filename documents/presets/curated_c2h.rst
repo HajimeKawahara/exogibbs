@@ -195,8 +195,8 @@ Archive: ``tests/data/validation/c2h_equilibrium_impact/20261102``. Replay::
      python mceg/reviews/c2h_equilibrium_impact.py \
      --output-dir results/c2h-impact-replay
 
-Optional records are in ``mceg/contracts/curated_c2h.yaml`` and the packaged
-catalog returned by ``exogibbs.provenance.describe(setup)``.
+Optional records are in the repository's ``mceg/contracts/curated_c2h.yaml``
+and ``mceg/decisions/c2h_v1.yaml``.
 
 Default-adoption verification
 ------------------------------
@@ -224,7 +224,6 @@ directory::
 MCEG's ``default_adoption_review`` supports this numerical claim for both modes.
 ``conditional_selection_review`` and ``whole_mixture_accuracy_review`` remain
 ``unknown`` for complete primary/thermal support and whole-mixture physical
-accuracy, respectively. This dataset's ion-inclusive catalog entry is
+accuracy, respectively. The contract records both network modes for
 ``exogibbs.curated_c2h.v1``; the earlier HCN study remains attached exclusively
-to ``exogibbs.curated_gas.v1``. Neutral-mode evidence is in the contract directly;
-the packaged lookup still restricts its entry to ``ions=True``.
+to ``exogibbs.curated_gas.v1``.

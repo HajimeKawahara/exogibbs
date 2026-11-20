@@ -9,7 +9,7 @@ limitations. Naming this release does not change any thermodynamic function,
 coefficient, species network or applicability domain.
 
 The public ``exogibbs.presets.curated`` factory continues to select
-``curated_v2``. Its dataset remains ``curated-gas-v2`` and its catalog model
+``curated_v2``. Its dataset remains ``curated-gas-v2`` and its MCEG model
 identifier remains ``exogibbs.curated_gas.v2``. The ion-inclusive and neutral
 networks contain 537 and 421 species, respectively, on **1500--4000 K** at a
 **1 bar** thermochemical standard pressure. This standard state is not a
@@ -22,12 +22,12 @@ The :download:`release manifest <../../mceg/releases/gas_curation/0.1.0.json>`
 identifies the frozen scientific inputs and their hashes. The
 :download:`aggregate MCEG contract <../../mceg/contracts/gas_curation_release_0_1.yaml>`
 connects that manifest to the existing scoped evidence. It supplements the
-gas-v2 catalog record without changing the model identifier or adding a
+gas-v2 adoption contract without changing the model identifier or adding a
 runtime API. Ordinary calculations still require no MCEG installation or
 network access.
 
 The gas-curation version is separate from the ExoGibbs software version,
-the thermochemical dataset identifier and the catalog's record date. No Git
+the thermochemical dataset identifier and the MCEG schema version. No Git
 tag is created for this milestone, so it does not affect the software version
 derived by setuptools-scm. To reproduce the model, select
 ``curated_v2.chemsetup`` and retain the manifest, source commit and applicable
