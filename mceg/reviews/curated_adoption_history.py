@@ -13,7 +13,7 @@ def historical_source(root: Path, name: str, expected: str) -> Path:
     except ValueError:
         pass
     snapshots = list((root / "tests/data/validation").glob("curated_*_adoption/*/source"))
-    snapshots.append(root / "tests/data/validation/condensate_audit_history/20261120/source")
+    snapshots.extend((root / "tests/data/validation").glob("condensate_audit_history/*/source"))
     for snapshot in sorted(snapshots):
         candidate = snapshot / name
         if candidate.is_file() and sha256(candidate.read_bytes()).hexdigest() == expected:
