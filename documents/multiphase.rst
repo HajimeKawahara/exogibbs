@@ -299,6 +299,8 @@ It accepts an explicit common elemental gauge for cross-phase G comparisons,
 handles exact-zero element budgets, and enforces temperature eligibility.
 It does not accept a saved solver flag or saved dual as evidence.
 
+See :doc:`condensate_audit` for finite-log trace amounts below float64 range.
+
 The packaged ``thermo.young2023`` and ``thermo.janaf_atomic`` functions expose
 pinned standards needed by the M2 native recipe. The former retains its frozen
 2350 K Shomate branches; the latter retains its 2100--2400 K interpolation

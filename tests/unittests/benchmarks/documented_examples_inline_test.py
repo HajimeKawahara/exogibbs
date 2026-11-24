@@ -17,6 +17,15 @@ def test_registered_document_blocks_exist_and_compile(case) -> None:
         compile(blocks[index], case["document"], "exec")
 
 
+def test_log_amount_audit_documented_example_runs():
+    path = check_inline.REPOSITORY_ROOT / "documents/condensate_audit.rst"
+    (source,) = check_inline.extract_blocks(path)
+    namespace = {}
+    exec(compile(source, str(path), "exec"), namespace)
+    assert namespace["report"]["accepted"]
+    assert namespace["report"]["gas_underflow_species"] == ["H2"]
+
+
 def test_rainout_runs_after_its_documented_imports_and_setup() -> None:
     case = check_inline.CASES["condensate_profile"]
     blocks = check_inline.extract_blocks(check_inline.REPOSITORY_ROOT / case["document"])

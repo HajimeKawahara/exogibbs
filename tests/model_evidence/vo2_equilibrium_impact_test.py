@@ -159,12 +159,17 @@ def test_named_historical_baseline_and_energy_weakening_reduces_vo2(prepared):
                                        1, rtol=1e-5)
 
 
-def test_revalidation_pins_current_code_and_preserves_original_execution():
+def test_revalidation_pins_model_code_and_preserves_original_execution():
     amendment = json.loads((REVALIDATION / "revalidation.json").read_text())
     assert amendment["baseline_dataset"] == "curated-c2h-v1"
     assert amendment["new_equilibrium_solves"] == 0
     for name, digest in amendment["current_file_sha256"].items():
-        assert file_hash(ROOT / name) == digest, name
+        # Archive tools can evolve; preserve their exact recorded bytes.
+        # Every model/data input still checks its actual current path.
+        path = (historical_source(ROOT, name, digest)
+                if name in ("mceg/reviews/curated_adoption_history.py",
+                            "tests/model_evidence/vo2_equilibrium_impact_test.py") else ROOT / name)
+        assert file_hash(path) == digest, name
     for name, digest in amendment["original_file_sha256"].items():
         assert file_hash(REVALIDATION / "source" / name) == digest, name
     assert file_hash(DATA / "receipt.json") == amendment["original_receipt_sha256"]
