@@ -109,6 +109,64 @@ preset. The :doc:`../ni_co_ionization_audit` retains the original discrepancy
 and independent checks. The separate :doc:`../standard_thermodynamics` model
 continues to provide absolute entropy and heat capacity on **1500--4500 K**.
 
+Water saturation and the scope of a cold audit
+----------------------------------------------
+
+A finite thermochemical callback or an accepted equilibrium audit does not
+establish low-temperature empirical accuracy. For an ideal gas and a
+unit-activity pure condensate with the same water formula and elemental gauge,
+
+.. math::
+
+   \ln\frac{p_{\rm sat}}{1\,\mathrm{bar}}
+   =\frac{g_c^\circ-g_g^\circ}{RT},\qquad
+   D_w=\frac{g_c^\circ-\mu_w}{RT}
+   =\ln\frac{p_{\rm sat}}{p_w}.
+
+The common atomic gauge cancels in this difference. Positive ``D_w`` excludes
+insertion of this pure-water phase at the given gas state. It does not certify
+other phases or the separate gas and condensed standard potentials. The
+equivalent native saturation prescription can be inspected without solving:
+
+.. code-block:: python
+
+   import jax
+   jax.config.update("jax_enable_x64", True)
+   import numpy as np
+   from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
+
+   setup = condensate_chemical_setup(silent=True)
+   gas, cloud = setup.gas_setup, setup.condensate_setup
+   temperature = 260.0
+   gas_water = gas.species.index("H2O1")
+   condensed_water = cloud.species.index("H2O(s,l)")
+   gas_rt = float(gas.hvector_func(temperature)[gas_water])
+   condensed_rt = float(cloud.hvector_func(temperature)[condensed_water])
+   saturation_bar = np.exp(condensed_rt - gas_rt)
+   print(saturation_bar)
+
+The native water entry switches its ice/liquid segments at 273.16 K and
+becomes ineligible above 647.10 K. Neither rule supplies lower-temperature
+accuracy for all catalog species. The
+`S2 cold-water comparison <https://github.com/HajimeKawahara/exoinventory/pull/129>`_
+measured maximum native/reference saturation differences of 3.54% for ice
+over 251.19--273.16 K and 4.02% for liquid over 273.16--630.96 K. Its native
+segment switch has a 1.91% pressure jump. The references are
+`Murphy and Koop (2005), Eq. (7) <https://doi.org/10.1256/qj.04.94>`_
+and `IAPWS SR1-86(1992), Eq. (1) <https://iapws.org/public/documents/6dGkr/Supp-sat.pdf>`_.
+The IAPWS release is a related reference prescription, not the exact 2008
+steam-table book in the native header. These differences are not a certified
+error bound on mixture fugacity or on each standard potential.
+
+In that declared application, all 302 reference-covered layers have zero
+water-condensate amount. Replacing only its standard by
+``gas_rt + log(reference_saturation_bar)`` leaves all those amount vectors
+accepted by the independent :doc:`../condensate_audit`, with minimum water
+insertion cost 7.447526 in RT units. This supports a specific absent-phase
+robustness statement while preserving the failed 1% reference-comparison
+screen. It is not a new equilibrium solve or a catalog-wide physical
+validation. Native coefficients, solver behavior and defaults are unchanged.
+
 Packaged Data
 -------------
 The default gas setup reads:
