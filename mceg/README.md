@@ -1,5 +1,10 @@
 # Experimental MCEG contracts
 
+The [Planetlib adoption](planetlib/README.md) provides pinned shared Sun-Yao,
+NASA9 and binary ideal-mixing definitions with local implementation mappings.
+Its generated native contract and optional checks preserve the provider histories
+below and do not change numerical runtime dependencies.
+
 [MCEG](https://github.com/HajimeKawahara/mceg) records model assumptions,
 applicability, claims and scoped evidence. This checkout pilots its frozen
 `schema_version: "0.1"` with the

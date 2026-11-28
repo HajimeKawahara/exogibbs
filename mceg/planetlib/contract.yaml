@@ -1,0 +1,1470 @@
+schema_version: '0.6'
+model:
+  id: exogibbs.planetlib.adoption
+  name: ExoGibbs adoption of pinned Planetlib definitions
+  description: Shared scientific definitions with local implementation mappings; the
+    existing provider and study records retain their historical judgments.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/solubility/sun_yao2026.py:h2o_sun_yao2026
+    - src/exogibbs/thermo/standard.py:_nasa9
+    - src/exogibbs/thermo/ideal_gibbs.py:gibbs_j
+assumptions:
+- statement: Water partial pressure and total melt pressure are separate bar inputs.
+    The caller normalizes the complete dry oxide inventory before supplying Na2O and
+    Al2O3 fractions. The result is binary total H2O-equivalent mass fraction, not
+    wt percent or a dry-host mass ratio. The continuous zero-water limit and NaN guards
+    remain provider behavior; no Gibbs continuation is adopted.
+  evidence:
+  - exogibbs.planetlib.sun_yao.source
+- statement: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is
+    (g/RT,s/R,cp/R). Temperature is numerical Kelvin. h/RT is recovered as g/RT+s/R.
+    This is a one-interval algebraic correspondence, excluding coefficient datasets,
+    interval joins, reference-gauge reconstruction, and the validity of any curated
+    gas mixture.
+  evidence:
+  - exogibbs.planetlib.nasa9.source
+- statement: At fixed positive T and P and two positive amounts, catalog G is provider
+    gibbs_j/(R*T). Catalog u0i is standard_potentials_rt[i]+log(pressure_pa/1e5),
+    adding the one-bar pressure contribution exactly once. Catalog ui is the provider
+    amount derivative divided by R*T. No insertion bound, zero-amount derivative,
+    arbitrary-species model or chemical equilibrium validation is adopted.
+  evidence:
+  - exogibbs.planetlib.ideal_mixing.source
+domains:
+- kind: scientific_applicability
+  status: unknown
+  description: These local correspondence declarations do not assess physical accuracy
+    of any target material or gas mixture.
+  conditions: []
+  evidence:
+  - exogibbs.planetlib.selection
+claims:
+- id: exogibbs.planetlib.sun_yao.correspondence
+  revision: '1'
+  statement: The scalar water solubility evaluates the selected Sun-Yao relation on
+    its valid input domain.
+  kind: numerical_verification
+  scope: Water partial pressure and total melt pressure are separate bar inputs. The
+    caller normalizes the complete dry oxide inventory before supplying Na2O and Al2O3
+    fractions. The result is binary total H2O-equivalent mass fraction, not wt percent
+    or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain
+    provider behavior; no Gibbs continuation is adopted.
+  equations:
+  - id: planetlib.solubility.sun_yao2026.water_mass_fraction
+    revision: '2'
+  mathematical_models:
+  - id: planetlib.solubility.sun_yao2026.binary_water
+    revision: '2'
+- id: exogibbs.planetlib.nasa9.correspondence
+  revision: '1'
+  statement: The single-interval evaluator matches the selected NASA9 relations with
+    its declared coefficient and tuple conventions.
+  kind: numerical_verification
+  scope: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R).
+    Temperature is numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval
+    algebraic correspondence, excluding coefficient datasets, interval joins, reference-gauge
+    reconstruction, and the validity of any curated gas mixture.
+  equations:
+  - id: planetlib.thermodynamics.nasa9.heat_capacity
+    revision: '1'
+  - id: planetlib.thermodynamics.nasa9.entropy
+    revision: '1'
+  - id: planetlib.thermodynamics.nasa9.enthalpy
+    revision: '1'
+  - id: planetlib.thermodynamics.nasa9.gibbs
+    revision: '1'
+  mathematical_models:
+  - id: planetlib.thermodynamics.nasa9.model
+    revision: '1'
+- id: exogibbs.planetlib.ideal_mixing.correspondence
+  revision: '1'
+  statement: The binary restriction of the ideal-gas Gibbs scalar and its amount derivatives
+    match the selected ideal-mixing model after explicit normalization.
+  kind: numerical_verification
+  scope: At fixed positive T and P and two positive amounts, catalog G is provider
+    gibbs_j/(R*T). Catalog u0i is standard_potentials_rt[i]+log(pressure_pa/1e5),
+    adding the one-bar pressure contribution exactly once. Catalog ui is the provider
+    amount derivative divided by R*T. No insertion bound, zero-amount derivative,
+    arbitrary-species model or chemical equilibrium validation is adopted.
+  equations:
+  - id: planetlib.thermodynamics.ideal_mixing.gibbs
+    revision: '1'
+  - id: planetlib.thermodynamics.ideal_mixing.potential_1
+    revision: '1'
+  - id: planetlib.thermodynamics.ideal_mixing.potential_2
+    revision: '1'
+  - id: planetlib.thermodynamics.ideal_mixing.euler
+    revision: '1'
+  mathematical_models:
+  - id: planetlib.thermodynamics.ideal_mixing.model
+    revision: '1'
+evidence:
+- id: exogibbs.planetlib.selection
+  kind: implementation
+  summary: Immutable Planetlib catalog selection; only definitions and their provenance
+    are imported.
+  sources:
+  - https://github.com/HajimeKawahara/planetlib/tree/a83b3fb255c7a383c6a8ef502328266f4dd16bff
+  - mceg/planetlib/imports.lock.json
+  scope: Planetlib supplies no imported Subject, Context, Claim, Assessment or code
+    binding. Shared equation authoring remains in the upstream catalog; contract.yaml
+    is a generated distribution snapshot.
+  result: null
+  provenance: null
+  subject: null
+  context: null
+  artifacts:
+  - source: mceg/planetlib/imports.lock.json
+    sha256: 845617bddee170380b9feac25f30012032c92c00d9c4a3a12722369b859e2878
+- id: exogibbs.planetlib.sun_yao.source
+  kind: implementation
+  summary: Selected provider source and explicit input/output conventions.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/solubility/sun_yao2026.py
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/solubility/volatile.py
+  scope: Water partial pressure and total melt pressure are separate bar inputs. The
+    caller normalizes the complete dry oxide inventory before supplying Na2O and Al2O3
+    fractions. The result is binary total H2O-equivalent mass fraction, not wt percent
+    or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain
+    provider behavior; no Gibbs continuation is adopted.
+  result: null
+  provenance: null
+  subject: exogibbs.planetlib.sun_yao.source
+  context: exogibbs.planetlib.sun_yao.mapping
+  artifacts: []
+- id: exogibbs.planetlib.nasa9.source
+  kind: implementation
+  summary: Selected provider source and explicit input/output conventions.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/thermo/standard.py
+  scope: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R).
+    Temperature is numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval
+    algebraic correspondence, excluding coefficient datasets, interval joins, reference-gauge
+    reconstruction, and the validity of any curated gas mixture.
+  result: null
+  provenance: null
+  subject: exogibbs.planetlib.nasa9.source
+  context: exogibbs.planetlib.nasa9.mapping
+  artifacts: []
+- id: exogibbs.planetlib.ideal_mixing.source
+  kind: implementation
+  summary: Selected provider source and explicit input/output conventions.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/thermo/ideal_gibbs.py
+  scope: At fixed positive T and P and two positive amounts, catalog G is provider
+    gibbs_j/(R*T). Catalog u0i is standard_potentials_rt[i]+log(pressure_pa/1e5),
+    adding the one-bar pressure contribution exactly once. Catalog ui is the provider
+    amount derivative divided by R*T. No insertion bound, zero-amount derivative,
+    arbitrary-species model or chemical equilibrium validation is adopted.
+  result: null
+  provenance: null
+  subject: exogibbs.planetlib.ideal_mixing.source
+  context: exogibbs.planetlib.ideal_mixing.mapping
+  artifacts: []
+- id: planetlib.solubility.sun_yao2026.paper_review
+  kind: literature
+  summary: ExoInventory's later static comparison with Sun and Yao (2026), Eq. 7 and
+    Table 1.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2026.120115
+  - https://github.com/HajimeKawahara/exoinventory/blob/02540ee13cfb847ade632b35e9c8d950795dc5f0/examples/subneptune_taxonomy/finite_melt/mceg/sun_yao_paper.md
+  - https://github.com/HajimeKawahara/exoinventory/blob/02540ee13cfb847ade632b35e9c8d950795dc5f0/examples/subneptune_taxonomy/finite_melt/validation/20261029_sun_yao_paper/review.json
+  - https://github.com/HajimeKawahara/exoinventory/blob/02540ee13cfb847ade632b35e9c8d950795dc5f0/examples/subneptune_taxonomy/finite_melt/mceg/s1_adopted.yaml
+  scope: Context sun-yao-paper-review-20261029 records paper:water-formula as supported
+    for static Eq. 7/Table 1 agreement and paper:empirical-transfer as unknown. The
+    review distinguishes partial pressure from fugacity and leaves binary denominator,
+    iron-redox convention and multisolute continuation as consumer choices. The paper's
+    parameter uncertainties supply no covariance matrix or target-host error bound.
+    This evidence points to that review, not a new assessment. The 60000 bar upper
+    bound belongs to the combined H2O-CO2 dataset; the reviewed water experiments
+    reach 20000 bar. Neither range is a joint calibration box.
+  result: null
+  provenance:
+    role: secondary
+    location: The committed original-paper review and receipt in ExoInventory.
+    inspection: inspected
+    note: The historical review's conclusions remain scoped to its original records.
+    derived_from: []
+  subject: null
+  context: null
+  artifacts: []
+- id: planetlib.solubility.sun_yao2026.provider_source
+  kind: implementation
+  summary: ExoGibbs source and current provider contract, inspected as extraction
+    inputs.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/08d3d85a6680eb81c4057bf584530d269de88253/src/exogibbs/solubility/sun_yao2026.py
+  - https://github.com/HajimeKawahara/exogibbs/blob/08d3d85a6680eb81c4057bf584530d269de88253/mceg/contracts/h2o_sun_yao2026.yaml
+  scope: Source SHA256 965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb;
+    contract SHA256 c1a94e3e111e6e992b31c80eb6b36aad9558381bf56fa8ecdd2188b1081363b1.
+    The source follows MAGEMin_C.jl commit 47e2d12bfec0f799acf030b285fa3b1e8eb32098.
+    No numerical provider was imported or executed for this extraction.
+  result: null
+  provenance:
+    role: implementation
+    location: h2o_sun_yao2026_terms, h2o_sun_yao2026 and the _A coefficient tuple.
+    inspection: inspected
+    note: Source conventions are recorded; reading code is not numerical or empirical
+      validation.
+    derived_from: []
+  subject: null
+  context: null
+  artifacts: []
+- id: planetlib.thermodynamics.nasa9.source
+  kind: implementation
+  summary: Pinned provider formulas and quantity conventions inspected for extraction.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/08d3d85a6680eb81c4057bf584530d269de88253/src/exogibbs/thermo/standard.py
+  scope: The _nasa9 interval formula and StandardThermodynamics unit/reference conventions
+    were inspected at the pinned source. Coefficient data and temperature-range assessments
+    are not extracted.
+  result: null
+  provenance:
+    role: implementation
+    location: The source functions identified by the immutable URLs.
+    inspection: inspected
+    note: Source inspection identifies conventions; no provider support is transferred.
+    derived_from: []
+  subject: null
+  context: null
+  artifacts: []
+- id: planetlib.thermodynamics.ideal_mixing.source
+  kind: implementation
+  summary: Pinned provider formulas and quantity conventions inspected for extraction.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/08d3d85a6680eb81c4057bf584530d269de88253/src/exogibbs/thermo/ideal_gibbs.py
+  - https://github.com/HajimeKawahara/exoeos/blob/1032f58872bdef9d48c8b1ce2a16a473ced97f3c/src/exoeos/solution_gibbs.py
+  scope: Selected source files match their recorded commits. ExoGibbs adds an explicit
+    one-bar gas-pressure term; the shared mixing definition instead receives standards
+    at the selected pressure, as in ExoEOS. No provider code was executed.
+  result: null
+  provenance:
+    role: implementation
+    location: The source functions identified by the immutable URLs.
+    inspection: inspected
+    note: Source inspection identifies conventions; no provider support is transferred.
+    derived_from: []
+  subject: null
+  context: null
+  artifacts: []
+limitations:
+- statement: Native validation and the sampled provider comparisons do not prove general
+    code equivalence or renew historical assessments.
+  evidence:
+  - exogibbs.planetlib.selection
+subjects:
+- id: exogibbs.planetlib.sun_yao.source
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/solubility/sun_yao2026.py:h2o_sun_yao2026
+  selected_files:
+    src/exogibbs/solubility/sun_yao2026.py: 965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb
+    src/exogibbs/solubility/volatile.py: 8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da
+- id: exogibbs.planetlib.nasa9.source
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/thermo/standard.py:_nasa9
+  selected_files:
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+- id: exogibbs.planetlib.ideal_mixing.source
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/thermo/ideal_gibbs.py:gibbs_j
+  selected_files:
+    src/exogibbs/thermo/ideal_gibbs.py: 8fcd8f9cedda2ee6f84922e1e3e568f4e1fa0ac189513db18c1d5b73988b2731
+contexts:
+- id: exogibbs.planetlib.sun_yao.mapping
+  scope: Water partial pressure and total melt pressure are separate bar inputs. The
+    caller normalizes the complete dry oxide inventory before supplying Na2O and Al2O3
+    fractions. The result is binary total H2O-equivalent mass fraction, not wt percent
+    or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain
+    provider behavior; no Gibbs continuation is adopted.
+  quantities: {}
+  settings:
+    planetlib_revision: a83b3fb255c7a383c6a8ef502328266f4dd16bff
+    mapping_status: declared; no archived correspondence review
+- id: exogibbs.planetlib.nasa9.mapping
+  scope: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R).
+    Temperature is numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval
+    algebraic correspondence, excluding coefficient datasets, interval joins, reference-gauge
+    reconstruction, and the validity of any curated gas mixture.
+  quantities: {}
+  settings:
+    planetlib_revision: a83b3fb255c7a383c6a8ef502328266f4dd16bff
+    mapping_status: declared; no archived correspondence review
+- id: exogibbs.planetlib.ideal_mixing.mapping
+  scope: At fixed positive T and P and two positive amounts, catalog G is provider
+    gibbs_j/(R*T). Catalog u0i is standard_potentials_rt[i]+log(pressure_pa/1e5),
+    adding the one-bar pressure contribution exactly once. Catalog ui is the provider
+    amount derivative divided by R*T. No insertion bound, zero-amount derivative,
+    arbitrary-species model or chemical equilibrium validation is adopted.
+  quantities: {}
+  settings:
+    planetlib_revision: a83b3fb255c7a383c6a8ef502328266f4dd16bff
+    mapping_status: declared; no archived correspondence review
+conditions: []
+assessments:
+- id: exogibbs.planetlib.sun_yao.pending
+  subject: exogibbs.planetlib.sun_yao.source
+  context: exogibbs.planetlib.sun_yao.mapping
+  method:
+    id: exogibbs.planetlib.initial_adoption
+    revision: '1'
+    description: Record explicit correspondence for later scoped review; preserve
+      earlier provider assessments separately.
+  evidence:
+  - exogibbs.planetlib.sun_yao.source
+  - exogibbs.planetlib.selection
+  reasons:
+  - Existing reviews concern their own definitions and subjects; no archived review
+    of this new Planetlib correspondence is recorded. Sampled CI comparisons do not
+    automatically promote this status.
+  kind: evidence_support
+  claim: exogibbs.planetlib.sun_yao.correspondence
+  claim_revision: '1'
+  status: unknown
+  origin: reviewed
+  equation_pins:
+  - id: planetlib.solubility.sun_yao2026.water_mass_fraction
+    revision: '2'
+    sha256: 6447d9d1d4c0291af01593723bcab8fd562f466558db71169631981080dcb66d
+  binding_pins:
+  - id: exogibbs.planetlib.sun_yao.water
+    sha256: 41518d74d5de841c8888f0982c49a83243411931d011923924937707c2bec821
+  mathematical_model_pins:
+  - id: planetlib.solubility.sun_yao2026.binary_water
+    revision: '2'
+    sha256: c579e997ec4e59d3f507476f0b8a36d43184d644065af04ab9f0d861c4e85705
+- id: exogibbs.planetlib.nasa9.pending
+  subject: exogibbs.planetlib.nasa9.source
+  context: exogibbs.planetlib.nasa9.mapping
+  method:
+    id: exogibbs.planetlib.initial_adoption
+    revision: '1'
+    description: Record explicit correspondence for later scoped review; preserve
+      earlier provider assessments separately.
+  evidence:
+  - exogibbs.planetlib.nasa9.source
+  - exogibbs.planetlib.selection
+  reasons:
+  - Existing reviews concern their own definitions and subjects; no archived review
+    of this new Planetlib correspondence is recorded. Sampled CI comparisons do not
+    automatically promote this status.
+  kind: evidence_support
+  claim: exogibbs.planetlib.nasa9.correspondence
+  claim_revision: '1'
+  status: unknown
+  origin: reviewed
+  equation_pins:
+  - id: planetlib.thermodynamics.nasa9.heat_capacity
+    revision: '1'
+    sha256: ef31d7321bb509a473a806cdd4d2ff01adcc5f37f48f3939fab23a7a7a6b27df
+  - id: planetlib.thermodynamics.nasa9.entropy
+    revision: '1'
+    sha256: 7ed99f4a7a565c0e39ec9f0fce98ba4a8dec42db7968d449b76dd062068824cd
+  - id: planetlib.thermodynamics.nasa9.enthalpy
+    revision: '1'
+    sha256: 66673ed9f0f3a4e166c7c3d19a7fe8f7467286a93ea2605427685d5cc4776904
+  - id: planetlib.thermodynamics.nasa9.gibbs
+    revision: '1'
+    sha256: f492480910e2b6c0dc5114f9866147e3b1aa71e6836bd88467074f7fd72e7679
+  binding_pins:
+  - id: exogibbs.planetlib.nasa9.temperature
+    sha256: 933e2ae67b9fd4ff7eb8a1976406a24b07e06d78e08a86746d1b052ce04d8b08
+  mathematical_model_pins:
+  - id: planetlib.thermodynamics.nasa9.model
+    revision: '1'
+    sha256: 7818a218684226ac9a3a827cc12c4b9f7995ffb42f881e6d16507c4490b41255
+- id: exogibbs.planetlib.ideal_mixing.pending
+  subject: exogibbs.planetlib.ideal_mixing.source
+  context: exogibbs.planetlib.ideal_mixing.mapping
+  method:
+    id: exogibbs.planetlib.initial_adoption
+    revision: '1'
+    description: Record explicit correspondence for later scoped review; preserve
+      earlier provider assessments separately.
+  evidence:
+  - exogibbs.planetlib.ideal_mixing.source
+  - exogibbs.planetlib.selection
+  reasons:
+  - Existing reviews concern their own definitions and subjects; no archived review
+    of this new Planetlib correspondence is recorded. Sampled CI comparisons do not
+    automatically promote this status.
+  kind: evidence_support
+  claim: exogibbs.planetlib.ideal_mixing.correspondence
+  claim_revision: '1'
+  status: unknown
+  origin: reviewed
+  equation_pins:
+  - id: planetlib.thermodynamics.ideal_mixing.gibbs
+    revision: '1'
+    sha256: 3c9b5e912b335f2bc78d3a2653268858344096730a9e4117a48ff7d3b35e8e62
+  - id: planetlib.thermodynamics.ideal_mixing.potential_1
+    revision: '1'
+    sha256: dd5be4806efae5ac83287bfb168f2902b206da461bb012393d914aee91dc792c
+  - id: planetlib.thermodynamics.ideal_mixing.potential_2
+    revision: '1'
+    sha256: 1b8a413b108aed518cff3bdf36b36fea016e921b3df4950411de36643b04a9f8
+  - id: planetlib.thermodynamics.ideal_mixing.euler
+    revision: '1'
+    sha256: f1927bdd06936ce476bc69d1365f0c274ced9ed85c543452c723a02d555d8fdc
+  binding_pins: []
+  mathematical_model_pins:
+  - id: planetlib.thermodynamics.ideal_mixing.model
+    revision: '1'
+    sha256: ff4484ea799cc1bcce2f2e4873a3aab634d3ea9632e9da2daef0e541b46f0320
+follow_ups: []
+follow_up_resolutions: []
+migration: null
+equations:
+- id: planetlib.solubility.sun_yao2026.water_mass_fraction
+  revision: '2'
+  description: Two pressure powers for molecular water and hydroxyl, with the ten
+    published water coefficients and one wt%-to-mass-fraction conversion.
+  scope: Sun-Yao Eq. 7/Table 1 evaluated with T in K and both pressures in bar, restricted
+    here to the explicit binary dry-host/water mass convention. Fixed coefficient
+    precision follows the inspected source and consumer review.
+  symbols:
+    T:
+      latex: T
+      description: Melt-fluid temperature
+      unit: K
+    P:
+      latex: P
+      description: Total melt pressure
+      unit: bar
+    p_H2O:
+      latex: p_{H_2O}
+      description: Fluid water partial pressure
+      unit: bar
+    x_Na2O:
+      latex: X_{Na_2O}
+      description: Complete dry-oxide-basis Na2O mole fraction
+      unit: '1'
+    x_Al2O3:
+      latex: X_{Al_2O_3}
+      description: Complete dry-oxide-basis Al2O3 mole fraction
+      unit: '1'
+    w:
+      latex: w
+      description: Binary dissolved H2O-equivalent mass fraction
+      unit: '1'
+  assumptions:
+  - Pressure and temperature occur as numerical values in the specified units; changing
+    units requires these normalizations.
+  - Water partial pressure is not replaced by fugacity.
+  - The complete dry oxide denominator and its iron-redox convention are supplied
+    externally.
+  - The two terms use the same H2O-equivalent mass basis; no separate hydroxyl hydrogen
+    budget is added.
+  - At zero water partial pressure the continuous extension is w=0, with a singular
+    pressure derivative.
+  - 'SymPy symbols are numerical magnitudes: T in K, P and p_H2O in bar, and mole/mass
+    fractions dimensionless.'
+  evidence:
+  - planetlib.solubility.sun_yao2026.provider_source
+  - planetlib.solubility.sun_yao2026.paper_review
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('w'), Add(Mul(Rational(1, 100), Pow(Symbol('T'), Rational(-43771,
+      62500)), Pow(Symbol('p_H2O'), Rational(161561, 200000)), exp(Add(Mul(Integer(-1),
+      Rational(74546597, 1000000), Pow(Symbol('P'), Rational(1, 2)), Pow(Symbol('T'),
+      Integer(-1)), Symbol('x_Na2O')), Mul(Rational(2949559, 1000000000000), Pow(Symbol('P'),
+      Integer(2)), Pow(Symbol('T'), Integer(-1))), Mul(Rational(1786568863, 250000),
+      Pow(Symbol('T'), Integer(-1)), Symbol('x_Na2O'))))), Mul(Rational(1, 100), Pow(Symbol('T'),
+      Rational(-180097, 500000)), Pow(Symbol('p_H2O'), Rational(449387, 1000000)),
+      exp(Mul(Symbol('P'), Pow(Symbol('T'), Integer(-1)), Add(Mul(Rational(2984703,
+      1000000), Symbol('x_Al2O3')), Mul(Integer(-1), Rational(169371, 100000), Symbol('x_Na2O')),
+      Rational(-308259, 1000000)))))))
+- id: planetlib.thermodynamics.nasa9.enthalpy
+  revision: '1'
+  description: Integrated standard enthalpy.
+  scope: One species on one positive-temperature interval with externally supplied
+    NASA9 coefficients and a consistent standard reference. The source uses one bar.
+    No species data, temperature bounds, interval joins, elemental gauge transformation
+    or empirical accuracy is selected.
+  symbols:
+    T:
+      latex: T
+      description: Absolute temperature; its numerical magnitude in K is used in the
+        polynomial and logarithm.
+      unit: K
+    a1:
+      latex: a_1
+      description: NASA9 coefficient a1 for one interval with temperature measured
+        in K.
+      unit: K^2
+    a2:
+      latex: a_2
+      description: NASA9 coefficient a2 for one interval with temperature measured
+        in K.
+      unit: K
+    a3:
+      latex: a_3
+      description: NASA9 coefficient a3 for one interval with temperature measured
+        in K.
+      unit: '1'
+    a4:
+      latex: a_4
+      description: NASA9 coefficient a4 for one interval with temperature measured
+        in K.
+      unit: K^-1
+    a5:
+      latex: a_5
+      description: NASA9 coefficient a5 for one interval with temperature measured
+        in K.
+      unit: K^-2
+    a6:
+      latex: a_6
+      description: NASA9 coefficient a6 for one interval with temperature measured
+        in K.
+      unit: K^-3
+    a7:
+      latex: a_7
+      description: NASA9 coefficient a7 for one interval with temperature measured
+        in K.
+      unit: K^-4
+    b1:
+      latex: b_1
+      description: NASA9 coefficient b1 for one interval with temperature measured
+        in K.
+      unit: K
+    hbar:
+      latex: h^0/(RT)
+      description: Standard molar enthalpy divided by R T, retaining its integration
+        constant.
+      unit: '1'
+  assumptions:
+  - The polynomial variable is the numerical temperature in K; log(T) means log(T/(1
+    K)). Coefficient units follow this convention.
+  - All nine coefficients are constant within the selected interval; differentiation
+    does not cross an interval boundary.
+  - hbar and gbar are divided by R T, whereas sbar and cpbar are divided by R; these
+    normalizations must be retained during differentiation.
+  evidence:
+  - planetlib.thermodynamics.nasa9.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('hbar'), Add(Mul(Rational(1, 5), Pow(Symbol('T', positive=True),
+      Integer(4)), Symbol('a7')), Mul(Rational(1, 4), Pow(Symbol('T', positive=True),
+      Integer(3)), Symbol('a6')), Mul(Rational(1, 3), Pow(Symbol('T', positive=True),
+      Integer(2)), Symbol('a5')), Mul(Rational(1, 2), Symbol('T', positive=True),
+      Symbol('a4')), Symbol('a3'), Mul(Pow(Symbol('T', positive=True), Integer(-1)),
+      Symbol('a2'), log(Symbol('T', positive=True))), Mul(Pow(Symbol('T', positive=True),
+      Integer(-1)), Symbol('b1')), Mul(Integer(-1), Pow(Symbol('T', positive=True),
+      Integer(-2)), Symbol('a1'))))
+- id: planetlib.thermodynamics.nasa9.entropy
+  revision: '1'
+  description: Integrated standard entropy.
+  scope: One species on one positive-temperature interval with externally supplied
+    NASA9 coefficients and a consistent standard reference. The source uses one bar.
+    No species data, temperature bounds, interval joins, elemental gauge transformation
+    or empirical accuracy is selected.
+  symbols:
+    T:
+      latex: T
+      description: Absolute temperature; its numerical magnitude in K is used in the
+        polynomial and logarithm.
+      unit: K
+    a1:
+      latex: a_1
+      description: NASA9 coefficient a1 for one interval with temperature measured
+        in K.
+      unit: K^2
+    a2:
+      latex: a_2
+      description: NASA9 coefficient a2 for one interval with temperature measured
+        in K.
+      unit: K
+    a3:
+      latex: a_3
+      description: NASA9 coefficient a3 for one interval with temperature measured
+        in K.
+      unit: '1'
+    a4:
+      latex: a_4
+      description: NASA9 coefficient a4 for one interval with temperature measured
+        in K.
+      unit: K^-1
+    a5:
+      latex: a_5
+      description: NASA9 coefficient a5 for one interval with temperature measured
+        in K.
+      unit: K^-2
+    a6:
+      latex: a_6
+      description: NASA9 coefficient a6 for one interval with temperature measured
+        in K.
+      unit: K^-3
+    a7:
+      latex: a_7
+      description: NASA9 coefficient a7 for one interval with temperature measured
+        in K.
+      unit: K^-4
+    b2:
+      latex: b_2
+      description: NASA9 coefficient b2 for one interval with temperature measured
+        in K.
+      unit: '1'
+    sbar:
+      latex: s^0/R
+      description: Standard molar entropy divided by R, retaining its integration
+        constant.
+      unit: '1'
+  assumptions:
+  - The polynomial variable is the numerical temperature in K; log(T) means log(T/(1
+    K)). Coefficient units follow this convention.
+  - All nine coefficients are constant within the selected interval; differentiation
+    does not cross an interval boundary.
+  - hbar and gbar are divided by R T, whereas sbar and cpbar are divided by R; these
+    normalizations must be retained during differentiation.
+  evidence:
+  - planetlib.thermodynamics.nasa9.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('sbar'), Add(Mul(Rational(1, 4), Pow(Symbol('T', positive=True),
+      Integer(4)), Symbol('a7')), Mul(Rational(1, 3), Pow(Symbol('T', positive=True),
+      Integer(3)), Symbol('a6')), Mul(Rational(1, 2), Pow(Symbol('T', positive=True),
+      Integer(2)), Symbol('a5')), Mul(Symbol('T', positive=True), Symbol('a4')), Mul(Symbol('a3'),
+      log(Symbol('T', positive=True))), Symbol('b2'), Mul(Integer(-1), Pow(Symbol('T',
+      positive=True), Integer(-1)), Symbol('a2')), Mul(Integer(-1), Rational(1, 2),
+      Pow(Symbol('T', positive=True), Integer(-2)), Symbol('a1'))))
+- id: planetlib.thermodynamics.nasa9.gibbs
+  revision: '1'
+  description: Common standard reference relation.
+  scope: One species on one positive-temperature interval with externally supplied
+    NASA9 coefficients and a consistent standard reference. The source uses one bar.
+    No species data, temperature bounds, interval joins, elemental gauge transformation
+    or empirical accuracy is selected.
+  symbols:
+    gbar:
+      latex: g^0/(RT)
+      description: Standard molar Gibbs energy divided by R T, not an elemental-reference
+        shifted solver potential.
+      unit: '1'
+    hbar:
+      latex: h^0/(RT)
+      description: Standard molar enthalpy divided by R T, retaining its integration
+        constant.
+      unit: '1'
+    sbar:
+      latex: s^0/R
+      description: Standard molar entropy divided by R, retaining its integration
+        constant.
+      unit: '1'
+  assumptions:
+  - The polynomial variable is the numerical temperature in K; log(T) means log(T/(1
+    K)). Coefficient units follow this convention.
+  - All nine coefficients are constant within the selected interval; differentiation
+    does not cross an interval boundary.
+  - hbar and gbar are divided by R T, whereas sbar and cpbar are divided by R; these
+    normalizations must be retained during differentiation.
+  evidence:
+  - planetlib.thermodynamics.nasa9.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('gbar'), Add(Symbol('hbar'), Mul(Integer(-1), Symbol('sbar'))))
+- id: planetlib.thermodynamics.nasa9.heat_capacity
+  revision: '1'
+  description: Standard heat-capacity polynomial.
+  scope: One species on one positive-temperature interval with externally supplied
+    NASA9 coefficients and a consistent standard reference. The source uses one bar.
+    No species data, temperature bounds, interval joins, elemental gauge transformation
+    or empirical accuracy is selected.
+  symbols:
+    T:
+      latex: T
+      description: Absolute temperature; its numerical magnitude in K is used in the
+        polynomial and logarithm.
+      unit: K
+    a1:
+      latex: a_1
+      description: NASA9 coefficient a1 for one interval with temperature measured
+        in K.
+      unit: K^2
+    a2:
+      latex: a_2
+      description: NASA9 coefficient a2 for one interval with temperature measured
+        in K.
+      unit: K
+    a3:
+      latex: a_3
+      description: NASA9 coefficient a3 for one interval with temperature measured
+        in K.
+      unit: '1'
+    a4:
+      latex: a_4
+      description: NASA9 coefficient a4 for one interval with temperature measured
+        in K.
+      unit: K^-1
+    a5:
+      latex: a_5
+      description: NASA9 coefficient a5 for one interval with temperature measured
+        in K.
+      unit: K^-2
+    a6:
+      latex: a_6
+      description: NASA9 coefficient a6 for one interval with temperature measured
+        in K.
+      unit: K^-3
+    a7:
+      latex: a_7
+      description: NASA9 coefficient a7 for one interval with temperature measured
+        in K.
+      unit: K^-4
+    cpbar:
+      latex: c_p^0/R
+      description: Standard molar heat capacity at fixed standard pressure, divided
+        by R.
+      unit: '1'
+  assumptions:
+  - The polynomial variable is the numerical temperature in K; log(T) means log(T/(1
+    K)). Coefficient units follow this convention.
+  - All nine coefficients are constant within the selected interval; differentiation
+    does not cross an interval boundary.
+  - hbar and gbar are divided by R T, whereas sbar and cpbar are divided by R; these
+    normalizations must be retained during differentiation.
+  evidence:
+  - planetlib.thermodynamics.nasa9.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('cpbar'), Add(Mul(Pow(Symbol('T', positive=True),
+      Integer(4)), Symbol('a7')), Mul(Pow(Symbol('T', positive=True), Integer(3)),
+      Symbol('a6')), Mul(Pow(Symbol('T', positive=True), Integer(2)), Symbol('a5')),
+      Mul(Symbol('T', positive=True), Symbol('a4')), Symbol('a3'), Mul(Pow(Symbol('T',
+      positive=True), Integer(-1)), Symbol('a2')), Mul(Pow(Symbol('T', positive=True),
+      Integer(-2)), Symbol('a1'))))
+- id: planetlib.thermodynamics.ideal_mixing.euler
+  revision: '1'
+  description: Euler consistency relation.
+  scope: 'Two components at fixed temperature and pressure, with composition-independent
+    supplied standards. The finite two-component model is a minimal reusable instance,
+    not an arbitrary-species solver. Pressure contributions belong to the supplied
+    standards: one-bar ideal-gas standards require a separate ln(P/P0) addition exactly
+    once. No gas law, activity correction, phase equilibrium or boundary derivative
+    is selected.'
+  symbols:
+    G:
+      latex: G/(RT)
+      description: Total extensive Gibbs energy divided by R T; this is not molar
+        Gibbs energy.
+      unit: mol
+    n1:
+      latex: n_1
+      description: Amount of host component 1.
+      unit: mol
+    n2:
+      latex: n_2
+      description: Amount of host component 2.
+      unit: mol
+    u1:
+      latex: u_1
+      description: Component 1 chemical potential divided by R T.
+      unit: '1'
+    u2:
+      latex: u_2
+      description: Component 2 chemical potential divided by R T.
+      unit: '1'
+  assumptions:
+  - Amounts are positive for chemical-potential derivatives; the zero-amount energy
+    limit does not define a finite insertion potential.
+  - The scalar G/(R T) has units of mol, whereas each chemical potential divided by
+    R T is dimensionless.
+  - The selected standards already refer to the fixed pressure; ideal mixing is counted
+    exactly once.
+  evidence:
+  - planetlib.thermodynamics.ideal_mixing.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('G'), Add(Mul(Symbol('n1', positive=True), Symbol('u1')),
+      Mul(Symbol('n2', positive=True), Symbol('u2'))))
+- id: planetlib.thermodynamics.ideal_mixing.gibbs
+  revision: '1'
+  description: Extensive scalar.
+  scope: 'Two components at fixed temperature and pressure, with composition-independent
+    supplied standards. The finite two-component model is a minimal reusable instance,
+    not an arbitrary-species solver. Pressure contributions belong to the supplied
+    standards: one-bar ideal-gas standards require a separate ln(P/P0) addition exactly
+    once. No gas law, activity correction, phase equilibrium or boundary derivative
+    is selected.'
+  symbols:
+    G:
+      latex: G/(RT)
+      description: Total extensive Gibbs energy divided by R T; this is not molar
+        Gibbs energy.
+      unit: mol
+    n1:
+      latex: n_1
+      description: Amount of host component 1.
+      unit: mol
+    n2:
+      latex: n_2
+      description: Amount of host component 2.
+      unit: mol
+    u01:
+      latex: u_1^0
+      description: Component 1 standard chemical potential divided by R T at the selected
+        fixed temperature and pressure.
+      unit: '1'
+    u02:
+      latex: u_2^0
+      description: Component 2 standard chemical potential divided by R T at the selected
+        fixed temperature and pressure.
+      unit: '1'
+  assumptions:
+  - Amounts are positive for chemical-potential derivatives; the zero-amount energy
+    limit does not define a finite insertion potential.
+  - The scalar G/(R T) has units of mol, whereas each chemical potential divided by
+    R T is dimensionless.
+  - The selected standards already refer to the fixed pressure; ideal mixing is counted
+    exactly once.
+  evidence:
+  - planetlib.thermodynamics.ideal_mixing.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('G'), Add(Mul(Symbol('n1', positive=True), Symbol('u01')),
+      Mul(Symbol('n1', positive=True), log(Mul(Symbol('n1', positive=True), Pow(Add(Symbol('n1',
+      positive=True), Symbol('n2', positive=True)), Integer(-1))))), Mul(Symbol('n2',
+      positive=True), Symbol('u02')), Mul(Symbol('n2', positive=True), log(Mul(Symbol('n2',
+      positive=True), Pow(Add(Symbol('n1', positive=True), Symbol('n2', positive=True)),
+      Integer(-1)))))))
+- id: planetlib.thermodynamics.ideal_mixing.potential_1
+  revision: '1'
+  description: First component chemical potential.
+  scope: 'Two components at fixed temperature and pressure, with composition-independent
+    supplied standards. The finite two-component model is a minimal reusable instance,
+    not an arbitrary-species solver. Pressure contributions belong to the supplied
+    standards: one-bar ideal-gas standards require a separate ln(P/P0) addition exactly
+    once. No gas law, activity correction, phase equilibrium or boundary derivative
+    is selected.'
+  symbols:
+    n1:
+      latex: n_1
+      description: Amount of host component 1.
+      unit: mol
+    n2:
+      latex: n_2
+      description: Amount of host component 2.
+      unit: mol
+    u01:
+      latex: u_1^0
+      description: Component 1 standard chemical potential divided by R T at the selected
+        fixed temperature and pressure.
+      unit: '1'
+    u1:
+      latex: u_1
+      description: Component 1 chemical potential divided by R T.
+      unit: '1'
+  assumptions:
+  - Amounts are positive for chemical-potential derivatives; the zero-amount energy
+    limit does not define a finite insertion potential.
+  - The scalar G/(R T) has units of mol, whereas each chemical potential divided by
+    R T is dimensionless.
+  - The selected standards already refer to the fixed pressure; ideal mixing is counted
+    exactly once.
+  evidence:
+  - planetlib.thermodynamics.ideal_mixing.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('u1'), Add(Symbol('u01'), log(Mul(Symbol('n1', positive=True),
+      Pow(Add(Symbol('n1', positive=True), Symbol('n2', positive=True)), Integer(-1))))))
+- id: planetlib.thermodynamics.ideal_mixing.potential_2
+  revision: '1'
+  description: Second component chemical potential.
+  scope: 'Two components at fixed temperature and pressure, with composition-independent
+    supplied standards. The finite two-component model is a minimal reusable instance,
+    not an arbitrary-species solver. Pressure contributions belong to the supplied
+    standards: one-bar ideal-gas standards require a separate ln(P/P0) addition exactly
+    once. No gas law, activity correction, phase equilibrium or boundary derivative
+    is selected.'
+  symbols:
+    n1:
+      latex: n_1
+      description: Amount of host component 1.
+      unit: mol
+    n2:
+      latex: n_2
+      description: Amount of host component 2.
+      unit: mol
+    u02:
+      latex: u_2^0
+      description: Component 2 standard chemical potential divided by R T at the selected
+        fixed temperature and pressure.
+      unit: '1'
+    u2:
+      latex: u_2
+      description: Component 2 chemical potential divided by R T.
+      unit: '1'
+  assumptions:
+  - Amounts are positive for chemical-potential derivatives; the zero-amount energy
+    limit does not define a finite insertion potential.
+  - The scalar G/(R T) has units of mol, whereas each chemical potential divided by
+    R T is dimensionless.
+  - The selected standards already refer to the fixed pressure; ideal mixing is counted
+    exactly once.
+  evidence:
+  - planetlib.thermodynamics.ideal_mixing.source
+  sympy:
+    format: sympy-srepr-v1
+    expression: Equality(Symbol('u2'), Add(Symbol('u02'), log(Mul(Symbol('n2', positive=True),
+      Pow(Add(Symbol('n1', positive=True), Symbol('n2', positive=True)), Integer(-1))))))
+bindings:
+- id: exogibbs.planetlib.sun_yao.water
+  equation:
+    id: planetlib.solubility.sun_yao2026.water_mass_fraction
+    revision: '2'
+  subject: exogibbs.planetlib.sun_yao.source
+  source: src/exogibbs/solubility/sun_yao2026.py
+  symbol: h2o_sun_yao2026
+  arguments:
+    water_partial_pressure_bar:
+      symbol: p_H2O
+      scale: 1.0
+      offset: 0.0
+    temperature_k:
+      symbol: T
+      scale: 1.0
+      offset: 0.0
+    melt_pressure_bar:
+      symbol: P
+      scale: 1.0
+      offset: 0.0
+    x_na2o:
+      symbol: x_Na2O
+      scale: 1.0
+      offset: 0.0
+    x_al2o3:
+      symbol: x_Al2O3
+      scale: 1.0
+      offset: 0.0
+  result: w
+  constants: {}
+  note: Water partial pressure and total melt pressure are separate bar inputs. The
+    caller normalizes the complete dry oxide inventory before supplying Na2O and Al2O3
+    fractions. The result is binary total H2O-equivalent mass fraction, not wt percent
+    or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain
+    provider behavior; no Gibbs continuation is adopted.
+- id: exogibbs.planetlib.nasa9.temperature
+  equation:
+    id: planetlib.thermodynamics.nasa9.heat_capacity
+    revision: '1'
+  subject: exogibbs.planetlib.nasa9.source
+  source: src/exogibbs/thermo/standard.py
+  symbol: _nasa9
+  arguments:
+    temperature:
+      symbol: T
+      scale: 1.0
+      offset: 0.0
+  result: null
+  constants: {}
+  note: Partial location/input declaration only. coefficients is a species-by-nine
+    array and the result is a tuple; native scalar result/argument mappings do not
+    encode these selections. See this Context and the provider comparisons for the
+    explicit convention.
+decisions: []
+quantities:
+- id: planetlib.solubility.sun_yao2026.binary_water_mass_fraction
+  revision: '1'
+  latex: w
+  description: Total dissolved H2O-equivalent mass divided by dry-host mass plus that
+    H2O-equivalent mass; molecular water and hydroxyl are already combined.
+  unit: '1'
+  domain: 0 <= w < 1 on the binary dry-host/water basis; extra dissolved species require
+    a new convention.
+  coordinates: []
+- id: planetlib.solubility.sun_yao2026.dry_al2o3_mole_fraction
+  revision: '1'
+  latex: X_{Al_2O_3}
+  description: Al2O3 formula-unit moles divided by the same complete volatile-free
+    oxide mole inventory as X_Na2O.
+  unit: '1'
+  domain: Nonnegative fraction with X_Na2O + X_Al2O3 <= 1; the caller declares iron-redox
+    normalization.
+  coordinates: []
+- id: planetlib.solubility.sun_yao2026.dry_na2o_mole_fraction
+  revision: '1'
+  latex: X_{Na_2O}
+  description: Na2O formula-unit moles divided by the sum of all volatile-free oxide
+    formula-unit moles; Na and Al are not renormalized alone.
+  unit: '1'
+  domain: Nonnegative fraction of a fully specified dry oxide inventory; the caller
+    declares iron-redox normalization.
+  coordinates: []
+- id: planetlib.solubility.sun_yao2026.melt_total_pressure
+  revision: '1'
+  latex: P
+  description: Total pressure at the melt-fluid interface, distinct from water partial
+    pressure.
+  unit: bar
+  domain: Finite P > 0.
+  coordinates: []
+- id: planetlib.solubility.sun_yao2026.temperature
+  revision: '1'
+  latex: T
+  description: Absolute temperature of the equilibrated melt and fluid.
+  unit: K
+  domain: Finite T > 0.
+  coordinates: []
+- id: planetlib.solubility.sun_yao2026.water_partial_pressure
+  revision: '1'
+  latex: p_{H_2O}
+  description: Water partial pressure in the fluid; this quantity is not water fugacity.
+  unit: bar
+  domain: Finite 0 <= p_H2O <= P.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.T
+  revision: '1'
+  latex: T
+  description: Absolute temperature; its numerical magnitude in K is used in the polynomial
+    and logarithm.
+  unit: K
+  domain: Positive, inside one externally chosen NASA9 coefficient interval.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a1
+  revision: '1'
+  latex: a_1
+  description: NASA9 coefficient a1 for one interval with temperature measured in
+    K.
+  unit: K^2
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a2
+  revision: '1'
+  latex: a_2
+  description: NASA9 coefficient a2 for one interval with temperature measured in
+    K.
+  unit: K
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a3
+  revision: '1'
+  latex: a_3
+  description: NASA9 coefficient a3 for one interval with temperature measured in
+    K.
+  unit: '1'
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a4
+  revision: '1'
+  latex: a_4
+  description: NASA9 coefficient a4 for one interval with temperature measured in
+    K.
+  unit: K^-1
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a5
+  revision: '1'
+  latex: a_5
+  description: NASA9 coefficient a5 for one interval with temperature measured in
+    K.
+  unit: K^-2
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a6
+  revision: '1'
+  latex: a_6
+  description: NASA9 coefficient a6 for one interval with temperature measured in
+    K.
+  unit: K^-3
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.a7
+  revision: '1'
+  latex: a_7
+  description: NASA9 coefficient a7 for one interval with temperature measured in
+    K.
+  unit: K^-4
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.b1
+  revision: '1'
+  latex: b_1
+  description: NASA9 coefficient b1 for one interval with temperature measured in
+    K.
+  unit: K
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.b2
+  revision: '1'
+  latex: b_2
+  description: NASA9 coefficient b2 for one interval with temperature measured in
+    K.
+  unit: '1'
+  domain: Finite real coefficient supplied externally; no coefficient dataset is selected.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.cpbar
+  revision: '1'
+  latex: c_p^0/R
+  description: Standard molar heat capacity at fixed standard pressure, divided by
+    R.
+  unit: '1'
+  domain: The chosen single coefficient interval.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.gbar
+  revision: '1'
+  latex: g^0/(RT)
+  description: Standard molar Gibbs energy divided by R T, not an elemental-reference
+    shifted solver potential.
+  unit: '1'
+  domain: The same reference used by hbar and sbar.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.hbar
+  revision: '1'
+  latex: h^0/(RT)
+  description: Standard molar enthalpy divided by R T, retaining its integration constant.
+  unit: '1'
+  domain: The selected reference and single coefficient interval.
+  coordinates: []
+- id: planetlib.thermodynamics.nasa9.sbar
+  revision: '1'
+  latex: s^0/R
+  description: Standard molar entropy divided by R, retaining its integration constant.
+  unit: '1'
+  domain: The selected reference and single coefficient interval.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.G
+  revision: '1'
+  latex: G/(RT)
+  description: Total extensive Gibbs energy divided by R T; this is not molar Gibbs
+    energy.
+  unit: mol
+  domain: Positive total amount; temperature and pressure held fixed.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.n1
+  revision: '1'
+  latex: n_1
+  description: Amount of host component 1.
+  unit: mol
+  domain: Positive interior amount.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.n2
+  revision: '1'
+  latex: n_2
+  description: Amount of host component 2.
+  unit: mol
+  domain: Positive interior amount.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.u01
+  revision: '1'
+  latex: u_1^0
+  description: Component 1 standard chemical potential divided by R T at the selected
+    fixed temperature and pressure.
+  unit: '1'
+  domain: Finite and independent of composition.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.u02
+  revision: '1'
+  latex: u_2^0
+  description: Component 2 standard chemical potential divided by R T at the selected
+    fixed temperature and pressure.
+  unit: '1'
+  domain: Finite and independent of composition.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.u1
+  revision: '1'
+  latex: u_1
+  description: Component 1 chemical potential divided by R T.
+  unit: '1'
+  domain: Positive component amounts at fixed temperature and pressure.
+  coordinates: []
+- id: planetlib.thermodynamics.ideal_mixing.u2
+  revision: '1'
+  latex: u_2
+  description: Component 2 chemical potential divided by R T.
+  unit: '1'
+  domain: Positive component amounts at fixed temperature and pressure.
+  coordinates: []
+mathematical_models:
+- id: planetlib.solubility.sun_yao2026.binary_water
+  revision: '2'
+  description: Water-solubility relation with five externally supplied thermodynamic
+    and composition inputs.
+  scope: T, P, p_H2O, X_Na2O and X_Al2O3 are external inputs; w is derived. No gas
+    composition solver, phase equilibrium, iron-redox closure, multisolute mass convention,
+    Gibbs continuation or boundary condition is selected.
+  quantities:
+    temperature:
+      quantity:
+        id: planetlib.solubility.sun_yao2026.temperature
+        revision: '1'
+      role: input
+    total_pressure:
+      quantity:
+        id: planetlib.solubility.sun_yao2026.melt_total_pressure
+        revision: '1'
+      role: input
+    water_pressure:
+      quantity:
+        id: planetlib.solubility.sun_yao2026.water_partial_pressure
+        revision: '1'
+      role: input
+    sodium_fraction:
+      quantity:
+        id: planetlib.solubility.sun_yao2026.dry_na2o_mole_fraction
+        revision: '1'
+      role: input
+    aluminium_fraction:
+      quantity:
+        id: planetlib.solubility.sun_yao2026.dry_al2o3_mole_fraction
+        revision: '1'
+      role: input
+    water_fraction:
+      quantity:
+        id: planetlib.solubility.sun_yao2026.binary_water_mass_fraction
+        revision: '1'
+      role: derived
+  relations:
+  - id: planetlib.solubility.sun_yao2026.solubility
+    equation:
+      id: planetlib.solubility.sun_yao2026.water_mass_fraction
+      revision: '2'
+    kind: equation
+    role: Empirical water relation on the selected mass basis
+    quantities:
+      T: temperature
+      P: total_pressure
+      p_H2O: water_pressure
+      x_Na2O: sodium_fraction
+      x_Al2O3: aluminium_fraction
+      w: water_fraction
+- id: planetlib.thermodynamics.nasa9.model
+  revision: '1'
+  description: NASA9 standard thermodynamic interval.
+  scope: One species on one positive-temperature interval with externally supplied
+    NASA9 coefficients and a consistent standard reference. The source uses one bar.
+    No species data, temperature bounds, interval joins, elemental gauge transformation
+    or empirical accuracy is selected.
+  quantities:
+    T:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.T
+        revision: '1'
+      role: input
+    cpbar:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.cpbar
+        revision: '1'
+      role: derived
+    sbar:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.sbar
+        revision: '1'
+      role: derived
+    hbar:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.hbar
+        revision: '1'
+      role: derived
+    gbar:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.gbar
+        revision: '1'
+      role: derived
+    a1:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a1
+        revision: '1'
+      role: parameter
+    a2:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a2
+        revision: '1'
+      role: parameter
+    a3:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a3
+        revision: '1'
+      role: parameter
+    a4:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a4
+        revision: '1'
+      role: parameter
+    a5:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a5
+        revision: '1'
+      role: parameter
+    a6:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a6
+        revision: '1'
+      role: parameter
+    a7:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.a7
+        revision: '1'
+      role: parameter
+    b1:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.b1
+        revision: '1'
+      role: parameter
+    b2:
+      quantity:
+        id: planetlib.thermodynamics.nasa9.b2
+        revision: '1'
+      role: parameter
+  relations:
+  - id: planetlib.thermodynamics.nasa9.heat_capacity_relation
+    equation:
+      id: planetlib.thermodynamics.nasa9.heat_capacity
+      revision: '1'
+    kind: equation
+    role: Standard heat-capacity polynomial
+    quantities:
+      T: T
+      a1: a1
+      a2: a2
+      a3: a3
+      a4: a4
+      a5: a5
+      a6: a6
+      a7: a7
+      cpbar: cpbar
+  - id: planetlib.thermodynamics.nasa9.entropy_relation
+    equation:
+      id: planetlib.thermodynamics.nasa9.entropy
+      revision: '1'
+    kind: equation
+    role: Integrated standard entropy
+    quantities:
+      T: T
+      a1: a1
+      a2: a2
+      a3: a3
+      a4: a4
+      a5: a5
+      a6: a6
+      a7: a7
+      b2: b2
+      sbar: sbar
+  - id: planetlib.thermodynamics.nasa9.enthalpy_relation
+    equation:
+      id: planetlib.thermodynamics.nasa9.enthalpy
+      revision: '1'
+    kind: equation
+    role: Integrated standard enthalpy
+    quantities:
+      T: T
+      a1: a1
+      a2: a2
+      a3: a3
+      a4: a4
+      a5: a5
+      a6: a6
+      a7: a7
+      b1: b1
+      hbar: hbar
+  - id: planetlib.thermodynamics.nasa9.gibbs_relation
+    equation:
+      id: planetlib.thermodynamics.nasa9.gibbs
+      revision: '1'
+    kind: equation
+    role: Common standard reference relation
+    quantities:
+      gbar: gbar
+      hbar: hbar
+      sbar: sbar
+- id: planetlib.thermodynamics.ideal_mixing.model
+  revision: '1'
+  description: Binary ideal mixing Gibbs energy and chemical potentials.
+  scope: 'Two components at fixed temperature and pressure, with composition-independent
+    supplied standards. The finite two-component model is a minimal reusable instance,
+    not an arbitrary-species solver. Pressure contributions belong to the supplied
+    standards: one-bar ideal-gas standards require a separate ln(P/P0) addition exactly
+    once. No gas law, activity correction, phase equilibrium or boundary derivative
+    is selected.'
+  quantities:
+    n1:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.n1
+        revision: '1'
+      role: input
+    n2:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.n2
+        revision: '1'
+      role: input
+    u01:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.u01
+        revision: '1'
+      role: input
+    u02:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.u02
+        revision: '1'
+      role: input
+    G:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.G
+        revision: '1'
+      role: derived
+    u1:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.u1
+        revision: '1'
+      role: derived
+    u2:
+      quantity:
+        id: planetlib.thermodynamics.ideal_mixing.u2
+        revision: '1'
+      role: derived
+  relations:
+  - id: planetlib.thermodynamics.ideal_mixing.gibbs_relation
+    equation:
+      id: planetlib.thermodynamics.ideal_mixing.gibbs
+      revision: '1'
+    kind: equation
+    role: Extensive scalar
+    quantities:
+      G: G
+      n1: n1
+      n2: n2
+      u01: u01
+      u02: u02
+  - id: planetlib.thermodynamics.ideal_mixing.potential_1_relation
+    equation:
+      id: planetlib.thermodynamics.ideal_mixing.potential_1
+      revision: '1'
+    kind: equation
+    role: First component chemical potential
+    quantities:
+      n1: n1
+      n2: n2
+      u01: u01
+      u1: u1
+  - id: planetlib.thermodynamics.ideal_mixing.potential_2_relation
+    equation:
+      id: planetlib.thermodynamics.ideal_mixing.potential_2
+      revision: '1'
+    kind: equation
+    role: Second component chemical potential
+    quantities:
+      n1: n1
+      n2: n2
+      u02: u02
+      u2: u2
+  - id: planetlib.thermodynamics.ideal_mixing.euler_relation
+    equation:
+      id: planetlib.thermodynamics.ideal_mixing.euler
+      revision: '1'
+    kind: equation
+    role: Euler consistency relation
+    quantities:
+      G: G
+      n1: n1
+      n2: n2
+      u1: u1
+      u2: u2
