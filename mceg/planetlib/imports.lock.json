@@ -1,0 +1,32 @@
+{
+  "format": "planetlib.imports.v1",
+  "imports": [
+    {
+      "path": "catalog/solubility/sun_yao2026.yaml",
+      "sha256": "4980c1709e81dc0b8fc9dc0f8e9fd5a7f6d409ea9cb6ac4d250d4a26e06a72cf",
+      "model": {
+        "id": "planetlib.solubility.sun_yao2026.binary_water",
+        "revision": "2",
+        "sha256": "c579e997ec4e59d3f507476f0b8a36d43184d644065af04ab9f0d861c4e85705"
+      }
+    },
+    {
+      "path": "catalog/thermodynamics/nasa9.yaml",
+      "sha256": "2de7eba93e8c857b1074c88a3173d6f750ecd12eb003a67f8ae7b7e06fec28e2",
+      "model": {
+        "id": "planetlib.thermodynamics.nasa9.model",
+        "revision": "1",
+        "sha256": "7818a218684226ac9a3a827cc12c4b9f7995ffb42f881e6d16507c4490b41255"
+      }
+    },
+    {
+      "path": "catalog/thermodynamics/ideal_mixing.yaml",
+      "sha256": "0fbbdf423426ff88c114f734ea11073f71f8daf1118a82351cdc59707dce0fb7",
+      "model": {
+        "id": "planetlib.thermodynamics.ideal_mixing.model",
+        "revision": "1",
+        "sha256": "ff4484ea799cc1bcce2f2e4873a3aab634d3ea9632e9da2daef0e541b46f0320"
+      }
+    }
+  ]
+}

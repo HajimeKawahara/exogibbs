@@ -1,0 +1,336 @@
+schema_version: '0.6'
+model:
+  id: exogibbs.planetlib.adoption
+  name: ExoGibbs adoption of pinned Planetlib definitions
+  description: Shared scientific definitions with local implementation mappings; the existing provider and study
+    records retain their historical judgments.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/solubility/sun_yao2026.py:h2o_sun_yao2026
+    - src/exogibbs/thermo/standard.py:_nasa9
+    - src/exogibbs/thermo/ideal_gibbs.py:gibbs_j
+assumptions:
+- statement: Water partial pressure and total melt pressure are separate bar inputs. The caller normalizes the complete
+    dry oxide inventory before supplying Na2O and Al2O3 fractions. The result is binary total H2O-equivalent mass
+    fraction, not wt percent or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain provider
+    behavior; no Gibbs continuation is adopted.
+  evidence:
+  - exogibbs.planetlib.sun_yao.source
+- statement: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R). Temperature
+    is numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval algebraic correspondence, excluding
+    coefficient datasets, interval joins, reference-gauge reconstruction, and the validity of any curated gas mixture.
+  evidence:
+  - exogibbs.planetlib.nasa9.source
+- statement: At fixed positive T and P and two positive amounts, catalog G is provider gibbs_j/(R*T). Catalog u0i
+    is standard_potentials_rt[i]+log(pressure_pa/1e5), adding the one-bar pressure contribution exactly once. Catalog
+    ui is the provider amount derivative divided by R*T. No insertion bound, zero-amount derivative, arbitrary-species
+    model or chemical equilibrium validation is adopted.
+  evidence:
+  - exogibbs.planetlib.ideal_mixing.source
+domains:
+- kind: scientific_applicability
+  status: unknown
+  description: These local correspondence declarations do not assess physical accuracy of any target material or
+    gas mixture.
+  conditions: []
+  evidence:
+  - exogibbs.planetlib.selection
+limitations:
+- statement: Native validation and the sampled provider comparisons do not prove general code equivalence or renew
+    historical assessments.
+  evidence:
+  - exogibbs.planetlib.selection
+subjects:
+- id: exogibbs.planetlib.sun_yao.source
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/solubility/sun_yao2026.py:h2o_sun_yao2026
+  selected_files:
+    src/exogibbs/solubility/sun_yao2026.py: 965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb
+    src/exogibbs/solubility/volatile.py: 8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da
+- id: exogibbs.planetlib.nasa9.source
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/thermo/standard.py:_nasa9
+  selected_files:
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+- id: exogibbs.planetlib.ideal_mixing.source
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 8b34501a90f24d04c31f17dffac14eb0b0694fa2
+    entry_points:
+    - src/exogibbs/thermo/ideal_gibbs.py:gibbs_j
+  selected_files:
+    src/exogibbs/thermo/ideal_gibbs.py: 8fcd8f9cedda2ee6f84922e1e3e568f4e1fa0ac189513db18c1d5b73988b2731
+contexts:
+- id: exogibbs.planetlib.sun_yao.mapping
+  scope: Water partial pressure and total melt pressure are separate bar inputs. The caller normalizes the complete
+    dry oxide inventory before supplying Na2O and Al2O3 fractions. The result is binary total H2O-equivalent mass
+    fraction, not wt percent or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain provider
+    behavior; no Gibbs continuation is adopted.
+  settings:
+    planetlib_revision: a83b3fb255c7a383c6a8ef502328266f4dd16bff
+    mapping_status: declared; no archived correspondence review
+- id: exogibbs.planetlib.nasa9.mapping
+  scope: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R). Temperature is
+    numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval algebraic correspondence, excluding
+    coefficient datasets, interval joins, reference-gauge reconstruction, and the validity of any curated gas mixture.
+  settings:
+    planetlib_revision: a83b3fb255c7a383c6a8ef502328266f4dd16bff
+    mapping_status: declared; no archived correspondence review
+- id: exogibbs.planetlib.ideal_mixing.mapping
+  scope: At fixed positive T and P and two positive amounts, catalog G is provider gibbs_j/(R*T). Catalog u0i is
+    standard_potentials_rt[i]+log(pressure_pa/1e5), adding the one-bar pressure contribution exactly once. Catalog
+    ui is the provider amount derivative divided by R*T. No insertion bound, zero-amount derivative, arbitrary-species
+    model or chemical equilibrium validation is adopted.
+  settings:
+    planetlib_revision: a83b3fb255c7a383c6a8ef502328266f4dd16bff
+    mapping_status: declared; no archived correspondence review
+evidence:
+- id: exogibbs.planetlib.selection
+  kind: implementation
+  summary: Immutable Planetlib catalog selection; only definitions and their provenance are imported.
+  sources:
+  - https://github.com/HajimeKawahara/planetlib/tree/a83b3fb255c7a383c6a8ef502328266f4dd16bff
+  - mceg/planetlib/imports.lock.json
+  artifacts:
+  - source: mceg/planetlib/imports.lock.json
+    sha256: 845617bddee170380b9feac25f30012032c92c00d9c4a3a12722369b859e2878
+  scope: Planetlib supplies no imported Subject, Context, Claim, Assessment or code binding. Shared equation authoring
+    remains in the upstream catalog; contract.yaml is a generated distribution snapshot.
+- id: exogibbs.planetlib.sun_yao.source
+  kind: implementation
+  summary: Selected provider source and explicit input/output conventions.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/solubility/sun_yao2026.py
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/solubility/volatile.py
+  scope: Water partial pressure and total melt pressure are separate bar inputs. The caller normalizes the complete
+    dry oxide inventory before supplying Na2O and Al2O3 fractions. The result is binary total H2O-equivalent mass
+    fraction, not wt percent or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain provider
+    behavior; no Gibbs continuation is adopted.
+  subject: exogibbs.planetlib.sun_yao.source
+  context: exogibbs.planetlib.sun_yao.mapping
+- id: exogibbs.planetlib.nasa9.source
+  kind: implementation
+  summary: Selected provider source and explicit input/output conventions.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/thermo/standard.py
+  scope: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R). Temperature is
+    numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval algebraic correspondence, excluding
+    coefficient datasets, interval joins, reference-gauge reconstruction, and the validity of any curated gas mixture.
+  subject: exogibbs.planetlib.nasa9.source
+  context: exogibbs.planetlib.nasa9.mapping
+- id: exogibbs.planetlib.ideal_mixing.source
+  kind: implementation
+  summary: Selected provider source and explicit input/output conventions.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/8b34501a90f24d04c31f17dffac14eb0b0694fa2/src/exogibbs/thermo/ideal_gibbs.py
+  scope: At fixed positive T and P and two positive amounts, catalog G is provider gibbs_j/(R*T). Catalog u0i is
+    standard_potentials_rt[i]+log(pressure_pa/1e5), adding the one-bar pressure contribution exactly once. Catalog
+    ui is the provider amount derivative divided by R*T. No insertion bound, zero-amount derivative, arbitrary-species
+    model or chemical equilibrium validation is adopted.
+  subject: exogibbs.planetlib.ideal_mixing.source
+  context: exogibbs.planetlib.ideal_mixing.mapping
+claims:
+- id: exogibbs.planetlib.sun_yao.correspondence
+  revision: '1'
+  kind: numerical_verification
+  statement: The scalar water solubility evaluates the selected Sun-Yao relation on its valid input domain.
+  scope: Water partial pressure and total melt pressure are separate bar inputs. The caller normalizes the complete
+    dry oxide inventory before supplying Na2O and Al2O3 fractions. The result is binary total H2O-equivalent mass
+    fraction, not wt percent or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain provider
+    behavior; no Gibbs continuation is adopted.
+  equations:
+  - id: planetlib.solubility.sun_yao2026.water_mass_fraction
+    revision: '2'
+  mathematical_models:
+  - id: planetlib.solubility.sun_yao2026.binary_water
+    revision: '2'
+- id: exogibbs.planetlib.nasa9.correspondence
+  revision: '1'
+  kind: numerical_verification
+  statement: The single-interval evaluator matches the selected NASA9 relations with its declared coefficient and
+    tuple conventions.
+  scope: Each coefficients row is (a1,a2,a3,a4,a5,a6,a7,b1,b2); output tuple is (g/RT,s/R,cp/R). Temperature is
+    numerical Kelvin. h/RT is recovered as g/RT+s/R. This is a one-interval algebraic correspondence, excluding
+    coefficient datasets, interval joins, reference-gauge reconstruction, and the validity of any curated gas mixture.
+  equations:
+  - id: planetlib.thermodynamics.nasa9.heat_capacity
+    revision: '1'
+  - id: planetlib.thermodynamics.nasa9.entropy
+    revision: '1'
+  - id: planetlib.thermodynamics.nasa9.enthalpy
+    revision: '1'
+  - id: planetlib.thermodynamics.nasa9.gibbs
+    revision: '1'
+  mathematical_models:
+  - id: planetlib.thermodynamics.nasa9.model
+    revision: '1'
+- id: exogibbs.planetlib.ideal_mixing.correspondence
+  revision: '1'
+  kind: numerical_verification
+  statement: The binary restriction of the ideal-gas Gibbs scalar and its amount derivatives match the selected
+    ideal-mixing model after explicit normalization.
+  scope: At fixed positive T and P and two positive amounts, catalog G is provider gibbs_j/(R*T). Catalog u0i is
+    standard_potentials_rt[i]+log(pressure_pa/1e5), adding the one-bar pressure contribution exactly once. Catalog
+    ui is the provider amount derivative divided by R*T. No insertion bound, zero-amount derivative, arbitrary-species
+    model or chemical equilibrium validation is adopted.
+  equations:
+  - id: planetlib.thermodynamics.ideal_mixing.gibbs
+    revision: '1'
+  - id: planetlib.thermodynamics.ideal_mixing.potential_1
+    revision: '1'
+  - id: planetlib.thermodynamics.ideal_mixing.potential_2
+    revision: '1'
+  - id: planetlib.thermodynamics.ideal_mixing.euler
+    revision: '1'
+  mathematical_models:
+  - id: planetlib.thermodynamics.ideal_mixing.model
+    revision: '1'
+bindings:
+- id: exogibbs.planetlib.sun_yao.water
+  equation:
+    id: planetlib.solubility.sun_yao2026.water_mass_fraction
+    revision: '2'
+  subject: exogibbs.planetlib.sun_yao.source
+  source: src/exogibbs/solubility/sun_yao2026.py
+  symbol: h2o_sun_yao2026
+  arguments:
+    water_partial_pressure_bar:
+      symbol: p_H2O
+    temperature_k:
+      symbol: T
+    melt_pressure_bar:
+      symbol: P
+    x_na2o:
+      symbol: x_Na2O
+    x_al2o3:
+      symbol: x_Al2O3
+  result: w
+  note: Water partial pressure and total melt pressure are separate bar inputs. The caller normalizes the complete
+    dry oxide inventory before supplying Na2O and Al2O3 fractions. The result is binary total H2O-equivalent mass
+    fraction, not wt percent or a dry-host mass ratio. The continuous zero-water limit and NaN guards remain provider
+    behavior; no Gibbs continuation is adopted.
+- id: exogibbs.planetlib.nasa9.temperature
+  equation:
+    id: planetlib.thermodynamics.nasa9.heat_capacity
+    revision: '1'
+  subject: exogibbs.planetlib.nasa9.source
+  source: src/exogibbs/thermo/standard.py
+  symbol: _nasa9
+  arguments:
+    temperature:
+      symbol: T
+  note: Partial location/input declaration only. coefficients is a species-by-nine array and the result is a tuple;
+    native scalar result/argument mappings do not encode these selections. See this Context and the provider comparisons
+    for the explicit convention.
+assessments:
+- id: exogibbs.planetlib.sun_yao.pending
+  kind: evidence_support
+  claim: exogibbs.planetlib.sun_yao.correspondence
+  claim_revision: '1'
+  subject: exogibbs.planetlib.sun_yao.source
+  context: exogibbs.planetlib.sun_yao.mapping
+  method:
+    id: exogibbs.planetlib.initial_adoption
+    revision: '1'
+    description: Record explicit correspondence for later scoped review; preserve earlier provider assessments separately.
+  status: unknown
+  origin: reviewed
+  evidence:
+  - exogibbs.planetlib.sun_yao.source
+  - exogibbs.planetlib.selection
+  reasons:
+  - Existing reviews concern their own definitions and subjects; no archived review of this new Planetlib correspondence
+    is recorded. Sampled CI comparisons do not automatically promote this status.
+  equation_pins:
+  - id: planetlib.solubility.sun_yao2026.water_mass_fraction
+    revision: '2'
+    sha256: 6447d9d1d4c0291af01593723bcab8fd562f466558db71169631981080dcb66d
+  mathematical_model_pins:
+  - id: planetlib.solubility.sun_yao2026.binary_water
+    revision: '2'
+    sha256: c579e997ec4e59d3f507476f0b8a36d43184d644065af04ab9f0d861c4e85705
+  binding_pins:
+  - id: exogibbs.planetlib.sun_yao.water
+    sha256: 41518d74d5de841c8888f0982c49a83243411931d011923924937707c2bec821
+- id: exogibbs.planetlib.nasa9.pending
+  kind: evidence_support
+  claim: exogibbs.planetlib.nasa9.correspondence
+  claim_revision: '1'
+  subject: exogibbs.planetlib.nasa9.source
+  context: exogibbs.planetlib.nasa9.mapping
+  method:
+    id: exogibbs.planetlib.initial_adoption
+    revision: '1'
+    description: Record explicit correspondence for later scoped review; preserve earlier provider assessments separately.
+  status: unknown
+  origin: reviewed
+  evidence:
+  - exogibbs.planetlib.nasa9.source
+  - exogibbs.planetlib.selection
+  reasons:
+  - Existing reviews concern their own definitions and subjects; no archived review of this new Planetlib correspondence
+    is recorded. Sampled CI comparisons do not automatically promote this status.
+  equation_pins:
+  - id: planetlib.thermodynamics.nasa9.heat_capacity
+    revision: '1'
+    sha256: ef31d7321bb509a473a806cdd4d2ff01adcc5f37f48f3939fab23a7a7a6b27df
+  - id: planetlib.thermodynamics.nasa9.entropy
+    revision: '1'
+    sha256: 7ed99f4a7a565c0e39ec9f0fce98ba4a8dec42db7968d449b76dd062068824cd
+  - id: planetlib.thermodynamics.nasa9.enthalpy
+    revision: '1'
+    sha256: 66673ed9f0f3a4e166c7c3d19a7fe8f7467286a93ea2605427685d5cc4776904
+  - id: planetlib.thermodynamics.nasa9.gibbs
+    revision: '1'
+    sha256: f492480910e2b6c0dc5114f9866147e3b1aa71e6836bd88467074f7fd72e7679
+  mathematical_model_pins:
+  - id: planetlib.thermodynamics.nasa9.model
+    revision: '1'
+    sha256: 7818a218684226ac9a3a827cc12c4b9f7995ffb42f881e6d16507c4490b41255
+  binding_pins:
+  - id: exogibbs.planetlib.nasa9.temperature
+    sha256: 933e2ae67b9fd4ff7eb8a1976406a24b07e06d78e08a86746d1b052ce04d8b08
+- id: exogibbs.planetlib.ideal_mixing.pending
+  kind: evidence_support
+  claim: exogibbs.planetlib.ideal_mixing.correspondence
+  claim_revision: '1'
+  subject: exogibbs.planetlib.ideal_mixing.source
+  context: exogibbs.planetlib.ideal_mixing.mapping
+  method:
+    id: exogibbs.planetlib.initial_adoption
+    revision: '1'
+    description: Record explicit correspondence for later scoped review; preserve earlier provider assessments separately.
+  status: unknown
+  origin: reviewed
+  evidence:
+  - exogibbs.planetlib.ideal_mixing.source
+  - exogibbs.planetlib.selection
+  reasons:
+  - Existing reviews concern their own definitions and subjects; no archived review of this new Planetlib correspondence
+    is recorded. Sampled CI comparisons do not automatically promote this status.
+  equation_pins:
+  - id: planetlib.thermodynamics.ideal_mixing.gibbs
+    revision: '1'
+    sha256: 3c9b5e912b335f2bc78d3a2653268858344096730a9e4117a48ff7d3b35e8e62
+  - id: planetlib.thermodynamics.ideal_mixing.potential_1
+    revision: '1'
+    sha256: dd5be4806efae5ac83287bfb168f2902b206da461bb012393d914aee91dc792c
+  - id: planetlib.thermodynamics.ideal_mixing.potential_2
+    revision: '1'
+    sha256: 1b8a413b108aed518cff3bdf36b36fea016e921b3df4950411de36643b04a9f8
+  - id: planetlib.thermodynamics.ideal_mixing.euler
+    revision: '1'
+    sha256: f1927bdd06936ce476bc69d1365f0c274ced9ed85c543452c723a02d555d8fdc
+  mathematical_model_pins:
+  - id: planetlib.thermodynamics.ideal_mixing.model
+    revision: '1'
+    sha256: ff4484ea799cc1bcce2f2e4873a3aab634d3ea9632e9da2daef0e541b46f0320
+  binding_pins: []
